@@ -1,14 +1,21 @@
 name: deltasync
-description: A starting point for Dart libraries or applications.
+description: Offline-first synchronization primitives for Dart.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+workspace:
+  - packages/deltasync_core
+  - packages/deltasync_sync
+  - packages/deltasync_storage
+  - packages/deltasync_transport
 
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.12.0
 
 # Add regular dependencies here.
 dependencies:
-  # path: ^1.9.0
+  deltasync_core: ^1.0.0
+  deltasync_storage: ^1.0.0
+  deltasync_sync: ^1.0.0
+  deltasync_transport: ^1.0.0
 
 dev_dependencies:
   lints: ^6.0.0

@@ -1,39 +1,32 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# DeltaSync
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronização incremental por deltas.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/tools/pub/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+## Pacotes
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+- `deltasync_core`: estado de réplicas, operações LWW e deltas deduplicados.
+- `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
+- `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
+- `deltasync_transport`: contrato de transporte, sem dependência de HTTP ou WebSocket.
+- `deltasync`: facade que exporta APIs dos subpackages.
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+## Uso
 
 ```dart
-const like = 'sample';
+import 'package:deltasync/deltasync.dart';
+
+final replica = Replica('device-a');
+replica.set('message', 'edited offline');
+print(replica.state.values);
 ```
 
-## Additional information
+Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## Validação
+
+```shell
+dart pub get
+dart format .
+dart analyze
+dart test
+```

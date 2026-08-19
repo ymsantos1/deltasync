@@ -1,8 +1,6 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
 library;
 
-export 'src/deltasync_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'package:deltasync_core/deltasync_core.dart';
+export 'package:deltasync_storage/deltasync_storage.dart';
+export 'package:deltasync_sync/deltasync_sync.dart';
+export 'package:deltasync_transport/deltasync_transport.dart';

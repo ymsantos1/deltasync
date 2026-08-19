@@ -1,6 +1,7 @@
 import 'package:deltasync/deltasync.dart';
 
 void main() {
-  var awesome = Awesome();
-  print('awesome: ${awesome.isAwesome}');
+  final replica = Replica('device-a');
+  replica.set('message', 'edited offline');
+  print(replica.state.values);
 }
