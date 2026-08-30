@@ -2,6 +2,58 @@
 
 ## Diagnóstico
 
+## Estado verificado
+
+Verificação realizada em 2026-08-30:
+
+### Feito
+
+- [x] Workspace modular com `deltasync_core`, `deltasync_sync`, `deltasync_storage` e `deltasync_transport`.
+- [x] Core sem dependências de banco, Flutter ou rede.
+- [x] Transporte definido por contrato independente de implementação.
+- [x] `VectorClock` com tick, merge, comparação e JSON.
+- [x] `Operation` e `Delta` com deduplicação por identificador.
+- [x] Réplica com operações LWW de set/remove e aplicação idempotente.
+- [x] `SyncEngine` básico para mutação local, recuperação de deltas pendentes, recebimento remoto e push.
+- [x] Testes básicos de relógio, serialização de operação, convergência, remoção, duplicação e lifecycle.
+
+### Parcial
+
+- [~] `ARCH-04`: `Operation` possui `toJson`/`fromJson`, mas não há codec formal de `Delta` nem envelope de transporte.
+- [~] `CORE-01`: identificadores e operações existem, mas geração, persistência e política de IDs ainda não estão formalizadas.
+- [~] `SYNC-01`: `start()` restaura outbox como operações aplicadas; snapshot materializado ainda não existe.
+- [~] `SYNC-03`: deltas remotos são aplicados em memória, sem persistência.
+- [~] `SYNC-07`: cancelamento da assinatura existe; lifecycle completo e segurança contra múltiplos `start()` ainda não foram definidos.
+
+### Pendente
+
+- [ ] `ARCH-01`: modelos persistíveis completos e codec de storage.
+- [ ] `ARCH-03`: ciclo de vida de outbox, estados enviados e confirmação.
+- [ ] `ARCH-06` a `ARCH-08`: política de snapshots/tombstones e contrato de geração de código.
+- [ ] `CORE-02` a `CORE-12`, exceto relógio/operações básicos já listados acima.
+- [ ] `STORE-01` a `STORE-08`: `MemoryStorage` orientado a réplica, snapshots, metadados, recuperação e testes de contrato.
+- [ ] `SYNC-02`, `SYNC-04` a `SYNC-06`, `SYNC-08` a `SYNC-10`: persistência completa, confirmação explícita, retry, envelopes e compactação segura.
+- [ ] Fases 4.5, 5 e 6: geração de código, adaptador SQLite e validação acadêmica.
+
+### Validação
+
+- `dart analyze`: passou sem issues.
+- `dart test`: não concluiu no ambiente atual; processo ficou sem saída por mais de 12 segundos. Execução também encontrou tentativa do SDK de gravar telemetria em `/home/yago/.dart-tool`, caminho somente leitura.
+
+`ARCH-02` implementada nesta revisão. Próximos tasks: `STORE-01`/`STORE-02` e `SYNC-01`.
+
+Nota de escopo: `MemoryStorage` é implementação volátil para testes, exemplos e
+protótipos. Não fornece persistência após reinício. Produção exige adaptador
+persistente que implemente `ReplicaStorage`.
+
+Decisão de persistência: cada dispositivo persiste somente sua própria réplica.
+Não armazenar estados completos de outras réplicas. O modelo lógico inicial
+possui três tabelas: `replicas`, `state_entries` e `outbox`. `VectorClock` pode
+conter IDs e contadores remotos para preservar causalidade, mas isso não
+representa o estado remoto completo. Histórico de operações e confirmações por
+participante são extensões opcionais para auditoria, replay e compactação
+segura.
+
 ### Confirmado
 
 - Workspace Dart com pacotes:
@@ -83,6 +135,11 @@ Storage não deve guardar somente deltas. Modelo recomendado:
 - outbox durável para operações locais não confirmadas;
 - metadados da réplica, como `actorId`, `operationId`, relógio lógico ou HLC;
 - tombstones, quando deleções precisarem ser lembradas.
+
+O storage local não precisa guardar estados completos das demais réplicas.
+Metadados remotos no `VectorClock`, operações vencedoras e tombstones bastam
+para reconstruir e continuar a réplica local. Histórico completo de operações
+é opcional e depende do protocolo de sincronização.
 
 Deltas antigos podem ser compactados em novo snapshot após retenção e confirmação adequadas. Objetivo: recuperar estado sem replay infinito, sem perder informação necessária para convergência.
 
@@ -204,7 +261,7 @@ Gate:
 - testes compilando;
 - decisão sobre confirmação de entrega registrada.
 
-Status: `MUST`.
+Status: `IN_PROGRESS` — `ARCH-02` concluída; demais contratos da fase ainda pendentes.
 
 ### Fase 2 — Core CRDT e metadados
 
@@ -485,15 +542,15 @@ plan/
 
 Acceptance criteria:
 
-- [ ] contrato não importa `sqflite`;
-- [ ] contrato não conhece SQL;
-- [ ] snapshot pode ser salvo e carregado;
-- [ ] outbox pode ser enfileirada;
-- [ ] pendências podem ser consultadas;
-- [ ] operações podem ser confirmadas;
-- [ ] `MemoryStorage` implementa contrato;
-- [ ] testes de contrato passam;
-- [ ] decisão registrada em `DECISIONS.md`.
+- [x] contrato não importa `sqflite`;
+- [x] contrato não conhece SQL;
+- [x] snapshot pode ser salvo e carregado;
+- [x] outbox pode ser enfileirada;
+- [x] pendências podem ser consultadas;
+- [x] operações podem ser confirmadas;
+- [x] `MemoryStorage` implementa contrato;
+- [x] testes de contrato criados;
+- [x] decisão registrada neste plano: storage orientado ao domínio, com adaptadores externos.
 
 Depois:
 
