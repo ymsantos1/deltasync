@@ -30,7 +30,7 @@ Verificação realizada em 2026-08-30:
 - [ ] `ARCH-01`: modelos persistíveis completos e codec de storage.
 - [ ] `ARCH-03`: ciclo de vida de outbox, estados enviados e confirmação.
 - [ ] `ARCH-06` a `ARCH-08`: política de snapshots/tombstones e contrato de geração de código.
-- [ ] `CORE-02` a `CORE-12`, exceto relógio/operações básicos já listados acima.
+- [ ] `CORE-02` a `CORE-14`, exceto relógio/operações básicos já listados acima.
 - [ ] `STORE-01` a `STORE-08`: `MemoryStorage` orientado a réplica, snapshots, metadados, recuperação e testes de contrato.
 - [ ] `SYNC-02`, `SYNC-04` a `SYNC-06`, `SYNC-08` a `SYNC-10`: persistência completa, confirmação explícita, retry, envelopes e compactação segura.
 - [ ] Fases 4.5, 5 e 6: geração de código, adaptador SQLite e validação acadêmica.
@@ -40,7 +40,8 @@ Verificação realizada em 2026-08-30:
 - `dart analyze`: passou sem issues.
 - `dart test`: não concluiu no ambiente atual; processo ficou sem saída por mais de 12 segundos. Execução também encontrou tentativa do SDK de gravar telemetria em `/home/yago/.dart-tool`, caminho somente leitura.
 
-`ARCH-02` implementada nesta revisão. Próximos tasks: `STORE-01`/`STORE-02` e `SYNC-01`.
+`ARCH-02` possui implementação inicial, mas persistência fica temporariamente
+adiada. Próximo task definido: `CORE-03`.
 
 Nota de escopo: `MemoryStorage` é implementação volátil para testes, exemplos e
 protótipos. Não fornece persistência após reinício. Produção exige adaptador
@@ -53,6 +54,21 @@ conter IDs e contadores remotos para preservar causalidade, mas isso não
 representa o estado remoto completo. Histórico de operações e confirmações por
 participante são extensões opcionais para auditoria, replay e compactação
 segura.
+
+Repriorização: não integrar `ReplicaStorage` ao `SyncEngine` nem criar adaptador
+SQLite antes de fechar formato de snapshot, tombstones e deduplicação após
+reinício. O contrato atual deve ser tratado como baseline revisável.
+
+Nova prioridade: estabilizar primeiro estrutura, operações e regras de merge dos
+CRDTs. Persistência, outbox durável e adaptadores ficam depois que o núcleo
+conseguir demonstrar convergência, idempotência, comutatividade e restauração
+em memória.
+
+Escopo inicial de CRDTs: `LWW-Register`, `G-Counter` e `PN-Counter`. Esses tipos
+cobrem registro com conflito determinístico, incremento distribuído e contador
+com incremento/decremento. Depois, entram `G-Set`, `MV-Register`, `2P-Set`,
+`OR-Set` e `OR-Map`, todos com metadados necessários para merge, causalidade,
+deduplicação e, quando aplicável, deleção.
 
 ### Confirmado
 
@@ -261,7 +277,8 @@ Gate:
 - testes compilando;
 - decisão sobre confirmação de entrega registrada.
 
-Status: `IN_PROGRESS` — `ARCH-02` concluída; demais contratos da fase ainda pendentes.
+Status: `IN_PROGRESS` — contrato inicial de storage criado; modelo persistível e
+ciclo completo de outbox ainda pendentes.
 
 ### Fase 2 — Core CRDT e metadados
 
@@ -276,13 +293,28 @@ Ordem recomendada:
 5. `CORE-05` — G-Counter.
 6. `CORE-06` — PN-Counter.
 7. `CORE-07` — G-Set.
-8. `CORE-08` — OR-Set.
-9. `CORE-09` — OR-Map.
-10. `CORE-10` — serialização.
-11. `CORE-11` — snapshot materializado e restauração.
-12. `CORE-12` — compactação de deltas e retenção de tombstones.
+8. `CORE-08` — MV-Register.
+9. `CORE-09` — 2P-Set.
+10. `CORE-10` — OR-Set.
+11. `CORE-11` — OR-Map.
+12. `CORE-12` — serialização.
+13. `CORE-13` — snapshot materializado e restauração.
+14. `CORE-14` — compactação de deltas e retenção de tombstones.
 
-`MV-Register`, `2P-Set` e sequências ficam depois do núcleo mínimo.
+Sequências ficam depois desse conjunto inicial.
+
+Metadados obrigatórios por implementação:
+
+- `LWW-Register`: timestamp lógico ou `VectorClock`, `replicaId`, `operationId`
+  e tombstone quando houver remoção.
+- `MV-Register`: versões concorrentes, causalidade e identificadores das
+  operações mantidas.
+- `G-Counter` e `PN-Counter`: componentes por réplica e identificadores de
+  operação quando necessários para deduplicação.
+- `G-Set`: elementos adicionados e metadados de origem/operação.
+- `2P-Set`: conjunto de adições, conjunto de remoções e metadados de operação.
+- `OR-Set`: tags únicas por adição, conjunto de remoções e causalidade.
+- `OR-Map`: chaves, valores CRDT aninhados, identificadores e tombstones.
 
 Gate:
 
@@ -293,6 +325,48 @@ Gate:
 - duplicação;
 - reordenação;
 - serialização e desserialização.
+
+## Próximo task aprovado
+
+`CORE-03 — Definir contrato comum de CRDT`.
+
+Objetivo: definir estrutura comum para CRDTs, operações e aplicação de merge
+antes de introduzir persistência.
+
+Escopo:
+
+- revisar interface `Crdt<T>` e ciclo `apply(operation)`;
+- separar operação comum de regras específicas de cada CRDT;
+- definir registro de operações já aplicadas em memória;
+- definir comportamento para operação duplicada, atrasada e concorrente;
+- definir como `Replica` registra operações locais e aplica remotas;
+- preparar estrutura para `LWW Register`, sem implementar todos os CRDTs ainda.
+
+Acceptance criteria:
+
+- [ ] contrato comum documentado;
+- [ ] operação carrega identidade, origem, causalidade e payload;
+- [ ] CRDT ignora operação duplicada sem alterar resultado;
+- [ ] operações concorrentes têm resolução determinística quando aplicável;
+- [ ] testes de aplicação em ordens diferentes definidos;
+- [ ] contrato não depende de storage ou transporte.
+
+Depois de `CORE-03`:
+
+1. executar `CORE-04` para LWW Register;
+2. executar `CORE-05` para G-Counter;
+3. executar `CORE-06` para PN-Counter;
+4. validar propriedades do núcleo e dos counters;
+5. voltar a `ARCH-01` para definir snapshot baseado no modelo real.
+
+Critérios específicos dos counters:
+
+- `CORE-05` — `G-Counter`: cada réplica incrementa somente seu componente;
+  merge usa máximo por réplica; valor é soma dos componentes; operações são
+  idempotentes e independem da ordem.
+- `CORE-06` — `PN-Counter`: usa componentes positivos e negativos; incremento
+  altera componente positivo; decremento altera componente negativo; merge usa
+  máximo por componente; valor é `positive - negative`.
 
 ### Fase 3 — Storage independente de banco
 
@@ -536,11 +610,11 @@ plan/
     └── sync-recovery-validation/SKILL.md
 ```
 
-## Primeiro task recomendado
+## Task anterior — `ARCH-02`
 
-`ARCH-02 — Definir contrato de storage orientado ao domínio`.
+Contrato inicial de storage orientado ao domínio.
 
-Acceptance criteria:
+Acceptance criteria atendidos na implementação inicial:
 
 - [x] contrato não importa `sqflite`;
 - [x] contrato não conhece SQL;
