@@ -1,23 +1,26 @@
-import 'change.dart';
 import 'delta.dart';
+import 'operation.dart';
 import 'replica_state.dart';
+import 'vector_clock.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
-  Replica(this.id, {int initialTimestamp = 0}) : _clock = initialTimestamp;
+  Replica(this.id, {VectorClock? initialClock})
+    : _clock = initialClock ?? VectorClock();
 
   final String id;
   final ReplicaState state = ReplicaState();
-  final List<Change> _history = [];
-  int _clock;
+  final List<Operation> _history = [];
+  VectorClock _clock;
+  int _operationSequence = 0;
 
-  Change set(String key, Object? value) => _record(key, value);
+  Operation set(String key, Object? value) => _record(key, value);
 
-  Change remove(String key) => _record(key, null, deleted: true);
+  Operation remove(String key) => _record(key, null, deleted: true);
 
   void apply(Delta delta) {
     for (final change in delta.changes) {
-      _clock = _clock < change.timestamp ? change.timestamp : _clock;
+      _clock = _clock.merge(change.vectorClock);
       state.apply(change);
       if (!_history.any((item) => item.id == change.id)) _history.add(change);
     }
@@ -25,17 +28,17 @@ class Replica {
 
   Delta export() => Delta(_history);
 
-  Change _record(String key, Object? value, {bool deleted = false}) {
-    final change = Change(
-      id: '$id:${++_clock}',
+  Operation _record(String key, Object? value, {bool deleted = false}) {
+    _clock = _clock.tick(id);
+    final operation = Operation(
+      id: '$id:${++_operationSequence}',
       replicaId: id,
-      key: key,
-      value: value,
-      timestamp: _clock,
-      deleted: deleted,
+      type: deleted ? 'lww.delete' : 'lww.set',
+      vectorClock: _clock,
+      payload: {'key': key, if (!deleted) 'value': value},
     );
-    _history.add(change);
-    state.apply(change);
-    return change;
+    _history.add(operation);
+    state.apply(operation);
+    return operation;
   }
 }

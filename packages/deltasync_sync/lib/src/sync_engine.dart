@@ -22,13 +22,13 @@ class SyncEngine {
     _subscription = transport.incoming.listen(replica.apply);
   }
 
-  Future<Change> set(String key, Object? value) async {
+  Future<Operation> set(String key, Object? value) async {
     final change = replica.set(key, value);
     await _persistPending(change);
     return change;
   }
 
-  Future<Change> remove(String key) async {
+  Future<Operation> remove(String key) async {
     final change = replica.remove(key);
     await _persistPending(change);
     return change;
@@ -43,7 +43,7 @@ class SyncEngine {
 
   Future<void> dispose() => _subscription?.cancel() ?? Future.value();
 
-  Future<void> _persistPending(Change change) async {
+  Future<void> _persistPending(Operation change) async {
     final pending = await store.read(replica.id);
     await store.write(replica.id, pending.merge(Delta([change])));
   }

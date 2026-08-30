@@ -7,7 +7,10 @@ abstract interface class PendingDeltaStore {
   Future<void> write(String replicaId, Delta delta);
 }
 
-/// In-memory adapter useful for tests and examples.
+/// Volatile in-memory adapter useful for tests and examples.
+///
+/// Data is lost when the process ends. This legacy adapter is not suitable for
+/// persistence or recovery after restart.
 class MemoryPendingDeltaStore implements PendingDeltaStore {
   final Map<String, Delta> _data = {};
 
