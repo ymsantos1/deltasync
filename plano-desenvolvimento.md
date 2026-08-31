@@ -344,22 +344,28 @@ Escopo:
 
 Acceptance criteria:
 
-- [ ] contrato comum documentado;
-- [ ] operação carrega identidade, origem, causalidade e payload;
-- [ ] CRDT ignora operação duplicada sem alterar resultado;
-- [ ] operações concorrentes têm resolução determinística quando aplicável;
-- [ ] testes de aplicação em ordens diferentes definidos;
-- [ ] contrato não depende de storage ou transporte.
+- [x] contrato comum documentado;
+- [x] operação carrega identidade, origem, causalidade e payload;
+- [x] CRDT ignora operação duplicada sem alterar resultado;
+- [x] operações concorrentes têm resolução determinística quando aplicável;
+- [x] testes de aplicação em ordens diferentes definidos;
+- [x] contrato não depende de storage ou transporte.
+
+Status: `DONE` — `OperationCrdt<T>` centraliza deduplicação e delega regras de
+merge para implementações concretas. `LWW-Register` foi concluído nesta etapa.
 
 Depois de `CORE-03`:
 
-1. executar `CORE-04` para LWW Register;
-2. executar `CORE-05` para G-Counter;
-3. executar `CORE-06` para PN-Counter;
-4. validar propriedades do núcleo e dos counters;
-5. voltar a `ARCH-01` para definir snapshot baseado no modelo real.
+1. executar `CORE-05` para G-Counter;
+2. executar `CORE-06` para PN-Counter;
+3. validar propriedades do núcleo e dos counters;
+4. voltar a `ARCH-01` para definir snapshot baseado no modelo real.
 
 Critérios específicos dos counters:
+
+`CORE-04` concluída: `LwwRegister<T>` implementa set/delete, mantém
+tombstone, aplica causalidade e usa desempate determinístico para operações
+concorrentes.
 
 - `CORE-05` — `G-Counter`: cada réplica incrementa somente seu componente;
   merge usa máximo por réplica; valor é soma dos componentes; operações são

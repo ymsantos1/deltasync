@@ -4,6 +4,8 @@ import 'operation.dart';
 ///
 /// Concrete CRDTs own merge rules. They must accept an operation more than
 /// once without changing the resulting state after the first application.
+/// Operations must carry a globally unique [Operation.id], their origin,
+/// causal metadata and CRDT-specific payload.
 abstract interface class Crdt<T> {
   T get value;
 

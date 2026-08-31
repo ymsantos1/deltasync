@@ -1,17 +1,18 @@
+import 'lww_register.dart';
 import 'operation.dart';
 
 /// Materialized state produced by applying changes in any order.
 class ReplicaState {
   ReplicaState() : _entries = {};
 
-  ReplicaState._(Map<String, Operation> entries) : _entries = {...entries};
+  ReplicaState._(Map<String, LwwRegister<Object?>> entries)
+    : _entries = {...entries};
 
-  final Map<String, Operation> _entries;
+  final Map<String, LwwRegister<Object?>> _entries;
 
   Map<String, Object?> get values => {
     for (final entry in _entries.entries)
-      if (entry.value.type == 'lww.set')
-        entry.key: entry.value.payload['value'],
+      if (entry.value.hasValue) entry.key: entry.value.value,
   };
 
   Object? operator [](String key) => values[key];
@@ -22,10 +23,8 @@ class ReplicaState {
     if (key is! String) {
       throw FormatException('LWW operation requires string key');
     }
-    final previous = _entries[key];
-    if (previous == null || operation.compareTo(previous) > 0) {
-      _entries[key] = operation;
-    }
+    final register = _entries.putIfAbsent(key, LwwRegister<Object?>.new);
+    register.apply(operation);
   }
 
   ReplicaState copy() => ReplicaState._(_entries);
