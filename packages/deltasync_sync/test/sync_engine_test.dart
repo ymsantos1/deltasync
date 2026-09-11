@@ -84,6 +84,55 @@ void main() {
     expect(store.deltaFor('device-a'), const Delta.empty());
   });
 
+  test('ReplicaStorage restores native snapshot and outbox', () async {
+    final storage = MemoryStorage();
+    final firstTransport = TestDeltaTransport();
+    final first = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: firstTransport,
+    );
+    final change = await first.setDelta('title', 'persisted');
+    await first.dispose();
+
+    final secondTransport = TestDeltaTransport();
+    final second = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: secondTransport,
+    );
+    await second.start();
+
+    expect(second.replica.state.values, {'title': 'persisted'});
+    expect((await storage.pending('device-a')).single.operationId, change.id);
+    await second.push();
+    expect(secondTransport.sent.single.crdtChanges, [change]);
+    await second.dispose();
+  });
+
+  test('restored replica advances local delta sequence', () async {
+    final storage = MemoryStorage();
+    final first = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: TestDeltaTransport(),
+    );
+    final previous = await first.setDelta('title', 'first');
+    await first.dispose();
+
+    final second = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: TestDeltaTransport(),
+    );
+    await second.start();
+    final next = await second.setDelta('title', 'second');
+
+    expect(next.id, isNot(previous.id));
+    expect(next.id, 'device-a:delta:2');
+    await second.dispose();
+  });
+
   test('dispose stops applying incoming deltas', () async {
     final store = TestPendingDeltaStore();
     final transport = TestDeltaTransport();

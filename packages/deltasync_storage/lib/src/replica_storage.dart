@@ -21,18 +21,36 @@ enum OutboxStatus { pending, sent, confirmed }
 /// Durable local operation waiting for transport confirmation.
 class OutboxEntry {
   OutboxEntry({
-    required this.operation,
+    Operation? operation,
+    Delta? delta,
     this.status = OutboxStatus.pending,
     this.attempts = 0,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now().toUtc();
+  }) : operation = operation,
+       delta = delta ?? (operation == null ? null : Delta([operation])),
+       createdAt = createdAt ?? DateTime.now().toUtc() {
+    if (this.delta == null || this.delta!.isEmpty) {
+      throw ArgumentError('non-empty operation or delta is required');
+    }
+  }
 
-  final Operation operation;
+  final Operation? operation;
+  final Delta? delta;
   final OutboxStatus status;
   final int attempts;
   final DateTime createdAt;
 
-  String get operationId => operation.id;
+  String get operationId => delta!.changes.isNotEmpty
+      ? delta!.changes.first.id
+      : delta!.crdtChanges.first.id;
+
+  String get replicaId => operation?.replicaId ?? _deltaReplicaId;
+
+  String get _deltaReplicaId {
+    final change = delta!.crdtChanges.first;
+    if (change is LwwDelta<Object?>) return change.replicaId;
+    throw StateError('Cannot determine delta replica ID');
+  }
 }
 
 /// Domain-oriented persistence contract. Implementations may use any backend.
@@ -67,7 +85,7 @@ class MemoryStorage implements ReplicaStorage {
 
   @override
   Future<void> enqueue(OutboxEntry entry) async {
-    final replicaId = entry.operation.replicaId;
+    final replicaId = entry.replicaId;
     final entries = _outbox.putIfAbsent(replicaId, () => {});
     entries.putIfAbsent(entry.operationId, () => entry);
   }

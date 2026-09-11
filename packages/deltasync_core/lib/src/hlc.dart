@@ -40,15 +40,20 @@ class HlcTimestamp implements Comparable<HlcTimestamp> {
 
 /// Mutable Hybrid Logical Clock used to create and observe timestamps.
 class HlcClock {
-  HlcClock({int Function()? nowMilliseconds})
+  HlcClock({int Function()? nowMilliseconds, HlcTimestamp? initial})
     : _nowMilliseconds =
           nowMilliseconds ??
-          (() => DateTime.now().toUtc().millisecondsSinceEpoch);
+          (() => DateTime.now().toUtc().millisecondsSinceEpoch),
+      _last = initial ?? const HlcTimestamp(0, 0);
 
   final int Function() _nowMilliseconds;
-  HlcTimestamp _last = const HlcTimestamp(0, 0);
+  HlcTimestamp _last;
 
   HlcTimestamp get current => _last;
+
+  void restore(HlcTimestamp timestamp) {
+    if (timestamp.compareTo(_last) > 0) _last = timestamp;
+  }
 
   HlcTimestamp tick() {
     final physical = _nowMilliseconds();

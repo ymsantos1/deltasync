@@ -21,6 +21,18 @@ class Replica {
   int _operationSequence = 0;
   int _deltaSequence = 0;
 
+  VectorClock get clock => _clock;
+
+  HlcTimestamp get hlcTimestamp => _hlc.current;
+
+  void restoreMetadata({
+    required VectorClock clock,
+    required HlcTimestamp hlc,
+  }) {
+    _clock = clock;
+    _hlc.restore(hlc);
+  }
+
   Operation set(String key, Object? value) => _record(key, value);
 
   Operation remove(String key) => _record(key, null, deleted: true);
@@ -29,7 +41,10 @@ class Replica {
     for (final change in delta.changes) {
       _clock = _clock.merge(change.vectorClock);
       state.apply(change);
-      if (!_history.any((item) => item.id == change.id)) _history.add(change);
+      if (!_history.any((item) => item.id == change.id)) {
+        _history.add(change);
+        _observeOperationSequence(change.id);
+      }
     }
     for (final change in delta.crdtChanges) {
       if (change is! LwwDelta<Object?>) {
@@ -38,6 +53,7 @@ class Replica {
       state.applyDelta(change);
       if (!_deltaHistory.any((item) => item.id == change.id)) {
         _deltaHistory.add(change);
+        _observeDeltaSequence(change.id);
       }
       _hlc.observe(change.timestamp);
     }
@@ -83,5 +99,23 @@ class Replica {
     state.applyDelta(delta);
     _deltaHistory.add(delta);
     return delta;
+  }
+
+  void _observeOperationSequence(String operationId) {
+    final prefix = '$id:';
+    if (!operationId.startsWith(prefix)) return;
+    final sequence = int.tryParse(operationId.substring(prefix.length));
+    if (sequence != null && sequence > _operationSequence) {
+      _operationSequence = sequence;
+    }
+  }
+
+  void _observeDeltaSequence(String deltaId) {
+    final prefix = '$id:delta:';
+    if (!deltaId.startsWith(prefix)) return;
+    final sequence = int.tryParse(deltaId.substring(prefix.length));
+    if (sequence != null && sequence > _deltaSequence) {
+      _deltaSequence = sequence;
+    }
   }
 }

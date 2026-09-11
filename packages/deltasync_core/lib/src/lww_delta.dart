@@ -24,6 +24,21 @@ class LwwDelta<T> implements DeltaChange {
   final T? value;
   final bool deleted;
 
+  factory LwwDelta.fromJson(Map<String, Object?> json) {
+    final timestamp = json['timestamp'];
+    if (timestamp is! Map) {
+      throw FormatException('Missing or invalid timestamp');
+    }
+    return LwwDelta<T>(
+      key: _requiredString(json, 'key'),
+      id: _requiredString(json, 'id'),
+      replicaId: _requiredString(json, 'replicaId'),
+      timestamp: HlcTimestamp.fromJson(Map<String, Object?>.from(timestamp)),
+      value: json['value'] as T?,
+      deleted: json['deleted'] == true,
+    );
+  }
+
   String get type => 'lww';
 
   @override
@@ -50,4 +65,12 @@ class LwwDelta<T> implements DeltaChange {
   @override
   int get hashCode =>
       Object.hash(key, id, replicaId, timestamp, value, deleted);
+
+  static String _requiredString(Map<String, Object?> json, String key) {
+    final value = json[key];
+    if (value is! String || value.isEmpty) {
+      throw FormatException('Missing or invalid $key');
+    }
+    return value;
+  }
 }
