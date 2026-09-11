@@ -34,9 +34,21 @@ class SyncEngine {
     return change;
   }
 
+  Future<LwwDelta<Object?>> setDelta(String key, Object? value) async {
+    final change = replica.setDelta(key, value);
+    await _persistPendingDelta(change);
+    return change;
+  }
+
+  Future<LwwDelta<Object?>> removeDelta(String key) async {
+    final change = replica.removeDelta(key);
+    await _persistPendingDelta(change);
+    return change;
+  }
+
   Future<void> push() async {
     final pending = await store.read(replica.id);
-    if (pending.changes.isEmpty) return;
+    if (pending.isEmpty) return;
     await transport.send(pending);
     await store.write(replica.id, const Delta.empty());
   }
@@ -46,5 +58,10 @@ class SyncEngine {
   Future<void> _persistPending(Operation change) async {
     final pending = await store.read(replica.id);
     await store.write(replica.id, pending.merge(Delta([change])));
+  }
+
+  Future<void> _persistPendingDelta(DeltaChange change) async {
+    final pending = await store.read(replica.id);
+    await store.write(replica.id, pending.merge(Delta.crdt([change])));
   }
 }

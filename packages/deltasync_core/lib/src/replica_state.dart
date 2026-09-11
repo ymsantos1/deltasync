@@ -1,4 +1,5 @@
 import 'lww_register.dart';
+import 'lww_delta.dart';
 import 'operation.dart';
 
 /// Materialized state produced by applying changes in any order.
@@ -25,6 +26,11 @@ class ReplicaState {
     }
     final register = _entries.putIfAbsent(key, LwwRegister<Object?>.new);
     register.apply(operation);
+  }
+
+  void applyDelta(LwwDelta<Object?> delta) {
+    final register = _entries.putIfAbsent(delta.key, LwwRegister<Object?>.new);
+    register.applyDelta(delta);
   }
 
   ReplicaState copy() => ReplicaState._(_entries);

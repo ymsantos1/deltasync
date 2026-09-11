@@ -2,6 +2,21 @@ import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('HLC advances logical component and observes remote timestamp', () {
+    var physical = 100;
+    final clock = HlcClock(nowMilliseconds: () => physical);
+
+    expect(clock.tick(), const HlcTimestamp(100, 0));
+    expect(clock.tick(), const HlcTimestamp(100, 1));
+    expect(
+      clock.observe(const HlcTimestamp(200, 7)),
+      const HlcTimestamp(200, 8),
+    );
+
+    physical = 300;
+    expect(clock.tick(), const HlcTimestamp(300, 0));
+  });
+
   test('VectorClock identifies causal and concurrent operations', () {
     final first = VectorClock().tick('first');
     final second = first.tick('first');
@@ -73,6 +88,128 @@ void main() {
       ..apply(Delta([...first.export().changes, ...second.export().changes]));
     final right = Replica('right')
       ..apply(Delta([...second.export().changes, ...first.export().changes]));
+
+    expect(left.state.values, right.state.values);
+  });
+
+  test('LWW Delta-CRDT is idempotent and order independent', () {
+    const first = LwwDelta<String>(
+      key: 'title',
+      id: 'first:1',
+      replicaId: 'first',
+      timestamp: HlcTimestamp(10, 0),
+      value: 'first',
+    );
+    const second = LwwDelta<String>(
+      key: 'title',
+      id: 'second:1',
+      replicaId: 'second',
+      timestamp: HlcTimestamp(10, 0),
+      value: 'second',
+    );
+
+    final left = LwwRegister<String>()..applyDelta(first);
+    left.applyDelta(second);
+    left.applyDelta(second);
+
+    final right = LwwRegister<String>()..applyDelta(second);
+    right.applyDelta(first);
+
+    expect(left.value, 'second');
+    expect(left.value, right.value);
+    expect(left.toJson(), right.toJson());
+  });
+
+  test('DeltaCrdt contract merges complete LWW state', () {
+    const delta = LwwDelta<String>(
+      key: 'title',
+      id: 'device:1',
+      replicaId: 'device',
+      timestamp: HlcTimestamp(20, 0),
+      value: 'draft',
+    );
+    final source = LwwRegister<String>()..applyDelta(delta);
+    final target = LwwRegister<String>()..mergeState(source);
+
+    expect(target.value, 'draft');
+    expect(target.toJson(), source.toJson());
+  });
+
+  test('Delta carries native CRDT changes and merges them by delta ID', () {
+    const first = LwwDelta<String>(
+      key: 'title',
+      id: 'device:1',
+      replicaId: 'device',
+      timestamp: HlcTimestamp(20, 0),
+      value: 'draft',
+    );
+    final delta = Delta.crdt([first, first]);
+    final merged = delta.merge(Delta.crdt([first]));
+
+    expect(delta.changes, isEmpty);
+    expect(merged.crdtChanges, hasLength(1));
+    expect(merged.crdtChanges.single, first);
+  });
+
+  test('LWW Delta-CRDT retains delete tombstone', () {
+    const delta = LwwDelta<String>(
+      key: 'title',
+      id: 'device:2',
+      replicaId: 'device',
+      timestamp: HlcTimestamp(21, 0),
+      value: null,
+      deleted: true,
+    );
+    final register = LwwRegister<String>()..applyDelta(delta);
+
+    expect(register.value, isNull);
+    expect(register.hasValue, isFalse);
+    expect(register.isDeleted, isTrue);
+  });
+
+  test('Replica applies and exports native CRDT deltas', () {
+    const delta = LwwDelta<String>(
+      key: 'title',
+      id: 'device:3',
+      replicaId: 'device',
+      timestamp: HlcTimestamp(30, 0),
+      value: 'native',
+    );
+    final replica = Replica('target')..apply(Delta.crdt([delta]));
+
+    expect(replica.state.values, {'title': 'native'});
+    expect(replica.export().crdtChanges, [delta]);
+  });
+
+  test(
+    'native delta remains canonical when legacy operation arrives later',
+    () {
+      const delta = LwwDelta<String>(
+        key: 'title',
+        id: 'device:4',
+        replicaId: 'device',
+        timestamp: HlcTimestamp(40, 0),
+        value: 'native',
+      );
+      final legacy = Replica('legacy')..set('title', 'legacy');
+      final register = LwwRegister<String>()..applyDelta(delta);
+      register.apply(legacy.export().changes.single);
+
+      expect(register.value, 'native');
+      expect(register.toJson()['winner'], delta.toJson());
+    },
+  );
+
+  test('Replica native mutations use HLC and converge', () {
+    final first = Replica('first', hlc: HlcClock(nowMilliseconds: () => 100));
+    final second = Replica('second', hlc: HlcClock(nowMilliseconds: () => 100));
+    first.setDelta('title', 'first');
+    second.setDelta('title', 'second');
+
+    final left = Replica('left')..apply(first.export());
+    left.apply(second.export());
+    final right = Replica('right')..apply(second.export());
+    right.apply(first.export());
 
     expect(left.state.values, right.state.values);
   });

@@ -66,6 +66,24 @@ void main() {
     expect(store.deltaFor('device-a'), const Delta.empty());
   });
 
+  test('native delta mutation persists and pushes through outbox', () async {
+    final store = TestPendingDeltaStore();
+    final transport = TestDeltaTransport();
+    final engine = SyncEngine(
+      replica: Replica('device-a'),
+      store: store,
+      transport: transport,
+    );
+
+    final change = await engine.setDelta('title', 'draft');
+
+    expect(store.deltaFor('device-a').crdtChanges, [change]);
+    await engine.push();
+
+    expect(transport.sent.single.crdtChanges, [change]);
+    expect(store.deltaFor('device-a'), const Delta.empty());
+  });
+
   test('dispose stops applying incoming deltas', () async {
     final store = TestPendingDeltaStore();
     final transport = TestDeltaTransport();
