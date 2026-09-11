@@ -26,6 +26,7 @@ class OutboxEntry {
     this.status = OutboxStatus.pending,
     this.attempts = 0,
     DateTime? createdAt,
+    this.sentAt,
   }) : operation = operation,
        delta = delta ?? (operation == null ? null : Delta([operation])),
        createdAt = createdAt ?? DateTime.now().toUtc() {
@@ -39,6 +40,7 @@ class OutboxEntry {
   final OutboxStatus status;
   final int attempts;
   final DateTime createdAt;
+  final DateTime? sentAt;
 
   List<String> get changeIds => [
     ...delta!.changes.map((change) => change.id),
@@ -134,6 +136,7 @@ class MemoryStorage implements ReplicaStorage {
         status: OutboxStatus.sent,
         attempts: entry.attempts + 1,
         createdAt: entry.createdAt,
+        sentAt: DateTime.now().toUtc(),
       );
     }
   }

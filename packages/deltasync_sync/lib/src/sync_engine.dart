@@ -11,13 +11,20 @@ class SyncEngine {
     this.store,
     this.storage,
     required this.transport,
+    this.retryPolicy = const SyncRetryPolicy(),
   }) : assert(store != null || storage != null);
 
   SyncEngine.withStorage({
     required Replica replica,
     required ReplicaStorage storage,
     required DeltaTransport transport,
-  }) : this(replica: replica, storage: storage, transport: transport);
+    SyncRetryPolicy retryPolicy = const SyncRetryPolicy(),
+  }) : this(
+         replica: replica,
+         storage: storage,
+         transport: transport,
+         retryPolicy: retryPolicy,
+       );
 
   final Replica replica;
   final PendingDeltaStore? store;
@@ -26,6 +33,8 @@ class SyncEngine {
   StreamSubscription<Delta>? _subscription;
   bool _started = false;
   bool _disposed = false;
+  Future<void>? _pushFuture;
+  final SyncRetryPolicy retryPolicy;
 
   Future<void> start() async {
     if (_started) throw StateError('SyncEngine already started');
@@ -100,9 +109,26 @@ class SyncEngine {
     return change;
   }
 
-  Future<void> push() async {
+  Future<void> push({bool force = false}) {
+    final running = _pushFuture;
+    if (running != null) return running;
+    final future = _pushInternal(force: force);
+    _pushFuture = future.whenComplete(() => _pushFuture = null);
+    return _pushFuture!;
+  }
+
+  Future<void> _pushInternal({required bool force}) async {
     if (storage != null) {
-      final entries = await storage!.pending(replica.id);
+      final allEntries = await storage!.pending(replica.id);
+      final now = DateTime.now().toUtc();
+      final entries = allEntries.where((entry) {
+        if (force || entry.status == OutboxStatus.pending) return true;
+        final maxAttempts = retryPolicy.maxAttempts;
+        if (maxAttempts != null && entry.attempts >= maxAttempts) return false;
+        final sentAt = entry.sentAt;
+        return sentAt == null ||
+            now.difference(sentAt) >= retryPolicy.delayFor(entry.attempts);
+      }).toList();
       if (entries.isEmpty) return;
       var pending = const Delta.empty();
       for (final entry in entries) {
@@ -167,5 +193,28 @@ class SyncEngine {
     if (value == null) return null;
     if (value is! Map) throw FormatException('Invalid snapshot HLC');
     return HlcTimestamp.fromJson(Map<String, Object?>.from(value));
+  }
+}
+
+/// Exponential retry policy for entries without transport confirmation.
+class SyncRetryPolicy {
+  const SyncRetryPolicy({
+    this.baseDelay = const Duration(seconds: 1),
+    this.maxDelay = const Duration(minutes: 1),
+    this.maxAttempts,
+  });
+
+  final Duration baseDelay;
+  final Duration maxDelay;
+  final int? maxAttempts;
+
+  Duration delayFor(int attempts) {
+    if (attempts <= 0) return Duration.zero;
+    var delay = baseDelay > maxDelay ? maxDelay : baseDelay;
+    for (var index = 1; index < attempts; index++) {
+      final doubled = delay * 2;
+      delay = doubled > maxDelay ? maxDelay : doubled;
+    }
+    return delay;
   }
 }

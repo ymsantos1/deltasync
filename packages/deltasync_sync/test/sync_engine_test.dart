@@ -149,6 +149,40 @@ void main() {
     await engine.dispose();
   });
 
+  test('unacknowledged entry retries only when due or forced', () async {
+    final storage = MemoryStorage();
+    final transport = TestDeltaTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+      retryPolicy: const SyncRetryPolicy(baseDelay: Duration(days: 1)),
+    );
+    await engine.setDelta('title', 'draft');
+
+    await engine.push();
+    await engine.push();
+    expect(transport.sent, hasLength(1));
+    expect((await storage.pending('device-a')).single.attempts, 1);
+
+    await engine.push(force: true);
+    expect(transport.sent, hasLength(2));
+    expect((await storage.pending('device-a')).single.attempts, 2);
+    await engine.dispose();
+  });
+
+  test('retry policy caps delay and validates max attempts', () {
+    const policy = SyncRetryPolicy(
+      baseDelay: Duration(seconds: 10),
+      maxDelay: Duration(seconds: 3),
+      maxAttempts: 2,
+    );
+
+    expect(policy.delayFor(1), const Duration(seconds: 3));
+    expect(policy.delayFor(3), const Duration(seconds: 3));
+    expect(policy.maxAttempts, 2);
+  });
+
   test('restored replica advances local delta sequence', () async {
     final storage = MemoryStorage();
     final first = SyncEngine.withStorage(
