@@ -6,3 +6,8 @@ abstract interface class DeltaTransport {
 
   Stream<Delta> get incoming;
 }
+
+/// Optional transport contract that confirms accepted change IDs.
+abstract interface class AcknowledgingDeltaTransport implements DeltaTransport {
+  Future<Iterable<String>> sendAndAwaitAck(Delta delta);
+}

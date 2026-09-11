@@ -108,11 +108,16 @@ class SyncEngine {
       for (final entry in entries) {
         pending = pending.merge(entry.delta ?? Delta([entry.operation!]));
       }
-      await transport.send(pending);
-      await storage!.acknowledge(
-        replica.id,
-        entries.map((entry) => entry.operationId),
-      );
+      final ids = entries.expand((entry) => entry.changeIds).toList();
+      await storage!.markSent(replica.id, ids);
+      final acknowledged = transport is AcknowledgingDeltaTransport
+          ? await (transport as AcknowledgingDeltaTransport).sendAndAwaitAck(
+              pending,
+            )
+          : await _sendWithoutAck(pending);
+      if (acknowledged.isNotEmpty) {
+        await storage!.acknowledge(replica.id, acknowledged);
+      }
       return;
     }
     final pending = await store!.read(replica.id);
@@ -135,6 +140,11 @@ class SyncEngine {
   Future<void> _persistPendingDelta(DeltaChange change) async {
     final pending = await store!.read(replica.id);
     await store!.write(replica.id, pending.merge(Delta.crdt([change])));
+  }
+
+  Future<Iterable<String>> _sendWithoutAck(Delta delta) async {
+    await transport.send(delta);
+    return const [];
   }
 
   Future<void> _saveSnapshot() async {

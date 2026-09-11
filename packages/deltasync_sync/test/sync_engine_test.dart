@@ -107,7 +107,46 @@ void main() {
     expect((await storage.pending('device-a')).single.operationId, change.id);
     await second.push();
     expect(secondTransport.sent.single.crdtChanges, [change]);
+    expect((await storage.pending('device-a')).single.operationId, change.id);
     await second.dispose();
+  });
+
+  test('acknowledging transport clears storage outbox after ACK', () async {
+    final storage = MemoryStorage();
+    final transport = AcknowledgingTestDeltaTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+
+    final change = await engine.setDelta('title', 'draft');
+    await engine.push();
+
+    expect(transport.sent.single.crdtChanges, [change]);
+    expect(await storage.pending('device-a'), isEmpty);
+    await engine.dispose();
+  });
+
+  test('ACK handles all changes in one outbox entry', () async {
+    final storage = MemoryStorage();
+    final first = Replica('device-a');
+    final firstChange = first.setDelta('first', 1);
+    final secondChange = first.setDelta('second', 2);
+    await storage.enqueue(
+      OutboxEntry(delta: Delta.crdt([firstChange, secondChange])),
+    );
+    final transport = AcknowledgingTestDeltaTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+
+    await engine.push();
+
+    expect(await storage.pending('device-a'), isEmpty);
+    await engine.dispose();
   });
 
   test('restored replica advances local delta sequence', () async {
@@ -183,4 +222,16 @@ class TestDeltaTransport implements DeltaTransport {
   Future<void> send(Delta delta) async => sent.add(delta);
 
   void emit(Delta delta) => _incoming.add(delta);
+}
+
+class AcknowledgingTestDeltaTransport extends TestDeltaTransport
+    implements AcknowledgingDeltaTransport {
+  @override
+  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
+    await send(delta);
+    return [
+      ...delta.changes.map((change) => change.id),
+      ...delta.crdtChanges.map((change) => change.id),
+    ];
+  }
 }

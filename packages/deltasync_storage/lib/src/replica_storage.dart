@@ -40,9 +40,15 @@ class OutboxEntry {
   final int attempts;
   final DateTime createdAt;
 
-  String get operationId => delta!.changes.isNotEmpty
-      ? delta!.changes.first.id
-      : delta!.crdtChanges.first.id;
+  List<String> get changeIds => [
+    ...delta!.changes.map((change) => change.id),
+    ...delta!.crdtChanges.map((change) => change.id),
+  ];
+
+  /// Legacy singular alias. New code should use [changeIds].
+  String get operationId => changeIds.first;
+
+  String get entryId => changeIds.join('|');
 
   String get replicaId => operation?.replicaId ?? _deltaReplicaId;
 
@@ -62,6 +68,12 @@ abstract interface class ReplicaStorage {
   Future<void> enqueue(OutboxEntry entry);
 
   Future<List<OutboxEntry>> pending(String replicaId);
+
+  /// Marks entries sent without removing them, allowing retry before ACK.
+  Future<void> markSent(
+    String replicaId,
+    Iterable<String> operationIds,
+  ) async {}
 
   Future<void> acknowledge(String replicaId, Iterable<String> operationIds);
 }
@@ -87,7 +99,7 @@ class MemoryStorage implements ReplicaStorage {
   Future<void> enqueue(OutboxEntry entry) async {
     final replicaId = entry.replicaId;
     final entries = _outbox.putIfAbsent(replicaId, () => {});
-    entries.putIfAbsent(entry.operationId, () => entry);
+    entries.putIfAbsent(entry.entryId, () => entry);
   }
 
   @override
@@ -104,8 +116,25 @@ class MemoryStorage implements ReplicaStorage {
   ) async {
     final entries = _outbox[replicaId];
     if (entries == null) return;
-    for (final operationId in operationIds) {
-      entries.remove(operationId);
+    final ids = operationIds.toSet();
+    entries.removeWhere((_, entry) => entry.changeIds.any(ids.contains));
+  }
+
+  @override
+  Future<void> markSent(String replicaId, Iterable<String> operationIds) async {
+    final entries = _outbox[replicaId];
+    if (entries == null) return;
+    final ids = operationIds.toSet();
+    for (final entryKey in entries.keys.toList()) {
+      final entry = entries[entryKey]!;
+      if (!entry.changeIds.any(ids.contains)) continue;
+      entries[entryKey] = OutboxEntry(
+        operation: entry.operation,
+        delta: entry.delta,
+        status: OutboxStatus.sent,
+        attempts: entry.attempts + 1,
+        createdAt: entry.createdAt,
+      );
     }
   }
 }
