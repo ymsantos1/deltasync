@@ -4,6 +4,7 @@ export 'src/crdt.dart';
 export 'src/delta.dart';
 export 'src/delta_change.dart';
 export 'src/hlc.dart';
+export 'src/identity.dart';
 export 'src/lww_register.dart';
 export 'src/lww_delta.dart';
 export 'src/operation.dart';

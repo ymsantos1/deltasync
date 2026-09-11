@@ -58,6 +58,9 @@ class LwwRegister<T> extends OperationCrdt<T?>
 
   @override
   void applyDelta(LwwDelta<T> delta) {
+    if (delta.dot != null && delta.dot!.replicaId != delta.replicaId) {
+      throw FormatException('Delta dot replica does not match origin');
+    }
     final current = _deltaWinner;
     if (current != null && _compareDelta(delta, current) <= 0) return;
     _deltaWinner = delta;

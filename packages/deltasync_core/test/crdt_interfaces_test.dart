@@ -2,6 +2,35 @@ import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('ReplicaId and Dot round trip and validate identity', () {
+    final id = ReplicaId(' device-a ');
+    const dot = Dot(replicaId: 'device-a', counter: 3);
+
+    expect(id.value, 'device-a');
+    expect(Dot.fromJson(dot.toJson()), dot);
+    expect(
+      () => Dot.fromJson({'replicaId': 'device-a', 'counter': 0}),
+      throwsFormatException,
+    );
+    expect(
+      () => Dot(replicaId: '', counter: 1),
+      throwsA(isA<AssertionError>()),
+    );
+    expect(
+      () => LwwRegister<String>().applyDelta(
+        const LwwDelta<String>(
+          key: 'title',
+          id: 'device-a:1',
+          replicaId: 'device-a',
+          timestamp: HlcTimestamp(1, 0),
+          value: 'draft',
+          dot: Dot(replicaId: 'other', counter: 1),
+        ),
+      ),
+      throwsFormatException,
+    );
+  });
+
   test('HLC advances logical component and observes remote timestamp', () {
     var physical = 100;
     final clock = HlcClock(nowMilliseconds: () => physical);

@@ -5,6 +5,7 @@ import 'vector_clock.dart';
 import 'delta_change.dart';
 import 'hlc.dart';
 import 'lww_delta.dart';
+import 'identity.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -51,6 +52,11 @@ class Replica {
         throw FormatException('Unsupported CRDT delta type');
       }
       state.applyDelta(change);
+      if (change.dot != null) {
+        _clock = _clock.merge(
+          VectorClock({change.dot!.replicaId: change.dot!.counter}),
+        );
+      }
       if (!_deltaHistory.any((item) => item.id == change.id)) {
         _deltaHistory.add(change);
         _observeDeltaSequence(change.id);
@@ -88,6 +94,8 @@ class Replica {
     Object? value, {
     bool deleted = false,
   }) {
+    _clock = _clock.tick(id);
+    final dot = Dot(replicaId: id, counter: _clock.entries[id]!);
     final delta = LwwDelta<Object?>(
       key: key,
       id: '$id:delta:${++_deltaSequence}',
@@ -95,6 +103,7 @@ class Replica {
       timestamp: _hlc.tick(),
       value: value,
       deleted: deleted,
+      dot: dot,
     );
     state.applyDelta(delta);
     _deltaHistory.add(delta);

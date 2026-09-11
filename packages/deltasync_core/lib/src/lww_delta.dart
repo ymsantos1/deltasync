@@ -1,5 +1,6 @@
 import 'delta_change.dart';
 import 'hlc.dart';
+import 'identity.dart';
 
 /// Delta produced by an LWW register.
 ///
@@ -13,6 +14,7 @@ class LwwDelta<T> implements DeltaChange {
     required this.timestamp,
     required this.value,
     this.deleted = false,
+    this.dot,
   });
 
   /// Stable field identified by this delta.
@@ -23,6 +25,7 @@ class LwwDelta<T> implements DeltaChange {
   final HlcTimestamp timestamp;
   final T? value;
   final bool deleted;
+  final Dot? dot;
 
   factory LwwDelta.fromJson(Map<String, Object?> json) {
     final timestamp = json['timestamp'];
@@ -36,6 +39,9 @@ class LwwDelta<T> implements DeltaChange {
       timestamp: HlcTimestamp.fromJson(Map<String, Object?>.from(timestamp)),
       value: json['value'] as T?,
       deleted: json['deleted'] == true,
+      dot: json['dot'] is Map
+          ? Dot.fromJson(Map<String, Object?>.from(json['dot'] as Map))
+          : null,
     );
   }
 
@@ -50,6 +56,7 @@ class LwwDelta<T> implements DeltaChange {
     'timestamp': timestamp.toJson(),
     'value': value,
     'deleted': deleted,
+    if (dot != null) 'dot': dot!.toJson(),
   };
 
   @override
@@ -60,11 +67,12 @@ class LwwDelta<T> implements DeltaChange {
       other.replicaId == replicaId &&
       other.timestamp == timestamp &&
       other.value == value &&
-      other.deleted == deleted;
+      other.deleted == deleted &&
+      other.dot == dot;
 
   @override
   int get hashCode =>
-      Object.hash(key, id, replicaId, timestamp, value, deleted);
+      Object.hash(key, id, replicaId, timestamp, value, deleted, dot);
 
   static String _requiredString(Map<String, Object?> json, String key) {
     final value = json[key];
