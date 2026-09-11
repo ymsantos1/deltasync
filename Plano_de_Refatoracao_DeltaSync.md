@@ -28,10 +28,11 @@ mas não será unidade obrigatória de interoperabilidade.
 - [x] `LwwRegister` aceita aplicação idempotente de `LwwDelta`.
 - [x] Testes iniciais de convergência, duplicação e tombstone.
 - [x] `Delta` agora aceita mudanças CRDT e operações legadas em paralelo.
-- [ ] `Replica` ainda gera somente `Operation`.
-- [ ] `ReplicaState` ainda aplica somente LWW baseado em operação.
-- [ ] `SyncEngine` ainda usa `PendingDeltaStore` legado.
-- [ ] `ReplicaStorage` ainda armazena `Operation` na outbox.
+- [x] `Replica` gera/aplica `LwwDelta` com HLC e `Dot`; API `Operation` permanece legada.
+- [x] `ReplicaState` materializa estado a partir de operações e deltas.
+- [x] `SyncEngine.withStorage` usa `ReplicaStorage` para snapshot e outbox nativo.
+- [x] `ReplicaStorage` armazena operações e deltas, com ACK, estado `sent` e retry.
+- [~] `PendingDeltaStore` legado ainda está disponível para compatibilidade.
 
 ## 3. Regras da migração
 
@@ -52,6 +53,8 @@ mas não será unidade obrigatória de interoperabilidade.
 - adicionar codec versionado para mudanças LWW;
 - manter transporte antigo funcionando durante transição.
 
+Estado: concluída, exceto codec/envelope versionado.
+
 ### Etapa 2 — Migrar `Replica` e `ReplicaState`
 
 - criar mutação local que produz `LwwDelta`;
@@ -59,6 +62,8 @@ mas não será unidade obrigatória de interoperabilidade.
 - materializar estado a partir de CRDTs;
 - manter adaptador para `Operation` até migração do sync;
 - testar reordenação, repetição e concorrência.
+
+Estado: concluída para LWW; `Operation` permanece como adaptador legado.
 
 ### Etapa 3 — Migrar `SyncEngine`
 
@@ -68,12 +73,16 @@ mas não será unidade obrigatória de interoperabilidade.
 - separar enviado de confirmado;
 - impedir múltiplos `start()` e fechar lifecycle de `dispose()`.
 
+Estado: concluída no caminho `ReplicaStorage`; atomicidade transacional real continua pendente.
+
 ### Etapa 4 — Identidade e causalidade
 
 - formalizar `ReplicaId`, `Dot` e sequência local;
 - implementar avanço/restauração de HLC;
 - usar `VectorClock` apenas onde causalidade exige;
 - definir envelopes e IDs de transporte.
+
+Estado: parcial. `ReplicaId`, `Dot`, sequência local e avanço/restauração de HLC implementados; envelopes formais permanecem pendentes.
 
 ### Etapa 5 — CRDTs adicionais
 

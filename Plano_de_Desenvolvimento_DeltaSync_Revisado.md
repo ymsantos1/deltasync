@@ -150,7 +150,7 @@ Sequências, como OR-Seq/OR-Seg, permanecem como extensão posterior.
 
 ## 3. Estado atual verificado
 
-Verificação de referência: 2026-08-30.
+Verificação de referência: 2026-09-10.
 
 ### Feito
 
@@ -164,25 +164,26 @@ Verificação de referência: 2026-08-30.
 - [x] Testes básicos de relógio, serialização, convergência, remoção e duplicação.
 - [x] Contrato inicial `ReplicaStorage` sem dependência de `sqflite`.
 - [x] Implementação inicial de `MemoryStorage`.
+- [x] Contrato `DeltaCrdt` e `LwwDelta` com HLC.
+- [x] `Replica`/`ReplicaState` aplicam e exportam deltas nativos.
+- [x] `SyncEngine.withStorage` restaura snapshot e outbox.
+- [x] ACK opcional, estados `sent`, retry e backoff configurável.
+- [x] `ReplicaId`, `Dot` e observação causal no `VectorClock`.
 
 ### Parcial
 
-- [~] O núcleo ainda possui desenho excessivamente orientado a `Operation`; deve ser corrigido para Delta-CRDT.
-- [~] `Operation` possui serialização, mas falta codec formal e versionado de delta.
-- [~] IDs existem, mas lifecycle de `ReplicaId`, `Dot` e contadores ainda precisa ser formalizado.
-- [~] `start()` recupera dados parciais, mas snapshot materializado ainda não fecha o fluxo completo.
-- [~] Deltas remotos são aplicados em memória, mas persistência do estado resultante ainda precisa ser fechada.
-- [~] Lifecycle completo de `start()`/`dispose()` precisa ser estabilizado.
+- [~] `Operation` ainda existe no caminho legado; migração completa para delta continua pendente.
+- [~] Codec JSON existe, mas codec versionado e envelopes formais continuam pendentes.
+- [~] Snapshot/outbox funcionam, mas atomicidade transacional real depende do adaptador de storage.
+- [~] ACK/retry funcionam no caminho `ReplicaStorage`; caminho legado mantém semântica antiga.
 
 ### Pendente principal
 
-- [ ] contrato formal `DeltaCrdt`;
 - [ ] composição de objetos CRDT;
-- [ ] lifecycle de identidade da réplica;
-- [ ] snapshots completos e versionados;
+- [ ] snapshots versionados;
 - [ ] persistência atômica de mutação + outbox;
 - [ ] reconciliação causal entre réplicas;
-- [ ] semântica definitiva de ACK;
+- [ ] envelope e semântica definitiva de ACK;
 - [ ] política segura de compactação/tombstones;
 - [ ] codecs e envelopes versionados;
 - [ ] adaptador SQLite;
