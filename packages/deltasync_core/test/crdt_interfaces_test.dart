@@ -44,6 +44,63 @@ void main() {
     );
   });
 
+  test('G-Counter merges component maxima idempotently', () {
+    final first = GCounter('first');
+    final second = GCounter('second');
+    final firstDelta = first.increment(2);
+    final secondDelta = second.increment(3);
+
+    final left = GCounter('left');
+    left.applyDelta(firstDelta);
+    left.applyDelta(secondDelta);
+    left.applyDelta(firstDelta);
+    final right = GCounter('right');
+    right.applyDelta(secondDelta);
+    right.applyDelta(firstDelta);
+
+    expect(left.value, 5);
+    expect(left.components, right.components);
+    expect(firstDelta.dot!.counter, 1);
+  });
+
+  test('PN-Counter converges across increment and decrement deltas', () {
+    final first = PnCounter('first');
+    final second = PnCounter('second');
+    final deltas = [first.increment(5), second.decrement(2)];
+
+    final left = PnCounter('left');
+    final right = PnCounter('right');
+    left.applyDelta(deltas[0]);
+    left.applyDelta(deltas[1]);
+    right.applyDelta(deltas[1]);
+    right.applyDelta(deltas[0]);
+
+    expect(left.value, 3);
+    expect(left.positive, right.positive);
+    expect(left.negative, right.negative);
+  });
+
+  test('counter deltas survive versioned JSON codec', () {
+    final counter = GCounter('device')..increment(4);
+    final delta = Delta.crdt([counter.increment(2)]);
+
+    final decoded = DeltaCodec.decode(DeltaCodec.encode(delta));
+    expect(decoded.crdtChanges.single, delta.crdtChanges.single);
+  });
+
+  test('restored counters continue causal delta sequence', () {
+    final gCounter = GCounter('device', components: {'device': 4})
+      ..increment(2);
+    final pnCounter = PnCounter(
+      'device',
+      positive: {'device': 4},
+      negative: {'device': 1},
+    )..increment(2);
+
+    expect(gCounter.increment().dot!.counter, 6);
+    expect(pnCounter.increment().dot!.counter, 7);
+  });
+
   test('HLC advances logical component and observes remote timestamp', () {
     var physical = 100;
     final clock = HlcClock(nowMilliseconds: () => physical);

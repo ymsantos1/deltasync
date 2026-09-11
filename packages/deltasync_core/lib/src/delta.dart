@@ -1,6 +1,8 @@
 import 'delta_change.dart';
+import 'g_counter.dart';
 import 'lww_delta.dart';
 import 'operation.dart';
+import 'pn_counter.dart';
 
 /// Batch carrying legacy operations during migration and native CRDT deltas.
 class Delta {
@@ -37,10 +39,12 @@ class Delta {
     final parsedNative = nativeChanges.map((item) {
       if (item is! Map) throw FormatException('Invalid CRDT delta');
       final value = Map<String, Object?>.from(item);
-      if (value['type'] != 'lww') {
-        throw FormatException('Unsupported CRDT delta');
-      }
-      return LwwDelta<Object?>.fromJson(value);
+      return switch (value['type']) {
+        'lww' => LwwDelta<Object?>.fromJson(value),
+        'g-counter' => GCounterDelta.fromJson(value),
+        'pn-counter' => PnCounterDelta.fromJson(value),
+        _ => throw FormatException('Unsupported CRDT delta'),
+      };
     });
     return Delta._(operations: parsedOperations, crdtChanges: parsedNative);
   }

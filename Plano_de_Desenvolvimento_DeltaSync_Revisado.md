@@ -169,6 +169,8 @@ Verificação de referência: 2026-09-10.
 - [x] `SyncEngine.withStorage` restaura snapshot e outbox.
 - [x] ACK opcional, estados `sent`, retry e backoff configurável.
 - [x] `ReplicaId`, `Dot` e observação causal no `VectorClock`.
+- [x] `G-Counter` e `PN-Counter` como Delta-CRDTs, com merge por máximo de componentes.
+- [x] Sequências e `Dot` dos counters preservados após restauração de componentes.
 
 ### Parcial
 
@@ -1303,7 +1305,8 @@ Acceptance criteria:
 
 ### Próxima tarefa 3 — G-Counter e PN-Counter
 
-Implementar já no contrato Delta-CRDT corrigido.
+Concluída: implementados no contrato Delta-CRDT corrigido, com deltas
+idempotentes, convergência, serialização e testes.
 
 ### Próxima tarefa 4 — demais CRDTs
 

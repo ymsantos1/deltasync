@@ -96,6 +96,10 @@ Implementar e testar, nesta ordem:
 6. `OR-Set`;
 7. `OR-Map`.
 
+Estado: parcial. `G-Counter` e `PN-Counter` implementados e testados, incluindo
+sequência causal após restauração; próximos
+na fila: `G-Set`, `MV-Register`, `2P-Set`, `OR-Set` e `OR-Map`.
+
 ### Etapa 6 — Composição e persistência
 
 - `ObjectCrdt` com campos identificados por IDs estáveis;
