@@ -21,18 +21,44 @@ enum OutboxStatus { pending, sent, confirmed }
 /// Durable local operation waiting for transport confirmation.
 class OutboxEntry {
   OutboxEntry({
-    required this.operation,
+    Operation? operation,
+    Delta? delta,
     this.status = OutboxStatus.pending,
     this.attempts = 0,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now().toUtc();
+    this.sentAt,
+  }) : operation = operation,
+       delta = delta ?? (operation == null ? null : Delta([operation])),
+       createdAt = createdAt ?? DateTime.now().toUtc() {
+    if (this.delta == null || this.delta!.isEmpty) {
+      throw ArgumentError('non-empty operation or delta is required');
+    }
+  }
 
-  final Operation operation;
+  final Operation? operation;
+  final Delta? delta;
   final OutboxStatus status;
   final int attempts;
   final DateTime createdAt;
+  final DateTime? sentAt;
 
-  String get operationId => operation.id;
+  List<String> get changeIds => [
+    ...delta!.changes.map((change) => change.id),
+    ...delta!.crdtChanges.map((change) => change.id),
+  ];
+
+  /// Legacy singular alias. New code should use [changeIds].
+  String get operationId => changeIds.first;
+
+  String get entryId => changeIds.join('|');
+
+  String get replicaId => operation?.replicaId ?? _deltaReplicaId;
+
+  String get _deltaReplicaId {
+    final change = delta!.crdtChanges.first;
+    if (change is LwwDelta<Object?>) return change.replicaId;
+    throw StateError('Cannot determine delta replica ID');
+  }
 }
 
 /// Domain-oriented persistence contract. Implementations may use any backend.
@@ -44,6 +70,12 @@ abstract interface class ReplicaStorage {
   Future<void> enqueue(OutboxEntry entry);
 
   Future<List<OutboxEntry>> pending(String replicaId);
+
+  /// Marks entries sent without removing them, allowing retry before ACK.
+  Future<void> markSent(
+    String replicaId,
+    Iterable<String> operationIds,
+  ) async {}
 
   Future<void> acknowledge(String replicaId, Iterable<String> operationIds);
 }
@@ -67,9 +99,9 @@ class MemoryStorage implements ReplicaStorage {
 
   @override
   Future<void> enqueue(OutboxEntry entry) async {
-    final replicaId = entry.operation.replicaId;
+    final replicaId = entry.replicaId;
     final entries = _outbox.putIfAbsent(replicaId, () => {});
-    entries.putIfAbsent(entry.operationId, () => entry);
+    entries.putIfAbsent(entry.entryId, () => entry);
   }
 
   @override
@@ -86,8 +118,26 @@ class MemoryStorage implements ReplicaStorage {
   ) async {
     final entries = _outbox[replicaId];
     if (entries == null) return;
-    for (final operationId in operationIds) {
-      entries.remove(operationId);
+    final ids = operationIds.toSet();
+    entries.removeWhere((_, entry) => entry.changeIds.any(ids.contains));
+  }
+
+  @override
+  Future<void> markSent(String replicaId, Iterable<String> operationIds) async {
+    final entries = _outbox[replicaId];
+    if (entries == null) return;
+    final ids = operationIds.toSet();
+    for (final entryKey in entries.keys.toList()) {
+      final entry = entries[entryKey]!;
+      if (!entry.changeIds.any(ids.contains)) continue;
+      entries[entryKey] = OutboxEntry(
+        operation: entry.operation,
+        delta: entry.delta,
+        status: OutboxStatus.sent,
+        attempts: entry.attempts + 1,
+        createdAt: entry.createdAt,
+        sentAt: DateTime.now().toUtc(),
+      );
     }
   }
 }
