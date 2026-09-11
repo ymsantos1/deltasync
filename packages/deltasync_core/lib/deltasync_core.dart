@@ -2,6 +2,7 @@ library;
 
 export 'src/crdt.dart';
 export 'src/delta.dart';
+export 'src/delta_codec.dart';
 export 'src/delta_change.dart';
 export 'src/hlc.dart';
 export 'src/identity.dart';

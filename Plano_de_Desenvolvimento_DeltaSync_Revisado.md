@@ -173,7 +173,7 @@ Verificação de referência: 2026-09-10.
 ### Parcial
 
 - [~] `Operation` ainda existe no caminho legado; migração completa para delta continua pendente.
-- [~] Codec JSON existe, mas codec versionado e envelopes formais continuam pendentes.
+- [~] Codec e envelope versionados existem; contrato de transporte ainda aceita `Delta` diretamente.
 - [~] Snapshot/outbox funcionam, mas atomicidade transacional real depende do adaptador de storage.
 - [~] ACK/retry funcionam no caminho `ReplicaStorage`; caminho legado mantém semântica antiga.
 
@@ -183,9 +183,9 @@ Verificação de referência: 2026-09-10.
 - [ ] snapshots versionados;
 - [ ] persistência atômica de mutação + outbox;
 - [ ] reconciliação causal entre réplicas;
-- [ ] envelope e semântica definitiva de ACK;
+- [~] envelope versionado implementado; semântica definitiva de ACK permanece dependente do transporte.
 - [ ] política segura de compactação/tombstones;
-- [ ] codecs e envelopes versionados;
+- [~] codecs e envelopes versionados implementados; integração obrigatória no transporte ainda pendente;
 - [ ] adaptador SQLite;
 - [ ] codegen;
 - [ ] validação acadêmica completa.

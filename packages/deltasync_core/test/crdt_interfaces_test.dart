@@ -31,6 +31,19 @@ void main() {
     );
   });
 
+  test('DeltaCodec round trips and rejects unknown versions', () {
+    final replica = Replica('device-a');
+    final delta = Delta.crdt([replica.setDelta('title', 'draft')]);
+
+    expect(DeltaCodec.decode(DeltaCodec.encode(delta)).crdtChanges, [
+      delta.crdtChanges.single,
+    ]);
+    expect(
+      () => DeltaCodec.decode({...DeltaCodec.encode(delta), 'version': 99}),
+      throwsFormatException,
+    );
+  });
+
   test('HLC advances logical component and observes remote timestamp', () {
     var physical = 100;
     final clock = HlcClock(nowMilliseconds: () => physical);

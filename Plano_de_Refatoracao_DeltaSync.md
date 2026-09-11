@@ -53,7 +53,7 @@ mas não será unidade obrigatória de interoperabilidade.
 - adicionar codec versionado para mudanças LWW;
 - manter transporte antigo funcionando durante transição.
 
-Estado: concluída, exceto codec/envelope versionado.
+Estado: concluída. Codec e envelope versionados implementados; integração obrigatória no transporte permanece pendente.
 
 ### Etapa 2 — Migrar `Replica` e `ReplicaState`
 
@@ -82,7 +82,7 @@ Estado: concluída no caminho `ReplicaStorage`; atomicidade transacional real co
 - usar `VectorClock` apenas onde causalidade exige;
 - definir envelopes e IDs de transporte.
 
-Estado: parcial. `ReplicaId`, `Dot`, sequência local e avanço/restauração de HLC implementados; envelopes formais permanecem pendentes.
+Estado: parcial. `ReplicaId`, `Dot`, sequência local, avanço/restauração de HLC, codec e envelope versionados implementados; contrato de transporte ainda aceita `Delta` diretamente.
 
 ### Etapa 5 — CRDTs adicionais
 
