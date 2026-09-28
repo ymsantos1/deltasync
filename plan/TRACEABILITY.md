@@ -96,6 +96,38 @@ da suíte; resultados acima são evidência de falhas ainda abertas.
 
 Nenhuma tarefa de produto foi concluída por esta migração.
 
+## Execução R-01 — 2026-09-27
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-01 era próxima tarefa pronta, sem dependências; selecionada pelos
+critérios de HLC nativo, convergência legada, compatibilidade e documentação.
+
+Implementação: `Operation.compareTo` agora ordena legado por soma exata dos
+contadores do `VectorClock` (`BigInt`), depois `replicaId` e `id`. A ordem é total,
+transitiva e preserva precedência causal. README documenta semântica e replay;
+exemplo usa `setDelta` e aplica `Delta.crdt`. Regressão cobre as seis ordens das
+três operações reproduzidas. JSON legado mantém formato; replay pode eleger outro
+vencedor que versão antiga. Mistura legado/nativo mantém regra existente:
+registrador que recebeu HLC ignora operação legada, sem comparar clocks distintos.
+
+Review: aprovado
+
+Achados: nenhum impeditivo restante. Revisão pelo próprio implementador em etapa separada, não independente; conferidos overflow potencial e precedência causal, com peso em `BigInt`.
+
+Validação: aprovada
+
+Comandos: `dart format packages/deltasync_core/lib/src/operation.dart packages/deltasync_core/test/crdt_interfaces_test.dart example/deltasync_example.dart`; `dart format --output=none --set-exit-if-changed packages/deltasync_core/lib packages/deltasync_core/test`; `(cd packages/deltasync_core && dart analyze && dart test)`; `dart analyze`; `dart test`; `dart analyze example/deltasync_example.dart`; `dart run example/deltasync_example.dart`; `python3 scripts/check_plan.py`; `git diff --check`. Formato aprovado; core analyzer sem issues e 21 testes aprovados; facade analyzer sem issues e 2 testes aprovados; exemplo analisado e executado com saída `{message: edited offline}`; checker passou com 23 tarefas e 77 links locais após restauração do PDF; diff sem erros.
+`git diff --check` aprovado.
+
+Critérios: HLC de `setDelta/removeDelta` e aplicação nativa cobertos por testes existentes `Replica native mutations use HLC and converge`, `Replica applies and exports native CRDT deltas`, tombstone, duplicação e codec. Regressão nova demonstra mesmo vencedor nas seis permutações legadas e precedência z antes de a. Compatibilidade JSON/replay, separação HLC/VectorClock e API de exemplo documentadas no README; exemplo atualizado.
+
+Manutenção: R-01 concluída no índice/fase; tarefa ativa limpa; R-03 próxima pronta. Checker aprovado após restauração do PDF. Decisões e riscos não mudaram.
+
+Limitações: revisão não independente; compatibilidade de replay preserva leitura do formato, não vencedor histórico.
+
 Ao concluir uma tarefa, adicionar registro com:
 
 - ID, data e requisito/critério coberto.

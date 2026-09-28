@@ -17,7 +17,7 @@ contratos quando as dependências específicas estiverem satisfeitas.
 
 ## R-01 — LWW nativo e compatibilidade
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: nenhuma
 
@@ -30,20 +30,20 @@ desempate por replicaId. Testes existentes de duas operações não cobrem o cas
 
 Critérios:
 
-- [ ] Caminho público recomendado produz/aplica LwwDelta com HLC.
-- [ ] Caso de três operações é coberto por regressão; definir correção ou rejeição
+- [x] Caminho público recomendado produz/aplica LwwDelta com HLC.
+- [x] Caso de três operações é coberto por regressão; definir correção ou rejeição
   explícita do caminho legado, sem anunciá-lo como CRDT convergente.
-- [ ] Documentar migração/compatibilidade de Operation e dados antigos.
-- [ ] Não misturar políticas causal e HLC como se fossem equivalentes. Atualmente,
+- [x] Documentar migração/compatibilidade de Operation e dados antigos.
+- [x] Não misturar políticas causal e HLC como se fossem equivalentes. Atualmente,
   operação legada após primeiro delta nativo é ignorada naquele registrador.
-- [ ] Atualizar exemplo/README para API escolhida, mantendo quebras explícitas.
+- [x] Atualizar exemplo/README para API escolhida, mantendo quebras explícitas.
 
 Não remover API pública silenciosamente. Compatibilidade temporária precisa de
 limites documentados; nomes antigos podem ser wrappers se semântica for definida.
 
 Validação: Regressão das três operações em todas as permutações; LWW nativo com HLC, tombstones e repetição; compatibilidade da facade e exemplo.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-01 — 2026-09-27](TRACEABILITY.md#execução-r-01--2026-09-27).
 <a id="r-02"></a>
 
 ## R-02 — Identidade e roteamento

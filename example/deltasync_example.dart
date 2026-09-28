@@ -2,6 +2,7 @@ import 'package:deltasync/deltasync.dart';
 
 void main() {
   final replica = Replica('device-a');
-  replica.set('message', 'edited offline');
-  print(replica.state.values);
+  final delta = replica.setDelta('message', 'edited offline');
+  final remote = Replica('device-b')..apply(Delta.crdt([delta]));
+  print(remote.state.values);
 }

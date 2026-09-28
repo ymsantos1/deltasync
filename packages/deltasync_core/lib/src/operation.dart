@@ -1,3 +1,4 @@
+import 'lww_delta.dart';
 import 'vector_clock.dart';
 
 /// Transport-neutral envelope. CRDTs interpret [type] and [payload].
@@ -36,11 +37,24 @@ class Operation {
     'payload': payload,
   };
 
-  /// Causal order; concurrent operations use deterministic tie-breakers.
+  /// Total legacy ordering that preserves causal precedence.
+  ///
+  /// The sum of a non-negative vector clock strictly increases for every
+  /// causal successor. Concurrent operations are ordered by that sum, then
+  /// replica ID and operation ID. This is deterministic and transitive, unlike
+  /// comparing causal relation first and using a tie-breaker only for
+  /// concurrent operations. New code should use native [LwwDelta] with HLC.
   int compareTo(Operation other) {
-    final relation = vectorClock.compare(other.vectorClock);
-    if (relation == ClockRelation.before) return -1;
-    if (relation == ClockRelation.after) return 1;
+    final firstWeight = vectorClock.entries.values.fold<BigInt>(
+      BigInt.zero,
+      (a, b) => a + BigInt.from(b),
+    );
+    final secondWeight = other.vectorClock.entries.values.fold<BigInt>(
+      BigInt.zero,
+      (a, b) => a + BigInt.from(b),
+    );
+    final weight = firstWeight.compareTo(secondWeight);
+    if (weight != 0) return weight;
     final replica = replicaId.compareTo(other.replicaId);
     return replica == 0 ? id.compareTo(other.id) : replica;
   }

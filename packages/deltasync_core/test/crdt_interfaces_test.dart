@@ -179,6 +179,46 @@ void main() {
     expect(left.winner, right.winner);
   });
 
+  test('legacy LWW converges for three operations in every order', () {
+    final z = Operation(
+      id: 'z:1',
+      replicaId: 'z',
+      type: 'lww.set',
+      vectorClock: VectorClock({'z': 1}),
+      payload: {'key': 'title', 'value': 'z'},
+    );
+    final a = Operation(
+      id: 'a:1',
+      replicaId: 'a',
+      type: 'lww.set',
+      vectorClock: VectorClock({'z': 1, 'a': 1}),
+      payload: {'key': 'title', 'value': 'a'},
+    );
+    final m = Operation(
+      id: 'm:1',
+      replicaId: 'm',
+      type: 'lww.set',
+      vectorClock: VectorClock({'m': 1}),
+      payload: {'key': 'title', 'value': 'm'},
+    );
+    final orders = [
+      [z, a, m],
+      [z, m, a],
+      [a, z, m],
+      [a, m, z],
+      [m, z, a],
+      [m, a, z],
+    ];
+
+    for (final order in orders) {
+      final replica = Replica('receiver')..apply(Delta(order));
+      expect(replica.state.values['title'], 'a');
+    }
+    expect(z.compareTo(a), lessThan(0));
+    expect(a.compareTo(m), greaterThan(0));
+    expect(z.compareTo(m), greaterThan(0));
+  });
+
   test('LWW state converges when concurrent operations arrive reordered', () {
     final first = Replica('first')..set('title', 'first');
     final second = Replica('second')..set('title', 'second');

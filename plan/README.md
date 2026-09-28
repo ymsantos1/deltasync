@@ -62,8 +62,8 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **1 — correções**. Tarefa ativa: **nenhuma**.
-Próxima tarefa recomendada: **R-01**. R-03 também está pronta e pode ser escolhida
-para corrigir descarte indevido de outbox sem esperar R-01.
+Próxima tarefa recomendada: **R-03**, pronta para corrigir descarte indevido de
+outbox sem esperar R-02.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; não são barreiras artificiais: fase 2 pode começar com
@@ -100,7 +100,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 
 | Tarefa | Entrega | Status | MoSCoW | Dependências |
 |---|---|---|---|---|
-| [R-01](01_PHASE1_CORRECOES.md#r-01) | LWW nativo e compatibilidade | pronta | MUST | — |
+| [R-01](01_PHASE1_CORRECOES.md#r-01) | LWW nativo e compatibilidade | concluída | MUST | — |
 | [R-02](01_PHASE1_CORRECOES.md#r-02) | Identidade e roteamento | planejada | MUST | R-01 |
 | [R-03](01_PHASE1_CORRECOES.md#r-03) | ACK e outbox seguros | pronta | MUST | — |
 | [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | planejada | MUST | R-02, R-03 |

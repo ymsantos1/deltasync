@@ -16,16 +16,23 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 import 'package:deltasync/deltasync.dart';
 
 final replica = Replica('device-a');
-replica.setDelta('message', 'edited offline');
-print(replica.state.values);
+final delta = replica.setDelta('message', 'edited offline');
+final remote = Replica('device-b')..apply(Delta.crdt([delta]));
+print(remote.state.values);
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo.
 
 O fluxo integrado de `Replica`/`SyncEngine` ainda suporta apenas LWW. Counters
 estão disponíveis isoladamente; demais tipos previstos e persistência SQLite
-ainda não foram implementados. `set/remove` usam a API legada de operações;
-prefira `setDelta/removeDelta` para LWW nativo com HLC.
+ainda não foram implementados. `setDelta/removeDelta` produzem `LwwDelta`
+ordenado por HLC e são o caminho recomendado. `set/remove` e `Operation`
+continuam disponíveis para compatibilidade com payloads antigos. Esse caminho
+usa ordenação total pelo peso do `VectorClock` (soma dos contadores), depois por
+`replicaId` e `id`; preserva precedência causal, mas não compartilha semântica nem
+convergência entre versões com a API nativa HLC. O JSON legado permanece legível,
+porém replay pode escolher vencedor diferente da versão anterior, que usava
+comparação causal não transitiva.
 
 ### Storage
 
