@@ -6,8 +6,8 @@ Não atribuir probabilidades numéricas sem dados.
 | ID | Situação/probabilidade | Impacto e gatilho | Mitigação/tarefas |
 |---|---|---|---|
 | RISK-01 | falha reproduzida | LWW legado diverge com três eventos causalmente relacionados/concorrentes | R-01; regressão, caminho nativo e compatibilidade explícita |
-| RISK-02 | falha reproduzida | ACK parcial remove lote e impede retry da parte não confirmada | R-03; confirmação por mudança ou lote completo |
-| RISK-03 | falhas reproduzidas | Counters independentes colidem IDs; Replica rejeita counter delta | R-02/R-07a; identidade, endereço e roteamento de tipos |
+| RISK-02 | mitigado em R-03 | ACK parcial removia lote e impedia retry da parte não confirmada | `ReplicaStorage.acknowledge` preserva mudanças sem ACK; regressões em storage e sync |
+| RISK-03 | mitigado em R-02 | Counters independentes colidiam IDs; Replica rejeitava counter delta | Endereço e sequência por CRDT, roteamento e validação em Replica; R-07a integra tipos restantes |
 | RISK-04 | lacuna confirmada; ocorrência não estimada | Commit separado/falha deixa memória, snapshot, clocks e outbox discordantes | R-04/R-07b/R-07c/R-07d; transações, isolamento e injeção de falha |
 | RISK-05 | cópia compartilhada reproduzida; concorrência não validada | Callback remoto e mutações simultâneas causam inconsistência; cópia não isola rollback | R-04/R-05; estado isolado, processamento serial e erros observáveis |
 | RISK-06 | lacuna confirmada | MemoryStorage confundido com recuperação entre sessões | R-07c/R-07d; SQLite real, fechamento/reabertura e ambiente registrado |

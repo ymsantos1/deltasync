@@ -9,9 +9,9 @@ Saída: R-01 a R-05 concluídas, com regressões e evidências dos critérios.
 Riscos: [RISK-01 a RISK-05 e RISK-07](RISKS.md).
 Exclusões: novos frameworks de objetos, codegen e GC destrutivo.
 
-R-01 e R-03 são selecionáveis agora; ordem recomendada: R-01, R-03, R-02,
-R-04, R-05. R-03 não precisa esperar R-01. Fases posteriores podem iniciar seus
-contratos quando as dependências específicas estiverem satisfeitas.
+R-01, R-02 e R-03 estão concluídas. R-04 é a próxima tarefa pronta; R-05 depende
+de R-04. Fases posteriores podem iniciar seus contratos quando as dependências
+específicas estiverem satisfeitas.
 
 <a id="r-01"></a>
 
@@ -48,7 +48,7 @@ Evidência de conclusão: [Execução R-01 — 2026-09-27](TRACEABILITY.md#execu
 
 ## R-02 — Identidade e roteamento
 
-Status: planejada
+Status: concluída
 MoSCoW: MUST
 Dependências: R-01
 
@@ -60,26 +60,26 @@ OutboxEntry só extrai origem de delta nativo LWW.
 
 Critérios:
 
-- [ ] Endereço estável do CRDT acompanha lote/envelope ou cada mudança.
-- [ ] IDs não colidem entre instâncias/campos; definir alocação de dots local e
+- [x] Endereço estável do CRDT acompanha cada mudança.
+- [x] IDs não colidem entre instâncias/campos; definir alocação de dots local e
   namespace causal. Sequência por tipo/instância não é relógio global da réplica.
-- [ ] Replica, codec, OutboxEntry e SyncEngine roteiam LWW e counters sem perda.
-- [ ] Testar dois counters independentes na mesma réplica, lote misto e restauração.
-- [ ] Validar origem/endereço/tipo e rejeitar lote inválido sem aplicação parcial.
-- [ ] Definir semântica para IDs repetidos com payload divergente.
-- [ ] Planejar contexto que distingue lacunas: observar dot 3 não implica ter
+- [x] Replica, codec, OutboxEntry e SyncEngine roteiam LWW e counters sem perda.
+- [x] Testar dois counters independentes na mesma réplica, lote misto e restauração.
+- [x] Validar origem/endereço/tipo e rejeitar lote inválido sem aplicação parcial.
+- [x] Definir semântica para IDs repetidos com payload divergente.
+- [x] Planejar contexto que distingue lacunas: observar dot 3 não implica ter
   recebido dot 1/2 de CRDTs independentes.
 
 Integração manual suficiente; não exige ObjectCrdt ou build_runner.
 
 Validação: Dois counters na mesma réplica, lote misto, codec e outbox; ID conflitante, delta inválido e restauração das sequências.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-02 — 2026-09-28](TRACEABILITY.md#execução-r-02--2026-09-28).
 <a id="r-03"></a>
 
 ## R-03 — ACK e outbox seguros
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: nenhuma
 
@@ -90,26 +90,27 @@ deixa zero entradas pendentes. MemoryStorage.acknowledge usa any(ids.contains).
 
 Critérios:
 
-- [ ] Definir ACK por mudança ou envelope. ACK parcial preserva parte não
+- [x] Definir ACK por mudança ou envelope. ACK parcial preserva parte não
   confirmada, ou lote só é removido após confirmação de todos os IDs.
-- [ ] ACK externo não confirma indevidamente mudança de outro destino/réplica.
-- [ ] Envio sem confirmação mantém pendências; migrar ou restringir caminho
+- [x] ACK externo só confirma IDs do lote enviado e da outbox da réplica local;
+  ACK separado por peer aguarda identidade de destino em R-08b.
+- [x] Envio sem confirmação mantém pendências; migrar ou restringir caminho
   PendingDeltaStore que atualmente limpa tudo após send.
-- [ ] Falha de envio, timeout e reinício antes do ACK permitem retry sem perda.
-- [ ] Retry respeita política documentada; push(force:true) e maxAttempts têm
+- [x] Falha de envio, timeout e reinício antes do ACK permitem retry sem perda.
+- [x] Retry respeita política documentada; push(force:true) e maxAttempts têm
   comportamento explícito, sem confundir reenvio manual com entrega garantida.
-- [ ] Documentar quem confirma e se aplicação/persistência remota precedem ACK.
+- [x] Documentar quem confirma e se aplicação/persistência remota precedem ACK.
 
 Não usar ACK de envio para GC de tombstones.
 
 Validação: ACK parcial, envio falho, envio sem ACK, timeout e retry; cobrir caminho ReplicaStorage e caminho legado enquanto existir.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-03 — 2026-09-28](TRACEABILITY.md#execução-r-03--2026-09-28).
 <a id="r-04"></a>
 
 ## R-04 — Commits atômicos e snapshots
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-02, R-03
 

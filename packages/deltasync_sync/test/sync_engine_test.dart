@@ -49,7 +49,7 @@ void main() {
     },
   );
 
-  test('push sends pending delta and clears outbox', () async {
+  test('legacy store retains sent delta because send is not an ACK', () async {
     final store = TestPendingDeltaStore();
     final transport = TestDeltaTransport();
     final engine = SyncEngine(
@@ -60,10 +60,31 @@ void main() {
     await engine.set('title', 'draft');
 
     await engine.push();
+    await engine.push();
 
+    expect(transport.sent, hasLength(2));
+    expect(transport.sent.map((delta) => delta.changes.single.id).toSet(), {
+      store.deltaFor('device-a').changes.single.id,
+    });
+    expect(store.deltaFor('device-a').changes, hasLength(1));
+  });
+
+  test('legacy store retains delta when send fails', () async {
+    final store = TestPendingDeltaStore();
+    final transport = FailOnceDeltaTransport();
+    final engine = SyncEngine(
+      replica: Replica('device-a'),
+      store: store,
+      transport: transport,
+    );
+    await engine.set('title', 'draft');
+
+    await expectLater(engine.push(), throwsA(isA<StateError>()));
+    expect(store.deltaFor('device-a').changes, hasLength(1));
+
+    await engine.push();
     expect(transport.sent, hasLength(1));
-    expect(transport.sent.single.changes, hasLength(1));
-    expect(store.deltaFor('device-a'), const Delta.empty());
+    expect(store.deltaFor('device-a').changes, hasLength(1));
   });
 
   test('native delta mutation persists and pushes through outbox', () async {
@@ -81,8 +102,52 @@ void main() {
     await engine.push();
 
     expect(transport.sent.single.crdtChanges, [change]);
-    expect(store.deltaFor('device-a'), const Delta.empty());
+    expect(store.deltaFor('device-a').crdtChanges, [change]);
   });
+
+  test(
+    'SyncEngine routes mixed addressed counters and restores sequences',
+    () async {
+      final storage = MemoryStorage();
+      final transport = TestDeltaTransport();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: transport,
+      );
+
+      final firstG = await engine.incrementGCounter('cart/apples', 2);
+      final secondG = await engine.incrementGCounter('cart/pears', 3);
+      final firstPn = await engine.incrementPnCounter('account/balance', 5);
+      final secondPn = await engine.decrementPnCounter('account/balance', 2);
+      await engine.push();
+
+      expect(transport.sent.single.crdtChanges, [
+        firstG,
+        secondG,
+        firstPn,
+        secondPn,
+      ]);
+      expect((await storage.pending('device-a')).length, 4);
+      await engine.dispose();
+
+      final restored = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      await restored.start();
+      expect(restored.replica.gCounterValue('cart/apples'), 2);
+      expect(restored.replica.gCounterValue('cart/pears'), 3);
+      expect(restored.replica.pnCounterValue('account/balance'), 3);
+      expect((await restored.incrementGCounter('cart/apples')).dot!.counter, 2);
+      expect(
+        (await restored.incrementPnCounter('account/balance')).dot!.counter,
+        3,
+      );
+      await restored.dispose();
+    },
+  );
 
   test('ReplicaStorage restores native snapshot and outbox', () async {
     final storage = MemoryStorage();
@@ -149,6 +214,83 @@ void main() {
     await engine.dispose();
   });
 
+  test(
+    'partial ACK keeps remainder and ignores IDs outside sent batch',
+    () async {
+      final storage = MemoryStorage();
+      final source = Replica('device-a');
+      final first = source.set('first', 1);
+      final second = source.set('second', 2);
+      final deferred = source.set('deferred', 3);
+      await storage.enqueue(OutboxEntry(delta: Delta([first, second])));
+      await storage.enqueue(OutboxEntry(operation: deferred));
+      await storage.markSent('device-a', [deferred.id]);
+
+      final transport = SelectiveAckTransport([
+        first.id,
+        deferred.id,
+        'foreign',
+      ]);
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: transport,
+        retryPolicy: const SyncRetryPolicy(baseDelay: Duration(days: 1)),
+      );
+
+      await engine.push();
+
+      final pending = await storage.pending('device-a');
+      expect(pending.map((entry) => entry.changeIds.single).toSet(), {
+        second.id,
+        deferred.id,
+      });
+      final unacknowledgedBatch = pending.singleWhere(
+        (entry) => entry.changeIds.contains(second.id),
+      );
+      expect(unacknowledgedBatch.status, OutboxStatus.sent);
+      expect(unacknowledgedBatch.attempts, 1);
+      expect(transport.sent.single.changes.map((change) => change.id), [
+        first.id,
+        second.id,
+      ]);
+      await engine.dispose();
+    },
+  );
+
+  test(
+    'timeout preserves outbox and retry can ACK it after engine restart',
+    () async {
+      final storage = MemoryStorage();
+      final firstTransport = TimeoutOnceAckTransport();
+      final first = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: firstTransport,
+        retryPolicy: const SyncRetryPolicy(baseDelay: Duration.zero),
+      );
+      final change = await first.setDelta('title', 'draft');
+
+      await expectLater(first.push(), throwsA(isA<TimeoutException>()));
+      expect((await storage.pending('device-a')).single.attempts, 1);
+      await first.dispose();
+
+      final retryTransport = AcknowledgingTestDeltaTransport();
+      final restarted = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: retryTransport,
+        retryPolicy: const SyncRetryPolicy(baseDelay: Duration.zero),
+      );
+      await restarted.start();
+      await restarted.push();
+
+      expect(retryTransport.sent.single.crdtChanges, [change]);
+      expect(await storage.pending('device-a'), isEmpty);
+      await restarted.dispose();
+    },
+  );
+
   test('unacknowledged entry retries only when due or forced', () async {
     final storage = MemoryStorage();
     final transport = TestDeltaTransport();
@@ -156,7 +298,10 @@ void main() {
       replica: Replica('device-a'),
       storage: storage,
       transport: transport,
-      retryPolicy: const SyncRetryPolicy(baseDelay: Duration(days: 1)),
+      retryPolicy: const SyncRetryPolicy(
+        baseDelay: Duration(days: 1),
+        maxAttempts: 1,
+      ),
     );
     await engine.setDelta('title', 'draft');
 
@@ -258,11 +403,55 @@ class TestDeltaTransport implements DeltaTransport {
   void emit(Delta delta) => _incoming.add(delta);
 }
 
+class FailOnceDeltaTransport extends TestDeltaTransport {
+  bool _fail = true;
+
+  @override
+  Future<void> send(Delta delta) async {
+    if (_fail) {
+      _fail = false;
+      throw StateError('send failed');
+    }
+    await super.send(delta);
+  }
+}
+
 class AcknowledgingTestDeltaTransport extends TestDeltaTransport
     implements AcknowledgingDeltaTransport {
   @override
   Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
     await send(delta);
+    return [
+      ...delta.changes.map((change) => change.id),
+      ...delta.crdtChanges.map((change) => change.id),
+    ];
+  }
+}
+
+class SelectiveAckTransport extends TestDeltaTransport
+    implements AcknowledgingDeltaTransport {
+  SelectiveAckTransport(this.acknowledgedIds);
+
+  final List<String> acknowledgedIds;
+
+  @override
+  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
+    await send(delta);
+    return acknowledgedIds;
+  }
+}
+
+class TimeoutOnceAckTransport extends TestDeltaTransport
+    implements AcknowledgingDeltaTransport {
+  bool _timeout = true;
+
+  @override
+  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
+    await send(delta);
+    if (_timeout) {
+      _timeout = false;
+      throw TimeoutException('ACK timed out');
+    }
     return [
       ...delta.changes.map((change) => change.id),
       ...delta.crdtChanges.map((change) => change.id),

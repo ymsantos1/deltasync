@@ -45,16 +45,16 @@ void main() {
   });
 
   test('G-Counter merges component maxima idempotently', () {
-    final first = GCounter('first');
-    final second = GCounter('second');
+    final first = GCounter('first', crdtId: 'shared-items');
+    final second = GCounter('second', crdtId: 'shared-items');
     final firstDelta = first.increment(2);
     final secondDelta = second.increment(3);
 
-    final left = GCounter('left');
+    final left = GCounter('left', crdtId: 'shared-items');
     left.applyDelta(firstDelta);
     left.applyDelta(secondDelta);
     left.applyDelta(firstDelta);
-    final right = GCounter('right');
+    final right = GCounter('right', crdtId: 'shared-items');
     right.applyDelta(secondDelta);
     right.applyDelta(firstDelta);
 
@@ -64,12 +64,12 @@ void main() {
   });
 
   test('PN-Counter converges across increment and decrement deltas', () {
-    final first = PnCounter('first');
-    final second = PnCounter('second');
+    final first = PnCounter('first', crdtId: 'shared-balance');
+    final second = PnCounter('second', crdtId: 'shared-balance');
     final deltas = [first.increment(5), second.decrement(2)];
 
-    final left = PnCounter('left');
-    final right = PnCounter('right');
+    final left = PnCounter('left', crdtId: 'shared-balance');
+    final right = PnCounter('right', crdtId: 'shared-balance');
     left.applyDelta(deltas[0]);
     left.applyDelta(deltas[1]);
     right.applyDelta(deltas[1]);
@@ -81,24 +81,142 @@ void main() {
   });
 
   test('counter deltas survive versioned JSON codec', () {
-    final counter = GCounter('device')..increment(4);
+    final counter = GCounter('device', crdtId: 'cart/quantity')..increment(4);
     final delta = Delta.crdt([counter.increment(2)]);
 
     final decoded = DeltaCodec.decode(DeltaCodec.encode(delta));
     expect(decoded.crdtChanges.single, delta.crdtChanges.single);
   });
 
+  test('Replica routes addressed counters and LWW in mixed batch', () {
+    final local = Replica('device-a');
+    final apples = local.incrementGCounter('cart/apples', 2);
+    final pears = local.incrementGCounter('cart/pears', 3);
+    final balanceUp = local.incrementPnCounter('account/balance', 5);
+    final balanceDown = local.decrementPnCounter('account/balance', 2);
+    final title = local.setDelta('title', 'draft');
+    final delta = Delta.crdt([apples, pears, balanceUp, balanceDown, title]);
+
+    expect({apples.id, pears.id}.length, 2);
+    expect(apples.dot!.counter, pears.dot!.counter);
+    expect(apples.dot!.crdtId, 'cart/apples');
+    expect(pears.dot!.crdtId, 'cart/pears');
+    expect(local.clock.entries, {'device-a': 1});
+
+    final restored = Replica('device-a')
+      ..apply(DeltaCodec.decode(DeltaCodec.encode(delta)));
+    expect(restored.state.values, {'title': 'draft'});
+    expect(restored.gCounterValue('cart/apples'), 2);
+    expect(restored.gCounterValue('cart/pears'), 3);
+    expect(restored.pnCounterValue('account/balance'), 3);
+    expect(restored.incrementGCounter('cart/apples').dot!.counter, 2);
+    expect(restored.incrementPnCounter('account/balance').dot!.counter, 3);
+  });
+
+  test('Replica rejects invalid or conflicting counter batch atomically', () {
+    final source = Replica('device-a');
+    final valid = source.incrementGCounter('items');
+    final invalid = GCounterDelta(
+      id: 'invalid-change-id',
+      replicaId: 'device-a',
+      crdtId: 'other-items',
+      value: 1,
+      dot: valid.dot,
+    );
+    final target = Replica('target');
+    final batch = Delta.crdt([
+      const LwwDelta<Object?>(
+        key: 'title',
+        id: 'remote:delta:1',
+        replicaId: 'remote',
+        timestamp: HlcTimestamp(1, 0),
+        value: 'must not apply',
+      ),
+      valid,
+      invalid,
+    ]);
+
+    expect(() => target.apply(batch), throwsFormatException);
+    expect(target.state.values, isEmpty);
+    expect(target.gCounterValue('items'), 0);
+
+    final conflicting = GCounterDelta(
+      id: valid.id,
+      replicaId: valid.replicaId,
+      crdtId: valid.crdtId,
+      value: valid.value + 1,
+      dot: valid.dot,
+    );
+    expect(
+      () => target.apply(Delta.crdt([valid, conflicting])),
+      throwsFormatException,
+    );
+    expect(target.gCounterValue('items'), 0);
+  });
+
+  test('version 1 counter codec migrates to stable legacy address', () {
+    final legacy = {
+      'version': 1,
+      'delta': {
+        'operations': [],
+        'crdtChanges': [
+          {
+            'type': 'g-counter',
+            'id': 'device-a:g-counter:1',
+            'replicaId': 'device-a',
+            'value': 2,
+            'dot': {'replicaId': 'device-a', 'counter': 1},
+          },
+        ],
+      },
+    };
+    final decoded = DeltaCodec.decode(legacy);
+    final migrated = decoded.crdtChanges.single as GCounterDelta;
+
+    expect(migrated.crdtId, 'legacy/g-counter/device-a');
+    expect(migrated.dot!.crdtId, migrated.crdtId);
+    final replica = Replica('device-a')..apply(decoded);
+    expect(replica.gCounterValue(migrated.crdtId), 2);
+    expect(DeltaCodec.encode(decoded)['version'], DeltaCodec.currentVersion);
+    expect(
+      () => DeltaCodec.decode({...legacy, 'version': 2}),
+      throwsFormatException,
+    );
+    final conflictingLegacy = Map<String, Object?>.from(legacy);
+    final legacyDelta = Map<String, Object?>.from(
+      conflictingLegacy['delta']! as Map,
+    );
+    legacyDelta['crdtChanges'] = [
+      ...(legacyDelta['crdtChanges']! as List),
+      {
+        'type': 'g-counter',
+        'id': 'device-a:g-counter:1',
+        'replicaId': 'device-a',
+        'value': 3,
+        'dot': {'replicaId': 'device-a', 'counter': 1},
+      },
+    ];
+    conflictingLegacy['delta'] = legacyDelta;
+    expect(() => DeltaCodec.decode(conflictingLegacy), throwsFormatException);
+  });
+
   test('restored counters continue causal delta sequence', () {
-    final gCounter = GCounter('device', components: {'device': 4})
-      ..increment(2);
+    final gCounter = GCounter(
+      'device',
+      crdtId: 'cart/quantity',
+      components: {'device': 4},
+      sequence: 5,
+    )..increment(2);
     final pnCounter = PnCounter(
       'device',
+      crdtId: 'account/balance',
       positive: {'device': 4},
       negative: {'device': 1},
+      sequence: 6,
     )..increment(2);
 
-    expect(gCounter.increment().dot!.counter, 6);
-    expect(pnCounter.increment().dot!.counter, 7);
+    expect(gCounter.increment().dot!.counter, 7);
+    expect(pnCounter.increment().dot!.counter, 8);
   });
 
   test('HLC advances logical component and observes remote timestamp', () {

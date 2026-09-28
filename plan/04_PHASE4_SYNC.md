@@ -12,7 +12,7 @@ para topologia arbitrária e GC destrutivo de tombstones.
 
 ## R-08a — Integrar envelopes
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-02
 

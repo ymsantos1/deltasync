@@ -15,9 +15,9 @@ acadêmica. “Parcial” não satisfaz o gate de entrega.
 | Identidade e clocks | `packages/deltasync_core/lib/src/identity.dart`, `hlc.dart`, `vector_clock.dart` | Tipos implementados; lifecycle durável e lacunas causais pendentes |
 | Contrato DeltaCrdt | `packages/deltasync_core/lib/src/crdt.dart` | Implementado; mutação específica por tipo |
 | LWW nativo | `lww_register.dart`, `lww_delta.dart`, `Replica.setDelta/removeDelta` | HLC e tombstone implementados; caminho legado ainda ativo |
-| G-Counter e PN-Counter | `g_counter.dart`, `pn_counter.dart` | Implementados isoladamente; sem roteamento em Replica/SyncEngine |
+| G-Counter e PN-Counter | `g_counter.dart`, `pn_counter.dart`, `replica.dart`, `sync_engine.dart` | Roteados por endereço estável; sequência local e restore persistidos no JSON do contador |
 | Cinco CRDTs restantes | Sem classes correspondentes | Pendentes |
-| Serialização de deltas | `delta.dart`, `delta_codec.dart` | LWW e counters; codec versão 1; snapshot sem versão própria |
+| Serialização de deltas | `delta.dart`, `delta_codec.dart` | LWW e counters; codec v2 lê v1 com endereço legado; snapshot sem versão própria |
 | Envelopes | `packages/deltasync_transport/lib/src/delta_envelope.dart` | Versão 1; transporte/sync ainda usam Delta diretamente |
 | Storage | `packages/deltasync_storage/lib/src/replica_storage.dart` | MemoryStorage volátil; sem transação de estado + outbox |
 | Recuperação | `packages/deltasync_sync/lib/src/sync_engine.dart`, teste de restauração | Simulada reutilizando MemoryStorage; não prova reinício de processo |
@@ -127,6 +127,78 @@ Critérios: HLC de `setDelta/removeDelta` e aplicação nativa cobertos por test
 Manutenção: R-01 concluída no índice/fase; tarefa ativa limpa; R-03 próxima pronta. Checker aprovado após restauração do PDF. Decisões e riscos não mudaram.
 
 Limitações: revisão não independente; compatibilidade de replay preserva leitura do formato, não vencedor histórico.
+
+## Execução R-03 — 2026-09-28
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-03 estava pronta sem dependências; próxima tarefa selecionável por risco de perda de mudanças. Critérios cobrem ACK parcial, escopo de IDs, envio sem ACK, falha/timeout/reinício, retry e contrato de confirmação.
+
+Implementação: `MemoryStorage.acknowledge` remove somente mudanças confirmadas e regrava remanescentes com status, tentativas e timestamps preservados. `SyncEngine` filtra ACK retornado aos IDs do lote enviado e mantém outbox no caminho sem ACK. `PendingDeltaStore` legado conserva mudanças e retransmite em cada `push`; documentados ausência de limite automático, semântica de `force`, persistência remota exigida para ACK e limite de ACK multi-peer. `OutboxEntry` resolve origem em lote legado sem campo singular. README, contratos, testes de storage/sync e `DECISIONS.md`/`RISKS.md` atualizados.
+
+Review: aprovado
+
+Achados: nenhum impeditivo restante. Review pelo próprio implementador em etapa separada, não independente. Confirmado que ACK de ID fora do envio corrente não limpa entrada deferida; ACK de outra réplica não acessa sua outbox. ACK por peer segue pendente até R-08b, pois contrato atual não mantém confirmação por participante.
+
+Validação: aprovada
+
+Comandos: `dart format packages/deltasync_storage/lib/src/replica_storage.dart packages/deltasync_storage/lib/src/pending_delta_store.dart packages/deltasync_transport/lib/src/delta_transport.dart packages/deltasync_sync/lib/src/sync_engine.dart packages/deltasync_storage/test/replica_storage_test.dart packages/deltasync_sync/test/sync_engine_test.dart`; `dart format --output=none --set-exit-if-changed packages/deltasync_storage/lib packages/deltasync_storage/test packages/deltasync_sync/lib packages/deltasync_sync/test packages/deltasync_transport/lib packages/deltasync_transport/test`; para storage, sync, transport e raiz, `dart analyze && dart test`; após última asserção, `dart format packages/deltasync_sync/test/sync_engine_test.dart && (cd packages/deltasync_sync && dart analyze && dart test) && git diff --check`. Formato aprovado; storage análise limpa/4 testes; sync análise limpa/14 testes; transport análise limpa/2 testes; facade análise limpa/2 testes; última suíte sync repetida e aprovada.
+
+Critérios: ACK parcial legado+nativo preserva restante e metadados, coberto em `replica_storage_test.dart` e `sync_engine_test.dart`; ACK de réplica incorreta não altera outra outbox; ACK fora do lote enviado é ignorado e entrada deferida permanece. Envio sem ACK e falha em `PendingDeltaStore` preservam dado; caminho ReplicaStorage cobre timeout, persistência/reinício e ACK posterior. Testes documentam limite de tentativas automáticas, atraso e `force`. README e contrato de transporte definem ACK como mudança aplicada e persistida duravelmente no destino.
+
+Manutenção: R-03 concluída no índice/fase; R-02 passou a pronta pois dependência R-01 está concluída; tarefa ativa limpa. OPEN-02 mantém apenas identidade/ACK por peer para R-08b; RISK-02 mitigado. Próxima tarefa R-02.
+
+Limitações: `PendingDeltaStore` legado pode reenviar sem limite; várias entregas por peer não têm ACK isolado; `MemoryStorage` continua volátil.
+
+## Execução R-02 — 2026-09-28
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-02 selecionada após R-01/R-03; cobre identidade/endereço estável,
+roteamento dos counters existentes, lote atômico, compatibilidade do codec e
+lacunas causais.
+
+Implementação: dots e IDs de G-Counter/PN-Counter agora usam endereço estável e
+sequência local do CRDT; `Replica` roteia LWW e counters, oferece mutações
+endereçadas e rejeita lotes inválidos antes de aplicar qualquer item. Delta merge
+rejeita ID repetido com payload divergente. Codec v2 escreve endereço e lê v1
+atribuindo namespace `legacy/`; OutboxEntry e SyncEngine encaminham counters.
+Snapshots do contador guardam a sequência local. Estados cumulativos G/PN toleram
+lacunas; tipos futuros dependentes de dots individuais exigem contexto com
+lacunas explícitas ou entrega causal. README registra API/compatibilidade.
+
+Review: aprovado
+
+Achados: nenhum impeditivo restante. Review em etapa separada pelo próprio
+implementador, não independente. Conferidos colisão entre campos,
+origem/endereço/tipo, semântica de ID duplicado, migração v1 e pré-validação do
+lote antes de mutar estado.
+
+Validação: aprovada
+
+Comandos: Dart SDK 3.13.0; `dart format` nos arquivos Dart editados; na raiz e
+nos quatro subpacotes, `dart analyze && dart test`; após manutenção,
+`python3 scripts/check_plan.py` e `git diff --check`. Resultado: formato
+aprovado (um arquivo formatado); análise sem issues; raiz 2, core 24, sync 15,
+storage 5, transport 2, total 48 testes aprovados; checker e diff sem erros.
+
+Critérios: testes em `crdt_interfaces_test.dart` cobrem dois G-Counters no mesmo
+replica, lote LWW/G/PN misto, codec v2/restauração de sequência, migração v1,
+ID conflitante e rejeição atômica de delta inválido. `replica_storage_test.dart`
+verifica origem de outbox e origem mista inválida; `sync_engine_test.dart` cobre
+roteamento e restauração dos counters.
+
+Manutenção: R-02 concluída no índice/fase; tarefa ativa limpa. R-04, R-06a/b/c/d
+e R-08a prontas. OPEN-01 resolvida. RISK-03 mitigado; lacunas em tipos futuros seguem
+registradas em DECISIONS/RISK-07.
+
+Limitações: API direta dos construtores de GCounter/PnCounter passa a exigir
+`crdtId`; migração v1 atribui endereço legado sintético, sem recuperar distinção
+de instâncias já colapsadas por IDs antigos. Codec de snapshots não é versionado.
 
 Ao concluir uma tarefa, adicionar registro com:
 

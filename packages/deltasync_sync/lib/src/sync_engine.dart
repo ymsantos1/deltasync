@@ -109,6 +109,36 @@ class SyncEngine {
     return change;
   }
 
+  /// Increments G-Counter at stable application-defined [crdtId].
+  Future<GCounterDelta> incrementGCounter(
+    String crdtId, [
+    int amount = 1,
+  ]) async {
+    final change = replica.incrementGCounter(crdtId, amount);
+    await _persistCounterChange(change);
+    return change;
+  }
+
+  /// Increments PN-Counter at stable application-defined [crdtId].
+  Future<PnCounterDelta> incrementPnCounter(
+    String crdtId, [
+    int amount = 1,
+  ]) async {
+    final change = replica.incrementPnCounter(crdtId, amount);
+    await _persistCounterChange(change);
+    return change;
+  }
+
+  /// Decrements PN-Counter at stable application-defined [crdtId].
+  Future<PnCounterDelta> decrementPnCounter(
+    String crdtId, [
+    int amount = 1,
+  ]) async {
+    final change = replica.decrementPnCounter(crdtId, amount);
+    await _persistCounterChange(change);
+    return change;
+  }
+
   Future<void> push({bool force = false}) {
     final running = _pushFuture;
     if (running != null) return running;
@@ -141,15 +171,18 @@ class SyncEngine {
               pending,
             )
           : await _sendWithoutAck(pending);
-      if (acknowledged.isNotEmpty) {
-        await storage!.acknowledge(replica.id, acknowledged);
+      final sentIds = ids.toSet();
+      final acceptedIds = acknowledged.where(sentIds.contains).toSet();
+      if (acceptedIds.isNotEmpty) {
+        await storage!.acknowledge(replica.id, acceptedIds);
       }
       return;
     }
     final pending = await store!.read(replica.id);
     if (pending.isEmpty) return;
     await transport.send(pending);
-    await store!.write(replica.id, const Delta.empty());
+    // PendingDeltaStore has no ACK contract. Keep changes for at-least-once
+    // retry instead of treating successful transmission as remote acceptance.
   }
 
   Future<void> dispose() async {
@@ -166,6 +199,15 @@ class SyncEngine {
   Future<void> _persistPendingDelta(DeltaChange change) async {
     final pending = await store!.read(replica.id);
     await store!.write(replica.id, pending.merge(Delta.crdt([change])));
+  }
+
+  Future<void> _persistCounterChange(DeltaChange change) async {
+    if (storage != null) {
+      await storage!.enqueue(OutboxEntry(delta: Delta.crdt([change])));
+      await _saveSnapshot();
+    } else {
+      await _persistPendingDelta(change);
+    }
   }
 
   Future<Iterable<String>> _sendWithoutAck(Delta delta) async {
@@ -196,7 +238,12 @@ class SyncEngine {
   }
 }
 
-/// Exponential retry policy for entries without transport confirmation.
+/// Exponential retry policy for ReplicaStorage entries without confirmation.
+///
+/// Automatic retries stop after [maxAttempts] when configured. `push(force:
+/// true)` deliberately bypasses both the retry delay and attempt cap for manual
+/// retransmission. The legacy [PendingDeltaStore] path has no attempt metadata;
+/// every push retries its retained delta and this policy does not apply there.
 class SyncRetryPolicy {
   const SyncRetryPolicy({
     this.baseDelay = const Duration(seconds: 1),

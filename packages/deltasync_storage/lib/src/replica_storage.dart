@@ -52,13 +52,24 @@ class OutboxEntry {
 
   String get entryId => changeIds.join('|');
 
-  String get replicaId => operation?.replicaId ?? _deltaReplicaId;
-
-  String get _deltaReplicaId {
-    final change = delta!.crdtChanges.first;
-    if (change is LwwDelta<Object?>) return change.replicaId;
-    throw StateError('Cannot determine delta replica ID');
+  String get replicaId {
+    final origins = <String>{
+      if (operation != null) operation!.replicaId,
+      ...delta!.changes.map((change) => change.replicaId),
+      ...delta!.crdtChanges.map(_originOf),
+    };
+    if (origins.length != 1) {
+      throw StateError('Outbox entry must contain changes from one replica');
+    }
+    return origins.single;
   }
+
+  static String _originOf(DeltaChange change) => switch (change) {
+    LwwDelta<Object?>() => change.replicaId,
+    GCounterDelta() => change.replicaId,
+    PnCounterDelta() => change.replicaId,
+    _ => throw StateError('Cannot determine delta replica ID'),
+  };
 }
 
 /// Domain-oriented persistence contract. Implementations may use any backend.
@@ -77,6 +88,10 @@ abstract interface class ReplicaStorage {
     Iterable<String> operationIds,
   ) async {}
 
+  /// Confirms only [operationIds] in this replica's outbox.
+  ///
+  /// If an entry contains multiple changes, unacknowledged changes remain
+  /// pending as a smaller entry. Implementations must not discard them.
   Future<void> acknowledge(String replicaId, Iterable<String> operationIds);
 }
 
@@ -119,7 +134,23 @@ class MemoryStorage implements ReplicaStorage {
     final entries = _outbox[replicaId];
     if (entries == null) return;
     final ids = operationIds.toSet();
-    entries.removeWhere((_, entry) => entry.changeIds.any(ids.contains));
+    for (final entryKey in entries.keys.toList()) {
+      final entry = entries[entryKey]!;
+      if (!entry.changeIds.any(ids.contains)) continue;
+
+      final remainder = _excluding(entry.delta!, ids);
+      entries.remove(entryKey);
+      if (!remainder.isEmpty) {
+        final pendingEntry = OutboxEntry(
+          delta: remainder,
+          status: entry.status,
+          attempts: entry.attempts,
+          createdAt: entry.createdAt,
+          sentAt: entry.sentAt,
+        );
+        entries[pendingEntry.entryId] = pendingEntry;
+      }
+    }
   }
 
   @override
@@ -140,4 +171,14 @@ class MemoryStorage implements ReplicaStorage {
       );
     }
   }
+}
+
+Delta _excluding(Delta delta, Set<String> acknowledgedIds) {
+  final operations = delta.changes.where(
+    (change) => !acknowledgedIds.contains(change.id),
+  );
+  final crdtChanges = delta.crdtChanges.where(
+    (change) => !acknowledgedIds.contains(change.id),
+  );
+  return Delta(operations).merge(Delta.crdt(crdtChanges));
 }

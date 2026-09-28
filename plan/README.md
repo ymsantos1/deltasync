@@ -62,8 +62,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **1 — correções**. Tarefa ativa: **nenhuma**.
-Próxima tarefa recomendada: **R-03**, pronta para corrigir descarte indevido de
-outbox sem esperar R-02.
+Próxima tarefa recomendada: **R-04 — commits atômicos e snapshots**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; não são barreiras artificiais: fase 2 pode começar com
@@ -101,20 +100,20 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | Tarefa | Entrega | Status | MoSCoW | Dependências |
 |---|---|---|---|---|
 | [R-01](01_PHASE1_CORRECOES.md#r-01) | LWW nativo e compatibilidade | concluída | MUST | — |
-| [R-02](01_PHASE1_CORRECOES.md#r-02) | Identidade e roteamento | planejada | MUST | R-01 |
-| [R-03](01_PHASE1_CORRECOES.md#r-03) | ACK e outbox seguros | pronta | MUST | — |
-| [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | planejada | MUST | R-02, R-03 |
+| [R-02](01_PHASE1_CORRECOES.md#r-02) | Identidade e roteamento | concluída | MUST | R-01 |
+| [R-03](01_PHASE1_CORRECOES.md#r-03) | ACK e outbox seguros | concluída | MUST | — |
+| [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | pronta | MUST | R-02, R-03 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | planejada | MUST | R-04 |
-| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | planejada | MUST | R-02 |
-| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | planejada | MUST | R-02 |
-| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | planejada | MUST | R-02 |
-| [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | planejada | MUST | R-02 |
+| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | pronta | MUST | R-02 |
+| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | pronta | MUST | R-02 |
+| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | pronta | MUST | R-02 |
+| [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-02 |
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |
 | [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-04, R-06a, R-06b, R-06c, R-06d, R-06e |
 | [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | planejada | MUST | R-04 |
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | planejada | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | planejada | MUST | R-05, R-07c |
-| [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | planejada | MUST | R-02 |
+| [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | pronta | MUST | R-02 |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | planejada | MUST | R-03, R-08a |
 | [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | planejada | MUST | R-05, R-07a, R-07d, R-08b |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | planejada | MUST | R-07a |

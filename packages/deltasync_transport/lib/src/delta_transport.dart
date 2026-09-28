@@ -8,6 +8,11 @@ abstract interface class DeltaTransport {
 }
 
 /// Optional transport contract that confirms accepted change IDs.
+///
+/// Return an ID only after the remote side has applied and durably persisted
+/// that change. A normal [DeltaTransport.send] completion means transmission
+/// completed; it does not confirm remote application or persistence.
 abstract interface class AcknowledgingDeltaTransport implements DeltaTransport {
+  /// Sends [delta] and returns IDs durably accepted by the remote side.
   Future<Iterable<String>> sendAndAwaitAck(Delta delta);
 }

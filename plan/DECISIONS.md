@@ -8,7 +8,7 @@ não significa implementação concluída.
 | DEC-01 | adotada | Oito CRDTs do PDF preservados; ferramentas sugeridas não ampliam requisitos acadêmicos. |
 | DEC-02 | adotada | Core/sync/storage abstrato/transport em Dart puro; SQLite/sqflite em adaptador de referência previsto no TCC e opcional ao consumidor. |
 | DEC-03 | adotada | DeltaCrdt como contrato central; HLC para LWW nativo, dots/contexto causal para tipos observados. Legado exige correção ou migração explícita. |
-| DEC-04 | adotada | Roteamento e identidade únicos por CRDT; decidir alocação causal em R-02 antes da integração de tipos. |
+| DEC-04 | adotada | Roteamento e identidade únicos por CRDT; endereço estável acompanha mudança e dot local é namespaceado por `crdtId`. |
 | DEC-05 | adotada | Estado, clocks e outbox devem ter commit atômico; snapshot restaurável sem histórico ilimitado. Implementação pendente em R-04. |
 | DEC-06 | adotada | Preservar tombstones/contexto necessário; nenhum GC destrutivo por idade ou ACK de envio. |
 | DEC-07 | adotada | Demonstração mínima mantida como MUST pelo contexto atual; PDF a apresenta como possibilidade. Sem framework de objetos obrigatório. |
@@ -21,8 +21,7 @@ não significa implementação concluída.
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
-| OPEN-01 | R-02 | Endereço do CRDT, namespace de IDs/dots e tratamento de lacunas causais. |
-| OPEN-02 | R-03, R-08b | ACK por mudança/envelope, quem confirma e momento de descarte. Não apagar parte não confirmada. |
+| OPEN-02 | R-03, R-08b | R-03 resolveu ACK por mudança: apenas IDs do lote enviado confirmados após aplicação e persistência remota durável; ACK parcial preserva restante. Identidade de destino e confirmação por participante seguem para topologia R-08b. |
 | OPEN-03 | R-04, R-07c | Criação/persistência de identidade e política de backup/restore. Não clonar identidade ativa silenciosamente. |
 | OPEN-04 | R-08b | Topologia e retenção/retransmissão/replay ou fallback de snapshot para peer offline. |
 | OPEN-05 | VAL-04 | Fonte editável e atualização do texto acadêmico; PDF de referência permanece preservado. |
@@ -36,8 +35,11 @@ Mudança material de recorte acadêmico ou ação externa depende de direção d
 
 - Correção de CRDT vem do join, não de deduplicação por ID.
 - HLC ordena LWW nativo; dots/contexto causal servem a tipos observados.
-- IDs de mensagem e identidade causal têm funções distintas. Definir namespace
-  para múltiplos CRDTs e alocação de dots antes de integrar counters/conjuntos.
+- IDs de mensagem e identidade causal têm funções distintas. R-02 endereça dots
+  locais por `crdtId`; G-Counter/PN-Counter carregam valores
+  cumulativos e toleram lacunas. Tipos futuros cuja semântica dependa de dots
+  individuais precisam de contexto causal por endereço com lacunas explícitas ou
+  pré-condição de entrega causal, sem achatar sequência local em VectorClock.
 - Um componente máximo de VectorClock não prova recebimento de todos os dots
   anteriores quando deltas chegam fora de ordem. Representar lacunas ou usar
   pré-condições explícitas de entrega; testar perda do evento anterior.
