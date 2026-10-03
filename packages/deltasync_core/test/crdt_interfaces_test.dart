@@ -392,6 +392,40 @@ void main() {
     expect(target.toJson(), source.toJson());
   });
 
+  test('ReplicaState.copy isolates mutable LWW registers', () {
+    final replica = Replica('copy-source');
+    replica.set('title', 'before');
+    final copy = replica.state.copy();
+    replica.set('title', 'after');
+
+    expect(copy.values['title'], 'before');
+    expect(replica.state.values['title'], 'after');
+  });
+
+  test(
+    'versioned replica snapshot restores tombstones and local sequences',
+    () {
+      final source = Replica('snapshot-source')
+        ..setDelta('deleted', 'old')
+        ..removeDelta('deleted')
+        ..incrementGCounter('items', 2)
+        ..incrementPnCounter('balance', 4)
+        ..set('legacy', true);
+      final restored = Replica.fromSnapshotJson(source.toSnapshotJson());
+
+      expect(restored.id, source.id);
+      expect(restored.state.values, {'legacy': true});
+      expect(restored.hlcTimestamp, source.hlcTimestamp);
+      expect(restored.incrementGCounter('items').dot!.counter, 2);
+      expect(restored.incrementPnCounter('balance').dot!.counter, 2);
+      expect(restored.set('legacy', false).id, 'snapshot-source:2');
+      expect(
+        () => Replica.fromSnapshotJson({'version': 99}),
+        throwsFormatException,
+      );
+    },
+  );
+
   test('Delta carries native CRDT changes and merges them by delta ID', () {
     const first = LwwDelta<String>(
       key: 'title',

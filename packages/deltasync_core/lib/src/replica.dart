@@ -45,6 +45,144 @@ class Replica {
     _hlc.restore(hlc);
   }
 
+  /// Creates isolated working copy for a transaction or rollback boundary.
+  Replica fork() {
+    final copy = Replica(
+      id,
+      initialClock: _clock,
+      hlc: HlcClock(initial: _hlc.current),
+    );
+    copy.state.replaceWith(state);
+    copy
+      .._history.addAll(_history)
+      .._deltaHistory.addAll(_deltaHistory)
+      .._operationSequence = _operationSequence
+      .._deltaSequence = _deltaSequence;
+    for (final entry in _gCounters.entries) {
+      final json = entry.value.toJson();
+      copy._gCounters[entry.key] = GCounter(
+        id,
+        crdtId: entry.key,
+        components: _intMap(json['components']),
+        sequence: json['sequence'] as int,
+      );
+    }
+    for (final entry in _pnCounters.entries) {
+      final json = entry.value.toJson();
+      copy._pnCounters[entry.key] = PnCounter(
+        id,
+        crdtId: entry.key,
+        positive: _intMap(json['positive']),
+        negative: _intMap(json['negative']),
+        sequence: json['sequence'] as int,
+      );
+    }
+    return copy;
+  }
+
+  /// Replaces this replica with an already committed isolated candidate.
+  void adopt(Replica candidate) {
+    if (candidate.id != id) throw ArgumentError('Replica ID mismatch');
+    state.replaceWith(candidate.state);
+    _history
+      ..clear()
+      ..addAll(candidate._history);
+    _deltaHistory
+      ..clear()
+      ..addAll(candidate._deltaHistory);
+    final copiedCounters = candidate.fork();
+    _gCounters
+      ..clear()
+      ..addAll(copiedCounters._gCounters);
+    _pnCounters
+      ..clear()
+      ..addAll(copiedCounters._pnCounters);
+    _clock = candidate._clock;
+    _hlc.restore(candidate.hlcTimestamp);
+    _operationSequence = candidate._operationSequence;
+    _deltaSequence = candidate._deltaSequence;
+  }
+
+  /// Compact, versioned materialized state for durable snapshots.
+  Map<String, Object?> toSnapshotJson() => {
+    'version': 1,
+    'replicaId': id,
+    'clock': _clock.toJson(),
+    'hlc': _hlc.current.toJson(),
+    'operationSequence': _operationSequence,
+    'deltaSequence': _deltaSequence,
+    'lww': state.toSnapshotJson(),
+    'gCounters': {
+      for (final entry in _gCounters.entries) entry.key: entry.value.toJson(),
+    },
+    'pnCounters': {
+      for (final entry in _pnCounters.entries) entry.key: entry.value.toJson(),
+    },
+  };
+
+  /// Reconstructs materialized state without replaying prior delta history.
+  static Replica fromSnapshotJson(Map<String, Object?> json) {
+    if (json['version'] != 1) {
+      throw FormatException('Unsupported replica snapshot version');
+    }
+    final replicaId = json['replicaId'];
+    final clock = json['clock'];
+    final hlc = json['hlc'];
+    final lww = json['lww'];
+    final gCounters = json['gCounters'];
+    final pnCounters = json['pnCounters'];
+    if (replicaId is! String ||
+        clock is! Map ||
+        hlc is! Map ||
+        lww is! Map ||
+        gCounters is! Map ||
+        pnCounters is! Map) {
+      throw FormatException('Invalid replica snapshot');
+    }
+    final restored = Replica(
+      replicaId,
+      initialClock: VectorClock.fromJson(Map<String, Object?>.from(clock)),
+      hlc: HlcClock(
+        initial: HlcTimestamp.fromJson(Map<String, Object?>.from(hlc)),
+      ),
+    );
+    restored.state.restoreSnapshotJson(Map<String, Object?>.from(lww));
+    for (final entry in gCounters.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid G-Counter snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['crdtId'] != entry.key || encoded['replicaId'] != replicaId) {
+        throw FormatException('G-Counter snapshot identity mismatch');
+      }
+      restored._gCounters[entry.key as String] = GCounter(
+        replicaId,
+        crdtId: entry.key as String,
+        components: _intMap(encoded['components']),
+        sequence: _requiredSequence(encoded['sequence']),
+      );
+    }
+    for (final entry in pnCounters.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid PN-Counter snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['crdtId'] != entry.key || encoded['replicaId'] != replicaId) {
+        throw FormatException('PN-Counter snapshot identity mismatch');
+      }
+      restored._pnCounters[entry.key as String] = PnCounter(
+        replicaId,
+        crdtId: entry.key as String,
+        positive: _intMap(encoded['positive']),
+        negative: _intMap(encoded['negative']),
+        sequence: _requiredSequence(encoded['sequence']),
+      );
+    }
+    restored._operationSequence = _requiredSequence(json['operationSequence']);
+    restored._deltaSequence = _requiredSequence(json['deltaSequence']);
+    return restored;
+  }
+
   Operation set(String key, Object? value) => _record(key, value);
 
   Operation remove(String key) => _record(key, null, deleted: true);
@@ -339,5 +477,22 @@ class Replica {
     if (sequence != null && sequence > _deltaSequence) {
       _deltaSequence = sequence;
     }
+  }
+
+  static Map<String, int> _intMap(Object? value) {
+    if (value is! Map) throw FormatException('Invalid counter components');
+    return value.map((key, item) {
+      if (key is! String || item is! int || item < 0) {
+        throw FormatException('Invalid counter component');
+      }
+      return MapEntry(key, item);
+    });
+  }
+
+  static int _requiredSequence(Object? value) {
+    if (value is! int || value < 0) {
+      throw FormatException('Invalid replica sequence');
+    }
+    return value;
   }
 }

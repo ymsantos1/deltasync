@@ -1,17 +1,18 @@
-# Fase 1 — Correções da base existente
+# Fase 1 — Simplificação e correções da base existente
 
-Estado: ativa. Nenhuma tarefa de código em andamento nesta migração documental.
+Estado: ativa. Nenhuma tarefa de código em andamento.
 
-Objetivo: fechar perda de deltas, divergência legada, identidade, commits e lifecycle.
-Entrada: implementação atual e diagnósticos em [TRACEABILITY.md](TRACEABILITY.md).
-Saída: R-01 a R-05 concluídas, com regressões e evidências dos critérios.
+Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
+Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
+diagnósticos em [TRACEABILITY.md](TRACEABILITY.md).
+Saída: R-01 a R-05 e R-09a/R-09b concluídas, com evidências dos critérios.
 Áreas: core, storage, sync, transport e seus testes.
-Riscos: [RISK-01 a RISK-05 e RISK-07](RISKS.md).
+Riscos: [RISK-01 a RISK-05, RISK-07 e RISK-13 a RISK-16](RISKS.md).
 Exclusões: novos frameworks de objetos, codegen e GC destrutivo.
 
-R-01, R-02 e R-03 estão concluídas. R-04 é a próxima tarefa pronta; R-05 depende
-de R-04. Fases posteriores podem iniciar seus contratos quando as dependências
-específicas estiverem satisfeitas.
+R-01 a R-04 conservam conclusões históricas. Novos achados de isolamento,
+endereçamento e fila serão resolvidos em R-09a/R-09b/R-05. R-09a é próxima pronta.
+Fases posteriores usam contratos consolidados e fluxo inicial de R-08d.
 
 <a id="r-01"></a>
 
@@ -21,7 +22,7 @@ Status: concluída
 MoSCoW: MUST
 Dependências: nenhuma
 
-Baseline: parcial; correções ainda não concluídas.
+Baseline histórica anterior a R-01: parcial.
 
 Problema reproduzido: operações legadas z={z:1}, a={z:1,a:1}, m={m:1}, todas
 sobre a mesma chave. Ordens [z,a,m] e [a,m,z] resultam em m e z.
@@ -52,7 +53,7 @@ Status: concluída
 MoSCoW: MUST
 Dependências: R-01
 
-Baseline: parcial; correções ainda não concluídas.
+Baseline histórica anterior a R-02: parcial.
 
 Problemas reproduzidos: Replica.apply rejeita GCounterDelta; dois GCounter da mesma
 réplica produzem o mesmo ID na primeira mutação e Delta.merge perde uma mudança.
@@ -83,7 +84,7 @@ Status: concluída
 MoSCoW: MUST
 Dependências: nenhuma
 
-Baseline: parcial; correções ainda não concluídas.
+Baseline histórica anterior a R-03: parcial.
 
 Problema reproduzido: enqueue de lote com duas mudanças e ACK só da primeira
 deixa zero entradas pendentes. MemoryStorage.acknowledge usa any(ids.contains).
@@ -110,48 +111,133 @@ Evidência de conclusão: [Execução R-03 — 2026-09-28](TRACEABILITY.md#execu
 
 ## R-04 — Commits atômicos e snapshots
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-02, R-03
 
-Baseline: primitivas separadas disponíveis; commit atômico pendente.
+Baseline anterior: primitivas separadas disponíveis; commit atômico pendente.
 
-Hoje mutação altera memória, enqueue e saveReplica ocorrem separadamente.
+Na baseline anterior, mutação alterava memória, enqueue e saveReplica separadamente.
 Adicionar transação no adaptador não resolve chamadas independentes automaticamente.
 
 Critérios:
 
-- [ ] Contrato expressa commit local único de estado + clocks + outbox.
-- [ ] Commit remoto preserva estado/contexto/clocks e falha sem efeito parcial.
-- [ ] Falha do commit deixa memória e storage consistentes; sucesso só é retornado
+- [x] Contrato expressa commit local único de estado + clocks + outbox.
+- [x] Commit remoto preserva estado/contexto/clocks e falha sem efeito parcial.
+- [x] Falha do commit deixa memória e storage consistentes; sucesso só é retornado
   após commit. Definir preparação isolada, rollback ou estratégia equivalente.
-- [ ] Não usar ReplicaState.copy como isolamento sem corrigir cópia compartilhada
+- [x] Não usar ReplicaState.copy como isolamento sem corrigir cópia compartilhada
   de LwwRegister; caso reproduzido altera cópia ao mutar original.
-- [ ] Serializar mutações/merges que compartilham réplica e storage.
-- [ ] Snapshot versionado restaura estado, tombstones, identidade e clocks sem
+- [x] Serializar mutações/merges que compartilham réplica e storage.
+- [x] Snapshot versionado restaura estado, tombstones, identidade e clocks sem
   exigir replay ilimitado de Replica.export().
-- [ ] Dot/sequências de IDs/HLC não regressam após restauração ou compactação.
-- [ ] Testes de contrato incluem falhas entre etapas e versão incompatível.
+- [x] Dot/sequências de IDs/HLC não regressam após restauração ou compactação.
+- [x] Testes de contrato incluem falhas entre etapas e versão incompatível.
 
-Snapshot atual guarda values e histórico em metadata['delta']; restauração aplica
-histórico/outbox, não reconstrói registradores apenas de snapshot.state.
+Snapshots novos guardam estado materializado versionado; snapshots legados em
+metadata['delta'] continuam legíveis durante migração.
 
 Validação: Falhas de commit local/remoto, isolamento de estado, concorrência e restauração versionada; validar MemoryStorage como contrato, sem alegar durabilidade.
 
+Evidência de conclusão: [Execução R-04 — 2026-10-01](TRACEABILITY.md#execução-r-04--2026-10-01).
+
+Conclusão acima cobre evidências dessa execução. F-01/F-03/F-04 da análise de
+2026-10-03 deixam garantias adicionais pendentes em R-09b/R-05; preservação do
+registro não representa aprovação atual de todo isolamento ou fluxo entre engines.
+
+<a id="r-09a"></a>
+
+## R-09a — Core nativo e compatibilidade
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-01, R-02
+
+Áreas: core, consumidores em sync/storage/transport, facade, exemplos e testes.
+Objetivo: eliminar representações sobrepostas e consolidar contratos dos três tipos
+atuais, preservando joins e preparando integração dos oito CRDTs.
+
+Critérios:
+
+- [ ] Inventariar APIs exportadas e formatos usados no workspace; documentar
+  política de remoção, wrappers ou conversão isolada e quebras para consumidores.
+- [ ] DeltaCrdt ser contrato principal; retirar CrdtOperation sem uso e caminho
+  operacional legado da execução normal, incluindo herança de LwwRegister.
+- [ ] LWW manter vencedor nativo único com tombstone; operações antigas, quando
+  suportadas, usar migração explícita sem dois modelos permanentes de vencedor.
+- [ ] Delta ser lote nativo; metadados comuns exporem endereço, tipo, origem e ID.
+  Serialização e envelope terem funções distintas; avaliar necessidade de DeltaCodec
+  como classe pública sem criar registry, codegen ou framework genérico.
+- [ ] Simplificar componentes internos de PN-Counter; validar delta inteiro antes
+  de aplicar e manter join por máximo com deltas cumulativos.
+- [ ] Validar endereços/valores locais antes de mutar; saída válida ser aceita
+  por codec e outra Replica. HLC/contexto/dots servirem apenas à semântica aplicável.
+- [ ] Exemplo e documentação explicarem estado, mutação, delta, join e restauração
+  de cada tipo atual e apontarem arquivos/testes para uma alteração localizada;
+  preservação de tipos úteis não depender de quota de classes.
+
+Validação: regressões nativas dos três tipos, PN inválido sem efeito parcial,
+endereço vazio, lotes, fixtures de compatibilidade/rejeição e consumidores.
+Checks de pacotes afetados e facade; ausência de classes sem uso no fluxo revisado.
+Conferir exemplos e correspondência do percurso de alteração com arquivos/testes.
+
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+
+<a id="r-09b"></a>
+
+## R-09b — Estado, snapshots e outbox consolidados
+
+Status: planejada
+MoSCoW: MUST
+Dependências: R-09a, R-03, R-04
+
+Áreas: estado de Replica, snapshots, contrato de storage, SyncEngine e testes.
+Objetivo: manter estado restaurável canônico e isolamento real, com uma pendência
+por mudança e pipeline local de commit comum.
+
+Critérios:
+
+- [ ] Unificar estado por endereço, com vínculo de tipo incluindo LWW/counters;
+  consolidar Replica/ReplicaState conforme responsabilidade própria de cada uma.
+- [ ] Snapshot canônico guardar estado, tombstones, clocks/contexto e sequências;
+  eliminar duplicação entre state/clock e metadata['replicaState']; versionar formato
+  e definir leitura/conversão ou rejeição explícita de snapshots anteriores.
+- [ ] Definir valores serializáveis e proteger entradas, consultas, cópias e
+  snapshots contra mutação externa de listas/mapas aninhados. Fork preservar fonte
+  de tempo injetada e isolamento necessário para falha de commit.
+- [ ] Engine controlar escrita na réplica ativa, inclusive referência originalmente
+  fornecida pelo consumidor; mutação externa não produzir perda ou colisão de IDs.
+- [ ] Histórico completo sair do caminho normal; outbox conservar somente pendências.
+  Definir exportação, bootstrap aplicável e alcance de rejeição de ID conflitante
+  após restauração sem prometer deduplicação eterna por log ilimitado.
+- [ ] ReplicaStorage ser contrato principal; descontinuar PendingDeltaStore e
+  MemoryPendingDeltaStore do fluxo normal com compatibilidade explícita. Consolidar
+  gravações em commit atômico; primitivas restantes terem função documentada.
+- [ ] Outbox ter uma entrada por mudança, identidade direta e ACK parcial sem perda;
+  lotes serem formados no envio. Tentativas e status terem significado consistente.
+- [ ] Mutações locais compartilharem pipeline interno de preparação/commit/adoção;
+  falhas manterem estado e outbox anteriores, sem framework público de comandos.
+
+Validação: payload alterado pelo chamador e por consultas não altera estado/outbox;
+referência externa durante commit, relógio controlado, tipo/endereço conflitante,
+snapshot/restauração e sequência, falhas locais/remotas, ACK parcial e compatibilidade.
+MemoryStorage simula contrato; durabilidade continua em R-07c/R-07d.
+
+Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+
 <a id="r-05"></a>
 
 ## R-05 — Lifecycle e processamento remoto
 
 Status: planejada
 MoSCoW: MUST
-Dependências: R-04
+Dependências: R-09b
 
 Baseline: parcial; correções ainda não concluídas.
 
-start repetido e dispose repetido têm guardas, mas set/remove/setDelta/removeDelta
-e push não exigem engine iniciada nem rejeitam engine descartada. Listener usa
-callback async sem fila ou canal explícito de erro.
+Mutações antes de start podem sobrescrever snapshot anterior; após dispose também
+são aceitas. Falha de start deixa flag iniciada. Listener descarta Future de erro.
+Fila de commits aguarda rede em push, bloqueando edição local e aplicação remota.
 
 Critérios:
 
@@ -161,16 +247,27 @@ Critérios:
   não pode sugerir sucesso após falha de carregamento.
 - [ ] Processamento remoto aguardado/serializado; erros observáveis e sem aplicação
   parcial ou confirmação antes do commit.
+- [ ] Envio e espera de ACK ocorrerem fora da fila de commits; edição local e
+  recepção continuarem enquanto rede estiver lenta ou indisponível. ACK só alcançar
+  mudanças do lote enviado, preservando pendências criadas durante envio.
+- [ ] API pública permitir distinguir commit local concluído, mudanças pendentes
+  e confirmação remota, além de observar falhas e ciclo de vida; consumidor não
+  depender de acesso a campos internos nem de framework de estados novo.
 - [ ] dispose trata operação em andamento e impede novos trabalhos.
 - [ ] Testar start falho, entrada inválida, falha de storage, concorrência e
   cancelamento; guarda isolada não comprova lifecycle completo.
 
-Validação: Start falho/repetido, mutação fora do lifecycle, callback remoto com erro, concorrência e dispose com trabalho em andamento.
+Validação: start falho/repetido, perda de snapshot por uso antes da restauração,
+mutação fora do lifecycle, callback remoto com erro, edição/recepção durante envio
+pendente, ACK concorrente e dispose com trabalho em andamento. Duas engines e
+envio simultâneo são verificados em R-08d antes de expandir tipos.
+Resultados de commit/pendência/confirmação e erros devem ser verificáveis pela API pública.
 
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
-afetados. Concluir fase somente com evidências de R-01 a R-05. Contrato de identidade
-libera fase 2; commit atômico libera fase 3; envelope pode ser trabalhado após R-02.
+afetados. Concluir fase somente com evidências de R-01 a R-05 e R-09a/R-09b.
+R-09b libera envelopes; R-08d libera expansão dos tipos e contrato durável.
+Limpeza documental não conclui correções de código.

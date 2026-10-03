@@ -34,6 +34,7 @@ class SyncEngine {
   bool _started = false;
   bool _disposed = false;
   Future<void>? _pushFuture;
+  Future<void> _serialTail = Future<void>.value();
   final SyncRetryPolicy retryPolicy;
 
   Future<void> start() async {
@@ -43,13 +44,24 @@ class SyncEngine {
     if (storage != null) {
       final snapshot = await storage!.loadReplica(replica.id);
       if (snapshot != null) {
-        final hlc = _readHlcOrNull(snapshot.metadata);
-        if (hlc != null) {
-          replica.restoreMetadata(clock: snapshot.clock, hlc: hlc);
+        if (snapshot.version != 1) {
+          throw FormatException('Unsupported storage snapshot version');
         }
-        final encoded = snapshot.metadata['delta'];
-        if (encoded is Map) {
-          replica.apply(Delta.fromJson(Map<String, Object?>.from(encoded)));
+        final encodedState = snapshot.metadata['replicaState'];
+        if (encodedState is Map) {
+          replica.adopt(
+            Replica.fromSnapshotJson(Map<String, Object?>.from(encodedState)),
+          );
+        } else {
+          // Read snapshots written before compact, versioned snapshots existed.
+          final hlc = _readHlcOrNull(snapshot.metadata);
+          if (hlc != null) {
+            replica.restoreMetadata(clock: snapshot.clock, hlc: hlc);
+          }
+          final encoded = snapshot.metadata['delta'];
+          if (encoded is Map) {
+            replica.apply(Delta.fromJson(Map<String, Object?>.from(encoded)));
+          }
         }
       }
       for (final entry in await storage!.pending(replica.id)) {
@@ -58,91 +70,99 @@ class SyncEngine {
     } else {
       replica.apply(await store!.read(replica.id));
     }
-    _subscription = transport.incoming.listen((delta) async {
-      replica.apply(delta);
-      await _saveSnapshot();
+    _subscription = transport.incoming.listen((delta) {
+      unawaited(applyRemote(delta));
     });
     await _saveSnapshot();
   }
 
-  Future<Operation> set(String key, Object? value) async {
-    final change = replica.set(key, value);
-    if (storage != null) {
-      await storage!.enqueue(OutboxEntry(operation: change));
-      await _saveSnapshot();
-    } else {
-      await _persistPending(change);
-    }
+  Future<Operation> set(String key, Object? value) => _serialize(() async {
+    final candidate = replica.fork();
+    final change = candidate.set(key, value);
+    await _commitCandidate(
+      candidate,
+      Delta([change]),
+      OutboxEntry(operation: change),
+    );
+    replica.adopt(candidate);
     return change;
-  }
+  });
 
-  Future<Operation> remove(String key) async {
-    final change = replica.remove(key);
-    if (storage != null) {
-      await storage!.enqueue(OutboxEntry(operation: change));
-      await _saveSnapshot();
-    } else {
-      await _persistPending(change);
-    }
-    return change;
-  }
+  /// Applies remote changes after a serialized snapshot commit succeeds.
+  Future<void> applyRemote(Delta delta) => _serialize(() async {
+    final candidate = replica.fork()..apply(delta);
+    if (storage != null) await storage!.commitRemote(_snapshot(candidate));
+    replica.adopt(candidate);
+  });
 
-  Future<LwwDelta<Object?>> setDelta(String key, Object? value) async {
-    final change = replica.setDelta(key, value);
-    if (storage != null) {
-      await storage!.enqueue(OutboxEntry(delta: Delta.crdt([change])));
-      await _saveSnapshot();
-    } else {
-      await _persistPendingDelta(change);
-    }
+  Future<Operation> remove(String key) => _serialize(() async {
+    final candidate = replica.fork();
+    final change = candidate.remove(key);
+    await _commitCandidate(
+      candidate,
+      Delta([change]),
+      OutboxEntry(operation: change),
+    );
+    replica.adopt(candidate);
     return change;
-  }
+  });
 
-  Future<LwwDelta<Object?>> removeDelta(String key) async {
-    final change = replica.removeDelta(key);
-    if (storage != null) {
-      await storage!.enqueue(OutboxEntry(delta: Delta.crdt([change])));
-      await _saveSnapshot();
-    } else {
-      await _persistPendingDelta(change);
-    }
+  Future<LwwDelta<Object?>> setDelta(String key, Object? value) =>
+      _serialize(() async {
+        final candidate = replica.fork();
+        final change = candidate.setDelta(key, value);
+        final delta = Delta.crdt([change]);
+        await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+        replica.adopt(candidate);
+        return change;
+      });
+
+  Future<LwwDelta<Object?>> removeDelta(String key) => _serialize(() async {
+    final candidate = replica.fork();
+    final change = candidate.removeDelta(key);
+    final delta = Delta.crdt([change]);
+    await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+    replica.adopt(candidate);
     return change;
-  }
+  });
 
   /// Increments G-Counter at stable application-defined [crdtId].
-  Future<GCounterDelta> incrementGCounter(
-    String crdtId, [
-    int amount = 1,
-  ]) async {
-    final change = replica.incrementGCounter(crdtId, amount);
-    await _persistCounterChange(change);
-    return change;
-  }
+  Future<GCounterDelta> incrementGCounter(String crdtId, [int amount = 1]) =>
+      _serialize(() async {
+        final candidate = replica.fork();
+        final change = candidate.incrementGCounter(crdtId, amount);
+        final delta = Delta.crdt([change]);
+        await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+        replica.adopt(candidate);
+        return change;
+      });
 
   /// Increments PN-Counter at stable application-defined [crdtId].
-  Future<PnCounterDelta> incrementPnCounter(
-    String crdtId, [
-    int amount = 1,
-  ]) async {
-    final change = replica.incrementPnCounter(crdtId, amount);
-    await _persistCounterChange(change);
-    return change;
-  }
+  Future<PnCounterDelta> incrementPnCounter(String crdtId, [int amount = 1]) =>
+      _serialize(() async {
+        final candidate = replica.fork();
+        final change = candidate.incrementPnCounter(crdtId, amount);
+        final delta = Delta.crdt([change]);
+        await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+        replica.adopt(candidate);
+        return change;
+      });
 
   /// Decrements PN-Counter at stable application-defined [crdtId].
-  Future<PnCounterDelta> decrementPnCounter(
-    String crdtId, [
-    int amount = 1,
-  ]) async {
-    final change = replica.decrementPnCounter(crdtId, amount);
-    await _persistCounterChange(change);
-    return change;
-  }
+  Future<PnCounterDelta> decrementPnCounter(String crdtId, [int amount = 1]) =>
+      _serialize(() async {
+        final candidate = replica.fork();
+        final change = candidate.decrementPnCounter(crdtId, amount);
+        final delta = Delta.crdt([change]);
+        await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+        replica.adopt(candidate);
+        return change;
+      });
 
   Future<void> push({bool force = false}) {
     final running = _pushFuture;
     if (running != null) return running;
-    final future = _pushInternal(force: force);
+    final future = _serialize(() => _pushInternal(force: force));
     _pushFuture = future.whenComplete(() => _pushFuture = null);
     return _pushFuture!;
   }
@@ -191,22 +211,16 @@ class SyncEngine {
     await _subscription?.cancel();
   }
 
-  Future<void> _persistPending(Operation change) async {
-    final pending = await store!.read(replica.id);
-    await store!.write(replica.id, pending.merge(Delta([change])));
-  }
-
-  Future<void> _persistPendingDelta(DeltaChange change) async {
-    final pending = await store!.read(replica.id);
-    await store!.write(replica.id, pending.merge(Delta.crdt([change])));
-  }
-
-  Future<void> _persistCounterChange(DeltaChange change) async {
+  Future<void> _commitCandidate(
+    Replica candidate,
+    Delta delta,
+    OutboxEntry entry,
+  ) async {
     if (storage != null) {
-      await storage!.enqueue(OutboxEntry(delta: Delta.crdt([change])));
-      await _saveSnapshot();
+      await storage!.commit(_snapshot(candidate), [entry]);
     } else {
-      await _persistPendingDelta(change);
+      final pending = await store!.read(replica.id);
+      await store!.write(replica.id, pending.merge(delta));
     }
   }
 
@@ -217,17 +231,29 @@ class SyncEngine {
 
   Future<void> _saveSnapshot() async {
     if (storage == null) return;
-    await storage!.saveReplica(
-      ReplicaSnapshot(
-        replicaId: replica.id,
-        state: replica.state.values,
-        clock: replica.clock,
-        metadata: {
-          'delta': replica.export().toJson(),
-          'hlc': replica.hlcTimestamp.toJson(),
-        },
-      ),
+    await storage!.saveReplica(_snapshot());
+  }
+
+  ReplicaSnapshot _snapshot([Replica? source]) {
+    final snapshotSource = source ?? replica;
+    return ReplicaSnapshot(
+      replicaId: snapshotSource.id,
+      state: snapshotSource.state.values,
+      clock: snapshotSource.clock,
+      metadata: {'replicaState': snapshotSource.toSnapshotJson()},
     );
+  }
+
+  Future<T> _serialize<T>(Future<T> Function() action) {
+    final result = Completer<T>();
+    _serialTail = _serialTail.then((_) async {
+      try {
+        result.complete(await action());
+      } catch (error, stackTrace) {
+        result.completeError(error, stackTrace);
+      }
+    });
+    return result.future;
   }
 
   HlcTimestamp? _readHlcOrNull(Map<String, Object?> metadata) {

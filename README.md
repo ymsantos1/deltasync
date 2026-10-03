@@ -60,6 +60,14 @@ adaptador SQLite, Hive, Isar ou arquivos.
 testes, exemplos e protótipos; todos os dados são perdidos quando o processo
 termina e não deve ser usado como storage de produção.
 
+Adaptadores de `ReplicaStorage` devem implementar `commit` para gravar snapshot
+e entradas novas da outbox atomicamente, e `commitRemote` para substituir snapshot
+após merge remoto. Falha deve preservar estado anterior. Esses métodos novos
+exigem atualização de implementações externas. Snapshots atuais usam formato 1,
+com estado materializado em `metadata['replicaState']`; estado LWW inclui
+tombstones e contadores guardam componentes/sequências. O reader ainda aceita
+snapshots antigos com `metadata['delta']` e os regrava no formato atual ao iniciar.
+
 ### Confirmação e retry
 
 `DeltaTransport.send` concluir significa apenas que envio terminou. Só

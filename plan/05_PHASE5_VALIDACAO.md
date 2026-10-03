@@ -23,6 +23,8 @@ Critérios:
 - [ ] Unidade, join algébrico, deltas, JSON/restauração cobrem oito tipos.
 - [ ] Casos de concorrência, duplicação/reordenação e tombstones cobertos.
 - [ ] Diagnósticos da baseline têm regressões ou limitação/compatibilidade explícita.
+- [ ] Achados F-01 a F-06 da análise e demais inconsistências aplicáveis terem
+  evidência de correção ou limite explícito nas tarefas R-09a/R-09b/R-05/R-08d.
 - [ ] Geração determinística informa sementes e condições de convergência.
 
 Validação: suíte completa na raiz e todos os pacotes; evidência por requisito.
@@ -37,18 +39,35 @@ Status: planejada
 MoSCoW: MUST
 Dependências: R-08c
 
-Áreas: example/ ou aplicação de demonstração, README e adaptador SQLite.
-Objetivo: demonstrar consumo manual da biblioteca em cenário pequeno.
+Áreas: aplicativo de demonstração consumidor, exemplo, README e adaptador SQLite.
+Objetivo: demonstrar uso real da biblioteca e experiência offline em fluxo
+pequeno. Compass pode ser usado como exemplo, se disponível.
 
 Critérios:
 
 - [ ] Dois tipos CRDT, duas réplicas, edição offline e convergência após reconexão.
 - [ ] SQLite preserva estado e pendências após reinício.
+- [ ] Aplicativo consumidor implementar mapeamento de seus modelos e fluxo contra
+  a API pública; regras de negócio/UI permanecem no app. Compass é evidência
+  ilustrativa opcional, sem exigir mudanças em DeltaSync para atendê-lo.
+- [ ] Registrar passos de configuração e dificuldades de integração; corrigir
+  falhas gerais do contrato na biblioteca, se confirmadas; resolver necessidades
+  específicas por adaptação do consumidor, sem duplicar estado/sync ou sobrescrever
+  implementação interna. Mudança em DeltaSync exige justificativa aplicável a
+  consumidores gerais ou defeito confirmado.
+- [ ] Percurso no app comprovar edição/consulta durante indisponibilidade,
+  apresentação coerente de pendência/erro/confirmação e recuperação após reinício.
+  Registrar ações/resultados no consumidor escolhido; achados de usabilidade
+  limitados ao cenário e aos participantes efetivamente avaliados.
 - [ ] Instruções de execução/plataforma e resultado esperado reproduzíveis.
 - [ ] Sem dependência de codegen ou framework de objetos.
 
-Validação: executar aplicação na plataforma suportada, registrar cenário e
-resultado. Exemplo Dart atual de alteração local não satisfaz demonstração.
+Validação: executar aplicação consumidora e registrar versão, cenário, ações e
+resultado, distinguindo integração e experiência offline. Compass, quando usado,
+ilustra consumo real; sua disponibilidade não bloqueia esta tarefa nem autoriza
+customização do core. Se não disponível, usar consumidor pequeno e reproduzível.
+Exemplo de CRDT isolado sem storage/reconexão não satisfaz demonstração. Este
+cenário complementa cobertura geral dos oito tipos em VAL-01.
 
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
@@ -81,15 +100,25 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 Status: planejada
 MoSCoW: MUST
-Dependências: R-07a, R-07d, R-08c
+Dependências: R-07a, R-07d, R-08c, VAL-02
 
-Áreas: fonte editável do TCC quando fornecida; proposta.md e registro de decisões.
+Áreas: fonte editável do TCC quando fornecida; documentação de integração/manutenção,
+proposta.md e registro de decisões.
 Objetivo: alinhar texto/diagrama acadêmicos com entrega efetiva.
 
 Critérios:
 
 - [ ] Quatro subpacotes/facade e storage abstrato com adaptador sqflite descritos.
 - [ ] Correspondência da API real com métodos conceituais do PDF documentada.
+- [ ] Contratos consolidados de core, estado, storage e mensagem terem diagrama
+  curto e exemplos que expliquem mutação, delta, join, commit e restauração.
+- [ ] Guia de integração/manutenção apontar arquivos e testes para alterar um
+  comportamento de CRDT ou implementar adaptador de storage, incluindo invariantes
+  e compatibilidade. Usar uma alteração real das tarefas como percurso documentado
+  para contribuidores/forks; evitar criar extensão sem uso para demonstrar facilidade.
+- [ ] Quando Compass for demonstrado, relatar consumo da API e adaptações feitas
+  no app sem inferir mudanças necessárias na biblioteca; separar essa evidência
+  dos resultados gerais de CRDTs, manutenção e durabilidade.
 - [ ] Oito tipos e distinção de extensões futuras preservados.
 - [ ] Demonstração e limitações refletem resultados obtidos.
 
@@ -116,12 +145,17 @@ Critérios:
 - [ ] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados.
 - [ ] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
 - [ ] Transporte abstrato e formatos compatíveis/versionados verificados.
+- [ ] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
+  públicos terem responsabilidade demonstrável, sem quota de classes removidas.
 - [ ] Demonstração executada; matriz e texto acadêmico alinhados.
+- [ ] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
+  geral de integração/manutenção. Uso do Compass é exemplo adicional e não requisito
+  da biblioteca; execução isolada não comprova funcionalidade ou usabilidade geral.
 - [ ] Requisitos MUST concluídos; limitações explícitas.
 
 Validação: revisar evidências de todas as tarefas MUST e executar conjunto final
-de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos 38 testes
-da baseline, isoladamente, não conclui TCC.
+de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
+da baseline ou da revisão de 2026-10-03, isoladamente, não conclui TCC.
 
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 

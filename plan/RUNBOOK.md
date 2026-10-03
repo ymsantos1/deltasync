@@ -35,6 +35,13 @@ Achado ou falha retorna à implementação; revisão e checks afetados são repe
 Review do próprio agente não é independente. Pedido só de leitura/review não
 autoriza implementar ou atualizar status de produto.
 
+Em todas as etapas, aplicar [uso real, simplicidade e manutenção](../AGENTS.md#uso-real-simplicidade-e-manutenção).
+Na leitura, identificar fluxo de consumo e pontos de alteração afetados. Em
+mudanças de estrutura/API, implementação e review devem justificar abstrações
+introduzidas e avaliar caminho público, duplicações e impacto em manutenção/forks.
+Validação usa exemplos/evidências proporcionais aos critérios da tarefa. Registrar
+resultado nos campos existentes, sem criar relatório ou processo paralelo.
+
 ## Controle do andamento
 
 - Na fase: status, checkboxes e campo “Evidência de conclusão” são atualizados

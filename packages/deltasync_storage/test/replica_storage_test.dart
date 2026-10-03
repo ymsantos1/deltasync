@@ -21,6 +21,34 @@ void main() {
     expect((await storage.loadReplica('device-a'))!.state, {'title': 'draft'});
   });
 
+  test(
+    'atomic commit validates every outbox entry before publishing',
+    () async {
+      final initial = ReplicaSnapshot(
+        replicaId: 'device-a',
+        state: {'title': 'before'},
+        clock: VectorClock(),
+      );
+      await storage.saveReplica(initial);
+      final foreign = OutboxEntry(operation: Replica('device-b').set('x', 1));
+
+      await expectLater(
+        storage.commit(
+          ReplicaSnapshot(
+            replicaId: 'device-a',
+            state: {'title': 'after'},
+            clock: VectorClock(),
+          ),
+          [foreign],
+        ),
+        throwsArgumentError,
+      );
+
+      expect(await storage.loadReplica('device-a'), same(initial));
+      expect(await storage.pending('device-a'), isEmpty);
+    },
+  );
+
   test('enqueues idempotently and acknowledges operations', () async {
     final operation = Replica('device-a').set('title', 'draft');
     final entry = OutboxEntry(operation: operation);

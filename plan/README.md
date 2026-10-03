@@ -1,11 +1,11 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-09-27. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-03. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
 - [Contexto arquitetural](../proposta.md) e [PDF acadêmico](<../referencia/Proposta TCC.pdf>).
-- [Fase 1: correções](01_PHASE1_CORRECOES.md).
+- [Fase 1: simplificação e correções](01_PHASE1_CORRECOES.md).
 - [Fase 2: CRDTs](02_PHASE2_CRDTS.md).
 - [Fase 3: persistência](03_PHASE3_PERSISTENCIA.md).
 - [Fase 4: sync](04_PHASE4_SYNC.md).
@@ -15,13 +15,17 @@ Revisão: 2026-09-27. Fonte principal de tarefas, escopo e andamento.
 - [Riscos](RISKS.md).
 - [Instruções de trabalho](../AGENTS.md).
 - [Como executar tarefas com ciclo completo](RUNBOOK.md).
+- [Análise da arquitetura e simplificações](../docs/analise-arquitetura.md).
 
 ## Situação e referência acadêmica
 
 A proposta é coerente como biblioteca modular de CRDTs com sincronização
 incremental e persistência local. A implementação atual ainda não satisfaz esse
-escopo: há três dos oito CRDTs, integração restrita a LWW e armazenamento apenas
-em memória. A viabilidade no prazo não pode ser confirmada sem datas, esforço
+escopo: há três dos oito CRDTs integrados em Replica/SyncEngine e armazenamento
+apenas em memória. Revisão de 2026-10-03 reproduziu bloqueio entre engines,
+mutação antes da restauração com perda de snapshot e valores compartilhados que
+alteram estado sem delta. Aprovação de 55 testes não cobre essas garantias.
+A viabilidade no prazo não pode ser confirmada sem datas, esforço
 disponível e estimativas das tarefas restantes; OR-Set, OR-Map, recuperação durável
 e integração são os maiores riscos.
 
@@ -30,6 +34,12 @@ Os planos anteriores acrescentavam obrigações não presentes no texto acadêmi
 schema de modelos e anti-entropy genérico. Também repetiam tarefas concluídas e
 tratavam persistência/lifecycle parciais como concluídos. Esta revisão separa
 requisitos acadêmicos, decisões técnicas de execução e extensões.
+
+Autor decidiu manter oito CRDTs e SQLite/sqflite. Prioridade atual: consolidar
+caminho nativo, estado e storage; fechar fluxo real dos três tipos existentes;
+entregar recuperação durável e integrar tipos restantes progressivamente.
+Refatoração reduz sobreposição de classes e contratos, sem quota de classes nem
+framework genérico novo. Detalhes e diagnósticos estão na análise vinculada acima.
 
 ### Divergências que precisam constar no texto final do TCC
 
@@ -54,6 +64,27 @@ requisitos acadêmicos, decisões técnicas de execução e extensões.
 Não reduzir silenciosamente os oito CRDTs previstos. Se o prazo exigir recorte,
 registrar a alteração da proposta e justificá-la academicamente.
 
+## Uso real, integração e manutenção
+
+DeltaSync visa consumo por aplicativos diversos. Compass é exemplo real indicado
+pelo autor, útil para demonstrar integração. Não é alvo de customização do core nem
+condiciona contratos, escopo ou conclusão do TCC. Aplicar as [orientações de
+engenharia](../AGENTS.md#uso-real-simplicidade-e-manutenção) em toda tarefa;
+facilitar integração, experiência offline e manutenção sem reduzir garantias.
+
+Consumidores adaptam seus modelos e fluxos por mapeamento, composição e adaptadores
+próprios contra contratos públicos. Extensões da biblioteca atendem necessidade
+geral dos CRDTs previstos; não criar override de implementação interna nem
+abstração de plugin sem caso concreto. R-08d exercita um consumidor simples pela
+API pública. VAL-02 demonstra uso real, podendo usar Compass como exemplo;
+VAL-04 documenta integração e manutenção. Cada tarefa contém seus critérios.
+
+Repositório/plataforma do Compass podem contextualizar uma demonstração, se
+disponíveis, sem bloquear tarefas ou gate da biblioteca. Qualquer integração nele
+fica no consumidor; incompatibilidade específica vira adaptação no app. Defeito ou
+limite geral do contrato pode justificar mudança na biblioteca. Gate dos oito
+CRDTs e gate da persistência SQLite são avaliados sem depender do Compass.
+
 ## Modelo de trabalho
 
 Um agente executa etapas distintas: leitura da tarefa, implementação, review,
@@ -61,13 +92,19 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **1 — correções**. Tarefa ativa: **nenhuma**.
-Próxima tarefa recomendada: **R-04 — commits atômicos e snapshots**.
+Fase ativa: **1 — simplificação e correções**. Tarefa ativa: **nenhuma**.
+Próxima tarefa recomendada: **R-09a — Core nativo e compatibilidade**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
-Fases organizam entregas; não são barreiras artificiais: fase 2 pode começar com
-R-02 concluída, fase 3 com R-04, e R-08a com R-02. Registrar mudança da fase ativa
-se selecionar trabalho de outra fase. Não relaxar gate final por esse motivo.
+Fases organizam entregas; dependências específicas orientam execução. Sequência
+recomendada: R-09a, R-09b, R-05, R-08a, R-08b e R-08d; depois contrato/SQLite e
+recuperação em R-07b/c/d. Cinco tipos restantes podem avançar após R-08d, com
+integração individual. Registrar fase ativa ao selecionar tarefa de outra fase.
+R-07a consolida oito tipos, inclusive persistência real; R-08c fecha reconciliação.
+
+R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
+correções obrigatórias em R-09a/R-09b/R-05; base inteira continua incompleta até
+sucessoras e integração aprovadas. Revisão documental não conclui essas tarefas.
 
 MoSCoW define escopo: MUST obrigatório, SHOULD importante e dispensável com
 justificativa, COULD opcional, WON'T-YET fora desta entrega. Sem RICE ou
@@ -102,24 +139,27 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-01](01_PHASE1_CORRECOES.md#r-01) | LWW nativo e compatibilidade | concluída | MUST | — |
 | [R-02](01_PHASE1_CORRECOES.md#r-02) | Identidade e roteamento | concluída | MUST | R-01 |
 | [R-03](01_PHASE1_CORRECOES.md#r-03) | ACK e outbox seguros | concluída | MUST | — |
-| [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | pronta | MUST | R-02, R-03 |
-| [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | planejada | MUST | R-04 |
-| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | pronta | MUST | R-02 |
-| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | pronta | MUST | R-02 |
-| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | pronta | MUST | R-02 |
-| [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-02 |
+| [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | concluída | MUST | R-02, R-03 |
+| [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | pronta | MUST | R-01, R-02 |
+| [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | planejada | MUST | R-09a, R-03, R-04 |
+| [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | planejada | MUST | R-09b |
+| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | planejada | MUST | R-08d |
+| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | planejada | MUST | R-08d |
+| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | planejada | MUST | R-08d |
+| [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | planejada | MUST | R-08d |
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |
-| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-04, R-06a, R-06b, R-06c, R-06d, R-06e |
-| [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | planejada | MUST | R-04 |
+| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
+| [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | planejada | MUST | R-08d |
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | planejada | MUST | R-07b |
-| [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | planejada | MUST | R-05, R-07c |
-| [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | pronta | MUST | R-02 |
+| [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | planejada | MUST | R-07c, R-08d |
+| [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | planejada | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | planejada | MUST | R-03, R-08a |
-| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | planejada | MUST | R-05, R-07a, R-07d, R-08b |
+| [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | planejada | MUST | R-05, R-08a, R-08b |
+| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | planejada | MUST | R-07a, R-07d, R-08d |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | planejada | MUST | R-07a |
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | planejada | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | planejada | MUST | VAL-01, VAL-02, R-07d, R-08c |
-| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | planejada | MUST | R-07a, R-07d, R-08c |
+| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | planejada | MUST | R-07a, R-07d, R-08c, VAL-02 |
 | [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | planejada | MUST | VAL-03, VAL-04 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | planejada | SHOULD | VAL-02 |
 
@@ -139,6 +179,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | Testes unitários, integração, recuperação e regressão | MUST | PDF §6.9 |
 | Propriedades algébricas com permutações/testes gerativos reproduzíveis | MUST | PDF §6.9; método técnico |
 | Commits atômicos e formatos versionados | MUST | Decisões técnicas para durabilidade/evolução |
+| Core nativo, estado canônico, outbox por mudança e fila sem espera de rede | MUST | Correções e simplificação da base; revisão de 2026-10-03 |
 | Aplicação demonstrativa mínima | MUST | Contexto atual; PDF §6.9 a apresenta como possibilidade |
 | Medição de bytes de deltas versus estado completo | SHOULD | Evidência da motivação incremental |
 | ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Extensões dos planos antigos |
@@ -153,7 +194,8 @@ registrador. LWW mantém sua própria política.
 ## Gates e critérios de conclusão
 
 Cada fase define entrada, saída e validações específicas. Concluir TCC requer
-VAL-05: oito CRDTs integrados, deltas/joins corretos, formatos restauráveis,
+VAL-05: R-09a/R-09b/R-05/R-08d validadas, oito CRDTs integrados,
+deltas/joins corretos, formatos restauráveis,
 SQLite real, commits atômicos, outbox/ACK sem perda, reconciliação na topologia
 declarada, testes, demonstração e texto acadêmico alinhado.
 
@@ -187,6 +229,12 @@ envelopes/topologia/fluxo. VAL-* explicita demonstração, relatório e gates.
 Não manter cópia concorrente dos planos antigos. Fonte de escopo: este README;
 tarefas: fases; evidências: TRACEABILITY; escolhas: DECISIONS; riscos: RISKS.
 Mudança de escopo registra origem, justificativa e impacto no prazo.
+
+Em 2026-10-03, análise do core e falhas de integração motivaram R-09a/R-09b e
+R-08d. Dependências passaram a exigir base consolidada antes da expansão;
+integração individual entra em cada R-06. Autor manteve proposta e oito tipos.
+Nomes de classes, APIs e formatos futuros serão definidos nas tarefas com
+compatibilidade explícita; decisões de planejamento não indicam código entregue.
 
 `moscow.md` foi restaurado pelo autor como referência histórica. Não é plano
 concorrente nem impõe multiagentes, RICE ou novas aprovações ao fluxo vigente.

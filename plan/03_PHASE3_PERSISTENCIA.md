@@ -1,7 +1,8 @@
 # Fase 3 — Persistência durável de referência
 
 Estado: planejada. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
-Entrada: R-04 concluída; não depende de finalizar todos os CRDTs.
+Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
+Não depende de finalizar cinco tipos restantes.
 Saída: contrato validado, adaptador sqflite e recuperação real com falhas testadas.
 Riscos: commit parcial, regressão de identidade/clocks, backup com ID duplicado.
 Exclusões: suporte simultâneo a todos os bancos e persistência de réplicas remotas
@@ -13,15 +14,18 @@ inteiras. Tabelas são detalhes do adaptador, não contrato obrigatório do core
 
 Status: planejada
 MoSCoW: MUST
-Dependências: R-04
+Dependências: R-08d
 
 Áreas: packages/deltasync_storage/lib/src/ e testes de contrato compartilhados.
-Objetivo: verificar contrato de commits/snapshots/outbox em adaptadores.
+Objetivo: tornar reutilizáveis checks do contrato de R-09b e fluxo de R-08d
+para execução em MemoryStorage e adaptadores persistentes.
 
 Critérios:
 
 - [ ] Mesma suíte executável em MemoryStorage e adaptadores persistentes.
 - [ ] Commit local/remoto, versões, ACK e metadados verificáveis.
+- [ ] Snapshot canônico e outbox por mudança não exigirem do adaptador conhecimento
+  de classes CRDT concretas; dados retornados não permitirem mutação do storage.
 - [ ] Falha injetada não deixa estado/outbox parcialmente confirmados.
 - [ ] Testes de memória identificados como simulação, não reinício de processo.
 
@@ -48,6 +52,8 @@ Critérios:
 - [ ] Identidade durável; comportamento de cópia/backup documentado.
 - [ ] Suíte R-07b aprovada no adaptador.
 - [ ] Core e sync continuam sem dependência de Flutter, SQL ou sqflite.
+- [ ] Adaptador consumir contrato consolidado; schema não duplicar estados/clocks
+  nem adicionar abstrações de bancos sem uso no cenário do TCC.
 
 Validação: analisar/buildar pacote na plataforma suportada e executar contrato
 com SQLite real. Registrar dispositivo/plataforma; não substituir por mock.
@@ -60,7 +66,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 Status: planejada
 MoSCoW: MUST
-Dependências: R-05, R-07c
+Dependências: R-07c, R-08d
 
 Áreas: adaptador sqflite, sync e testes de recuperação/injeção de falhas.
 Objetivo: comprovar recuperação entre sessões, não apenas reuso de objeto em memória.
@@ -72,6 +78,8 @@ Critérios:
 - [ ] Interrupção antes do envio e após envio/antes do ACK mantém recuperação.
 - [ ] Falhas transacionais não produzem snapshot sem outbox necessária.
 - [ ] Limites de backup/restore e plataforma documentados.
+- [ ] Cenários de duas engines de R-08d serem executados com SQLite real, incluindo
+  envio simultâneo, falha/retry e mutação enquanto ACK estiver pendente.
 
 Validação: integração SQLite real, reabertura e falhas em etapas do commit;
 registrar evidências específicas, separadas dos testes de MemoryStorage.
@@ -81,5 +89,5 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## Gate da fase
 
-R-07b, R-07c e R-07d concluídas. Fase pode avançar inicialmente com LWW; suporte
-aos oito tipos também depende de R-07a antes da conclusão integrada do TCC.
+R-07b, R-07c e R-07d concluídas. Recuperação começa com três tipos existentes;
+suporte durável aos oito tipos é consolidado em R-07a antes do gate final.

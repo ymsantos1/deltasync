@@ -176,6 +176,98 @@ void main() {
     await second.dispose();
   });
 
+  test(
+    'legacy history snapshot migrates to compact versioned snapshot',
+    () async {
+      final storage = MemoryStorage();
+      final source = Replica('device-a')..setDelta('title', 'legacy');
+      await storage.saveReplica(
+        ReplicaSnapshot(
+          replicaId: source.id,
+          state: source.state.values,
+          clock: source.clock,
+          metadata: {
+            'delta': source.export().toJson(),
+            'hlc': source.hlcTimestamp.toJson(),
+          },
+        ),
+      );
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+
+      await engine.start();
+
+      expect(engine.replica.state.values, {'title': 'legacy'});
+      expect((await storage.loadReplica('device-a'))!.metadata.keys, {
+        'replicaState',
+      });
+      await engine.dispose();
+    },
+  );
+
+  test(
+    'failed local commit leaves active replica and outbox unchanged',
+    () async {
+      final storage = FailOnceCommitStorage();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      await expectLater(engine.setDelta('title', 'draft'), throwsStateError);
+      expect(engine.replica.state.values, isEmpty);
+      expect(await storage.pending('device-a'), isEmpty);
+
+      final committed = await engine.setDelta('title', 'saved');
+      expect(committed.id, 'device-a:delta:1');
+      expect(engine.replica.state.values, {'title': 'saved'});
+      expect((await storage.pending('device-a')).single.changeIds, [
+        committed.id,
+      ]);
+    },
+  );
+
+  test(
+    'failed remote snapshot commit leaves active replica unchanged',
+    () async {
+      final storage = FailOnceSnapshotStorage();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      await engine.start();
+      storage.failNextSnapshot = true;
+      final remote = Replica('remote')..setDelta('title', 'remote');
+
+      await expectLater(engine.applyRemote(remote.export()), throwsStateError);
+      expect(engine.replica.state.values, isEmpty);
+      await engine.applyRemote(remote.export());
+      expect(engine.replica.state.values, {'title': 'remote'});
+      await engine.dispose();
+    },
+  );
+
+  test('concurrent local mutations serialize IDs and commits', () async {
+    final storage = MemoryStorage();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: TestDeltaTransport(),
+    );
+    final changes = await Future.wait([
+      for (var index = 0; index < 12; index++)
+        engine.setDelta('key-$index', index),
+    ]);
+
+    expect(changes.map((change) => change.id).toSet(), hasLength(12));
+    expect(engine.replica.state.values, hasLength(12));
+    expect(await storage.pending('device-a'), hasLength(12));
+  });
+
   test('acknowledging transport clears storage outbox after ACK', () async {
     final storage = MemoryStorage();
     final transport = AcknowledgingTestDeltaTransport();
@@ -387,6 +479,35 @@ class TestPendingDeltaStore implements PendingDeltaStore {
   @override
   Future<void> write(String replicaId, Delta delta) async {
     _data[replicaId] = delta;
+  }
+}
+
+class FailOnceCommitStorage extends MemoryStorage {
+  bool _fail = true;
+
+  @override
+  Future<void> commit(
+    ReplicaSnapshot snapshot,
+    Iterable<OutboxEntry> entries,
+  ) async {
+    if (_fail) {
+      _fail = false;
+      throw StateError('commit failed');
+    }
+    await super.commit(snapshot, entries);
+  }
+}
+
+class FailOnceSnapshotStorage extends MemoryStorage {
+  bool failNextSnapshot = false;
+
+  @override
+  Future<void> commitRemote(ReplicaSnapshot snapshot) async {
+    if (failNextSnapshot) {
+      failNextSnapshot = false;
+      throw StateError('snapshot commit failed');
+    }
+    await super.commitRemote(snapshot);
   }
 }
 

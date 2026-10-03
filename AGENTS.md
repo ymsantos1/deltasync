@@ -22,6 +22,42 @@ de rede. SQLite/sqflite é adaptador de referência previsto para o TCC; MemoryS
 é volátil. Oito CRDTs permanecem no escopo. Codegen/build_runner, ObjectCrdt e
 GC destrutivo são extensões futuras; invariantes em [DECISIONS](plan/DECISIONS.md).
 
+## Uso real, simplicidade e manutenção
+
+DeltaSync deve ser uma biblioteca utilizável em projetos diversos. Compass é um
+exemplo de consumidor real indicado pelo autor, não alvo para adaptar o core.
+Toda tarefa deve considerar quem integra a biblioteca, quem usa o aplicativo e
+quem mantém, contribui ou cria forks.
+
+- Priorizar correção, integração simples e facilidade de alteração. Código enxuto
+  significa menos conceitos e duplicações; quantidade de linhas/classes não é meta.
+- Justificar classes, camadas e abstrações novas com um uso concreto no fluxo ou
+  nos oito CRDTs previstos. Preferir a solução mais simples que preserve invariantes;
+  evitar frameworks e extensões para necessidades hipotéticas.
+- Manter responsabilidade localizável: uma regra deve ter um lugar claro para ser
+  alterada, sem atualizar representações paralelas da mesma informação. Explicar
+  onde vivem estado, mutação, delta, join, commit e restauração.
+- APIs públicas devem permitir configurar, editar, consultar e acompanhar falhas
+  e sincronização sem depender de detalhes internos. Distinguir commit local,
+  pendência de envio e confirmação remota; preservar edição durante falhas de rede.
+- O consumidor adapta seus modelos, regras de negócio e fluxos aos contratos
+  públicos da biblioteca, usando composição, mapeamento e adaptadores próprios.
+  Alterar DeltaSync somente para requisito geral dos consumidores previstos ou
+  corrigir defeito/contrato da biblioteca, nunca apenas para atender Compass.
+  Extensão deve ter contrato público explícito; consumidor não sobrescreve
+  implementação interna nem exige framework genérico de plugins.
+- Exemplos, documentação e testes devem ajudar a integrar e modificar a biblioteca.
+  Ao mudar contrato/estrutura, mostrar caminho de consumo e pontos de manutenção,
+  incluindo testes pertinentes e compatibilidade para consumidores e forks.
+- Usar Compass como exemplo de consumo quando pertinente; necessidades específicas
+  dele orientam adaptadores e mudanças no próprio app. Evidência no Compass ilustra
+  uso real e complementa, sem substituir, testes gerais dos CRDTs, integração e
+  recuperação durável.
+
+Aplicar estes critérios durante leitura, implementação, review e validação, com
+evidências proporcionais à tarefa. Critérios de entrega estão nas fases do plano;
+cumprir o procedimento exige avaliar também uso e manutenção do resultado.
+
 ## Procedimentos
 
 Para implementar tarefa, próxima tarefa ou fase do plano, aplicar

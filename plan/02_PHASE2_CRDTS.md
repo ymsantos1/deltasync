@@ -1,7 +1,7 @@
 # Fase 2 — Completar CRDTs e integração
 
 Estado: planejada. Objetivo: completar os oito tipos previstos no PDF.
-Entrada por tarefa: R-02 concluída; R-04 é necessária para integração persistível.
+Entrada: R-08d concluída, comprovando três tipos atuais sob contratos consolidados.
 Saída: cinco tipos restantes e R-07a concluídos.
 Riscos: contexto causal e lacunas, composição observada e crescimento de metadados.
 Exclusões: ObjectCrdt obrigatório, gerador de modelos e sequências experimentais.
@@ -14,6 +14,13 @@ reconciliar estado e deltas. Testar associatividade, comutatividade e idempotên
 do join com permutações ou geração determinística; registrar semente quando houver.
 Não confundir essas propriedades com comutatividade de mutações locais.
 
+Cada tipo também entra em codec, roteamento, snapshot, outbox e API de sync na
+própria R-06, com fluxo entre duas engines e restauração usando MemoryStorage.
+Áreas de cada tarefa incluem consumidores afetados e facade. Persistência real
+dos oito tipos é consolidada em R-07a; não adiar integração individual para lá.
+Explicar estado, delta, join e metadados restauráveis com exemplo pequeno.
+Reusar contratos comuns de R-09a/R-09b; abstração adicional precisa de uso concreto.
+
 Definir contexto causal apropriado antes de MV-Register e OR-Set. Observar evento
 posterior não comprova recebimento do anterior; preservar lacunas ou estabelecer
 pré-condições de entrega com mecanismo que as assegure.
@@ -22,9 +29,9 @@ pré-condições de entrega com mecanismo que as assegure.
 
 ## R-06a — G-Set
 
-Status: pronta
+Status: planejada
 MoSCoW: MUST
-Dependências: R-02
+Dependências: R-08d
 
 Áreas: packages/deltasync_core/lib/src/ e teste próprio de G-Set.
 Objetivo: conjunto com adições e união de estados.
@@ -41,9 +48,9 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06b — 2P-Set
 
-Status: pronta
+Status: planejada
 MoSCoW: MUST
-Dependências: R-02
+Dependências: R-08d
 
 Áreas: packages/deltasync_core/lib/src/ e teste próprio de 2P-Set.
 Objetivo: conjuntos de adições e remoções com remoção definitiva do elemento.
@@ -60,9 +67,9 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06c — MV-Register
 
-Status: pronta
+Status: planejada
 MoSCoW: MUST
-Dependências: R-02
+Dependências: R-08d
 
 Áreas: core, identidade/contexto causal e testes de MV-Register.
 Objetivo: preservar versões concorrentes, removendo versões observadas dominadas.
@@ -80,9 +87,9 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06d — OR-Set
 
-Status: pronta
+Status: planejada
 MoSCoW: MUST
-Dependências: R-02
+Dependências: R-08d
 
 Áreas: core, identidade/contexto causal e testes de OR-Set.
 Objetivo: remover adições observadas e permitir adição concorrente/readição.
@@ -125,20 +132,24 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 Status: planejada
 MoSCoW: MUST
-Dependências: R-04, R-06a, R-06b, R-06c, R-06d, R-06e
+Dependências: R-07d, R-06a, R-06b, R-06c, R-06d, R-06e
 
-Áreas: core/Replica/DeltaCodec, storage/OutboxEntry, sync/SyncEngine e testes.
-Objetivo: integrar os oito tipos por endereço estável, com snapshot restaurável.
+Áreas: core, codecs, storage/OutboxEntry, sync, adaptador SQLite e testes.
+Objetivo: consolidar conjunto de oito tipos já integrados individualmente,
+incluindo lotes mistos e snapshots restauráveis em storage durável.
 
 Critérios:
 
 - [ ] Codec, roteamento, estado, snapshot e outbox cobrem todos os tipos.
 - [ ] Lotes mistos preservam mudanças; tipos/versões inválidos têm erro explícito.
 - [ ] Cada tipo realiza fluxo mutação, storage, envio e aplicação remota.
+- [ ] SQLite real restaura snapshots/pendências dos oito tipos; integração
+  individual anterior não ser apresentada como durabilidade já comprovada.
 - [ ] Nenhuma integração depende de build_runner.
 
 Validação: round-trip e fluxo conjunto de cada tipo, lote misto, snapshot com
-tombstones e mudanças posteriores. Validar pacotes afetados e facade.
+tombstones e mudanças posteriores, fechamento/reabertura de SQLite com estado
+dos oito tipos. Validar pacotes afetados, facade e plataforma do adaptador.
 
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 

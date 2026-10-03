@@ -1,10 +1,36 @@
 # Rastreabilidade e evidências
 
-Baseline: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>),
+Baseline histórica: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>),
 [contexto](../proposta.md) e inspeção/testes da revisão anterior.
 A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
-## Estado verificado
+## Panorama atual — 2026-10-03
+
+Revisão completa em [análise da arquitetura](../docs/analise-arquitetura.md).
+Autor manteve oito CRDTs e adaptador SQLite; autorizou atualização documental
+para consolidar estrutura antes da expansão. Implementação das correções pendente.
+
+| Área | Evidência atual | Trabalho restante |
+|---|---|---|
+| Core | LWW/G/PN integrados por endereço; caminho legado e CrdtOperation ainda exportados | R-09a consolida contratos, compatibilidade e validação nativa |
+| Estado/storage | Commit e snapshot versionado em MemoryStorage; valores aninhados e referência de réplica escapam do isolamento | R-09b unifica estado/snapshot/outbox e protege escrita/valores |
+| Lifecycle/fila | Mutação antes de start perde snapshot; envio bloqueia fila e duas engines simultâneas | R-05 corrige lifecycle, observabilidade e espera de rede |
+| Mensagem/confirmação | DeltaEnvelope fora do fluxo; testes de ACK devolvem IDs sem segunda engine | R-08a/R-08b definem fluxo; R-08d comprova três tipos com duas engines |
+| Persistência durável | Adaptador SQLite ausente; restauração em memória é simulação | R-07b/R-07c/R-07d validam contrato e recuperação real |
+| Tipos restantes | G-Set, 2P-Set, MV-Register, OR-Set e OR-Map ausentes | Cada R-06 inclui integração; R-07a consolida oito tipos e SQLite |
+| Consumo/manutenção | Aplicativo real demonstra consumo; Compass é exemplo opcional. Integração, usabilidade e facilidade de forks ainda sem evidência | R-08d exercita API pública; VAL-02 aceita consumidor geral e VAL-04 orienta alterações |
+
+55 testes aprovados durante análise inicial: raiz 2, core 26, sync 19,
+storage 6 e transport 2; análises sem issues em Dart 3.13.0/Linux x64.
+Diagnósticos adicionais reproduziram F-01 a F-06, vínculo de tipos inconsistente,
+perda da fonte de tempo injetada e validação de ID divergente após restauração.
+Não foi executado benchmark nem comprovada durabilidade. Essas evidências
+antecedem manutenção documental e não representam execução de R-09a/R-09b/R-08d.
+
+R-01 a R-04 mantêm registros de entregas anteriores. Garantias gerais da base
+continuam incompletas até tarefas sucessoras e integração aprovadas.
+
+## Estado verificado na baseline histórica — 2026-09-27
 
 “Implementado” indica código e testes existentes, não conclusão da validação
 acadêmica. “Parcial” não satisfaz o gate de entrega.
@@ -64,15 +90,16 @@ máximo por réplica sem representação explícita de lacunas.
 
 | Requisito/origem | Tarefas | Componentes e validação necessária |
 |---|---|---|
-| DeltaCrdt e LWW, PDF §§6.2/6.5 | R-01 | core/crdt, LwwRegister, Replica; regressão legada e join nativo |
-| Identidade/dots e roteamento, PDF §§6.4/6.5 | R-02 | Replica, Delta, OutboxEntry; counters independentes, lotes mistos, lacunas |
-| Confirmação/outbox, PDF §6.6 | R-03, R-08b | storage/sync/transport; ACK parcial e retry, política de recuperação |
-| Persistência consistente, PDF §6.6 | R-04, R-07b, R-07c, R-07d | commits/snapshots; contrato, SQLite real e falhas |
-| Continuidade do sync, PDF §§6.5/6.9 | R-05, R-08c | lifecycle/recepção; concorrência, falhas e reconexão |
+| DeltaCrdt e LWW, PDF §§6.2/6.5 | R-01, R-09a | contrato nativo, LwwRegister, Replica; compatibilidade explícita e join |
+| Identidade/dots e roteamento, PDF §§6.4/6.5 | R-02, R-09a, R-09b | metadados comuns, vínculo por endereço/tipo e contexto adequado |
+| Confirmação/outbox, PDF §6.6 | R-03, R-09b, R-08b, R-08d | outbox por mudança, ACK parcial, retry e destino definido |
+| Persistência consistente, PDF §6.6 | R-04, R-09b, R-07b, R-07c, R-07d | snapshot canônico, isolamento, contrato, SQLite real e falhas |
+| Continuidade do sync, PDF §§6.5/6.9 | R-05, R-08d, R-08c | lifecycle/fila; duas engines, edição durante envio, falhas e reconexão |
 | G-Set, 2P-Set, MV-Register, OR-Set, OR-Map, PDF §6.2 | R-06a, R-06b, R-06c, R-06d, R-06e | novos tipos no core; operações, deltas, join e restauração |
-| Integração/JSON, PDF §§6.5/6.8 | R-07a, R-08a | codecs, snapshots, roteamento/envelopes de oito tipos |
+| Integração/JSON, PDF §§6.5/6.8 | R-06a, R-06b, R-06c, R-06d, R-06e, R-07a, R-08a | integração individual e conjunto de oito tipos com SQLite |
 | Testes, PDF §6.9 | VAL-01, R-07d, R-08c | propriedades, regressão, integração e recuperação real |
-| Demonstração, contexto atual | VAL-02 | aplicação mínima, dois tipos, SQLite e duas réplicas |
+| Demonstração, contexto atual | VAL-02 | consumidor real, dois tipos, SQLite, duas réplicas, integração e experiência offline; Compass é exemplo opcional |
+| Simplicidade, manutenção e forks, orientação do autor | R-09a, R-09b, R-05, R-08d, VAL-04 | responsabilidades localizáveis, API pública, percurso de alteração e compatibilidade |
 | Relatório/texto e fechamento | VAL-03, VAL-04, VAL-05 | evidência por requisito, arquitetura/API e gate final |
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
 
@@ -211,6 +238,62 @@ Ao concluir uma tarefa, adicionar registro com:
 Manter baseline histórica; adicionar nova evidência sem substituir silenciosamente
 resultados antigos. Falha também é evidência e não permite marcar conclusão.
 
+## Execução R-04 — 2026-10-01
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-04 selecionada após R-02/R-03; critérios de commit, rollback isolado,
+serialização e snapshots compactos identificados.
+
+Implementação: `ReplicaStorage.commit` grava snapshot+outbox e `commitRemote`
+substitui snapshot remoto; `MemoryStorage` valida tudo antes de publicar. `SyncEngine`
+aplica mutações/remotos em réplica candidata, persiste antes de adotar e serializa
+mutações, merges e push. Snapshots formato 1 restauram identidade, relógios,
+sequências, vencedores LWW/tombstones e componentes de G/PN-Counter; leitura
+continua compatível com snapshots antigos via `metadata['delta']`. `ReplicaState.copy()`
+faz cópia profunda de registradores LWW. README documenta contrato e quebra exigida
+para adaptadores externos.
+
+Review: aprovado
+
+Achados: revisão em etapa distinta pelo próprio implementador, não independente.
+Auxiliar sem uso removido antes da validação. Sem achado impeditivo restante.
+`applyRemote` torna commit remoto aguardável e não adota estado em caso de falha;
+observabilidade de erro do listener segue R-05.
+
+Validação: aprovada
+
+Comandos: Dart SDK 3.13.0; `dart format` nos sete arquivos Dart editados; `dart
+format --output=none --set-exit-if-changed packages/deltasync_core/lib
+packages/deltasync_core/test packages/deltasync_storage/lib
+packages/deltasync_storage/test packages/deltasync_sync/lib
+packages/deltasync_sync/test`; `for package in . packages/deltasync_core
+packages/deltasync_sync packages/deltasync_storage packages/deltasync_transport;
+do (cd "$package" && dart analyze && dart test) || exit 1; done`; `git diff
+--check`; após manutenção, `python3 scripts/check_plan.py` e `git diff --check`.
+Todos passaram: raiz 2, core 26, sync 18, storage 6, transport 2 testes; análises
+sem issues. Após acrescentar migração legado, sync revalidado: análise limpa e
+19 testes aprovados.
+
+Critérios: testes core verificam isolamento LWW, snapshot com tombstone/HLC e
+sequências de counters, rejeição de versão incompatível. Storage verifica validação
+pré-publicação. Sync verifica falha local/remota sem alteração da réplica/outbox,
+migração de snapshot legado, concorrência de 12 mutações e restauração
+snapshot/outbox. MemoryStorage valida
+contrato, não durabilidade entre processos.
+
+Manutenção: R-04 concluída no índice/fase; tarefa ativa limpa; R-05 agora pronta.
+DEC-05 implementada em contrato e MemoryStorage; risco de persistência durável
+permanece para R-07c/R-07d. R-04 encerra mitigação de atomicidade em SyncEngine.
+
+Limitações: `ReplicaStorage` exige `commit` e `commitRemote`, quebra fonte para
+adaptadores externos até implementarem ambos. Snapshots novos são compactos, mas
+`Replica.export()` após restauração contém histórico desde a restauração, não log
+anterior completo. MemoryStorage é volátil. Erros de callback do stream serão
+expostos/resolvidos em R-05.
+
 ## Verificação da migração documental — 2026-09-27
 
 - Review do conteúdo: critérios da refatoração preservados e tarefas agrupadas
@@ -242,3 +325,108 @@ Nenhuma tarefa de produto iniciada ou concluída nesta criação do fluxo.
   desconhecida, duas tarefas ativas, gate prematuro e link ausente.
 - Validador skill-creator aprovado nos seis diretórios de skills.
 - `git diff --check` aprovado; código Dart e suíte do produto preservados.
+
+## Revisão do planejamento e simplificação — 2026-10-03
+
+Pedido: salvar observações sobre limpeza do core na análise e atualizar planos,
+preservando oito CRDTs e escopo acadêmico. Manutenção documental autorizada;
+implementação das tarefas novas não iniciada.
+
+Skills: plan-reader, code-reviewer, plan-validator, plan-maintainer.
+
+Leitura: análise, fases, índice, decisões, riscos, evidências e checker consultados;
+alterações já existentes no worktree preservadas. R-01 a R-04 conservam histórico;
+achados novos exigem correções sucessoras antes da expansão.
+
+Alterações documentais: análise ampliada com limpeza de classes/contratos, critérios
+de compreensão e decisão do autor sobre proposta. R-09a/R-09b adicionadas à fase 1;
+R-05 inclui rede fora da fila e lifecycle; R-08d exige duas engines e três tipos
+atuais. Dependências das cinco implementações restantes e storage passam por
+R-08d; R-07a consolida oito tipos e recuperação SQLite. DEC-12 a DEC-14 e RISK-13
+a RISK-16 registram direção e falhas; panorama atual separado da baseline histórica.
+
+Review documental: aprovado pelo mesmo agente, em etapa separada; sem revisão
+independente. Diff revisado quanto a escopo, compatibilidade, sequência de entregas,
+dependências e preservação de registros históricos. Nenhuma tarefa nova concluída.
+
+Validação documental: aprovada. `python3 scripts/check_plan.py`: 26 tarefas,
+86 links locais, IDs/dependências/status e frontmatter consistentes; somente R-09a
+pronta. `git diff --check`: aprovado. Verificação adicional de links/anchors da
+análise via Python: 15 links válidos e ausência de espaços finais. Comparação
+SHA-256 dos 46 arquivos protegidos antes/depois confirmou preservação de fontes
+Dart, testes, proposta, instruções, skills, pubspecs, README da raiz e checker.
+
+Limitações: aprovação documental não corrige F-01 a F-06, não prova durabilidade
+nem confirma prazo. Resultados Dart acima pertencem à análise inicial; nenhuma
+suíte Dart executada nesta manutenção. Código, proposta, skills e checker preservados.
+
+## Orientações de uso real e manutenção — 2026-10-03
+
+Pedido: aplicar ao planejamento facilidade de integração, uso real no Compass e
+código compreensível para manutenção, contribuição e forks; orientação permanente
+para agentes. Atualização documental autorizada, sem execução de tarefa de produto.
+
+Skills: plan-reader, plan-maintainer, code-reviewer, plan-validator.
+
+Leitura: AGENTS.md, índice, tarefas afetadas, RUNBOOK, decisões, riscos e análise;
+worktree inspecionado e alterações anteriores preservadas.
+
+Alterações: orientações transversais em AGENTS.md e referência no índice/RUNBOOK;
+DEC-15, OPEN-08 e RISK-17; R-09a explica pontos de alteração, R-05 diferencia
+resultados públicos, R-08d exercita consumo e VAL-02 usa Compass. VAL-04 documenta
+percurso de manutenção; VAL-05 exige evidências correspondentes. Análise e matriz
+atualizadas, sem novos IDs de tarefas ou mudança de status. VAL-04 passou a depender
+de VAL-02 para que relato do Compass use resultados efetivamente obtidos.
+
+Review documental: aprovado pelo mesmo agente, em etapa separada; sem revisão
+independente. Comparação com conteúdo anterior ao pedido confirmou escopo das
+edições. Dependência VAL-04/VAL-02 corrigida; adaptações de domínio distinguidas
+de duplicação da lógica de sync para contornar contrato. Nenhuma tarefa de produto
+iniciada ou concluída; R-09a permanece próxima tarefa pronta.
+
+Validação documental: aprovada. `python3 scripts/check_plan.py`: 26 tarefas,
+88 links locais, IDs/dependências/status/frontmatter consistentes. `git diff
+--check`: aprovado. Verificação adicional via Python: análise com 16 links/anchors
+válidos e sem espaços finais. Comparação SHA-256 de 45 arquivos protegidos
+antes/depois confirmou fontes Dart, testes, exemplos, proposta, README da raiz,
+pubspecs, skills e checker sem alterações nesta manutenção. AGENTS.md foi alterado
+conforme pedido; nenhuma suíte Dart executada nesta etapa documental.
+
+Limitações: Compass ainda sem checkout/versão/plataforma/cenário identificado;
+nenhuma integração, avaliação de usuários ou facilidade de forks comprovada nesta
+manutenção. Oito CRDTs e SQLite preservados; código e proposta sem alterações.
+
+## Limite do Compass na arquitetura — 2026-10-03
+
+Pedido: manter Compass apenas como exemplo de consumo real, sem direcionar
+implementação/gate. Aplicativos consumidores adaptam modelos e fluxos à API pública
+da biblioteca; DeltaSync não recebe customizações específicas do Compass. Mudanças
+na biblioteca dependem de requisito geral do escopo ou defeito confirmado.
+
+Skills: plan-reader, code-reviewer, plan-validator, plan-maintainer.
+
+Leitura: AGENTS.md atual, índice, tarefas afetadas, decisões, riscos, análise e
+registros anteriores; alterações preexistentes no worktree foram preservadas.
+
+Alterações: AGENTS.md, README do plano, R-08d, VAL-02/04/05, DEC-15, RISK-17,
+análise e rastreabilidade. Compass tornou-se exemplo opcional, com adaptação no
+app; VAL-02 exige demonstrar consumidor, sem fazer dele requisito do gate. Oito
+CRDTs e SQLite continuam avaliados independentemente do Compass. DEC-15 registra
+quando justificar mudança na biblioteca; removido OPEN-08. Sem status/tarefas novos.
+
+Consumidor usa contrato público, composição e adaptadores próprios; sem override de
+implementações internas ou plugins genéricos.
+
+Review documental: aprovado pelo mesmo agente, etapa separada; sem revisão
+independente. Registros anteriores foram mantidos como histórico e direção corrente
+acrescentada acima.
+
+Validação documental: aprovada. `python3 scripts/check_plan.py`: 26 tarefas,
+88 links locais, IDs/dependências/status/frontmatter consistentes; R-09a segue
+única tarefa pronta. `git diff --check`: aprovado. Verificação adicional via
+Python: 16 links/anchors da análise válidos e sem espaços finais. Nenhuma suíte
+Dart executada; alteração apenas documental, sem editar código, proposta, skills
+ou testes nesta atualização.
+
+Limitações: Compass ainda não inspecionado nem integrado; nenhuma evidência de uso
+ou usabilidade dele. Código, proposta, escopo de oito CRDTs e SQLite não alterados.

@@ -6,11 +6,13 @@ class ReplicaSnapshot {
     required this.replicaId,
     required Map<String, Object?> state,
     required this.clock,
+    this.version = 1,
     Map<String, Object?> metadata = const {},
   }) : state = Map.unmodifiable(state),
        metadata = Map.unmodifiable(metadata);
 
   final String replicaId;
+  final int version;
   final Map<String, Object?> state;
   final VectorClock clock;
   final Map<String, Object?> metadata;
@@ -76,6 +78,13 @@ class OutboxEntry {
 abstract interface class ReplicaStorage {
   Future<ReplicaSnapshot?> loadReplica(String replicaId);
 
+  /// Atomically persists materialized replica state and its new outbox entries.
+  /// Implementations must expose either all changes or none after failure.
+  Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries);
+
+  /// Atomically replaces materialized state after a remote merge.
+  Future<void> commitRemote(ReplicaSnapshot snapshot);
+
   Future<void> saveReplica(ReplicaSnapshot snapshot);
 
   Future<void> enqueue(OutboxEntry entry);
@@ -110,6 +119,29 @@ class MemoryStorage implements ReplicaStorage {
   @override
   Future<void> saveReplica(ReplicaSnapshot snapshot) async {
     _snapshots[snapshot.replicaId] = snapshot;
+  }
+
+  @override
+  Future<void> commitRemote(ReplicaSnapshot snapshot) async {
+    _snapshots[snapshot.replicaId] = snapshot;
+  }
+
+  @override
+  Future<void> commit(
+    ReplicaSnapshot snapshot,
+    Iterable<OutboxEntry> entries,
+  ) async {
+    if (entries.any((entry) => entry.replicaId != snapshot.replicaId)) {
+      throw ArgumentError('Commit entries must belong to snapshot replica');
+    }
+    final nextOutbox = Map<String, OutboxEntry>.of(
+      _outbox[snapshot.replicaId] ?? const {},
+    );
+    for (final entry in entries) {
+      nextOutbox.putIfAbsent(entry.entryId, () => entry);
+    }
+    _snapshots[snapshot.replicaId] = snapshot;
+    _outbox[snapshot.replicaId] = nextOutbox;
   }
 
   @override
