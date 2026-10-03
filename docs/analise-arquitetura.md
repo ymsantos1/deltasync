@@ -295,6 +295,24 @@ revisar comportamento de cada tipo. Contagem de classes não será meta de concl
   sequências, dots e contexto causal somente onde semântica exigir. Não forçar um
   relógio universal nem contexto com lacunas apagadas para todos os tipos.
 
+### Uso dos recursos do Dart
+
+Base já usa enums, generics, interfaces e switches com padrões; oportunidade é
+consolidar seu uso onde o modelo ainda depende de strings ou contratos incompletos.
+Rótulos como `lww`, `g-counter` e `pn-counter` podem ter representação interna
+tipada com nomes serializados estáveis. Metadados comuns de `DeltaChange` devem
+evitar seleção da classe concreta apenas para consultar origem/tipo/endereço.
+`OutboxEntry.delta` opcional, apesar de exigido pelo construtor, é exemplo de
+nulabilidade que pode expressar melhor uma invariante em R-09b.
+
+Extensions ajudam conversões e conveniências; extension types podem distinguir
+IDs em compilação, mas exigem avaliar `ReplicaId` existente e limites em runtime.
+`sealed` pode tornar switches exaustivos, porém impõe subtipos na mesma library;
+não compensa reorganizar tudo sem simplificação demonstrável. Esses recursos
+não substituem os joins, isolamento de dados ou validação nas fronteiras.
+Aplicar [orientações e exemplos do Dart](../AGENTS.md#uso-adequado-dos-recursos-do-dart)
+às tarefas pertinentes, sem modernizar legado destinado à remoção.
+
 ### Responsabilidades que continuam distintas
 
 Estado CRDT e delta representam informações diferentes. Timestamp e relógio mutável

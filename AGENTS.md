@@ -58,6 +58,43 @@ Aplicar estes critérios durante leitura, implementação, review e validação,
 evidências proporcionais à tarefa. Critérios de entrega estão nas fases do plano;
 cumprir o procedimento exige avaliar também uso e manutenção do resultado.
 
+## Uso adequado dos recursos do Dart
+
+Aproveitar recursos da linguagem quando reduzirem duplicação, estados inválidos
+ou esforço de compreensão. Escolher pelo problema concreto, sem exigir todos os
+recursos nem modernizar classes previstas para remoção. Conferir SDK suportado,
+invariantes, compatibilidade pública e formatos persistidos antes da adoção.
+
+Consultar trechos pertinentes do [guia Dart](dart_lang_instruction.md) durante
+leitura e decisões de implementação/review. Guia é referência subordinada a estas
+instruções e à tarefa; seus exemplos não são APIs entregues nem receita obrigatória.
+
+- **Enums, inclusive enhanced enums:** representar conjuntos fechados como tipos
+  de CRDT, status e relações de clocks. Reusar enums existentes. Strings continuam
+  na fronteira JSON; usar rótulos explícitos e estáveis, rejeitar desconhecidos.
+  Não persistir `.index` nem vincular formato a renomeações de `.name`.
+  Exemplo de catálogo e metadados comuns no guia; os oito CRDTs seguem previstos.
+
+- **Contratos tipados e null safety:** expor metadados comuns em `DeltaChange`
+  para evitar switches apenas para obter origem/tipo/endereço. Se uma entrada
+  exige delta válido, como `OutboxEntry`, expressar isso no tipo e construtor;
+  evitar campo nullable que exige `!` em todo consumo. Validar dados externos.
+- **Extensions:** usar para conveniências e conversões coesas, inclusive nos
+  modelos do consumidor. Resolução é estática; não substituem overrides, membros
+  essenciais do contrato nem validação das invariantes.
+- **Extension types:** avaliar IDs distintos em compilação quando evitarem
+  confusões concretas. Reusar `ReplicaId` onde adequado; não criar wrappers em
+  massa. Extension types usam o tipo de representação em runtime; não fornecem
+  identidade nominal em runtime nem dispensam validação na entrada/JSON.
+- **Modificadores de classe e pattern matching:** usar `abstract interface class`
+  para contratos implementáveis por adaptadores; avaliar `sealed` e switches
+  exaustivos para variantes fechadas. Subtipos de `sealed` ficam na mesma library
+  Dart, não apenas no pacote. `final` restringe herança/implementação externa;
+  considerar consumidores/forks e evitar reorganização que acrescente complexidade.
+
+Exemplos são referências de decisão, sem obrigação de usar cada recurso.
+Aplicar nas etapas descritas em [RUNBOOK.md](plan/RUNBOOK.md).
+
 ## Procedimentos
 
 Para implementar tarefa, próxima tarefa ou fase do plano, aplicar

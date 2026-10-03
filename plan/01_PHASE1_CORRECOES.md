@@ -165,9 +165,14 @@ Critérios:
   operacional legado da execução normal, incluindo herança de LwwRegister.
 - [ ] LWW manter vencedor nativo único com tombstone; operações antigas, quando
   suportadas, usar migração explícita sem dois modelos permanentes de vencedor.
-- [ ] Delta ser lote nativo; metadados comuns exporem endereço, tipo, origem e ID.
+- [ ] Delta ser lote nativo; contrato comum de mudança expor endereço, tipo, origem
+  e ID com tipos adequados, sem switches por classe apenas para ler metadados comuns.
   Serialização e envelope terem funções distintas; avaliar necessidade de DeltaCodec
   como classe pública sem criar registry, codegen ou framework genérico.
+- [ ] Conjunto fechado de tipos usar enum com rótulo serializado explícito ou
+  solução tipada equivalente, evitando strings fixas espalhadas. Preservar rótulos
+  e IDs existentes ou versionar mudança; rejeitar tipos desconhecidos. Não usar
+  `.index` nem depender de renomeações de `.name` para formatos persistidos.
 - [ ] Simplificar componentes internos de PN-Counter; validar delta inteiro antes
   de aplicar e manter join por máximo com deltas cumulativos.
 - [ ] Validar endereços/valores locais antes de mutar; saída válida ser aceita
@@ -177,7 +182,8 @@ Critérios:
   preservação de tipos úteis não depender de quota de classes.
 
 Validação: regressões nativas dos três tipos, PN inválido sem efeito parcial,
-endereço vazio, lotes, fixtures de compatibilidade/rejeição e consumidores.
+endereço vazio, lotes, round-trip de tipos/rótulos/IDs e rejeição de desconhecidos,
+fixtures de compatibilidade/rejeição e consumidores.
 Checks de pacotes afetados e facade; ausência de classes sem uso no fluxo revisado.
 Conferir exemplos e correspondência do percurso de alteração com arquivos/testes.
 
@@ -215,12 +221,17 @@ Critérios:
   gravações em commit atômico; primitivas restantes terem função documentada.
 - [ ] Outbox ter uma entrada por mudança, identidade direta e ACK parcial sem perda;
   lotes serem formados no envio. Tentativas e status terem significado consistente.
+- [ ] Nulabilidade refletir invariantes: entrada de outbox exigir mudança válida
+  no tipo/construtor, sem campo opcional que todo consumidor precisa forçar com `!`.
+  Rejeitar entradas inválidas na criação/restauração; ausência legítima continuar
+  explícita, sem valores artificiais para esconder estado ausente.
 - [ ] Mutações locais compartilharem pipeline interno de preparação/commit/adoção;
   falhas manterem estado e outbox anteriores, sem framework público de comandos.
 
 Validação: payload alterado pelo chamador e por consultas não altera estado/outbox;
 referência externa durante commit, relógio controlado, tipo/endereço conflitante,
 snapshot/restauração e sequência, falhas locais/remotas, ACK parcial e compatibilidade.
+Verificar contrato tipado da outbox, criação/restauração inválida e consumidores.
 MemoryStorage simula contrato; durabilidade continua em R-07c/R-07d.
 
 Evidência de conclusão: ainda não registrada; critérios permanecem abertos.

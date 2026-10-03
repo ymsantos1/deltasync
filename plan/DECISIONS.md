@@ -20,6 +20,7 @@ não significa implementação concluída.
 | DEC-13 | adotada | Estado por endereço com vínculo de tipo, snapshot canônico e outbox por mudança; proteção de valores aninhados e escrita da réplica ativa em R-09b. Rede/ACK fora da fila de commits em R-05; sem log ilimitado no caminho normal. |
 | DEC-14 | adotada | R-08d comprova fluxo dos três tipos atuais com duas engines antes de expandir tipos. Cada R-06 inclui integração; R-07a consolida oito tipos e SQLite. Exemplos curtos explicam responsabilidades e invariantes, sem quota de classes. |
 | DEC-15 | adotada | Uso real, integração e manutenção/forks são critérios transversais. Compass é exemplo de consumidor, sem direcionar core/gate. Consumidores adaptam modelos e fluxos usando API pública, composição e adaptadores; DeltaSync muda por necessidade geral prevista ou defeito de contrato. Não sobrescrever implementações internas nem criar plugins genéricos. R-08d testa consumidor simples; VAL-02 aceita demonstração sem Compass. |
+| DEC-16 | adotada | Usar recursos do Dart para reduzir duplicação, estados inválidos e esforço de manutenção. R-09a consolida tipos/metadados com serialização estável; R-09b alinha nulabilidade às invariantes. Enums, extensions, extension types, modificadores e pattern matching são ferramentas condicionadas a uso concreto, SDK e compatibilidade, sem quota de adoção ou hierarquias paralelas. Orientação canônica em AGENTS.md; aplicada no ciclo do RUNBOOK. |
 
 ## Decisões abertas
 
@@ -100,3 +101,8 @@ Consumidor deve se adaptar aos contratos públicos; mudança na biblioteca exige
 necessidade geral prevista ou correção de defeito. DEC-15, R-08d, VAL-02/04/05 e
 AGENTS.md refletem esse limite. Compass deixa de ser requisito de gate; detalhes
 específicos dele não justificam modificar DeltaSync.
+
+Em 2026-10-03, autor autorizou incorporar uso adequado dos recursos do Dart às
+instruções e etapas do plano. DEC-16 orienta simplificação e contratos tipados,
+com exemplos e limites em AGENTS.md e critérios em R-09a/R-09b e fase 2.
+Nenhuma API, classe ou formato foi alterado nesta manutenção documental.

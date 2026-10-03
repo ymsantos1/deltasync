@@ -42,6 +42,21 @@ introduzidas e avaliar caminho público, duplicações e impacto em manutenção
 Validação usa exemplos/evidências proporcionais aos critérios da tarefa. Registrar
 resultado nos campos existentes, sem criar relatório ou processo paralelo.
 
+Aplicar [uso adequado dos recursos do Dart](../AGENTS.md#uso-adequado-dos-recursos-do-dart)
+no mesmo ciclo: na leitura, identificar strings de conjunto fechado, metadados
+duplicados e nulabilidade incompatível com invariantes no trecho afetado. Na
+implementação, escolher o recurso mínimo que resolva o problema. No review,
+avaliar simplificação efetiva, SDK, formatos, comportamento em runtime e extensão
+da API por consumidores/forks. Na validação, verificar contratos e exemplos com
+análise estática e regressões proporcionais, incluindo JSON/restauração e entradas
+inválidas quando afetados. Na manutenção, registrar escolhas e evidências nos
+campos existentes; não exigir checklist de recursos usados.
+
+Usar o [guia Dart](../dart_lang_instruction.md) como consulta dos trechos afetados
+na leitura, implementação e review. Exemplos de R-09a/R-09b são ilustrativos;
+validar o contrato efetivamente implementado, não presumir que o exemplo já existe.
+AGENTS.md e critérios da tarefa prevalecem sobre recomendações gerais do guia.
+
 ## Controle do andamento
 
 - Na fase: status, checkboxes e campo “Evidência de conclusão” são atualizados

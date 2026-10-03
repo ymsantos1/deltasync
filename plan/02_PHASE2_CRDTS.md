@@ -20,6 +20,10 @@ própria R-06, com fluxo entre duas engines e restauração usando MemoryStorage
 dos oito tipos é consolidada em R-07a; não adiar integração individual para lá.
 Explicar estado, delta, join e metadados restauráveis com exemplo pequeno.
 Reusar contratos comuns de R-09a/R-09b; abstração adicional precisa de uso concreto.
+Cada tipo integra identificação tipada, metadados comuns e rótulos serializados
+estáveis nesses contratos, com rejeição de entrada desconhecida/inválida. Aplicar
+[recursos do Dart](../AGENTS.md#uso-adequado-dos-recursos-do-dart) quando simplificarem
+a implementação; não criar hierarquia paralela nem exigir um recurso por CRDT.
 
 Definir contexto causal apropriado antes de MV-Register e OR-Set. Observar evento
 posterior não comprova recebimento do anterior; preservar lacunas ou estabelecer

@@ -85,6 +85,11 @@ fica no consumidor; incompatibilidade específica vira adaptação no app. Defei
 limite geral do contrato pode justificar mudança na biblioteca. Gate dos oito
 CRDTs e gate da persistência SQLite são avaliados sem depender do Compass.
 
+Aplicar também [uso adequado dos recursos do Dart](../AGENTS.md#uso-adequado-dos-recursos-do-dart)
+em toda tarefa. R-09a trata tipos/metadados e compatibilidade; R-09b, invariantes
+de estado e nulabilidade; cada R-06 reutiliza esses contratos. Recursos adicionais
+exigem ganho concreto de clareza, segurança ou manutenção, sem quota de adoção.
+
 ## Modelo de trabalho
 
 Um agente executa etapas distintas: leitura da tarefa, implementação, review,

@@ -430,3 +430,77 @@ ou testes nesta atualização.
 
 Limitações: Compass ainda não inspecionado nem integrado; nenhuma evidência de uso
 ou usabilidade dele. Código, proposta, escopo de oito CRDTs e SQLite não alterados.
+
+## Uso adequado do Dart no planejamento — 2026-10-03
+
+Pedido: orientar agentes a aproveitar recursos do Dart com simplicidade, exemplos
+e limites, incorporando isso ao planejamento e às etapas. Lista adicional do autor
+foi discutida como referência opcional; nenhum catálogo ou procedimento novo criado.
+
+Skills: plan-reader, code-reviewer, plan-validator, plan-maintainer.
+
+Leitura: instruções, índice, RUNBOOK, fases 1/2, decisões, análise e evidências;
+worktree inicialmente limpo. Diagnóstico anterior já identificava enums/interfaces
+existentes, rótulos repetidos, metadados comuns incompletos e nulabilidade da outbox.
+
+Alterações: orientação canônica em AGENTS.md com exemplo de enhanced enum e
+rótulos estáveis, contratos tipados/null safety, extensions, extension types e
+modificadores/pattern matching. SDK, comportamento em runtime, integração e
+compatibilidade são critérios de escolha; não exigir cada recurso nem modernizar
+legado previsto para remoção. README e RUNBOOK aplicam orientação ao ciclo;
+R-09a explicita tipos/metadados/round-trip, R-09b explicita nulabilidade válida,
+fase 2 reusa contratos. DEC-16 e análise registram fundamento. Status, prioridades,
+dependências, oito CRDTs e SQLite preservados; nenhuma tarefa concluída.
+
+Review documental: aprovado pelo mesmo agente em etapa separada; sem revisão
+independente. Revisados diffs, exemplo e limites técnicos, duplicação de orientação,
+compatibilidade e preservação do papel apenas ilustrativo do Compass. Corrigida
+separação indevida de linha na tabela de decisões antes da validação.
+
+Validação documental: aprovada. Na raiz, `python3 scripts/check_plan.py` confirmou
+26 tarefas e 92 links locais, IDs/dependências/status/frontmatter consistentes;
+somente R-09a pronta. `git diff --check`: aprovado. Python adicional, usando helpers
+do checker, confirmou 17 links/anchors da análise e ausência de espaços finais.
+Comparação SHA-256 de 45 arquivos antes/depois confirmou fontes Dart, testes,
+exemplos, proposta, README da raiz, pubspecs, skills e checker sem alterações.
+Nenhuma suíte Dart executada: manutenção apenas documental.
+
+Limitações: exemplos orientam implementação futura; nenhuma alteração de API,
+classe ou formato entregue, nem melhoria de execução/usabilidade comprovada.
+
+## Revisão e vínculo do guia Dart — 2026-10-03
+
+Pedido: aplicar correções da revisão de `dart_lang_instruction.md` e torná-lo
+referência consultável no ciclo do projeto. Skills: code-reviewer, plan-validator,
+plan-maintainer. Worktree já continha manutenção anterior e guia criado pelo autor;
+alterações preexistentes preservadas.
+
+Leitura: guia, instruções, RUNBOOK, índice/evidências e contratos atuais de
+DeltaChange/OutboxEntry. Revisão anterior conferiu limites técnicos na documentação
+oficial do Dart; fontes vinculadas no guia.
+
+Alterações: corrigidos SDK mínimo de extension types, alcance/semântica dos
+modificadores e validação/runtime de extension types. Records públicos pequenos
+e wrappers passaram a ser escolhas justificáveis, sem proibições automáticas.
+Incluídos limites de extensions, serialização estável e exemplos ilustrativos de
+tipos/metadados e nulabilidade para R-09a/R-09b. Parsing do enum reusa seu catálogo,
+sem lista paralela de rótulos. AGENTS.md e RUNBOOK orientam consulta pertinente;
+exemplo de enum foi centralizado no guia. Orientações do projeto e critérios da
+tarefa prevalecem. Nenhuma tarefa iniciada ou concluída.
+
+Review: aprovado pelo mesmo agente em etapa separada; sem revisão independente.
+Guia final e alterações deste turno nas instruções/RUNBOOK revisados quanto a
+precisão, simplicidade, limites de exemplos e compatibilidade. Exemplos futuros
+distinguem-se dos contratos atuais e não prometem isolamento/durabilidade.
+
+Validação: na raiz, `python3 scripts/check_plan.py` confirmou 26 tarefas e 94 links
+locais; IDs, dependências, status e frontmatter consistentes; R-09a única pronta.
+`git diff --check`: aprovado. Verificação adicional via Python confirmou links e
+anchors nos quatro documentos desta atualização, incluindo o guia não rastreado,
+fences fechadas e ausência de espaços finais. Comparação SHA-256 de 54 arquivos
+antes/depois confirmou código, testes, proposta, pubspecs, skills, checker, análise
+anterior e demais planos sem alterações neste turno.
+
+Limitações: alteração documental; exemplos não compilados/executados e nenhuma
+suíte Dart rodada. Não constitui implementação de R-09a/R-09b nem evidência de
+melhoria de execução. Escopo, prioridades, dependências e status preservados.
