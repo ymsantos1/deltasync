@@ -33,7 +33,7 @@ pré-condições de entrega com mecanismo que as assegure.
 
 ## R-06a — G-Set
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -52,7 +52,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06b — 2P-Set
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -71,7 +71,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06c — MV-Register
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -91,7 +91,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## R-06d — OR-Set
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08d
 

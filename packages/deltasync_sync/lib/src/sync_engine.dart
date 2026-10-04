@@ -18,6 +18,10 @@ class SyncEngine {
     if ((store != null) == (storage != null)) {
       throw ArgumentError('Provide exactly one of storage or store');
     }
+    if (transport.peerReplicaId.isEmpty ||
+        transport.peerReplicaId.trim() != transport.peerReplicaId) {
+      throw ArgumentError.value(transport.peerReplicaId, 'peerReplicaId');
+    }
   }
 
   SyncEngine.withStorage({
@@ -54,7 +58,7 @@ class SyncEngine {
   final PendingDeltaStore? store;
   final ReplicaStorage? storage;
   final DeltaTransport transport;
-  StreamSubscription<Delta>? _subscription;
+  StreamSubscription<DeltaEnvelope>? _subscription;
   SyncEngineLifecycle _lifecycle = SyncEngineLifecycle.created;
   Future<void>? _startFuture;
   Future<void>? _disposeFuture;
@@ -198,18 +202,40 @@ class SyncEngine {
     final outbound = await _serialize(() => _prepareOutbound(force: force));
     if (outbound.delta.isEmpty) return SyncPushResult.empty;
 
-    final acknowledged = transport is AcknowledgingDeltaTransport
+    final envelope = DeltaEnvelope(
+      senderReplicaId: _replica.id,
+      recipientReplicaId: transport.peerReplicaId,
+      delta: outbound.delta,
+    );
+    final acknowledgement = transport is AcknowledgingDeltaTransport
         ? await (transport as AcknowledgingDeltaTransport).sendAndAwaitAck(
-            outbound.delta,
+            envelope,
           )
-        : await _sendWithoutAck(outbound.delta);
-    final acceptedIds = acknowledged
-        .where(outbound.ids.toSet().contains)
-        .toSet();
-    if (storage != null && acceptedIds.isNotEmpty) {
-      await _serialize(() => storage!.acknowledge(_replica.id, acceptedIds));
+        : await _sendWithoutAck(envelope);
+    if (acknowledgement != null &&
+        acknowledgement.peerReplicaId != transport.peerReplicaId) {
+      throw StateError('ACK peer does not match configured transport peer');
     }
-    return SyncPushResult(sent: outbound.delta, acknowledgedIds: acceptedIds);
+    final acceptedIds =
+        acknowledgement?.stage == DeltaAckStage.appliedAndPersisted
+        ? acknowledgement!.changeIds
+              .where(outbound.ids.toSet().contains)
+              .toSet()
+        : <String>{};
+    if (storage != null && acceptedIds.isNotEmpty) {
+      await _serialize(
+        () => storage!.acknowledge(
+          _replica.id,
+          transport.peerReplicaId,
+          acceptedIds,
+        ),
+      );
+    }
+    return SyncPushResult(
+      sent: outbound.delta,
+      acknowledgedIds: acceptedIds,
+      acknowledgement: acknowledgement,
+    );
   }
 
   Future<({Delta delta, List<String> ids})> _prepareOutbound({
@@ -222,7 +248,10 @@ class SyncEngine {
         ids: pending.changes.map((change) => change.id).toList(),
       );
     }
-    final allEntries = await storage!.pending(_replica.id);
+    final allEntries = await storage!.pending(
+      _replica.id,
+      recipientPeerId: transport.peerReplicaId,
+    );
     final now = DateTime.now().toUtc();
     final entries = allEntries.where((entry) {
       if (force || entry.status == OutboxStatus.pending) return true;
@@ -240,7 +269,7 @@ class SyncEngine {
       pending = pending.merge(entry.delta);
     }
     final ids = entries.expand((entry) => entry.changeIds).toList();
-    await storage!.markSent(_replica.id, ids);
+    await storage!.markSent(_replica.id, transport.peerReplicaId, ids);
     return (delta: pending, ids: ids);
   }
 
@@ -304,9 +333,9 @@ class SyncEngine {
     }
   }
 
-  Future<Iterable<String>> _sendWithoutAck(Delta delta) async {
-    await transport.send(delta);
-    return const [];
+  Future<DeltaAcknowledgement?> _sendWithoutAck(DeltaEnvelope envelope) async {
+    await transport.send(envelope);
+    return null;
   }
 
   ReplicaSnapshot _snapshot([Replica? source]) {
@@ -321,21 +350,35 @@ class SyncEngine {
       final candidate = _replica.fork();
       final change = mutate(candidate);
       final delta = Delta([change]);
-      await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
+      await _commitCandidate(
+        candidate,
+        delta,
+        OutboxEntry(delta: delta, recipientPeerId: transport.peerReplicaId),
+      );
       _replica.adopt(candidate);
       return change;
     }),
   );
 
-  void _receiveRemote(Delta delta) {
+  void _receiveRemote(DeltaEnvelope envelope) {
     unawaited(
-      _applyRemoteReady(delta).catchError((
+      _applyIncomingReady(envelope).catchError((
         Object error,
         StackTrace stackTrace,
       ) {
         _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
       }),
     );
+  }
+
+  Future<void> _applyIncomingReady(DeltaEnvelope envelope) {
+    if (envelope.recipientReplicaId != _replica.id ||
+        envelope.senderReplicaId != transport.peerReplicaId) {
+      return Future.error(
+        FormatException('Envelope peer identity does not match sync link'),
+      );
+    }
+    return _applyRemoteReady(envelope.delta);
   }
 
   void _receiveStreamError(Object error, StackTrace stackTrace) {
@@ -442,12 +485,14 @@ class SyncFailure {
   final StackTrace stackTrace;
 }
 
-/// Result of one push attempt. Local commit and remote confirmation are
-/// separate. Legacy storage retains changes even when remote ACK is received.
+/// Result of one push attempt. A null [acknowledgement] means only local send
+/// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
+/// retains changes even when remote ACK is received.
 class SyncPushResult {
   SyncPushResult({
     required this.sent,
     required Iterable<String> acknowledgedIds,
+    this.acknowledgement,
   }) : acknowledgedIds = Set.unmodifiable(acknowledgedIds);
 
   static SyncPushResult get empty =>
@@ -455,6 +500,7 @@ class SyncPushResult {
 
   final Delta sent;
   final Set<String> acknowledgedIds;
+  final DeltaAcknowledgement? acknowledgement;
 
   bool get fullyAcknowledged =>
       sent.changes.every((change) => acknowledgedIds.contains(change.id));

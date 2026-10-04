@@ -44,6 +44,7 @@ void main() {
       await storage.saveReplica(initial);
       final foreign = OutboxEntry(
         delta: Delta([Replica('device-b').setDelta('x', 1)]),
+        recipientPeerId: 'peer-a',
       );
 
       await expectLater(
@@ -66,7 +67,10 @@ void main() {
 
   test('enqueues idempotently and acknowledges operations', () async {
     final change = Replica('device-a').setDelta('title', 'draft');
-    final entry = OutboxEntry(delta: Delta([change]));
+    final entry = OutboxEntry(
+      delta: Delta([change]),
+      recipientPeerId: 'peer-b',
+    );
     expect(entry.entryId, change.id);
 
     await storage.enqueue(entry);
@@ -75,7 +79,7 @@ void main() {
       change.id,
     ]);
 
-    await storage.acknowledge('device-a', [change.id]);
+    await storage.acknowledge('device-a', 'peer-b', [change.id]);
     expect(await storage.pending('device-a'), isEmpty);
   });
 
@@ -87,17 +91,26 @@ void main() {
       final secondChange = source.setDelta('second', 2);
       final otherReplicaChange = Replica('device-b').setDelta('foreign', 3);
 
-      await storage.enqueue(OutboxEntry(delta: Delta([firstChange])));
-      await storage.enqueue(OutboxEntry(delta: Delta([secondChange])));
-      await storage.enqueue(OutboxEntry(delta: Delta([otherReplicaChange])));
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([firstChange]), recipientPeerId: 'peer-b'),
+      );
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([secondChange]), recipientPeerId: 'peer-b'),
+      );
+      await storage.enqueue(
+        OutboxEntry(
+          delta: Delta([otherReplicaChange]),
+          recipientPeerId: 'peer-b',
+        ),
+      );
 
-      await storage.acknowledge('device-b', [firstChange.id]);
+      await storage.acknowledge('device-b', 'peer-b', [firstChange.id]);
       expect(
         (await storage.pending('device-a')).map((e) => e.changeIds.single),
         [firstChange.id, secondChange.id],
       );
 
-      await storage.acknowledge('device-a', [firstChange.id]);
+      await storage.acknowledge('device-a', 'peer-b', [firstChange.id]);
       final remaining = await storage.pending('device-a');
       expect(remaining, hasLength(1));
       expect(remaining.single.changeIds, [secondChange.id]);
@@ -112,11 +125,14 @@ void main() {
     final first = Replica('device-a').incrementGCounter('cart/items');
     final second = Replica('device-b').incrementGCounter('cart/items');
 
-    await storage.enqueue(OutboxEntry(delta: Delta([first])));
+    await storage.enqueue(
+      OutboxEntry(delta: Delta([first]), recipientPeerId: 'peer-b'),
+    );
     expect((await storage.pending('device-a')).single.replicaId, 'device-a');
 
     expect(
-      () => OutboxEntry(delta: Delta([first, second])),
+      () =>
+          OutboxEntry(delta: Delta([first, second]), recipientPeerId: 'peer-b'),
       throwsArgumentError,
     );
     expect(await storage.pending('device-b'), isEmpty);
@@ -145,7 +161,10 @@ void main() {
       throwsUnsupportedError,
     );
 
-    expect(() => OutboxEntry(delta: const Delta.empty()), throwsArgumentError);
+    expect(
+      () => OutboxEntry(delta: const Delta.empty(), recipientPeerId: 'peer-b'),
+      throwsArgumentError,
+    );
   });
 
   test('outbox entry isolates nested delta values and enforces attempts', () {
@@ -153,7 +172,10 @@ void main() {
       'items': <Object?>['one'],
     };
     final change = Replica('device-a').setDelta('payload', nested);
-    final entry = OutboxEntry(delta: Delta([change]));
+    final entry = OutboxEntry(
+      delta: Delta([change]),
+      recipientPeerId: 'peer-b',
+    );
     (nested['items'] as List<Object?>).add('outside');
     expect(
       ((entry.delta.changes.single as LwwDelta<Object?>).value
@@ -161,26 +183,82 @@ void main() {
       ['one'],
     );
     expect(
-      () => OutboxEntry(delta: Delta([change]), attempts: -1),
+      () => OutboxEntry(
+        delta: Delta([change]),
+        recipientPeerId: 'peer-b',
+        attempts: -1,
+      ),
       throwsArgumentError,
     );
     expect(
-      () => OutboxEntry(delta: Delta([change]), status: OutboxStatus.sent),
+      () => OutboxEntry(
+        delta: Delta([change]),
+        recipientPeerId: 'peer-b',
+        status: OutboxStatus.sent,
+      ),
       throwsArgumentError,
     );
   });
 
   test('outbox wire format preserves status and rejects unknown labels', () {
     final change = Replica('device-a').setDelta('title', 'draft');
-    final entry = OutboxEntry(delta: Delta([change]));
+    final entry = OutboxEntry(
+      delta: Delta([change]),
+      recipientPeerId: 'peer-b',
+    );
     final restored = OutboxEntry.fromJson(entry.toJson());
 
     expect(restored.changeIds, [change.id]);
     expect(restored.status, OutboxStatus.pending);
     expect(restored.entryId, change.id);
+    expect(restored.recipientPeerId, 'peer-b');
     expect(
       () => OutboxEntry.fromJson({...entry.toJson(), 'status': 'future'}),
       throwsFormatException,
+    );
+  });
+
+  test(
+    'outbox keeps same change pending independently for each peer',
+    () async {
+      final change = Replica('device-a').setDelta('title', 'draft');
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([change]), recipientPeerId: 'peer-b'),
+      );
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([change]), recipientPeerId: 'peer-c'),
+      );
+
+      await storage.acknowledge('device-a', 'peer-b', [change.id]);
+
+      expect(
+        await storage.pending('device-a', recipientPeerId: 'peer-b'),
+        isEmpty,
+      );
+      expect(
+        (await storage.pending(
+          'device-a',
+          recipientPeerId: 'peer-c',
+        )).single.changeIds,
+        [change.id],
+      );
+    },
+  );
+
+  test('legacy outbox needs explicit peer binding during migration', () {
+    final change = Replica('device-a').setDelta('title', 'draft');
+    final current =
+        OutboxEntry(delta: Delta([change]), recipientPeerId: 'peer-b').toJson()
+          ..['version'] = 1
+          ..remove('recipientPeerId');
+
+    expect(() => OutboxEntry.fromJson(current), throwsFormatException);
+    expect(
+      OutboxEntry.fromJson(
+        current,
+        legacyRecipientPeerId: 'peer-b',
+      ).recipientPeerId,
+      'peer-b',
     );
   });
 
@@ -203,7 +281,7 @@ void main() {
           snapshot: initialSnapshot.toSnapshotJson(),
         ),
         [
-          OutboxEntry(delta: Delta([first])),
+          OutboxEntry(delta: Delta([first]), recipientPeerId: 'peer-b'),
         ],
       );
       final next = Replica('device-a')..setDelta('new', true);
@@ -215,7 +293,7 @@ void main() {
             snapshot: next.toSnapshotJson(),
           ),
           [
-            OutboxEntry(delta: Delta([conflicting])),
+            OutboxEntry(delta: Delta([conflicting]), recipientPeerId: 'peer-b'),
           ],
         ),
         throwsFormatException,
@@ -234,7 +312,11 @@ void main() {
   test('pending excludes confirmed entries', () async {
     final change = Replica('device-a').setDelta('title', 'draft');
     await storage.enqueue(
-      OutboxEntry(delta: Delta([change]), status: OutboxStatus.confirmed),
+      OutboxEntry(
+        delta: Delta([change]),
+        recipientPeerId: 'peer-b',
+        status: OutboxStatus.confirmed,
+      ),
     );
 
     expect(await storage.pending('device-a'), isEmpty);

@@ -129,10 +129,11 @@ enum OutboxStatus {
   };
 }
 
-/// Durable local operation waiting for transport confirmation.
+/// Local operation waiting for confirmation from one stable peer.
 class OutboxEntry {
   OutboxEntry({
     required Delta delta,
+    required this.recipientPeerId,
     this.status = OutboxStatus.pending,
     this.attempts = 0,
     DateTime? createdAt,
@@ -140,6 +141,9 @@ class OutboxEntry {
   }) : _delta = Delta.fromJson(delta.toJson()),
        createdAt = (createdAt ?? DateTime.now()).toUtc(),
        sentAt = sentAt?.toUtc() {
+    if (recipientPeerId.isEmpty || recipientPeerId.trim() != recipientPeerId) {
+      throw ArgumentError.value(recipientPeerId, 'recipientPeerId');
+    }
     if (delta.changes.length != 1) {
       throw ArgumentError('outbox entry must contain exactly one change');
     }
@@ -155,6 +159,7 @@ class OutboxEntry {
   }
 
   final Delta _delta;
+  final String recipientPeerId;
   Delta get delta => Delta.fromJson(_delta.toJson());
   final OutboxStatus status;
   final int attempts;
@@ -170,7 +175,8 @@ class OutboxEntry {
   String get entryId => _delta.changes.single.id;
 
   Map<String, Object?> toJson() => {
-    'version': 1,
+    'version': 2,
+    'recipientPeerId': recipientPeerId,
     'delta': DeltaCodec.encode(_delta),
     'status': status.wireName,
     'attempts': attempts,
@@ -178,14 +184,24 @@ class OutboxEntry {
     if (sentAt != null) 'sentAt': sentAt!.toIso8601String(),
   };
 
-  factory OutboxEntry.fromJson(Map<String, Object?> json) {
+  /// Decodes current v2 entries. Legacy v1 entries require explicit peer binding
+  /// because their original destination was not stored.
+  factory OutboxEntry.fromJson(
+    Map<String, Object?> json, {
+    String? legacyRecipientPeerId,
+  }) {
     final version = json['version'];
+    final encodedPeer = json['recipientPeerId'];
+    final recipientPeerId = version == 1 ? legacyRecipientPeerId : encodedPeer;
     final encodedDelta = json['delta'];
     final status = json['status'];
     final attempts = json['attempts'];
     final createdAt = json['createdAt'];
     final sentAt = json['sentAt'];
-    if (version != 1 ||
+    if ((version != 1 && version != 2) ||
+        recipientPeerId is! String ||
+        recipientPeerId.isEmpty ||
+        recipientPeerId.trim() != recipientPeerId ||
         encodedDelta is! Map ||
         status is! String ||
         attempts is! int ||
@@ -203,6 +219,7 @@ class OutboxEntry {
     try {
       return OutboxEntry(
         delta: DeltaCodec.decode(Map<String, Object?>.from(encodedDelta)),
+        recipientPeerId: recipientPeerId,
         status: OutboxStatus.fromWire(status),
         attempts: attempts,
         createdAt: parsedCreatedAt,
@@ -239,18 +256,27 @@ abstract interface class ReplicaStorage {
   /// Normal edits must use atomic [commit].
   Future<void> enqueue(OutboxEntry entry);
 
-  Future<List<OutboxEntry>> pending(String replicaId);
+  /// Lists all peers' entries, or only entries addressed to [recipientPeerId].
+  Future<List<OutboxEntry>> pending(
+    String replicaId, {
+    String? recipientPeerId,
+  });
 
-  /// Marks entries sent without removing them, allowing retry before ACK.
+  /// Marks only this peer's entries sent without removing them, allowing retry.
   Future<void> markSent(
     String replicaId,
+    String recipientPeerId,
     Iterable<String> operationIds,
   ) async {}
 
-  /// Confirms only [operationIds] in this replica's outbox.
+  /// Confirms only [operationIds] addressed to [recipientPeerId].
   ///
   /// Entries whose IDs are not acknowledged remain pending.
-  Future<void> acknowledge(String replicaId, Iterable<String> operationIds);
+  Future<void> acknowledge(
+    String replicaId,
+    String recipientPeerId,
+    Iterable<String> operationIds,
+  );
 }
 
 /// Volatile in-memory implementation for tests, examples and prototypes.
@@ -259,7 +285,7 @@ abstract interface class ReplicaStorage {
 /// restart must provide a persistent [ReplicaStorage] adapter.
 class MemoryStorage implements ReplicaStorage {
   final Map<String, ReplicaSnapshot> _snapshots = {};
-  final Map<String, Map<String, OutboxEntry>> _outbox = {};
+  final Map<String, Map<(String, String), OutboxEntry>> _outbox = {};
 
   @override
   Future<ReplicaSnapshot?> loadReplica(String replicaId) async =>
@@ -287,13 +313,13 @@ class MemoryStorage implements ReplicaStorage {
     if (additions.any((entry) => entry.replicaId != snapshot.replicaId)) {
       throw ArgumentError('Commit entries must belong to snapshot replica');
     }
-    final nextOutbox = Map<String, OutboxEntry>.of(
+    final nextOutbox = Map<(String, String), OutboxEntry>.of(
       _outbox[snapshot.replicaId] ?? const {},
     );
     for (final entry in additions) {
-      final existing = nextOutbox[entry.entryId];
+      final existing = nextOutbox[_outboxKey(entry)];
       if (existing == null) {
-        nextOutbox[entry.entryId] = entry;
+        nextOutbox[_outboxKey(entry)] = entry;
       } else {
         Delta(existing.delta.changes).merge(entry.delta);
       }
@@ -306,43 +332,65 @@ class MemoryStorage implements ReplicaStorage {
   Future<void> enqueue(OutboxEntry entry) async {
     final replicaId = entry.replicaId;
     final entries = _outbox[replicaId];
-    final existing = entries?[entry.entryId];
+    final key = _outboxKey(entry);
+    final existing = entries?[key];
     if (existing != null) {
       Delta(existing.delta.changes).merge(entry.delta);
     } else {
-      _outbox.putIfAbsent(replicaId, () => {})[entry.entryId] = entry;
+      _outbox.putIfAbsent(replicaId, () => {})[key] = entry;
     }
   }
 
   @override
-  Future<List<OutboxEntry>> pending(String replicaId) async {
+  Future<List<OutboxEntry>> pending(
+    String replicaId, {
+    String? recipientPeerId,
+  }) async {
     final entries = _outbox[replicaId];
     if (entries == null) return [];
     entries.removeWhere((_, entry) => entry.status == OutboxStatus.confirmed);
-    return [...entries.values];
+    return [
+      ...entries.values.where(
+        (entry) =>
+            recipientPeerId == null || entry.recipientPeerId == recipientPeerId,
+      ),
+    ];
   }
 
   @override
   Future<void> acknowledge(
     String replicaId,
+    String recipientPeerId,
     Iterable<String> operationIds,
   ) async {
     final entries = _outbox[replicaId];
     if (entries == null) return;
     final ids = operationIds.toSet();
-    entries.removeWhere((id, _) => ids.contains(id));
+    entries.removeWhere(
+      (_, entry) =>
+          entry.recipientPeerId == recipientPeerId &&
+          ids.contains(entry.entryId),
+    );
   }
 
   @override
-  Future<void> markSent(String replicaId, Iterable<String> operationIds) async {
+  Future<void> markSent(
+    String replicaId,
+    String recipientPeerId,
+    Iterable<String> operationIds,
+  ) async {
     final entries = _outbox[replicaId];
     if (entries == null) return;
     final ids = operationIds.toSet();
     for (final entryKey in entries.keys.toList()) {
       final entry = entries[entryKey]!;
-      if (!entry.changeIds.any(ids.contains)) continue;
+      if (entry.recipientPeerId != recipientPeerId ||
+          !entry.changeIds.any(ids.contains)) {
+        continue;
+      }
       entries[entryKey] = OutboxEntry(
         delta: entry.delta,
+        recipientPeerId: entry.recipientPeerId,
         status: OutboxStatus.sent,
         attempts: entry.attempts + 1,
         createdAt: entry.createdAt,
@@ -351,6 +399,9 @@ class MemoryStorage implements ReplicaStorage {
     }
   }
 }
+
+(String, String) _outboxKey(OutboxEntry entry) =>
+    (entry.recipientPeerId, entry.entryId);
 
 void _validateSnapshot(ReplicaSnapshot snapshot) {
   if (snapshot.replicaId.isEmpty ||

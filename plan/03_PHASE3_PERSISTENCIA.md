@@ -1,6 +1,6 @@
 # Fase 3 — Persistência durável de referência
 
-Estado: planejada. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
+Estado: ativa. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
 Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
 Não depende de finalizar cinco tipos restantes.
 Saída: contrato validado, adaptador sqflite e recuperação real com falhas testadas.
@@ -12,7 +12,7 @@ inteiras. Tabelas são detalhes do adaptador, não contrato obrigatório do core
 
 ## R-07b — Suíte de contrato de storage
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08d
 

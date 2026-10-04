@@ -1,18 +1,26 @@
-import 'package:deltasync_core/deltasync_core.dart';
+import 'delta_acknowledgement.dart';
+import 'delta_envelope.dart';
 
-/// Network-agnostic delta transport. HTTP and WebSocket adapters belong to apps.
+/// Network-agnostic transport for versioned DeltaSync messages.
+/// HTTP and WebSocket adapters belong to apps.
 abstract interface class DeltaTransport {
-  Future<void> send(Delta delta);
+  /// Stable identity of the single remote peer this transport is bound to.
+  String get peerReplicaId;
 
-  Stream<Delta> get incoming;
+  /// Sends an envelope. Completion means transport send finished, not remote ACK.
+  Future<void> send(DeltaEnvelope envelope);
+
+  /// Incoming envelopes preserve sender and encoded delta metadata.
+  Stream<DeltaEnvelope> get incoming;
 }
 
-/// Optional transport contract that confirms accepted change IDs.
+/// Optional transport contract that reports the remote peer's ACK stage.
 ///
-/// Return an ID only after the remote side has applied and durably persisted
-/// that change. A normal [DeltaTransport.send] completion means transmission
-/// completed; it does not confirm remote application or persistence.
+/// Receipt alone never permits outbox cleanup. The sync engine removes IDs only
+/// from an [DeltaAcknowledgement] at [DeltaAckStage.appliedAndPersisted] from
+/// the configured peer. A normal [DeltaTransport.send] completion means local
+/// transmission finished, not receipt or remote application.
 abstract interface class AcknowledgingDeltaTransport implements DeltaTransport {
-  /// Sends [delta] and returns IDs durably accepted by the remote side.
-  Future<Iterable<String>> sendAndAwaitAck(Delta delta);
+  /// Sends [envelope] and returns the peer's latest explicit ACK stage.
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope);
 }

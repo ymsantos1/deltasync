@@ -159,6 +159,7 @@ class Replica {
         replicaId,
         crdtId: entry.key as String,
         components: _intMap(encoded['components']),
+        sequences: _optionalIntMap(encoded['sequences']),
         sequence: _requiredSequence(encoded['sequence']),
       );
     }
@@ -176,6 +177,7 @@ class Replica {
         crdtId: entry.key as String,
         positive: _intMap(encoded['positive']),
         negative: _intMap(encoded['negative']),
+        sequences: _optionalIntMap(encoded['sequences']),
         sequence: _requiredSequence(encoded['sequence']),
       );
     }

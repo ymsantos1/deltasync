@@ -9,6 +9,324 @@ import 'package:deltasync_transport/deltasync_transport.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'offline peer recovery stays bound to that peer and durable ACK stage',
+    () async {
+      final storage = MemoryStorage();
+      final firstTransport = FailOnceDeltaTransport(peerReplicaId: 'peer-b');
+      final first = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: firstTransport,
+      );
+      final change = await first.setDelta('title', 'draft');
+      await expectLater(first.push(), throwsA(isA<StateError>()));
+      expect(
+        (await storage.pending('device-a')).single.recipientPeerId,
+        'peer-b',
+      );
+      await first.dispose();
+
+      final otherPeer = AcknowledgingTestDeltaTransport(
+        peerReplicaId: 'peer-c',
+      );
+      final switched = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: otherPeer,
+      );
+      expect((await switched.push()).sent.isEmpty, isTrue);
+      expect(
+        (await storage.pending('device-a')).single.recipientPeerId,
+        'peer-b',
+      );
+      await switched.dispose();
+
+      final receiptOnly = FixedStageAckTransport(
+        peerReplicaId: 'peer-b',
+        stage: DeltaAckStage.received,
+      );
+      final receiver = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: receiptOnly,
+      );
+      final receiptResult = await receiver.push(force: true);
+      expect(receiptResult.acknowledgedIds, isEmpty);
+      expect(receiptResult.acknowledgement?.stage, DeltaAckStage.received);
+      expect((await storage.pending('device-a')).single.changeIds, [change.id]);
+      await receiver.dispose();
+
+      final persisted = AcknowledgingTestDeltaTransport(
+        peerReplicaId: 'peer-b',
+      );
+      final retry = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: persisted,
+      );
+      final result = await retry.push(force: true);
+      expect(result.acknowledgedIds, {change.id});
+      expect(persisted.sent.single.recipientReplicaId, 'peer-b');
+      expect(await storage.pending('device-a'), isEmpty);
+      await retry.dispose();
+    },
+  );
+
+  test('ACK from a different peer cannot clear the target outbox', () async {
+    final storage = MemoryStorage();
+    final transport = FixedStageAckTransport(
+      peerReplicaId: 'peer-b',
+      ackPeerReplicaId: 'peer-c',
+      stage: DeltaAckStage.appliedAndPersisted,
+    );
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+    await engine.setDelta('title', 'draft');
+
+    await expectLater(engine.push(), throwsStateError);
+    expect(
+      (await storage.pending('device-a')).single.recipientPeerId,
+      'peer-b',
+    );
+    await engine.dispose();
+  });
+
+  test('peer reconnect applies changes durably before partial ACK', () async {
+    final senderStorage = MemoryStorage();
+    final receiverStorage = MemoryStorage();
+    final receiver = SyncEngine.withStorage(
+      replica: Replica('device-b'),
+      storage: receiverStorage,
+      transport: TestDeltaTransport(peerReplicaId: 'device-a'),
+    );
+    final link = ConnectedPeerTransport(
+      localReplicaId: 'device-a',
+      peerReplicaId: 'device-b',
+    )..online = false;
+    link.receiver = receiver;
+    final sender = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: senderStorage,
+      transport: link,
+    );
+    final first = await sender.setDelta('first', 1);
+    final second = await sender.setDelta('second', 2);
+
+    await expectLater(sender.push(), throwsA(isA<StateError>()));
+    expect(await senderStorage.pending('device-a'), hasLength(2));
+
+    link.online = true;
+    link.acknowledgedIds = {first.id};
+    final partial = await sender.push(force: true);
+    expect(partial.acknowledgedIds, {first.id});
+    expect(receiver.replica.state.values, {'first': 1, 'second': 2});
+    expect(
+      (await receiverStorage.loadReplica('device-b'))!.snapshot,
+      isNotNull,
+    );
+    expect((await senderStorage.pending('device-a')).single.changeIds, [
+      second.id,
+    ]);
+
+    link.acknowledgedIds = {second.id};
+    expect((await sender.push(force: true)).acknowledgedIds, {second.id});
+    expect(await senderStorage.pending('device-a'), isEmpty);
+    await sender.dispose();
+    await receiver.dispose();
+    await link.close();
+  });
+
+  test(
+    'two connected engines converge all current CRDTs and restore identity',
+    () async {
+      final leftStorage = MemoryStorage();
+      final rightStorage = MemoryStorage();
+      final leftLink = ConnectedPeerTransport(
+        localReplicaId: 'left',
+        peerReplicaId: 'right',
+      );
+      final rightLink = ConnectedPeerTransport(
+        localReplicaId: 'right',
+        peerReplicaId: 'left',
+      );
+      final left = SyncEngine.withStorage(
+        replica: Replica('left'),
+        storage: leftStorage,
+        transport: leftLink,
+      );
+      final right = SyncEngine.withStorage(
+        replica: Replica('right'),
+        storage: rightStorage,
+        transport: rightLink,
+      );
+      leftLink.receiver = right;
+      rightLink.receiver = left;
+      await Future.wait([left.start(), right.start()]);
+
+      await Future.wait([
+        left.setDelta('title', 'from left'),
+        left.incrementGCounter('items', 2),
+        left.decrementPnCounter('balance', 3),
+        left.removeDelta('obsolete'),
+        right.setDelta('title', 'from right'),
+        right.incrementGCounter('items', 4),
+        right.incrementPnCounter('balance', 8),
+      ]);
+      final results = await Future.wait([left.push(), right.push()]);
+
+      expect(
+        results.every((result) => result.acknowledgedIds.isNotEmpty),
+        isTrue,
+      );
+      for (final change in results.first.sent.changes.reversed) {
+        await right.applyRemote(Delta([change]));
+        await right.applyRemote(Delta([change]));
+      }
+      expect(await leftStorage.pending('left'), isEmpty);
+      expect(await rightStorage.pending('right'), isEmpty);
+      expect(
+        left.replica.state.values['title'],
+        right.replica.state.values['title'],
+      );
+      for (final engine in [left, right]) {
+        expect(engine.replica.state.values['title'], isNotNull);
+        expect(engine.replica.gCounterValue('items'), 6);
+        expect(engine.replica.pnCounterValue('balance'), 5);
+        expect(engine.replica.state.winnerAt('obsolete')?.deleted, isTrue);
+      }
+
+      // Restart from each MemoryStorage instance to verify snapshot identities,
+      // tombstones, and counter sequence state survive the simulated recovery.
+      final leftSnapshot = left.replica.toSnapshotJson();
+      await left.dispose();
+      await right.dispose();
+      final restoredLeft = SyncEngine.withStorage(
+        replica: Replica('left'),
+        storage: leftStorage,
+        transport: TestDeltaTransport(peerReplicaId: 'right'),
+      );
+      await restoredLeft.start();
+      expect(restoredLeft.replica.id, 'left');
+      expect(restoredLeft.replica.state.winnerAt('obsolete')?.deleted, isTrue);
+      expect(restoredLeft.replica.gCounterValue('items'), 6);
+      expect(restoredLeft.replica.pnCounterValue('balance'), 5);
+      expect(restoredLeft.replica.state.values['title'], 'from right');
+      final restoredSnapshot = restoredLeft.replica.toSnapshotJson();
+      expect(restoredSnapshot['deltaSequence'], leftSnapshot['deltaSequence']);
+      final expectedGCounter =
+          leftSnapshot['gCounters'] as Map<String, Object?>;
+      final restoredGCounter =
+          restoredSnapshot['gCounters'] as Map<String, Object?>;
+      expect(
+        (restoredGCounter['items'] as Map<String, Object?>)['sequences'],
+        (expectedGCounter['items'] as Map<String, Object?>)['sequences'],
+      );
+      final expectedPnCounter =
+          leftSnapshot['pnCounters'] as Map<String, Object?>;
+      final restoredPnCounter =
+          restoredSnapshot['pnCounters'] as Map<String, Object?>;
+      expect(
+        (restoredPnCounter['balance'] as Map<String, Object?>)['sequences'],
+        (expectedPnCounter['balance'] as Map<String, Object?>)['sequences'],
+      );
+      await restoredLeft.dispose();
+      await leftLink.close();
+      await rightLink.close();
+    },
+  );
+
+  test(
+    'connected send allows edits and never ACKs a failed remote commit',
+    () async {
+      final senderStorage = MemoryStorage();
+      final receiverStorage = FailOnceSnapshotStorage();
+      final receiver = SyncEngine.withStorage(
+        replica: Replica('receiver'),
+        storage: receiverStorage,
+        transport: TestDeltaTransport(peerReplicaId: 'sender'),
+      );
+      final link = ConnectedPeerTransport(
+        localReplicaId: 'sender',
+        peerReplicaId: 'receiver',
+      )..receiver = receiver;
+      final sender = SyncEngine.withStorage(
+        replica: Replica('sender'),
+        storage: senderStorage,
+        transport: link,
+      );
+      final first = await sender.setDelta('first', true);
+      link.holdBeforeRemoteCommit = true;
+      final pushing = sender.push();
+      await link.sendStarted.future;
+      final duringSend = await sender.setDelta('during-send', true);
+      expect(sender.replica.state.values['during-send'], isTrue);
+      link.releaseRemoteCommit.complete();
+      final firstResult = await pushing;
+      link.holdBeforeRemoteCommit = false;
+      expect(firstResult.acknowledgedIds, {first.id});
+      expect((await senderStorage.pending('sender')).single.changeIds, [
+        duringSend.id,
+      ]);
+
+      receiverStorage.failNextSnapshot = true;
+      await expectLater(sender.push(force: true), throwsStateError);
+      expect(
+        (await senderStorage.pending(
+          'sender',
+        )).map((entry) => entry.changeIds.single),
+        contains(duringSend.id),
+      );
+      expect(receiver.replica.state.values['during-send'], isNull);
+      expect((await sender.push(force: true)).acknowledgedIds, {duringSend.id});
+      expect(receiver.replica.state.values['during-send'], isTrue);
+      await sender.dispose();
+      await receiver.dispose();
+      await link.close();
+    },
+  );
+
+  test('incoming envelope must match fixed sender and recipient', () async {
+    final transport = TestDeltaTransport(peerReplicaId: 'peer-b');
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: MemoryStorage(),
+      transport: transport,
+    );
+    await engine.start();
+    final errorFuture = engine.errors.first;
+    final remote = Replica('peer-c')..setDelta('title', 'not addressed');
+    transport.emitDelta(
+      remote.export(),
+      senderReplicaId: 'peer-c',
+      recipientReplicaId: 'device-a',
+    );
+    final failure = await errorFuture.timeout(const Duration(seconds: 1));
+    expect(failure.source, SyncFailureSource.incomingDelta);
+    expect(engine.replica.state.values, isEmpty);
+    await engine.dispose();
+  });
+
+  test('counter sequence maxima carry cumulative state across gaps', () async {
+    final source = Replica('source');
+    final earlier = source.incrementGCounter('cart/items', 2);
+    final later = source.incrementGCounter('cart/items', 3);
+    final earlierPn = source.decrementPnCounter('account/balance', 3);
+    final laterPn = source.incrementPnCounter('account/balance', 5);
+    final receiver = Replica('receiver');
+
+    receiver.apply(Delta([later]));
+    receiver.apply(Delta([earlier]));
+    receiver.apply(Delta([laterPn]));
+    receiver.apply(Delta([earlierPn]));
+
+    expect(receiver.gCounterValue('cart/items'), 5);
+    expect(receiver.pnCounterValue('account/balance'), 2);
+  });
+
   test('set persists local operation in outbox', () async {
     final store = TestPendingDeltaStore();
     final transport = TestDeltaTransport();
@@ -43,7 +361,7 @@ void main() {
       expect(engine.replica.state.values['title'], 'recovered');
 
       final remote = Replica('remote')..setDelta('body', 'from server');
-      transport.emit(remote.export());
+      transport.emitDelta(remote.export());
       await Future<void>.delayed(Duration.zero);
 
       expect(engine.replica.state.values['body'], 'from server');
@@ -65,9 +383,10 @@ void main() {
     await engine.push();
 
     expect(transport.sent, hasLength(2));
-    expect(transport.sent.map((delta) => delta.changes.single.id).toSet(), {
-      store.deltaFor('device-a').changes.single.id,
-    });
+    expect(
+      transport.sent.map((message) => message.delta.changes.single.id).toSet(),
+      {store.deltaFor('device-a').changes.single.id},
+    );
     expect(store.deltaFor('device-a').changes, hasLength(1));
   });
 
@@ -103,7 +422,8 @@ void main() {
     expect(store.deltaFor('device-a').changes, [change]);
     await engine.push();
 
-    expect(transport.sent.single.changes, [change]);
+    expect(transport.sent.single.delta.changes, [change]);
+    expect(transport.sent.single.senderReplicaId, 'device-a');
     expect(store.deltaFor('device-a').changes, [change]);
   });
 
@@ -144,7 +464,7 @@ void main() {
       final secondPn = await engine.decrementPnCounter('account/balance', 2);
       await engine.push();
 
-      expect(transport.sent.single.changes, [
+      expect(transport.sent.single.delta.changes, [
         firstG,
         secondG,
         firstPn,
@@ -196,7 +516,7 @@ void main() {
       change.id,
     );
     await second.push();
-    expect(secondTransport.sent.single.changes, [change]);
+    expect(secondTransport.sent.single.delta.changes, [change]);
     expect(
       (await storage.pending('device-a')).single.changeIds.single,
       change.id,
@@ -398,7 +718,7 @@ void main() {
     final change = await engine.setDelta('title', 'draft');
     await engine.push();
 
-    expect(transport.sent.single.changes, [change]);
+    expect(transport.sent.single.delta.changes, [change]);
     expect(await storage.pending('device-a'), isEmpty);
     await engine.dispose();
   });
@@ -408,8 +728,12 @@ void main() {
     final first = Replica('device-a');
     final firstChange = first.setDelta('first', 1);
     final secondChange = first.setDelta('second', 2);
-    await storage.enqueue(OutboxEntry(delta: Delta([firstChange])));
-    await storage.enqueue(OutboxEntry(delta: Delta([secondChange])));
+    await storage.enqueue(
+      OutboxEntry(delta: Delta([firstChange]), recipientPeerId: 'remote'),
+    );
+    await storage.enqueue(
+      OutboxEntry(delta: Delta([secondChange]), recipientPeerId: 'remote'),
+    );
     final transport = AcknowledgingTestDeltaTransport();
     final engine = SyncEngine.withStorage(
       replica: Replica('device-a'),
@@ -431,10 +755,16 @@ void main() {
       final first = source.setDelta('first', 1);
       final second = source.setDelta('second', 2);
       final deferred = source.setDelta('deferred', 3);
-      await storage.enqueue(OutboxEntry(delta: Delta([first])));
-      await storage.enqueue(OutboxEntry(delta: Delta([second])));
-      await storage.enqueue(OutboxEntry(delta: Delta([deferred])));
-      await storage.markSent('device-a', [deferred.id]);
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([first]), recipientPeerId: 'remote'),
+      );
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([second]), recipientPeerId: 'remote'),
+      );
+      await storage.enqueue(
+        OutboxEntry(delta: Delta([deferred]), recipientPeerId: 'remote'),
+      );
+      await storage.markSent('device-a', 'remote', [deferred.id]);
 
       final transport = SelectiveAckTransport([
         first.id,
@@ -460,7 +790,7 @@ void main() {
       );
       expect(unacknowledgedBatch.status, OutboxStatus.sent);
       expect(unacknowledgedBatch.attempts, 1);
-      expect(transport.sent.single.changes.map((change) => change.id), [
+      expect(transport.sent.single.delta.changes.map((change) => change.id), [
         first.id,
         second.id,
       ]);
@@ -495,7 +825,7 @@ void main() {
       await restarted.start();
       await restarted.push();
 
-      expect(retryTransport.sent.single.changes, [change]);
+      expect(retryTransport.sent.single.delta.changes, [change]);
       expect(await storage.pending('device-a'), isEmpty);
       await restarted.dispose();
     },
@@ -573,7 +903,7 @@ void main() {
     await engine.dispose();
 
     final remote = Replica('remote')..setDelta('title', 'ignored');
-    transport.emit(remote.export());
+    transport.emitDelta(remote.export());
     await Future<void>.delayed(Duration.zero);
 
     expect(engine.replica.state.values, isEmpty);
@@ -676,7 +1006,7 @@ void main() {
     final lww = Replica('remote-lww')..setDelta('collision', 'value');
     final counter = Replica('remote-counter')
       ..incrementGCounter('collision', 1);
-    transport.emit(lww.export().merge(counter.export()));
+    transport.emitDelta(lww.export().merge(counter.export()));
     final failure = await failureFuture.timeout(const Duration(seconds: 1));
 
     expect(failure.source, SyncFailureSource.incomingDelta);
@@ -797,40 +1127,139 @@ class FailOnceLoadStorage extends MemoryStorage {
 }
 
 class TestDeltaTransport implements DeltaTransport {
-  final StreamController<Delta> _incoming = StreamController<Delta>.broadcast();
-  final List<Delta> sent = [];
+  TestDeltaTransport({this.peerReplicaId = 'remote'});
 
   @override
-  Stream<Delta> get incoming => _incoming.stream;
+  final String peerReplicaId;
+
+  final StreamController<DeltaEnvelope> _incoming =
+      StreamController<DeltaEnvelope>.broadcast();
+  final List<DeltaEnvelope> sent = [];
 
   @override
-  Future<void> send(Delta delta) async => sent.add(delta);
+  Stream<DeltaEnvelope> get incoming => _incoming.stream;
 
-  void emit(Delta delta) => _incoming.add(delta);
+  @override
+  Future<void> send(DeltaEnvelope envelope) async => sent.add(envelope);
+
+  void emitDelta(
+    Delta delta, {
+    String senderReplicaId = 'remote',
+    String recipientReplicaId = 'device-a',
+  }) => _incoming.add(
+    DeltaEnvelope(
+      senderReplicaId: senderReplicaId,
+      recipientReplicaId: recipientReplicaId,
+      delta: delta,
+    ),
+  );
 
   void emitError(Object error) => _incoming.addError(error, StackTrace.current);
 }
 
 class FailOnceDeltaTransport extends TestDeltaTransport {
+  FailOnceDeltaTransport({super.peerReplicaId});
+
   bool _fail = true;
 
   @override
-  Future<void> send(Delta delta) async {
+  Future<void> send(DeltaEnvelope envelope) async {
     if (_fail) {
       _fail = false;
       throw StateError('send failed');
     }
-    await super.send(delta);
+    await super.send(envelope);
   }
 }
 
 class AcknowledgingTestDeltaTransport extends TestDeltaTransport
     implements AcknowledgingDeltaTransport {
+  AcknowledgingTestDeltaTransport({super.peerReplicaId});
+
   @override
-  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
-    await send(delta);
-    return delta.changes.map((change) => change.id);
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    await send(envelope);
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: envelope.delta.changes.map((change) => change.id),
+    );
   }
+}
+
+class FixedStageAckTransport extends TestDeltaTransport
+    implements AcknowledgingDeltaTransport {
+  FixedStageAckTransport({
+    required super.peerReplicaId,
+    String? ackPeerReplicaId,
+    required this.stage,
+  }) : _ackPeerReplicaId = ackPeerReplicaId ?? peerReplicaId;
+
+  final DeltaAckStage stage;
+  final String _ackPeerReplicaId;
+
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    await send(envelope);
+    return DeltaAcknowledgement(
+      peerReplicaId: _ackPeerReplicaId,
+      stage: stage,
+      changeIds: envelope.delta.changes.map((change) => change.id),
+    );
+  }
+}
+
+class ConnectedPeerTransport implements AcknowledgingDeltaTransport {
+  ConnectedPeerTransport({
+    required this.localReplicaId,
+    required this.peerReplicaId,
+  });
+
+  final String localReplicaId;
+  @override
+  final String peerReplicaId;
+  final StreamController<DeltaEnvelope> _incoming =
+      StreamController<DeltaEnvelope>.broadcast();
+  SyncEngine? receiver;
+  bool online = true;
+  Set<String>? acknowledgedIds;
+  bool holdBeforeRemoteCommit = false;
+  final sendStarted = Completer<void>();
+  final releaseRemoteCommit = Completer<void>();
+
+  @override
+  Stream<DeltaEnvelope> get incoming => _incoming.stream;
+
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {
+    if (!online) throw StateError('peer offline');
+    final target = receiver;
+    await target?.start();
+    if (envelope.senderReplicaId != localReplicaId ||
+        envelope.recipientReplicaId != peerReplicaId ||
+        target == null ||
+        target.replica.id != peerReplicaId) {
+      throw StateError('peer link identity mismatch');
+    }
+    if (holdBeforeRemoteCommit) {
+      sendStarted.complete();
+      await releaseRemoteCommit.future;
+    }
+    await target.applyRemote(envelope.delta);
+  }
+
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    await send(envelope);
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds:
+          acknowledgedIds ?? envelope.delta.changes.map((change) => change.id),
+    );
+  }
+
+  Future<void> close() => _incoming.close();
 }
 
 class SelectiveAckTransport extends TestDeltaTransport
@@ -840,9 +1269,13 @@ class SelectiveAckTransport extends TestDeltaTransport
   final List<String> acknowledgedIds;
 
   @override
-  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
-    await send(delta);
-    return acknowledgedIds;
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    await send(envelope);
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: acknowledgedIds,
+    );
   }
 }
 
@@ -851,13 +1284,17 @@ class TimeoutOnceAckTransport extends TestDeltaTransport
   bool _timeout = true;
 
   @override
-  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
-    await send(delta);
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    await send(envelope);
     if (_timeout) {
       _timeout = false;
       throw TimeoutException('ACK timed out');
     }
-    return delta.changes.map((change) => change.id);
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: envelope.delta.changes.map((change) => change.id),
+    );
   }
 }
 
@@ -867,10 +1304,14 @@ class GatedAckTransport extends TestDeltaTransport
   final release = Completer<void>();
 
   @override
-  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
-    sent.add(delta);
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    sent.add(envelope);
     sendStarted.complete();
     await release.future;
-    return delta.changes.map((change) => change.id);
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: envelope.delta.changes.map((change) => change.id),
+    );
   }
 }

@@ -24,7 +24,29 @@ final balance = replica.decrementPnCounter('account/balance', 1);
 remote.apply(Delta([apples, balance]));
 ```
 
-Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo.
+Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo. Execute `dart run example/deltasync_example.dart` para um consumidor mínimo com duas engines conectadas; o link em memória só demonstra o contrato público e não é transporte de produção.
+
+```mermaid
+sequenceDiagram
+  participant App as Aplicação
+  participant A as SyncEngine A
+  participant SA as Storage A
+  participant T as Adaptador de transporte
+  participant B as SyncEngine B
+  participant SB as Storage B
+  App->>A: mutação pública
+  A->>SA: commit snapshot + outbox
+  SA-->>A: commit local
+  A-->>App: delta da mutação
+  App->>A: push()
+  A->>T: envelope
+  T->>B: entregar delta
+  B->>SB: commit remoto
+  SB-->>B: commit concluído
+  B-->>T: ACK aplicado e persistido
+  T-->>A: ACK
+  A->>SA: limpar IDs confirmados
+```
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter e PN-Counter;
 demais tipos previstos e persistência SQLite ainda não foram implementados.
@@ -52,8 +74,11 @@ lacunas explícitas ou entrega causal garantida.
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
 que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
-`OutboxEntry` exige exatamente uma mudança em `delta`; lotes são montados no
-envio. `operation:` foi removido. `Replica.set`
+Adapters próprios de `ReplicaStorage` devem implementar consulta e confirmação por
+peer. `OutboxEntry` exige exatamente uma mudança em `delta` e registra destino;
+lotes são montados no envio. Outbox v2 substitui formato v1. Migração v1 exige
+informar explicitamente `legacyRecipientPeerId`; alvo desconhecido nunca é
+atribuído silenciosamente. `operation:` foi removido. `Replica.set`
 e `Replica.remove` continuam como aliases depreciados, mas retornam `LwwDelta`;
 código tipado como `Operation` deve migrar para `LwwDelta<Object?>`. `Crdt`,
 `CrdtOperation` e `OperationCrdt` foram removidos. Consumidores externos não foram
@@ -74,8 +99,9 @@ exporta `ReplicaStorage`, `ReplicaSnapshot`, `OutboxEntry`, `OutboxStatus`,
 permanecem depreciados como adaptador de migração; fluxo novo usa
 `SyncEngine.withStorage` e `ReplicaStorage`. `deltasync_sync`
 exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
-`DeltaTransport`, `AcknowledgingDeltaTransport` e `DeltaEnvelope`. A facade
-`deltasync` reexporta esses quatro pacotes.
+`DeltaTransport`, `AcknowledgingDeltaTransport`, `DeltaEnvelope`,
+`DeltaAcknowledgement` e `DeltaAckStage`. A facade `deltasync` reexporta esses
+quatro pacotes.
 
 `DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
 operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
@@ -84,6 +110,17 @@ excede o intervalo suportado são rejeitados. Snapshots internos versões 1 e 2
 continuam legíveis, inclusive `legacyWinner`; gravação atual usa versão 3 e guarda
 sequências por origem para bootstrap compacto. Conversão fica no codec/snapshot
 restore, não no caminho normal de `Replica.apply`.
+
+`DeltaTransport` fica vinculado a um `peerReplicaId` e envia/recebe
+`DeltaEnvelope` v2, com remetente, destinatário e payload `DeltaCodec`. Remetente
+pode diferir das origens CRDT em mudanças encaminhadas. A API não escolhe protocolo:
+adapters serializam `toJson()` e validam `fromJson()`. `DeltaTransport.send`
+concluído significa transmissão local; ACK `received` confirma só recebimento;
+somente `appliedAndPersisted` do destinatário configurado remove IDs daquela
+outbox. Outbox mantém cópia por peer; peer offline recebe retry quando volta, e
+trocar adapter para outro peer não transfere pendências nem amplia confirmação.
+Decoder aceita envelope v1 só com `legacyRecipientReplicaId` explícito; adapters
+antigos também precisam migrar a assinatura pública.
 
 `Replica.export()` emite bootstrap compacto: vencedor LWW por endereço e
 componente cumulativo mais recente por origem para counters. `Replica.mergeSnapshotJson()`
@@ -145,17 +182,18 @@ preservam fonte de tempo HLC injetada.
 
 ### Confirmação e retry
 
-`DeltaTransport.send` concluir significa apenas que envio terminou. Só
-`AcknowledgingDeltaTransport.sendAndAwaitAck` confirma mudanças; transporte deve
-retornar cada ID depois de aplicação e persistência durável no destino. ACK parcial
-remove apenas IDs confirmados. Sem ACK, `ReplicaStorage` conserva mudanças para
-retry. `SyncRetryPolicy.maxAttempts` limita retries automáticos; `push(force: true)`
+`DeltaTransport.send` concluir significa apenas que transmissão local terminou.
+`AcknowledgingDeltaTransport.sendAndAwaitAck` retorna peer e estágio explícitos;
+`received` não confirma mudança, `appliedAndPersisted` confirma aplicação e commit
+remoto durável. ACK parcial remove apenas IDs confirmados para aquele peer. Sem ACK,
+`ReplicaStorage` conserva mudanças para retry. `SyncRetryPolicy.maxAttempts` limita retries automáticos; `push(force: true)`
 ignora atraso e limite para retransmissão manual. `SyncEngine` aceita ACK somente
-para IDs do lote enviado e da outbox da réplica local. O legado `PendingDeltaStore`
+para IDs do lote enviado, peer configurado e outbox da réplica local. O legado `PendingDeltaStore`
 não armazena tentativas nem ACKs: mudanças enviadas ficam pendentes e cada `push`
 pode reenviá-las sem limite; `force` não altera esse comportamento. ACK confirma
-entrega, nunca autoriza coleta de tombstones. ACK separado por múltiplos peers
-depende de identidade de destino e permanece fora do contrato atual.
+entrega, nunca autoriza coleta de tombstones. Topologia coberta é enlace ponto a
+ponto de peer fixo; garantias não se estendem a peers além dele. Se o adaptador
+remoto não puder provar commit durável, não deve reportar `appliedAndPersisted`.
 `pending` significa tentativa zero; `sent` conta tentativa iniciada e exige
 `sentAt`. ACK remove entrada; `confirmed` só é lido em registros legados.
 
@@ -165,14 +203,16 @@ depende de identidade de destino e permanece fora do contrato atual.
 retry. `replica` só fica consultável após restauração. Mutação concluída significa
 commit local, não confirmação remota.
 `pendingDelta()` consulta alterações ainda retidas localmente; `push()` retorna
-`SyncPushResult` com delta enviado e IDs confirmados. `fullyAcknowledged` é falso
-quando transporte não fornece ACK ou confirma só parte do lote. Falhas chamadas
+`SyncPushResult` com delta enviado, estágio do ACK (quando existe) e IDs
+incorporados/persistidos. `fullyAcknowledged` é falso quando transporte não fornece
+ACK ou confirma só parte do lote. Falhas chamadas
 diretamente são lançadas ao chamador; `errors` expõe falhas de processamento do
 stream remoto e erros emitidos pelo stream de transporte. `dispose()` é terminal,
 cancela recepção, aguarda operações já iniciadas e rejeita novas operações.
 `PendingDeltaStore` não consegue remover uma mudança, mesmo após ACK remoto;
 resultado de push confirma transporte, enquanto `pendingDelta()` revela retenção
-local e possível reenvio.
+local e possível reenvio. Esse adaptador legado não grava destino por peer e serve
+somente à migração de um enlace fixo; garantias por peer exigem `ReplicaStorage`.
 
 ```dart
 final engine = SyncEngine.withStorage(
@@ -184,7 +224,8 @@ final errors = engine.errors.listen((failure) => print(failure.error));
 await engine.start();
 await engine.setDelta('title', 'edited offline'); // commit local concluído
 final pending = await engine.pendingDelta();
-final result = await engine.push(); // ACKs estão em result.acknowledgedIds
+final result = await engine.push(); // estágio em result.acknowledgement?.stage
+final confirmed = result.acknowledgedIds; // só aplicado e persistido
 await engine.dispose();
 await errors.cancel();
 ```

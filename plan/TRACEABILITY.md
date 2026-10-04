@@ -725,3 +725,196 @@ I/O já iniciado e pode aguardar indefinidamente se adaptador nunca completar.
 Coordenação entre engines que compartilham storage segue R-08d; compatibilidade com
 consumidores externos permanece limitada pelo inventário em aberto OPEN-07. O
 adaptador legado mantém deltas confirmados para retry/entrega ao menos uma vez.
+
+<a id="execucao-r-08a-2026-10-03"></a>
+
+## Execução R-08a — 2026-10-03
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08a selecionada como próxima tarefa pronta após R-05; contratos
+consolidados de R-09a/R-09b, transporte, codec, SyncEngine, adapters de teste,
+README, decisões/riscos e trechos pertinentes do guia Dart lidos. Estado inicial
+do worktree conferido e alterações de status da tarefa preservadas.
+
+Implementação: `DeltaTransport` agora recebe e publica `DeltaEnvelope`; o
+`SyncEngine` encapsula deltas de saída com a identidade local e aplica o payload
+recebido. ACK continua distinto da conclusão de envio e confirma IDs via interface
+opcional. Construtor e decoder rejeitam envelope inválido, versões incompatíveis e
+tipos desconhecidos como erro explícito. Testes cobrem ida e volta de LWW,
+G-Counter e PN-Counter, endereço/tipo/origem, remetente relay distinto das origens,
+validação e fluxo efetivo do sync. README documenta formato, protocolo neutro e
+quebra de assinatura para adapters consumidores.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente; não é independente.
+
+Achados: primeira análise apontou import core não usado no contrato de transporte;
+removido. Referência de documentação ACK atualizada para o nome do parâmetro
+envelope. Diff revisado novamente após correções; sem achados impeditivos.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Workspace passou `dart format --output=none
+--set-exit-if-changed lib test`, `dart analyze` e `dart test` na raiz, core, sync,
+storage e transport: 2, 39, 28, 10 e 4 testes aprovados (83 total); análises sem
+issues. `git diff --check` aprovado antes da manutenção.
+
+Comandos: formatação dos pacotes sync/transport; em cada pacote `.`,
+`packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage` e `packages/deltasync_transport`, `dart format
+--output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: satisfeitos e marcados em R-08a. A interface e fluxo real usam envelope;
+metadados comuns `DeltaChange`/`CrdtKind` e payload codec ficam acessíveis; versões
+e tipos desconhecidos são rejeitados; JSON não escolhe protocolo; representação
+única e papéis send/ACK documentados, sem classe redundante.
+
+Manutenção: README, R-08a, índice, rastreabilidade e DEC-20 atualizados. RISK-14
+permanece aplicável para confirmação/topologia por peer em R-08b; RISK-17 permanece
+para validação de consumidor em R-08d. Fase 4 segue ativa, sem tarefa em andamento;
+R-08b marcada pronta após confirmar dependências R-03 e R-08a concluídas.
+
+Limitações: revisão não independente; assinatura pública mudou de `Delta` para
+`DeltaEnvelope`, exigindo atualização dos adapters existentes. ACK ainda não
+identifica destino/peer, escopo mantido em R-08b; storage continua sujeito aos
+limites de durabilidade documentados em R-07c/R-07d.
+
+<a id="execucao-r-08b-2026-10-03"></a>
+
+## Execução R-08b — 2026-10-03
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08b selecionada após R-08a/R-03 concluídas. Critérios de topologia,
+ACK parcial, peer offline e lacunas causais; DEC-03/04/20, OPEN-02/04, RISK-07/08/14,
+SyncEngine, ReplicaStorage, DeltaTransport, README e guia Dart foram examinados.
+Worktree já continha implementação R-08a não confirmada; preservada e estendida.
+
+Implementação: topologia fica explícita como enlace ponto a ponto. `DeltaTransport`
+declara peer fixo; `DeltaEnvelope` v2 grava remetente/destinatário e aceita v1 só
+com migração explícita do destino. `DeltaAcknowledgement` distingue `received` de
+`appliedAndPersisted`, com rótulos wire estáveis; `SyncPushResult` expõe estágio.
+Engine rejeita remetente/destinatário/ACK de peer divergente. `OutboxEntry` v2
+grava destino; chaves e operações de pending/mark/ack isolam cada peer. Outbox v1
+exige `legacyRecipientPeerId`, sem inventar destino. README descreve protocolo,
+contratos e limites. Testes cobrem timeout/offline seguido de retry, troca de peer,
+recebimento sem incorporação, ACK parcial após commit remoto, rejeição de identidade
+e G/PN cumulativos recebidos fora de ordem com lacunas.
+
+Review: aprovado
+
+Review em etapa separada pelo mesmo agente; não é independente.
+
+Achados: revisão inicial pediu rótulos explícitos/estáveis para o enum de estágios
+ACK, usados por adapters. Adicionados `wireName`/`fromWire`; removido construtor de
+helper sem uso. Delta de correção revisado novamente; sem achados impeditivos.
+Primeira execução dos testes revelou configuração incompleta do harness (retry
+forçado após backoff e engine remota ainda não iniciada); testes foram corrigidos,
+comportamentos de produto mantidos.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Workspace completo passou formato sem escrita,
+`dart analyze` e `dart test` em raiz/facade, core, sync, storage e transport: 2,
+39, 33, 12 e 6 testes, total 92; análises sem issues. `git diff --check` passou.
+
+Comandos: `dart format packages/deltasync_transport packages/deltasync_sync
+packages/deltasync_storage`; em `.`, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage` e
+`packages/deltasync_transport`, `dart format --output=none --set-exit-if-changed
+lib test && dart analyze && dart test`; `python3 scripts/check_plan.py`;
+`git diff --check`.
+
+Critérios: todos satisfeitos e marcados em R-08b. DEC-21 fixa peer/destinatário;
+tipos `DeltaAcknowledgement` e `SyncPushResult` distinguem envio, recebimento e
+persistência; teste conectado aplica no storage remoto antes de ACK parcial. Peer
+offline mantém outbox e retry após reconexão; teste com peer alternativo comprova
+que não lê nem confirma entradas do destino anterior. G/PN acumulam componente no
+delta e teste recebe sequência alta antes da baixa sem tratar máximo como ausência
+de lacuna. Decisão e README limitam garantias a peer fixo e declaram bootstrap de
+peer novo/topologia geral fora do escopo.
+
+Manutenção: R-08b, índice, rastreabilidade, DEC-21, OPEN-02/04, RISK-07/08 e README
+atualizados. Fase 4 permanece ativa; R-08d passou a pronta após dependências
+R-05/R-08a/R-08b concluídas. Checker e `git diff --check` aprovados após manutenção.
+
+Limitações: review não independente. `MemoryStorage` prova comportamento lógico,
+não durabilidade entre processos; R-07c/R-07d validam storage real. Topologia é
+um peer fixo; peer novo exige bootstrap explícito e vários destinatários exigem
+entrada/ACK independentes. `PendingDeltaStore` legado não guarda destinatário nem
+garante ACK por peer; garantias novas exigem `ReplicaStorage`. Tipos futuros com
+eventos individuais precisam contexto causal com lacunas ou entrega causal.
+
+<a id="execucao-r-08d-2026-10-03"></a>
+
+## Execução R-08d — 2026-10-03
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: selecionada após R-05/R-08a/R-08b concluídas. Critérios exigem fluxo real
+entre duas engines, confirmação só após commit remoto, falhas/concorrência,
+recuperação dos três tipos atuais e exemplo genérico. Alterações R-08b já presentes
+no worktree foram preservadas. Compass não foi usado como alvo de adaptação.
+
+Implementação: `SyncEngine` já fazia commit local antes do push e mantinha I/O fora
+da fila; regressões conectaram duas engines e storages em memória para push
+simultâneo, ACK parcial, duplicação/reordenação, edição durante envio, falha de
+commit remoto sem ACK e retry. `Replica.fromSnapshotJson` agora restaura também os
+mapas de sequências por origem de G-Counter/PN-Counter, presentes nos snapshots v3;
+teste compara identidade, estado/tombstone, componentes e sequências restaurados.
+`example/deltasync_example.dart` mostra consumidor via facade, e README documenta
+execução e diagrama do caminho local/remoto.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente; não independente.
+
+Achados: exercício de recuperação revelou omissão dos mapas `sequences` ao
+reconstruir counters. Correção localizada em `Replica.fromSnapshotJson`, revisada
+no diff final; nenhum achado impeditivo restante. Adapter de demonstração aguarda
+`applyRemote` terminar antes de reportar `appliedAndPersisted`.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Formatação sem alterações,
+análise estática sem issues e 94 testes passaram (raiz/facade 2, core 39, sync 35,
+storage 12, transport 6). Exemplo executou e reportou 3 confirmações; `git diff
+--check` passou. `MemoryStorage` continua sendo simulação, não durabilidade entre
+processos.
+
+Comandos: `dart format --output=none --set-exit-if-changed example
+packages/deltasync_core/lib/src/replica.dart packages/deltasync_sync/lib test`;
+para cada diretório `.`, `packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage`, `packages/deltasync_transport`, `dart analyze &&
+dart test`; `dart run example/deltasync_example.dart`; `python3
+scripts/check_plan.py`; `git diff --check`.
+
+Critérios: todos satisfeitos e marcados em R-08d. Integração usa `sendAndAwaitAck`
+que chama `receiver.applyRemote`; commit remoto falho lança e mantém outbox. Duas
+engines fazem push concorrente; edição e recebimento seguem com envio pendente.
+ACK parcial mantém restante, alterações novas ficam pendentes, replay/reordenação
+convergem, retry completa entrega. Restauração simulada conserva identidade,
+valores, tombstone LWW, valores e sequências G/PN. Exemplo público permite commit
+local sem rede, consulta estado/pendências e assina `errors`; no fluxo, mutações
+retornam após commit local, falhas diretas de push são lançadas e falhas de stream
+remoto são expostas em `errors`. Nenhuma dúvida de API ficou pendente.
+
+Manutenção: fase 4 permanece ativa por R-08c; R-08d concluída. Fase 3 selecionada
+como foco seguinte e R-07b, R-06a/b/c/d liberadas como prontas; próxima tarefa
+recomendada é R-07b. RISK-14 atualizado: duas engines com outboxes próprias
+validadas, armazenamento compartilhado/durável ainda pendente. RISK-17 mitigado
+para consumidor genérico mínimo; Compass permanece não exercitado. Nenhuma nova
+decisão arquitetural necessária.
+
+Limitações: review não independente. Storage de teste é volátil; SQLite e
+recuperação entre processos seguem R-07c/R-07d. Topologia coberta continua sendo
+peer fixo; adaptação do Compass não foi necessária nem testada.
