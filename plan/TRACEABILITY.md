@@ -918,3 +918,65 @@ decisão arquitetural necessária.
 Limitações: review não independente. Storage de teste é volátil; SQLite e
 recuperação entre processos seguem R-07c/R-07d. Topologia coberta continua sendo
 peer fixo; adaptação do Compass não foi necessária nem testada.
+
+<a id="execucao-r-07b-2026-10-04"></a>
+
+## Execução R-07b — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-07b selecionada após R-08d concluída. Critérios cobrem suíte
+reutilizável, commits, versões, ACK/metadados, isolamento, atomicidade e limite de
+MemoryStorage. Worktree já continha alterações anteriores de R-08d; preservadas.
+
+Implementação: criado `deltasync_storage_testing`, pacote de suporte com
+`ReplicaStorageContractFixture` e `replicaStorageContractTests`, reutilizável por
+adapters via dependência de desenvolvimento. Suíte verifica snapshot v2 opaco e
+outbox de uma mudança, commit local/remoto, ACK parcial por peer, status/tentativa/
+horário, isolamento de dados retornados, commits concorrentes e falha de commit
+sem alterar snapshot/outbox prévios. Suíte é executada em `MemoryStorage` com rótulo
+explícito de simulação. `ReplicaStorage.markSent` agora declara contrato abstrato
+e documenta metadados necessários para retry; README e guia do pacote explicam
+como adapters futuros conectam a mesma suíte.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente; não independente.
+
+Achados: implementação vazia de `markSent` permitia semântica sem registrar
+tentativa/horário. Tornada obrigatória; adapter deve implementar esse comportamento.
+Suíte não impõe tipo de exceção do backend e exige fixture de falha para provar
+rollback. Delta final revisto; sem achados impeditivos.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Formatação sem alterações, análises sem issues e 100
+testes aprovados: raiz/facade 2, core 39, sync 35, storage 12,
+storage_testing 6 e transport 6. `git diff --check` aprovado.
+
+Comandos: `dart pub get`; formatação de `lib test example` na raiz e `lib test`
+em core, sync, storage, storage_testing e transport com
+`dart format --output=none --set-exit-if-changed`; em cada um desses seis
+diretórios, `dart analyze && dart test`; `python3 scripts/check_plan.py`;
+`git diff --check`.
+
+Critérios: todos satisfeitos e marcados em R-07b. A mesma função de contrato
+recebe fixture, roda sobre `MemoryStorage` e pode ser invocada no teste de adapter
+persistent. Testes verificam formato v2, commits local/remoto, retenção outbox,
+ACK/peer e metadados sent, sem lógica de storage sobre classes CRDT concretas.
+Falha injetada mantém snapshot e outbox anteriores. Memória e documentação deixam
+explícito que não comprovam reinício de processo.
+
+Manutenção: R-07b concluída no arquivo da fase e índice; fase 3 segue ativa;
+R-07c liberada como pronta e próxima recomendada. R-06a/b/c/d também permanecem
+prontas por dependência. DEC-18 atualizada com `markSent` e suíte compartilhada;
+nenhum risco adicional aberto. Checker e `git diff --check` executados após
+manutenção.
+
+Limitações: review não independente. Não há adapter persistente ainda, então a
+mesma suíte não foi executada contra SQLite; R-07c fará isso. Fixture em memória
+injeta falha na fronteira do commit; adapters persistentes devem injetar após
+preparar escritas para exercitar rollback transacional real. Nenhuma conclusão sobre
+durabilidade entre processos.

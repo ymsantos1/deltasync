@@ -7,6 +7,7 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 - `deltasync_core`: LWW, G-Counter, PN-Counter, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
+- `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
 - `deltasync_transport`: contrato de transporte, sem dependência de HTTP ou WebSocket.
 - `deltasync`: facade que exporta APIs dos subpackages.
 
@@ -74,8 +75,9 @@ lacunas explícitas ou entrega causal garantida.
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
 que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
-Adapters próprios de `ReplicaStorage` devem implementar consulta e confirmação por
-peer. `OutboxEntry` exige exatamente uma mudança em `delta` e registra destino;
+Adapters próprios de `ReplicaStorage` devem implementar consulta, `markSent` e
+confirmação por peer. `OutboxEntry` exige exatamente uma mudança em `delta` e
+registra destino;
 lotes são montados no envio. Outbox v2 substitui formato v1. Migração v1 exige
 informar explicitamente `legacyRecipientPeerId`; alvo desconhecido nunca é
 atribuído silenciosamente. `operation:` foi removido. `Replica.set`
@@ -167,6 +169,9 @@ Adaptadores de `ReplicaStorage` devem implementar `commit` para gravar snapshot
 canônico e entradas novas da outbox atomicamente, e `commitRemote` para substituir
 snapshot após merge remoto. Falha deve preservar estado anterior. Cada entrada
 outbox contém uma mudança; `SyncEngine` combina entradas em lote só no envio.
+`markSent` grava status, tentativa e horário antes da transmissão para permitir
+retry com backoff; `acknowledge` remove apenas IDs confirmados do peer. Suíte
+compartilhada para validar adapters está em `deltasync_storage_testing`.
 `ReplicaSnapshot` v2 guarda payload `Replica.toSnapshotJson()` sem duplicar
 estado/clock em campos paralelos. O reader aceita snapshot v1 com
 `metadata['replicaState']` ou delta reexecutável; estado legado sem dados suficientes

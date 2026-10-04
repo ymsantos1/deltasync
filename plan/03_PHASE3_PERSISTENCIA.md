@@ -12,7 +12,7 @@ inteiras. Tabelas são detalhes do adaptador, não contrato obrigatório do core
 
 ## R-07b — Suíte de contrato de storage
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -22,22 +22,22 @@ para execução em MemoryStorage e adaptadores persistentes.
 
 Critérios:
 
-- [ ] Mesma suíte executável em MemoryStorage e adaptadores persistentes.
-- [ ] Commit local/remoto, versões, ACK e metadados verificáveis.
-- [ ] Snapshot canônico e outbox por mudança não exigirem do adaptador conhecimento
+- [x] Mesma suíte executável em MemoryStorage e adaptadores persistentes.
+- [x] Commit local/remoto, versões, ACK e metadados verificáveis.
+- [x] Snapshot canônico e outbox por mudança não exigirem do adaptador conhecimento
   de classes CRDT concretas; dados retornados não permitirem mutação do storage.
-- [ ] Falha injetada não deixa estado/outbox parcialmente confirmados.
-- [ ] Testes de memória identificados como simulação, não reinício de processo.
+- [x] Falha injetada não deixa estado/outbox parcialmente confirmados.
+- [x] Testes de memória identificados como simulação, não reinício de processo.
 
 Validação: suíte de contrato em MemoryStorage, incluindo falha e concorrência.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-07b em TRACEABILITY.md.
 
 <a id="r-07c"></a>
 
 ## R-07c — Adaptador SQLite/sqflite
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07b
 

@@ -98,7 +98,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **3 — persistência durável de referência**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-07b — Suíte de contrato de storage**.
+Próxima tarefa pronta: **R-07c — Adaptador SQLite/sqflite**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -154,8 +154,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-08d |
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |
 | [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
-| [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | pronta | MUST | R-08d |
-| [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | planejada | MUST | R-07b |
+| [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | concluída | MUST | R-08d |
+| [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | pronta | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | planejada | MUST | R-07c, R-08d |
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |

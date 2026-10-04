@@ -263,11 +263,12 @@ abstract interface class ReplicaStorage {
   });
 
   /// Marks only this peer's entries sent without removing them, allowing retry.
+  /// Implementations record the attempt count and send time for retry policy.
   Future<void> markSent(
     String replicaId,
     String recipientPeerId,
     Iterable<String> operationIds,
-  ) async {}
+  );
 
   /// Confirms only [operationIds] addressed to [recipientPeerId].
   ///
