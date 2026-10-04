@@ -1,6 +1,6 @@
 name: deltasync_core
 description: CRDT state and delta primitives for DeltaSync.
-version: 1.0.0
+version: 2.0.0
 resolution: workspace
 environment:
   sdk: ^3.12.0

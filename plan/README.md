@@ -98,11 +98,11 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **1 — simplificação e correções**. Tarefa ativa: **nenhuma**.
-Próxima tarefa recomendada: **R-09a — Core nativo e compatibilidade**.
+Próxima tarefa recomendada: **R-09b — Estado, snapshots e outbox consolidados**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-09a, R-09b, R-05, R-08a, R-08b e R-08d; depois contrato/SQLite e
+recomendada: R-09b, R-05, R-08a, R-08b e R-08d; depois contrato/SQLite e
 recuperação em R-07b/c/d. Cinco tipos restantes podem avançar após R-08d, com
 integração individual. Registrar fase ativa ao selecionar tarefa de outra fase.
 R-07a consolida oito tipos, inclusive persistência real; R-08c fecha reconciliação.
@@ -145,8 +145,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-02](01_PHASE1_CORRECOES.md#r-02) | Identidade e roteamento | concluída | MUST | R-01 |
 | [R-03](01_PHASE1_CORRECOES.md#r-03) | ACK e outbox seguros | concluída | MUST | — |
 | [R-04](01_PHASE1_CORRECOES.md#r-04) | Commits atômicos e snapshots | concluída | MUST | R-02, R-03 |
-| [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | pronta | MUST | R-01, R-02 |
-| [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | planejada | MUST | R-09a, R-03, R-04 |
+| [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | concluída | MUST | R-01, R-02 |
+| [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | pronta | MUST | R-09a, R-03, R-04 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | planejada | MUST | R-09b |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | planejada | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | planejada | MUST | R-08d |

@@ -14,12 +14,17 @@ class GCounterDelta implements DeltaChange {
 
   @override
   final String id;
+  @override
   final String replicaId;
+  @override
   final String crdtId;
   final int value;
   final Dot? dot;
 
-  String get type => 'g-counter';
+  @override
+  CrdtKind get kind => CrdtKind.gCounter;
+
+  String get type => kind.wireName;
 
   @override
   Map<String, Object?> toJson() => {
@@ -50,7 +55,9 @@ class GCounterDelta implements DeltaChange {
     }
     final crdtId =
         encodedCrdtId ??
-        (allowLegacyIdentity ? 'legacy/g-counter/$replicaId' : null);
+        (allowLegacyIdentity
+            ? 'legacy/${CrdtKind.gCounter.wireName}/$replicaId'
+            : null);
     if (crdtId is! String || crdtId.isEmpty || crdtId.trim() != crdtId) {
       throw FormatException('Invalid G-Counter CRDT address');
     }
@@ -72,14 +79,15 @@ class GCounterDelta implements DeltaChange {
       throw FormatException('Invalid G-Counter dot origin');
     }
     final expectedId = counterDeltaId(
-      'g-counter',
+      CrdtKind.gCounter.wireName,
       crdtId,
       replicaId,
       dot.counter,
     );
-    final legacyId = '$replicaId:g-counter:${dot.counter}';
+    final legacyId = '$replicaId:${CrdtKind.gCounter.wireName}:${dot.counter}';
     if (id != expectedId &&
-        !(crdtId == 'legacy/g-counter/$replicaId' && id == legacyId)) {
+        !(crdtId == 'legacy/${CrdtKind.gCounter.wireName}/$replicaId' &&
+            id == legacyId)) {
       throw FormatException('Invalid G-Counter delta ID');
     }
     return GCounterDelta(
@@ -139,7 +147,12 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
     _components[replicaId] = next;
     final sequence = ++_sequence;
     return GCounterDelta(
-      id: counterDeltaId('g-counter', crdtId, replicaId, sequence),
+      id: counterDeltaId(
+        CrdtKind.gCounter.wireName,
+        crdtId,
+        replicaId,
+        sequence,
+      ),
       replicaId: replicaId,
       crdtId: crdtId,
       value: next,
@@ -149,15 +162,34 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
 
   @override
   void applyDelta(GCounterDelta delta) {
-    if (delta.value < 0) throw FormatException('Negative G-Counter value');
+    if (delta.value < 0 ||
+        delta.id.isEmpty ||
+        delta.id.trim() != delta.id ||
+        delta.replicaId.isEmpty ||
+        delta.replicaId.trim() != delta.replicaId ||
+        delta.dot == null ||
+        delta.dot!.counter <= 0 ||
+        delta.dot!.replicaId != delta.replicaId) {
+      throw FormatException('Invalid G-Counter delta');
+    }
     if (delta.crdtId != crdtId) {
       throw FormatException('G-Counter address does not match instance');
     }
-    if (delta.dot != null && delta.dot!.replicaId != delta.replicaId) {
-      throw FormatException('Delta dot replica does not match origin');
-    }
-    if (delta.dot != null && delta.dot!.crdtId != crdtId) {
+    if (delta.dot!.crdtId != crdtId) {
       throw FormatException('G-Counter dot address does not match delta');
+    }
+    final expectedId = counterDeltaId(
+      CrdtKind.gCounter.wireName,
+      crdtId,
+      delta.replicaId,
+      delta.dot!.counter,
+    );
+    final legacyId =
+        '${delta.replicaId}:${CrdtKind.gCounter.wireName}:${delta.dot!.counter}';
+    if (delta.id != expectedId &&
+        !(crdtId == 'legacy/${CrdtKind.gCounter.wireName}/${delta.replicaId}' &&
+            delta.id == legacyId)) {
+      throw FormatException('Invalid G-Counter delta ID');
     }
     final current = _components[delta.replicaId] ?? 0;
     if (delta.value > current) _components[delta.replicaId] = delta.value;

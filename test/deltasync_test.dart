@@ -6,7 +6,7 @@ void main() {
     final first = Replica('first');
     final second = Replica('second');
 
-    first.set('title', 'offline edit');
+    first.setDelta('title', 'offline edit');
     second.apply(first.export());
 
     expect(second.state.values['title'], 'offline edit');
@@ -14,8 +14,8 @@ void main() {
 
   test('deletes and duplicate changes are idempotent', () {
     final replica = Replica('first');
-    replica.set('title', 'draft');
-    replica.remove('title');
+    replica.setDelta('title', 'draft');
+    replica.removeDelta('title');
     final delta = replica.export();
 
     replica.apply(delta);

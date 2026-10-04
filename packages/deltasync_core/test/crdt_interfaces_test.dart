@@ -2,6 +2,64 @@ import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('native changes expose shared typed metadata and stable labels', () {
+    final replica = Replica('device');
+    final changes = <DeltaChange>[
+      replica.setDelta('title', 'draft'),
+      replica.incrementGCounter('cart/count'),
+      replica.incrementPnCounter('wallet/balance'),
+    ];
+
+    expect(changes.map((change) => change.kind), [
+      CrdtKind.lww,
+      CrdtKind.gCounter,
+      CrdtKind.pnCounter,
+    ]);
+    expect(changes.map((change) => change.crdtId), [
+      'title',
+      'cart/count',
+      'wallet/balance',
+    ]);
+    expect(changes.map((change) => change.replicaId), everyElement('device'));
+    expect(changes.map((change) => change.toJson()['type']), [
+      'lww',
+      'g-counter',
+      'pn-counter',
+    ]);
+    expect(CrdtKind.fromWire('pn-counter'), CrdtKind.pnCounter);
+    expect(() => CrdtKind.fromWire('future'), throwsFormatException);
+  });
+
+  test('local LWW rejects invalid addresses and values before mutation', () {
+    final replica = Replica('device');
+
+    expect(() => replica.setDelta('', 'invalid'), throwsArgumentError);
+    expect(() => replica.setDelta('title', Object()), throwsArgumentError);
+    expect(() => replica.incrementGCounter(''), throwsArgumentError);
+    expect(
+      () => replica.incrementGCounter('cart/items', 0),
+      throwsArgumentError,
+    );
+    expect(
+      () => replica.incrementPnCounter('cart/items', 0),
+      throwsArgumentError,
+    );
+    expect(replica.clock.entries, isEmpty);
+    expect(replica.export().isEmpty, isTrue);
+
+    final valid = replica.setDelta('title', {
+      'labels': ['draft'],
+      'visible': true,
+    });
+    expect(valid.id, 'device:delta:1');
+    final encoded = DeltaCodec.encode(Delta([valid]));
+    final restored = Replica('other')..apply(DeltaCodec.decode(encoded));
+    expect(restored.state['title'], {
+      'labels': ['draft'],
+      'visible': true,
+    });
+  });
+
   test('ReplicaId and Dot round trip and validate identity', () {
     final id = ReplicaId(' device-a ');
     const dot = Dot(replicaId: 'device-a', counter: 3);
@@ -33,16 +91,45 @@ void main() {
 
   test('DeltaCodec round trips and rejects unknown versions', () {
     final replica = Replica('device-a');
-    final delta = Delta.crdt([replica.setDelta('title', 'draft')]);
+    final delta = Delta([replica.setDelta('title', 'draft')]);
 
-    expect(DeltaCodec.decode(DeltaCodec.encode(delta)).crdtChanges, [
-      delta.crdtChanges.single,
+    expect(DeltaCodec.decode(DeltaCodec.encode(delta)).changes, [
+      delta.changes.single,
     ]);
     expect(
       () => DeltaCodec.decode({...DeltaCodec.encode(delta), 'version': 99}),
       throwsFormatException,
     );
   });
+
+  test(
+    'DeltaCodec round trips every native kind and rejects unknown labels',
+    () {
+      final replica = Replica('device')
+        ..setDelta('title', 'draft')
+        ..incrementGCounter('cart/count')
+        ..incrementPnCounter('wallet/balance');
+      final delta = DeltaCodec.decode(DeltaCodec.encode(replica.export()));
+
+      expect(delta.changes, replica.export().changes);
+      expect(delta.changes.map((change) => change.toJson()['type']), [
+        'lww',
+        'g-counter',
+        'pn-counter',
+      ]);
+      expect(
+        () => DeltaCodec.decode({
+          'version': DeltaCodec.currentVersion,
+          'delta': {
+            'changes': [
+              {'type': 'future-crdt'},
+            ],
+          },
+        }),
+        throwsFormatException,
+      );
+    },
+  );
 
   test('G-Counter merges component maxima idempotently', () {
     final first = GCounter('first', crdtId: 'shared-items');
@@ -80,12 +167,29 @@ void main() {
     expect(left.negative, right.negative);
   });
 
+  test('PN-Counter rejects malformed delta without partial component join', () {
+    final counter = PnCounter('local', crdtId: 'balance');
+    final invalid = PnCounterDelta(
+      id: counterDeltaId('pn-counter', 'balance', 'remote', 1),
+      replicaId: 'remote',
+      crdtId: 'balance',
+      positive: 5,
+      negative: -1,
+      dot: const Dot(replicaId: 'remote', counter: 1, crdtId: 'balance'),
+    );
+
+    expect(() => counter.applyDelta(invalid), throwsFormatException);
+    expect(counter.positive, isEmpty);
+    expect(counter.negative, isEmpty);
+    expect(counter.value, 0);
+  });
+
   test('counter deltas survive versioned JSON codec', () {
     final counter = GCounter('device', crdtId: 'cart/quantity')..increment(4);
-    final delta = Delta.crdt([counter.increment(2)]);
+    final delta = Delta([counter.increment(2)]);
 
     final decoded = DeltaCodec.decode(DeltaCodec.encode(delta));
-    expect(decoded.crdtChanges.single, delta.crdtChanges.single);
+    expect(decoded.changes.single, delta.changes.single);
   });
 
   test('Replica routes addressed counters and LWW in mixed batch', () {
@@ -95,7 +199,7 @@ void main() {
     final balanceUp = local.incrementPnCounter('account/balance', 5);
     final balanceDown = local.decrementPnCounter('account/balance', 2);
     final title = local.setDelta('title', 'draft');
-    final delta = Delta.crdt([apples, pears, balanceUp, balanceDown, title]);
+    final delta = Delta([apples, pears, balanceUp, balanceDown, title]);
 
     expect({apples.id, pears.id}.length, 2);
     expect(apples.dot!.counter, pears.dot!.counter);
@@ -124,7 +228,7 @@ void main() {
       dot: valid.dot,
     );
     final target = Replica('target');
-    final batch = Delta.crdt([
+    final batch = Delta([
       const LwwDelta<Object?>(
         key: 'title',
         id: 'remote:delta:1',
@@ -148,7 +252,7 @@ void main() {
       dot: valid.dot,
     );
     expect(
-      () => target.apply(Delta.crdt([valid, conflicting])),
+      () => target.apply(Delta([valid, conflicting])),
       throwsFormatException,
     );
     expect(target.gCounterValue('items'), 0);
@@ -171,7 +275,7 @@ void main() {
       },
     };
     final decoded = DeltaCodec.decode(legacy);
-    final migrated = decoded.crdtChanges.single as GCounterDelta;
+    final migrated = decoded.changes.single as GCounterDelta;
 
     expect(migrated.crdtId, 'legacy/g-counter/device-a');
     expect(migrated.dot!.crdtId, migrated.crdtId);
@@ -256,48 +360,36 @@ void main() {
     expect(Operation.fromJson(operation.toJson()), operation);
   });
 
-  test('OperationCrdt ignores duplicate operation delivery', () {
-    final crdt = RecordingCrdt();
-    final operation = _operation('device-a:1', 3);
-
-    crdt.apply(operation);
-    crdt.apply(operation);
-
-    expect(crdt.value, 3);
-    expect(crdt.applications, 1);
-    expect(crdt.appliedOperationIds, ['device-a:1']);
-  });
-
   test('LwwRegister keeps delete as tombstone', () {
-    final register = LwwRegister<String>();
+    final register = LwwRegister<Object?>();
     final replica = Replica('device-a');
-    final set = replica.set('title', 'draft');
-    final delete = replica.remove('title');
+    final set = replica.setDelta('title', 'draft');
+    final delete = replica.removeDelta('title');
 
-    register.apply(set);
-    register.apply(delete);
+    register.applyDelta(set);
+    register.applyDelta(delete);
 
     expect(register.value, isNull);
     expect(register.isDeleted, isTrue);
-    expect(register.winner, delete);
+    expect(register.toJson(), {'winner': delete.toJson()});
   });
 
   test('LwwRegister resolves concurrent operations deterministically', () {
-    final first = Replica('first')..set('title', 'first');
-    final second = Replica('second')..set('title', 'second');
-    final firstOperation = first.export().changes.single;
-    final secondOperation = second.export().changes.single;
+    final first = Replica('first')..setDelta('title', 'first');
+    final second = Replica('second')..setDelta('title', 'second');
+    final firstDelta = first.setDelta('title', 'first');
+    final secondDelta = second.setDelta('title', 'second');
 
-    final left = LwwRegister<String>()..apply(firstOperation);
-    left.apply(secondOperation);
-    final right = LwwRegister<String>()..apply(secondOperation);
-    right.apply(firstOperation);
+    final left = LwwRegister<Object?>()..applyDelta(firstDelta);
+    left.applyDelta(secondDelta);
+    final right = LwwRegister<Object?>()..applyDelta(secondDelta);
+    right.applyDelta(firstDelta);
 
     expect(left.value, right.value);
-    expect(left.winner, right.winner);
+    expect(left.toJson(), right.toJson());
   });
 
-  test('legacy LWW converges for three operations in every order', () {
+  test('legacy LWW codec migration preserves total old ordering', () {
     final z = Operation(
       id: 'z:1',
       replicaId: 'z',
@@ -329,17 +421,24 @@ void main() {
     ];
 
     for (final order in orders) {
-      final replica = Replica('receiver')..apply(Delta(order));
+      final migrated = DeltaCodec.decode({
+        'version': 2,
+        'delta': {
+          'operations': [for (final operation in order) operation.toJson()],
+          'crdtChanges': [],
+        },
+      });
+      final replica = Replica('receiver')..apply(migrated);
       expect(replica.state.values['title'], 'a');
     }
-    expect(z.compareTo(a), lessThan(0));
-    expect(a.compareTo(m), greaterThan(0));
-    expect(z.compareTo(m), greaterThan(0));
+    expect(migrateLegacyOperation(z).timestamp, HlcTimestamp(1, 0));
+    expect(migrateLegacyOperation(a).timestamp, HlcTimestamp(2, 0));
+    expect(migrateLegacyOperation(m).timestamp, HlcTimestamp(1, 0));
   });
 
   test('LWW state converges when concurrent operations arrive reordered', () {
-    final first = Replica('first')..set('title', 'first');
-    final second = Replica('second')..set('title', 'second');
+    final first = Replica('first')..setDelta('title', 'first');
+    final second = Replica('second')..setDelta('title', 'second');
 
     final left = Replica('left')
       ..apply(Delta([...first.export().changes, ...second.export().changes]));
@@ -394,9 +493,9 @@ void main() {
 
   test('ReplicaState.copy isolates mutable LWW registers', () {
     final replica = Replica('copy-source');
-    replica.set('title', 'before');
+    replica.setDelta('title', 'before');
     final copy = replica.state.copy();
-    replica.set('title', 'after');
+    replica.setDelta('title', 'after');
 
     expect(copy.values['title'], 'before');
     expect(replica.state.values['title'], 'after');
@@ -410,7 +509,7 @@ void main() {
         ..removeDelta('deleted')
         ..incrementGCounter('items', 2)
         ..incrementPnCounter('balance', 4)
-        ..set('legacy', true);
+        ..setDelta('legacy', true);
       final restored = Replica.fromSnapshotJson(source.toSnapshotJson());
 
       expect(restored.id, source.id);
@@ -418,7 +517,7 @@ void main() {
       expect(restored.hlcTimestamp, source.hlcTimestamp);
       expect(restored.incrementGCounter('items').dot!.counter, 2);
       expect(restored.incrementPnCounter('balance').dot!.counter, 2);
-      expect(restored.set('legacy', false).id, 'snapshot-source:2');
+      expect(restored.setDelta('legacy', false).id, 'snapshot-source:delta:4');
       expect(
         () => Replica.fromSnapshotJson({'version': 99}),
         throwsFormatException,
@@ -426,7 +525,7 @@ void main() {
     },
   );
 
-  test('Delta carries native CRDT changes and merges them by delta ID', () {
+  test('Delta carries native changes and merges them by delta ID', () {
     const first = LwwDelta<String>(
       key: 'title',
       id: 'device:1',
@@ -434,12 +533,11 @@ void main() {
       timestamp: HlcTimestamp(20, 0),
       value: 'draft',
     );
-    final delta = Delta.crdt([first, first]);
-    final merged = delta.merge(Delta.crdt([first]));
+    final delta = Delta([first, first]);
+    final merged = delta.merge(Delta([first]));
 
-    expect(delta.changes, isEmpty);
-    expect(merged.crdtChanges, hasLength(1));
-    expect(merged.crdtChanges.single, first);
+    expect(delta.changes, hasLength(2));
+    expect(merged.changes, [first]);
   });
 
   test('LWW Delta-CRDT retains delete tombstone', () {
@@ -466,30 +564,61 @@ void main() {
       timestamp: HlcTimestamp(30, 0),
       value: 'native',
     );
-    final replica = Replica('target')..apply(Delta.crdt([delta]));
+    final replica = Replica('target')..apply(Delta([delta]));
 
     expect(replica.state.values, {'title': 'native'});
-    expect(replica.export().crdtChanges, [delta]);
+    expect(replica.export().changes, [delta]);
   });
 
-  test(
-    'native delta remains canonical when legacy operation arrives later',
-    () {
-      const delta = LwwDelta<String>(
-        key: 'title',
-        id: 'device:4',
-        replicaId: 'device',
-        timestamp: HlcTimestamp(40, 0),
-        value: 'native',
-      );
-      final legacy = Replica('legacy')..set('title', 'legacy');
-      final register = LwwRegister<String>()..applyDelta(delta);
-      register.apply(legacy.export().changes.single);
+  test('legacy operations require explicit migration into native LWW', () {
+    const delta = LwwDelta<Object?>(
+      key: 'title',
+      id: 'device:4',
+      replicaId: 'device',
+      timestamp: HlcTimestamp(40, 0),
+      value: 'native',
+    );
+    final legacy = _operation('legacy:1', 'legacy');
+    final register = LwwRegister<Object?>()..applyDelta(delta);
+    register.applyDelta(migrateLegacyOperation(legacy));
 
-      expect(register.value, 'native');
-      expect(register.toJson()['winner'], delta.toJson());
-    },
-  );
+    expect(register.value, 'native');
+    expect(register.toJson()['winner'], delta.toJson());
+  });
+
+  test('legacy snapshot winner migrates once to native snapshot shape', () {
+    const legacyClock = 7000000000000000;
+    final operation = Operation(
+      id: 'legacy:7',
+      replicaId: 'legacy',
+      type: 'lww.set',
+      vectorClock: VectorClock({'legacy': legacyClock}),
+      payload: {'key': 'title', 'value': 'value'},
+    );
+    final replica = Replica.fromSnapshotJson({
+      'version': 1,
+      'replicaId': 'legacy',
+      'clock': {'legacy': legacyClock},
+      'hlc': const HlcTimestamp(7, 0).toJson(),
+      'operationSequence': 7,
+      'deltaSequence': 0,
+      'lww': {
+        'title': {'legacyWinner': operation.toJson()},
+      },
+      'gCounters': <String, Object?>{},
+      'pnCounters': <String, Object?>{},
+    });
+
+    expect(replica.state.values, {'title': 'value'});
+    expect(replica.toSnapshotJson()['version'], 2);
+    final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
+    expect(
+      replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),
+      greaterThan(0),
+    );
+    expect(replica.state.values, {'title': 'new'});
+    expect((replica.state.toSnapshotJson()['title']! as Map).keys, {'winner'});
+  });
 
   test('Replica native mutations use HLC and converge', () {
     final first = Replica('first', hlc: HlcClock(nowMilliseconds: () => 100));
@@ -506,26 +635,10 @@ void main() {
   });
 }
 
-class RecordingCrdt extends OperationCrdt<int> {
-  int _value = 0;
-  int applications = 0;
-
-  @override
-  int get value => _value;
-
-  @override
-  void applyOperation(Operation operation) {
-    applications++;
-    final value = operation.payload['value'];
-    if (value is! int) throw FormatException('value must be int');
-    _value = value;
-  }
-}
-
-Operation _operation(String id, int value) => Operation(
+Operation _operation(String id, Object? value) => Operation(
   id: id,
-  replicaId: 'device-a',
-  type: 'test.set',
-  vectorClock: VectorClock().tick('device-a'),
-  payload: {'value': value},
+  replicaId: id.split(':').first,
+  type: 'lww.set',
+  vectorClock: VectorClock().tick(id.split(':').first),
+  payload: {'key': 'title', 'value': value},
 );

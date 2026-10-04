@@ -21,6 +21,7 @@ não significa implementação concluída.
 | DEC-14 | adotada | R-08d comprova fluxo dos três tipos atuais com duas engines antes de expandir tipos. Cada R-06 inclui integração; R-07a consolida oito tipos e SQLite. Exemplos curtos explicam responsabilidades e invariantes, sem quota de classes. |
 | DEC-15 | adotada | Uso real, integração e manutenção/forks são critérios transversais. Compass é exemplo de consumidor, sem direcionar core/gate. Consumidores adaptam modelos e fluxos usando API pública, composição e adaptadores; DeltaSync muda por necessidade geral prevista ou defeito de contrato. Não sobrescrever implementações internas nem criar plugins genéricos. R-08d testa consumidor simples; VAL-02 aceita demonstração sem Compass. |
 | DEC-16 | adotada | Usar recursos do Dart para reduzir duplicação, estados inválidos e esforço de manutenção. R-09a consolida tipos/metadados com serialização estável; R-09b alinha nulabilidade às invariantes. Enums, extensions, extension types, modificadores e pattern matching são ferramentas condicionadas a uso concreto, SDK e compatibilidade, sem quota de adoção ou hierarquias paralelas. Orientação canônica em AGENTS.md; aplicada no ciclo do RUNBOOK. |
+| DEC-17 | adotada | R-09a publica os pacotes core/storage/sync/transport e facade como 2.0.0 para alterações incompatíveis. `Delta` contém só `DeltaChange`; versões 1/2 e snapshots antigos migram explicitamente. Aliases `set/remove`, `Delta.crdt/crdtChanges` permanecem depreciados até próxima versão principal; tipos de operação e base antigos saem do caminho operacional. Consumidores externos não inventariados, portanto não há promessa de compatibilidade além dos formatos documentados. |
 
 ## Decisões abertas
 
@@ -31,7 +32,7 @@ não significa implementação concluída.
 | OPEN-04 | R-08b | Topologia e retenção/retransmissão/replay ou fallback de snapshot para peer offline. |
 | OPEN-05 | VAL-04 | Fonte editável e atualização do texto acadêmico; PDF de referência permanece preservado. |
 | OPEN-06 | VAL-05 | Prazo, esforço disponível e cronograma. Viabilidade no prazo ainda não confirmada. |
-| OPEN-07 | R-09a, R-09b | Inventário de consumidores e política de APIs/formatos antigos: remoção com quebra documentada, wrappers temporários ou conversão isolada. Consumidores externos ainda não verificados; não manter dois modelos permanentes por conveniência. |
+| OPEN-07 | R-09a, R-09b | Consumidores externos não foram localizados/inventariados. R-09a registra quebra 2.0.0, aliases temporários e migração de formatos; confirmar consumidores conhecidos antes de fechar documentação de integração. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.
@@ -106,3 +107,9 @@ Em 2026-10-03, autor autorizou incorporar uso adequado dos recursos do Dart às
 instruções e etapas do plano. DEC-16 orienta simplificação e contratos tipados,
 com exemplos e limites em AGENTS.md e critérios em R-09a/R-09b e fase 2.
 Nenhuma API, classe ou formato foi alterado nesta manutenção documental.
+
+Em 2026-10-03, R-09a iniciou consolidação incompatível em versão principal 2.0.0.
+Delta nativo único e migração explícita de versões 1/2 removem operação do caminho
+normal sem descartar formatos documentados. Aliases depreciados têm limite na
+próxima versão principal; ausência de inventário de consumidores externos continua
+registrada em OPEN-07.

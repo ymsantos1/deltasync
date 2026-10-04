@@ -4,98 +4,101 @@ import 'lww_delta.dart';
 import 'operation.dart';
 import 'pn_counter.dart';
 
-/// Batch carrying legacy operations during migration and native CRDT deltas.
+/// Immutable batch of native CRDT changes.
 class Delta {
-  Delta(Iterable<Operation> changes)
-    : changes = List.unmodifiable(changes),
-      crdtChanges = const [];
+  Delta(Iterable<DeltaChange> changes) : changes = List.unmodifiable(changes);
 
-  Delta.crdt(Iterable<DeltaChange> changes)
-    : changes = const [],
-      crdtChanges = List.unmodifiable(changes);
+  @Deprecated('Use Delta(changes) for native changes.')
+  Delta.crdt(Iterable<DeltaChange> changes) : this(changes);
 
-  const Delta.empty() : changes = const [], crdtChanges = const [];
+  const Delta.empty() : changes = const [];
 
-  final List<Operation> changes;
-  final List<DeltaChange> crdtChanges;
+  final List<DeltaChange> changes;
 
-  bool get isEmpty => changes.isEmpty && crdtChanges.isEmpty;
+  @Deprecated('Delta.changes now contains native CRDT changes.')
+  List<DeltaChange> get crdtChanges => changes;
+
+  bool get isEmpty => changes.isEmpty;
 
   Map<String, Object?> toJson() => {
-    'operations': [for (final change in changes) change.toJson()],
-    'crdtChanges': [for (final change in crdtChanges) change.toJson()],
+    'changes': [for (final change in changes) change.toJson()],
   };
 
-  /// Decodes a batch. Missing counter addresses map to legacy single-counter
-  /// namespaces by default; versioned codecs control this migration explicitly.
+  /// Decodes native batches and migrates historical operation batches when
+  /// explicitly enabled by a versioned codec.
   factory Delta.fromJson(
     Map<String, Object?> json, {
-    bool allowLegacyCounterIdentity = true,
+    bool allowLegacyOperations = false,
+    bool allowLegacyCounterIdentity = false,
   }) {
-    final operations = json['operations'];
-    final nativeChanges = json['crdtChanges'];
-    if (operations is! List || nativeChanges is! List) {
+    final encodedChanges = json['changes'];
+    final encodedOperations = json['operations'];
+    final encodedNativeChanges = json['crdtChanges'];
+    if (encodedChanges is List) {
+      if (allowLegacyOperations) {
+        throw FormatException('Native delta is invalid in legacy format');
+      }
+      return Delta(
+        encodedChanges.map(_decodeChange),
+      ).merge(const Delta.empty());
+    }
+    if (!allowLegacyOperations ||
+        encodedOperations is! List ||
+        encodedNativeChanges is! List) {
       throw FormatException('Invalid delta');
     }
-    final parsedOperations = operations.map((item) {
-      if (item is! Map) throw FormatException('Invalid operation');
-      return Operation.fromJson(Map<String, Object?>.from(item));
-    });
-    final parsedNative = nativeChanges.map((item) {
-      if (item is! Map) throw FormatException('Invalid CRDT delta');
-      final value = Map<String, Object?>.from(item);
-      return switch (value['type']) {
-        'lww' => LwwDelta<Object?>.fromJson(value),
-        'g-counter' => GCounterDelta.fromJson(
-          value,
-          allowLegacyIdentity: allowLegacyCounterIdentity,
+    final migrated = <DeltaChange>[
+      for (final item in encodedOperations)
+        migrateLegacyOperation(_decodeOperation(item)),
+      for (final item in encodedNativeChanges)
+        _decodeChange(
+          item,
+          allowLegacyCounterIdentity: allowLegacyCounterIdentity,
         ),
-        'pn-counter' => PnCounterDelta.fromJson(
-          value,
-          allowLegacyIdentity: allowLegacyCounterIdentity,
-        ),
-        _ => throw FormatException('Unsupported CRDT delta'),
-      };
-    });
-    return Delta._(
-      operations: parsedOperations,
-      crdtChanges: parsedNative,
-    ).merge(const Delta.empty());
+    ];
+    return Delta(migrated).merge(const Delta.empty());
   }
 
   Delta merge(Delta other) {
-    final byId = <String, Operation>{};
+    final byId = <String, DeltaChange>{};
     for (final change in [...changes, ...other.changes]) {
       final current = byId[change.id];
       if (current != null &&
           !_deepJsonEquals(current.toJson(), change.toJson())) {
-        throw FormatException('Conflicting operation ID: ${change.id}');
+        throw FormatException('Conflicting CRDT delta ID: ${change.id}');
       }
       byId[change.id] = change;
     }
-    final byDeltaId = <String, DeltaChange>{};
-    for (final change in [...crdtChanges, ...other.crdtChanges]) {
-      final current = byDeltaId[change.id];
-      if (current != null &&
-          !_deepJsonEquals(current.toJson(), change.toJson())) {
-        throw FormatException('Conflicting CRDT delta ID: ${change.id}');
-      }
-      byDeltaId[change.id] = change;
-    }
-    final crossKindIds = byId.keys.toSet().intersection(byDeltaId.keys.toSet());
-    if (crossKindIds.isNotEmpty) {
-      throw FormatException(
-        'Change ID used by operation and CRDT delta: ${crossKindIds.first}',
-      );
-    }
-    return Delta._(operations: byId.values, crdtChanges: byDeltaId.values);
+    return Delta(byId.values);
   }
+}
 
-  Delta._({
-    required Iterable<Operation> operations,
-    required Iterable<DeltaChange> crdtChanges,
-  }) : changes = List.unmodifiable(operations),
-       crdtChanges = List.unmodifiable(crdtChanges);
+DeltaChange _decodeChange(
+  Object? item, {
+  bool allowLegacyCounterIdentity = false,
+}) {
+  if (item is! Map) throw FormatException('Invalid CRDT delta');
+  final value = Map<String, Object?>.from(item);
+  final encodedKind = value['type'];
+  if (encodedKind is! String) {
+    throw FormatException('Invalid CRDT delta type');
+  }
+  return switch (CrdtKind.fromWire(encodedKind)) {
+    CrdtKind.lww => LwwDelta<Object?>.fromJson(value),
+    CrdtKind.gCounter => GCounterDelta.fromJson(
+      value,
+      allowLegacyIdentity: allowLegacyCounterIdentity,
+    ),
+    CrdtKind.pnCounter => PnCounterDelta.fromJson(
+      value,
+      allowLegacyIdentity: allowLegacyCounterIdentity,
+    ),
+  };
+}
+
+Operation _decodeOperation(Object? item) {
+  if (item is! Map) throw FormatException('Invalid legacy operation');
+  return Operation.fromJson(Map<String, Object?>.from(item));
 }
 
 bool _deepJsonEquals(Object? first, Object? second) {

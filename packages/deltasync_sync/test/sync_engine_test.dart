@@ -16,7 +16,7 @@ void main() {
       transport: transport,
     );
 
-    final operation = await engine.set('title', 'draft');
+    final operation = await engine.setDelta('title', 'draft');
 
     expect(store.readCount, 1);
     expect(store.deltaFor('device-a').changes, [operation]);
@@ -29,7 +29,7 @@ void main() {
       final store = TestPendingDeltaStore();
       final transport = TestDeltaTransport();
       final source = Replica('source');
-      final pending = source.set('title', 'recovered');
+      final pending = source.setDelta('title', 'recovered');
       store.seed('device-a', Delta([pending]));
       final engine = SyncEngine(
         replica: Replica('device-a'),
@@ -40,7 +40,7 @@ void main() {
       await engine.start();
       expect(engine.replica.state.values['title'], 'recovered');
 
-      final remote = Replica('remote')..set('body', 'from server');
+      final remote = Replica('remote')..setDelta('body', 'from server');
       transport.emit(remote.export());
       await Future<void>.delayed(Duration.zero);
 
@@ -57,7 +57,7 @@ void main() {
       store: store,
       transport: transport,
     );
-    await engine.set('title', 'draft');
+    await engine.setDelta('title', 'draft');
 
     await engine.push();
     await engine.push();
@@ -77,7 +77,7 @@ void main() {
       store: store,
       transport: transport,
     );
-    await engine.set('title', 'draft');
+    await engine.setDelta('title', 'draft');
 
     await expectLater(engine.push(), throwsA(isA<StateError>()));
     expect(store.deltaFor('device-a').changes, hasLength(1));
@@ -98,11 +98,11 @@ void main() {
 
     final change = await engine.setDelta('title', 'draft');
 
-    expect(store.deltaFor('device-a').crdtChanges, [change]);
+    expect(store.deltaFor('device-a').changes, [change]);
     await engine.push();
 
-    expect(transport.sent.single.crdtChanges, [change]);
-    expect(store.deltaFor('device-a').crdtChanges, [change]);
+    expect(transport.sent.single.changes, [change]);
+    expect(store.deltaFor('device-a').changes, [change]);
   });
 
   test(
@@ -122,7 +122,7 @@ void main() {
       final secondPn = await engine.decrementPnCounter('account/balance', 2);
       await engine.push();
 
-      expect(transport.sent.single.crdtChanges, [
+      expect(transport.sent.single.changes, [
         firstG,
         secondG,
         firstPn,
@@ -169,26 +169,42 @@ void main() {
     await second.start();
 
     expect(second.replica.state.values, {'title': 'persisted'});
-    expect((await storage.pending('device-a')).single.operationId, change.id);
+    expect(
+      (await storage.pending('device-a')).single.changeIds.single,
+      change.id,
+    );
     await second.push();
-    expect(secondTransport.sent.single.crdtChanges, [change]);
-    expect((await storage.pending('device-a')).single.operationId, change.id);
+    expect(secondTransport.sent.single.changes, [change]);
+    expect(
+      (await storage.pending('device-a')).single.changeIds.single,
+      change.id,
+    );
     await second.dispose();
   });
 
   test(
-    'legacy history snapshot migrates to compact versioned snapshot',
+    'legacy operation snapshot migrates to compact native snapshot',
     () async {
       final storage = MemoryStorage();
-      final source = Replica('device-a')..setDelta('title', 'legacy');
       await storage.saveReplica(
         ReplicaSnapshot(
-          replicaId: source.id,
-          state: source.state.values,
-          clock: source.clock,
+          replicaId: 'device-a',
+          state: const {},
+          clock: VectorClock({'device-a': 1}),
           metadata: {
-            'delta': source.export().toJson(),
-            'hlc': source.hlcTimestamp.toJson(),
+            'delta': {
+              'operations': [
+                {
+                  'id': 'device-a:1',
+                  'replicaId': 'device-a',
+                  'type': 'lww.set',
+                  'vectorClock': {'device-a': 1},
+                  'payload': {'key': 'title', 'value': 'legacy'},
+                },
+              ],
+              'crdtChanges': [],
+            },
+            'hlc': const HlcTimestamp(1, 0).toJson(),
           },
         ),
       );
@@ -280,7 +296,7 @@ void main() {
     final change = await engine.setDelta('title', 'draft');
     await engine.push();
 
-    expect(transport.sent.single.crdtChanges, [change]);
+    expect(transport.sent.single.changes, [change]);
     expect(await storage.pending('device-a'), isEmpty);
     await engine.dispose();
   });
@@ -291,7 +307,7 @@ void main() {
     final firstChange = first.setDelta('first', 1);
     final secondChange = first.setDelta('second', 2);
     await storage.enqueue(
-      OutboxEntry(delta: Delta.crdt([firstChange, secondChange])),
+      OutboxEntry(delta: Delta([firstChange, secondChange])),
     );
     final transport = AcknowledgingTestDeltaTransport();
     final engine = SyncEngine.withStorage(
@@ -311,11 +327,11 @@ void main() {
     () async {
       final storage = MemoryStorage();
       final source = Replica('device-a');
-      final first = source.set('first', 1);
-      final second = source.set('second', 2);
-      final deferred = source.set('deferred', 3);
+      final first = source.setDelta('first', 1);
+      final second = source.setDelta('second', 2);
+      final deferred = source.setDelta('deferred', 3);
       await storage.enqueue(OutboxEntry(delta: Delta([first, second])));
-      await storage.enqueue(OutboxEntry(operation: deferred));
+      await storage.enqueue(OutboxEntry(delta: Delta([deferred])));
       await storage.markSent('device-a', [deferred.id]);
 
       final transport = SelectiveAckTransport([
@@ -377,7 +393,7 @@ void main() {
       await restarted.start();
       await restarted.push();
 
-      expect(retryTransport.sent.single.crdtChanges, [change]);
+      expect(retryTransport.sent.single.changes, [change]);
       expect(await storage.pending('device-a'), isEmpty);
       await restarted.dispose();
     },
@@ -454,7 +470,7 @@ void main() {
     await engine.start();
     await engine.dispose();
 
-    final remote = Replica('remote')..set('title', 'ignored');
+    final remote = Replica('remote')..setDelta('title', 'ignored');
     transport.emit(remote.export());
     await Future<void>.delayed(Duration.zero);
 
@@ -542,10 +558,7 @@ class AcknowledgingTestDeltaTransport extends TestDeltaTransport
   @override
   Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
     await send(delta);
-    return [
-      ...delta.changes.map((change) => change.id),
-      ...delta.crdtChanges.map((change) => change.id),
-    ];
+    return delta.changes.map((change) => change.id);
   }
 }
 
@@ -573,9 +586,6 @@ class TimeoutOnceAckTransport extends TestDeltaTransport
       _timeout = false;
       throw TimeoutException('ACK timed out');
     }
-    return [
-      ...delta.changes.map((change) => change.id),
-      ...delta.crdtChanges.map((change) => change.id),
-    ];
+    return delta.changes.map((change) => change.id);
   }
 }

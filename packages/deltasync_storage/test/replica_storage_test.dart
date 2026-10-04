@@ -30,7 +30,9 @@ void main() {
         clock: VectorClock(),
       );
       await storage.saveReplica(initial);
-      final foreign = OutboxEntry(operation: Replica('device-b').set('x', 1));
+      final foreign = OutboxEntry(
+        delta: Delta([Replica('device-b').setDelta('x', 1)]),
+      );
 
       await expectLater(
         storage.commit(
@@ -50,16 +52,16 @@ void main() {
   );
 
   test('enqueues idempotently and acknowledges operations', () async {
-    final operation = Replica('device-a').set('title', 'draft');
-    final entry = OutboxEntry(operation: operation);
+    final change = Replica('device-a').setDelta('title', 'draft');
+    final entry = OutboxEntry(delta: Delta([change]));
 
     await storage.enqueue(entry);
     await storage.enqueue(entry);
-    expect((await storage.pending('device-a')).map((e) => e.operationId), [
-      operation.id,
+    expect((await storage.pending('device-a')).map((e) => e.changeIds.single), [
+      change.id,
     ]);
 
-    await storage.acknowledge('device-a', [operation.id]);
+    await storage.acknowledge('device-a', [change.id]);
     expect(await storage.pending('device-a'), isEmpty);
   });
 
@@ -67,31 +69,28 @@ void main() {
     'partial ACK preserves unconfirmed changes in the replica outbox',
     () async {
       final source = Replica('device-a');
-      final firstOperation = source.set('first', 1);
+      final firstChange = source.setDelta('first', 1);
       final secondChange = source.setDelta('second', 2);
-      final otherReplicaOperation = Replica('device-b').set('foreign', 3);
+      final otherReplicaChange = Replica('device-b').setDelta('foreign', 3);
 
       await storage.enqueue(
-        OutboxEntry(
-          delta: Delta([firstOperation]).merge(Delta.crdt([secondChange])),
-        ),
+        OutboxEntry(delta: Delta([firstChange, secondChange])),
       );
-      await storage.enqueue(OutboxEntry(operation: otherReplicaOperation));
+      await storage.enqueue(OutboxEntry(delta: Delta([otherReplicaChange])));
 
-      await storage.acknowledge('device-b', [firstOperation.id]);
+      await storage.acknowledge('device-b', [firstChange.id]);
       expect((await storage.pending('device-a')).single.changeIds, [
-        firstOperation.id,
+        firstChange.id,
         secondChange.id,
       ]);
 
-      await storage.acknowledge('device-a', [firstOperation.id]);
+      await storage.acknowledge('device-a', [firstChange.id]);
       final remaining = await storage.pending('device-a');
       expect(remaining, hasLength(1));
       expect(remaining.single.changeIds, [secondChange.id]);
-      expect(remaining.single.delta!.changes, isEmpty);
-      expect(remaining.single.delta!.crdtChanges.single, secondChange);
+      expect(remaining.single.delta.changes, [secondChange]);
       expect((await storage.pending('device-b')).single.changeIds, [
-        otherReplicaOperation.id,
+        otherReplicaChange.id,
       ]);
     },
   );
@@ -100,20 +99,20 @@ void main() {
     final first = Replica('device-a').incrementGCounter('cart/items');
     final second = Replica('device-b').incrementGCounter('cart/items');
 
-    await storage.enqueue(OutboxEntry(delta: Delta.crdt([first])));
+    await storage.enqueue(OutboxEntry(delta: Delta([first])));
     expect((await storage.pending('device-a')).single.replicaId, 'device-a');
 
     await expectLater(
-      storage.enqueue(OutboxEntry(delta: Delta.crdt([first, second]))),
+      storage.enqueue(OutboxEntry(delta: Delta([first, second]))),
       throwsA(isA<StateError>()),
     );
     expect(await storage.pending('device-b'), isEmpty);
   });
 
   test('pending excludes confirmed entries', () async {
-    final operation = Replica('device-a').set('title', 'draft');
+    final change = Replica('device-a').setDelta('title', 'draft');
     await storage.enqueue(
-      OutboxEntry(operation: operation, status: OutboxStatus.confirmed),
+      OutboxEntry(delta: Delta([change]), status: OutboxStatus.confirmed),
     );
 
     expect(await storage.pending('device-a'), isEmpty);

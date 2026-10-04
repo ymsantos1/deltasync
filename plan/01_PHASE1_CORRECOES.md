@@ -149,7 +149,7 @@ registro não representa aprovação atual de todo isolamento ou fluxo entre eng
 
 ## R-09a — Core nativo e compatibilidade
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-01, R-02
 
@@ -159,25 +159,25 @@ atuais, preservando joins e preparando integração dos oito CRDTs.
 
 Critérios:
 
-- [ ] Inventariar APIs exportadas e formatos usados no workspace; documentar
+- [x] Inventariar APIs exportadas e formatos usados no workspace; documentar
   política de remoção, wrappers ou conversão isolada e quebras para consumidores.
-- [ ] DeltaCrdt ser contrato principal; retirar CrdtOperation sem uso e caminho
+- [x] DeltaCrdt ser contrato principal; retirar CrdtOperation sem uso e caminho
   operacional legado da execução normal, incluindo herança de LwwRegister.
-- [ ] LWW manter vencedor nativo único com tombstone; operações antigas, quando
+- [x] LWW manter vencedor nativo único com tombstone; operações antigas, quando
   suportadas, usar migração explícita sem dois modelos permanentes de vencedor.
-- [ ] Delta ser lote nativo; contrato comum de mudança expor endereço, tipo, origem
+- [x] Delta ser lote nativo; contrato comum de mudança expor endereço, tipo, origem
   e ID com tipos adequados, sem switches por classe apenas para ler metadados comuns.
   Serialização e envelope terem funções distintas; avaliar necessidade de DeltaCodec
   como classe pública sem criar registry, codegen ou framework genérico.
-- [ ] Conjunto fechado de tipos usar enum com rótulo serializado explícito ou
+- [x] Conjunto fechado de tipos usar enum com rótulo serializado explícito ou
   solução tipada equivalente, evitando strings fixas espalhadas. Preservar rótulos
   e IDs existentes ou versionar mudança; rejeitar tipos desconhecidos. Não usar
   `.index` nem depender de renomeações de `.name` para formatos persistidos.
-- [ ] Simplificar componentes internos de PN-Counter; validar delta inteiro antes
+- [x] Simplificar componentes internos de PN-Counter; validar delta inteiro antes
   de aplicar e manter join por máximo com deltas cumulativos.
-- [ ] Validar endereços/valores locais antes de mutar; saída válida ser aceita
+- [x] Validar endereços/valores locais antes de mutar; saída válida ser aceita
   por codec e outra Replica. HLC/contexto/dots servirem apenas à semântica aplicável.
-- [ ] Exemplo e documentação explicarem estado, mutação, delta, join e restauração
+- [x] Exemplo e documentação explicarem estado, mutação, delta, join e restauração
   de cada tipo atual e apontarem arquivos/testes para uma alteração localizada;
   preservação de tipos úteis não depender de quota de classes.
 
@@ -187,13 +187,14 @@ fixtures de compatibilidade/rejeição e consumidores.
 Checks de pacotes afetados e facade; ausência de classes sem uso no fluxo revisado.
 Conferir exemplos e correspondência do percurso de alteração com arquivos/testes.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-09a — 2026-10-03 (conclusão)](TRACEABILITY.md#execucao-r-09a-2026-10-03-conclusao).
+Status: concluída.
 
 <a id="r-09b"></a>
 
 ## R-09b — Estado, snapshots e outbox consolidados
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-09a, R-03, R-04
 

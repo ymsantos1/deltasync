@@ -1,0 +1,2 @@
+$caveman
+$plan-executor Execute a próxima tarefa pronta do plano, com as cinco skills, evidências por etapa, revisão após correções, validação e manutenção. Só conclua com todos os critérios satisfeitos.

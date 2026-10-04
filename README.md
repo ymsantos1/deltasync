@@ -17,25 +17,22 @@ import 'package:deltasync/deltasync.dart';
 
 final replica = Replica('device-a');
 final delta = replica.setDelta('message', 'edited offline');
-final remote = Replica('device-b')..apply(Delta.crdt([delta]));
+final remote = Replica('device-b')..apply(Delta([delta]));
 print(remote.state.values);
 final apples = replica.incrementGCounter('cart/apples', 2);
 final balance = replica.decrementPnCounter('account/balance', 1);
-remote.apply(Delta.crdt([apples, balance]));
+remote.apply(Delta([apples, balance]));
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo.
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter e PN-Counter;
 demais tipos previstos e persistência SQLite ainda não foram implementados.
-`setDelta/removeDelta` produzem `LwwDelta`
-ordenado por HLC e são o caminho recomendado. `set/remove` e `Operation`
-continuam disponíveis para compatibilidade com payloads antigos. Esse caminho
-usa ordenação total pelo peso do `VectorClock` (soma dos contadores), depois por
-`replicaId` e `id`; preserva precedência causal, mas não compartilha semântica nem
-convergência entre versões com a API nativa HLC. O JSON legado permanece legível,
-porém replay pode escolher vencedor diferente da versão anterior, que usava
-comparação causal não transitiva.
+`setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
+`SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
+podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
+`CrdtOperation` e `OperationCrdt` não formam mais caminho operacional. `Operation`
+fica como DTO depreciado para migração versionada.
 
 G-Counter e PN-Counter agora entram em `Replica`/`SyncEngine` por métodos de
 mutação com `crdtId` estável, como `incrementGCounter('cart/apples')` e
@@ -49,6 +46,54 @@ Endereços iniciados por `legacy/` são reservados. G-Counter e PN-Counter carre
 componentes cumulativos, então lacunas de dot não impedem merge; CRDTs futuros
 que dependam de eventos individuais precisam de contexto causal por endereço com
 lacunas explícitas ou entrega causal garantida.
+
+### Compatibilidade de API e formatos
+
+Esta consolidação altera APIs públicas. `Delta` agora recebe somente
+`Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
+que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
+`OutboxEntry` exige `delta` não vazio; `operation:` foi removido. `Replica.set`
+e `Replica.remove` continuam como aliases depreciados, mas retornam `LwwDelta`;
+código tipado como `Operation` deve migrar para `LwwDelta<Object?>`. `Crdt`,
+`CrdtOperation` e `OperationCrdt` foram removidos. Consumidores externos não foram
+inventariados; devem compilar contra os contratos públicos acima e adaptar
+subclasses próprias de `DeltaChange` para metadados `kind`, `crdtId` e `replicaId`.
+
+Inventário público após consolidação: `deltasync_core` exporta contratos e tipos
+de mudança (`DeltaChange`, `CrdtKind`, `Delta`, `DeltaCodec`, `DeltaCrdt`),
+`Replica`/`ReplicaState`, LWW/counters, HLC, identidade e clocks; `Operation` e
+`migrateLegacyOperation` existem só para converter dados antigos. `deltasync_storage`
+exporta `ReplicaStorage`, `ReplicaSnapshot`, `OutboxEntry`, `OutboxStatus`,
+`MemoryStorage`, `PendingDeltaStore` e `MemoryPendingDeltaStore`. `deltasync_sync`
+exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
+`DeltaTransport`, `AcknowledgingDeltaTransport` e `DeltaEnvelope`. A facade
+`deltasync` reexporta esses quatro pacotes.
+
+`DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
+operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
+físico sintético; `replicaId` e ID preservam desempate antigo. Vetores cuja soma
+excede o intervalo suportado são rejeitados. Snapshots internos versão 1 continuam
+legíveis, inclusive `legacyWinner`; gravação atual usa versão 2. Conversão fica no
+codec/snapshot restore, não no caminho normal de `Replica.apply`.
+
+### Onde alterar cada tipo
+
+- **LWW:** `Replica.setDelta/removeDelta` criam mudança e HLC em
+  `packages/deltasync_core/lib/src/replica.dart`; `LwwRegister` mantém vencedor e
+  tombstone; `ReplicaState` roteia pelo endereço. Join escolhe maior HLC, depois
+  `replicaId` e ID. Snapshot passa por `Replica.toSnapshotJson/fromSnapshotJson`.
+  Regressões ficam em `crdt_interfaces_test.dart` nos testes de tombstone, ordem,
+  migração e snapshot.
+- **G-Counter:** mutação, componente cumulativo e join por máximo vivem em
+  `g_counter.dart`; `Replica` roteia pelo `crdtId` e snapshot restaura componentes
+  e sequência. Testes cobrem máximos, lote misto, codec e sequência restaurada.
+- **PN-Counter:** positivos, negativos, validação completa e join por máximo vivem
+  em `pn_counter.dart`; delta público transporta ambos os componentes. Testes cobrem
+  convergência, decremento, delta inválido sem efeito parcial e sequência.
+- **Contrato/wire:** `delta_change.dart` define metadados comuns e labels estáveis;
+  `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
+  `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam
+  nos pacotes core e transport.
 
 ### Storage
 

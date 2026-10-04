@@ -7,12 +7,12 @@ void main() {
     final replica = Replica('device-a');
     final envelope = DeltaEnvelope(
       senderReplicaId: replica.id,
-      delta: Delta.crdt([replica.setDelta('title', 'draft')]),
+      delta: Delta([replica.setDelta('title', 'draft')]),
     );
 
     final decoded = DeltaEnvelope.fromJson(envelope.toJson());
     expect(decoded.senderReplicaId, 'device-a');
-    expect(decoded.delta.crdtChanges, envelope.delta.crdtChanges);
+    expect(decoded.delta.changes, envelope.delta.changes);
   });
 
   test('DeltaEnvelope rejects incompatible versions', () {

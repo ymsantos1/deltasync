@@ -1,5 +1,6 @@
+import 'dart:convert';
+
 import 'delta.dart';
-import 'operation.dart';
 import 'replica_state.dart';
 import 'vector_clock.dart';
 import 'delta_change.dart';
@@ -18,13 +19,11 @@ class Replica {
 
   final String id;
   final ReplicaState state = ReplicaState();
-  final List<Operation> _history = [];
   final List<DeltaChange> _deltaHistory = [];
   final Map<String, GCounter> _gCounters = {};
   final Map<String, PnCounter> _pnCounters = {};
   VectorClock _clock;
   final HlcClock _hlc;
-  int _operationSequence = 0;
   int _deltaSequence = 0;
 
   VectorClock get clock => _clock;
@@ -54,9 +53,7 @@ class Replica {
     );
     copy.state.replaceWith(state);
     copy
-      .._history.addAll(_history)
       .._deltaHistory.addAll(_deltaHistory)
-      .._operationSequence = _operationSequence
       .._deltaSequence = _deltaSequence;
     for (final entry in _gCounters.entries) {
       final json = entry.value.toJson();
@@ -84,9 +81,6 @@ class Replica {
   void adopt(Replica candidate) {
     if (candidate.id != id) throw ArgumentError('Replica ID mismatch');
     state.replaceWith(candidate.state);
-    _history
-      ..clear()
-      ..addAll(candidate._history);
     _deltaHistory
       ..clear()
       ..addAll(candidate._deltaHistory);
@@ -99,17 +93,15 @@ class Replica {
       ..addAll(copiedCounters._pnCounters);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
-    _operationSequence = candidate._operationSequence;
     _deltaSequence = candidate._deltaSequence;
   }
 
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() => {
-    'version': 1,
+    'version': 2,
     'replicaId': id,
     'clock': _clock.toJson(),
     'hlc': _hlc.current.toJson(),
-    'operationSequence': _operationSequence,
     'deltaSequence': _deltaSequence,
     'lww': state.toSnapshotJson(),
     'gCounters': {
@@ -122,7 +114,7 @@ class Replica {
 
   /// Reconstructs materialized state without replaying prior delta history.
   static Replica fromSnapshotJson(Map<String, Object?> json) {
-    if (json['version'] != 1) {
+    if (json['version'] != 1 && json['version'] != 2) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -146,7 +138,12 @@ class Replica {
         initial: HlcTimestamp.fromJson(Map<String, Object?>.from(hlc)),
       ),
     );
-    restored.state.restoreSnapshotJson(Map<String, Object?>.from(lww));
+    final restoredLwwTimestamp = restored.state.restoreSnapshotJson(
+      Map<String, Object?>.from(lww),
+    );
+    if (restoredLwwTimestamp != null) {
+      restored._hlc.restore(restoredLwwTimestamp);
+    }
     for (final entry in gCounters.entries) {
       if (entry.key is! String || entry.value is! Map) {
         throw FormatException('Invalid G-Counter snapshot');
@@ -178,26 +175,13 @@ class Replica {
         sequence: _requiredSequence(encoded['sequence']),
       );
     }
-    restored._operationSequence = _requiredSequence(json['operationSequence']);
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     return restored;
   }
 
-  Operation set(String key, Object? value) => _record(key, value);
-
-  Operation remove(String key) => _record(key, null, deleted: true);
-
   void apply(Delta delta) {
     _validateBatch(delta);
     for (final change in delta.changes) {
-      _clock = _clock.merge(change.vectorClock);
-      state.apply(change);
-      if (!_history.any((item) => item.id == change.id)) {
-        _history.add(change);
-        _observeOperationSequence(change.id);
-      }
-    }
-    for (final change in delta.crdtChanges) {
       switch (change) {
         case LwwDelta<Object?>():
           state.applyDelta(change);
@@ -234,33 +218,26 @@ class Replica {
     }
   }
 
-  Delta export() => Delta(_history).merge(Delta.crdt(_deltaHistory));
+  Delta export() => Delta(_deltaHistory);
 
-  Operation _record(String key, Object? value, {bool deleted = false}) {
-    _clock = _clock.tick(id);
-    final operation = Operation(
-      id: '$id:${++_operationSequence}',
-      replicaId: id,
-      type: deleted ? 'lww.delete' : 'lww.set',
-      vectorClock: _clock,
-      payload: {'key': key, if (!deleted) 'value': value},
-    );
-    _history.add(operation);
-    state.apply(operation);
-    return operation;
-  }
-
-  /// Creates and applies native LWW delta. Legacy [set] remains available.
+  /// Creates and applies native LWW delta.
   LwwDelta<Object?> setDelta(String key, Object? value) =>
       _recordDelta(key, value);
+
+  @Deprecated('Use setDelta; returned change is a native LwwDelta.')
+  LwwDelta<Object?> set(String key, Object? value) => setDelta(key, value);
 
   /// Creates and applies native LWW delete tombstone.
   LwwDelta<Object?> removeDelta(String key) =>
       _recordDelta(key, null, deleted: true);
 
+  @Deprecated('Use removeDelta; returned change is a native LwwDelta.')
+  LwwDelta<Object?> remove(String key) => removeDelta(key);
+
   /// Increments G-Counter at stable application-defined [crdtId].
   GCounterDelta incrementGCounter(String crdtId, [int amount = 1]) {
-    _ensureLocalAddress(crdtId, 'g-counter');
+    if (amount <= 0) throw ArgumentError.value(amount, 'amount');
+    _ensureLocalAddress(crdtId, CrdtKind.gCounter);
     final counter = _gCounters.putIfAbsent(
       crdtId,
       () => GCounter(id, crdtId: crdtId),
@@ -272,17 +249,19 @@ class Replica {
 
   /// Increments addressed PN-Counter and returns its transportable delta.
   PnCounterDelta incrementPnCounter(String crdtId, [int amount = 1]) =>
-      _changePnCounter(crdtId, (counter) => counter.increment(amount));
+      _changePnCounter(crdtId, (counter) => counter.increment(amount), amount);
 
   /// Decrements addressed PN-Counter and returns its transportable delta.
   PnCounterDelta decrementPnCounter(String crdtId, [int amount = 1]) =>
-      _changePnCounter(crdtId, (counter) => counter.decrement(amount));
+      _changePnCounter(crdtId, (counter) => counter.decrement(amount), amount);
 
   LwwDelta<Object?> _recordDelta(
     String key,
     Object? value, {
     bool deleted = false,
   }) {
+    _validateLocalKey(key);
+    if (!deleted) _validateJsonValue(value);
     _clock = _clock.tick(id);
     final dot = Dot(replicaId: id, counter: _clock.entries[id]!);
     final delta = LwwDelta<Object?>(
@@ -299,11 +278,35 @@ class Replica {
     return delta;
   }
 
+  void _validateLocalKey(String key) {
+    if (key.isEmpty || key.trim() != key) {
+      throw ArgumentError.value(key, 'key');
+    }
+    if (_gCounters.containsKey(key) || _pnCounters.containsKey(key)) {
+      throw StateError('CRDT address is already bound to another type');
+    }
+  }
+
+  void _validateJsonValue(Object? value) {
+    try {
+      jsonEncode(
+        value,
+        toEncodable: (_) => throw UnsupportedError('Not a JSON value'),
+      );
+    } on JsonUnsupportedObjectError {
+      throw ArgumentError.value(value, 'value', 'must be JSON-compatible');
+    } on UnsupportedError {
+      throw ArgumentError.value(value, 'value', 'must be JSON-compatible');
+    }
+  }
+
   PnCounterDelta _changePnCounter(
     String crdtId,
     PnCounterDelta Function(PnCounter) mutate,
+    int amount,
   ) {
-    _ensureLocalAddress(crdtId, 'pn-counter');
+    if (amount <= 0) throw ArgumentError.value(amount, 'amount');
+    _ensureLocalAddress(crdtId, CrdtKind.pnCounter);
     final counter = _pnCounters.putIfAbsent(
       crdtId,
       () => PnCounter(id, crdtId: crdtId),
@@ -316,49 +319,48 @@ class Replica {
   void _validateBatch(Delta delta) {
     // Merge is also the shared check for duplicate IDs with divergent payloads.
     const Delta.empty().merge(delta);
-    Delta(_history).merge(Delta(delta.changes));
-    Delta.crdt(_deltaHistory).merge(Delta.crdt(delta.crdtChanges));
+    Delta(_deltaHistory).merge(delta);
 
-    for (final operation in delta.changes) {
-      _validateMessageId(operation.id, 'operation');
-      _validateReplicaId(operation.replicaId);
-      final key = operation.payload['key'];
-      if ((operation.type != 'lww.set' && operation.type != 'lww.delete') ||
-          key is! String ||
-          key.isEmpty ||
-          (operation.vectorClock.entries[operation.replicaId] ?? 0) <= 0 ||
-          (operation.type == 'lww.set' &&
-              !operation.payload.containsKey('value'))) {
-        throw FormatException('Invalid LWW operation');
-      }
+    final addressTypes = <String, CrdtKind>{};
+    for (final address in state.addresses) {
+      addressTypes[address] = CrdtKind.lww;
     }
-
-    final addressTypes = <String, String>{};
     for (final address in _gCounters.keys) {
-      addressTypes[address] = 'g-counter';
+      _validateAddressType(addressTypes, address, CrdtKind.gCounter);
     }
     for (final address in _pnCounters.keys) {
-      _validateAddressType(addressTypes, address, 'pn-counter');
+      _validateAddressType(addressTypes, address, CrdtKind.pnCounter);
     }
-    for (final change in delta.crdtChanges) {
+    for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
         _validateMessageId(change.id, 'delta');
         _validateReplicaId(change.replicaId);
         if (change.key.isEmpty ||
+            change.key.trim() != change.key ||
+            (change.deleted && change.value != null) ||
             (change.dot != null &&
-                (change.dot!.replicaId != change.replicaId ||
+                (change.dot!.counter <= 0 ||
+                    change.dot!.replicaId != change.replicaId ||
                     change.dot!.crdtId != null))) {
           throw FormatException('Invalid LWW delta');
         }
+        if (!change.deleted) {
+          try {
+            _validateJsonValue(change.value);
+          } on ArgumentError {
+            throw FormatException('Invalid LWW delta value');
+          }
+        }
+        _validateAddressType(addressTypes, change.key, CrdtKind.lww);
       } else if (change is GCounterDelta) {
         _validateCounterDelta(
           id: change.id,
           replicaId: change.replicaId,
           crdtId: change.crdtId,
           dot: change.dot,
-          type: 'g-counter',
+          type: CrdtKind.gCounter,
           expectedId: counterDeltaId(
-            'g-counter',
+            CrdtKind.gCounter.wireName,
             change.crdtId,
             change.replicaId,
             change.dot?.counter ?? 0,
@@ -367,16 +369,16 @@ class Replica {
         if (change.dot == null || change.value < 0) {
           throw FormatException('Invalid G-Counter delta');
         }
-        _validateAddressType(addressTypes, change.crdtId, 'g-counter');
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.gCounter);
       } else if (change is PnCounterDelta) {
         _validateCounterDelta(
           id: change.id,
           replicaId: change.replicaId,
           crdtId: change.crdtId,
           dot: change.dot,
-          type: 'pn-counter',
+          type: CrdtKind.pnCounter,
           expectedId: counterDeltaId(
-            'pn-counter',
+            CrdtKind.pnCounter.wireName,
             change.crdtId,
             change.replicaId,
             change.dot?.counter ?? 0,
@@ -385,7 +387,7 @@ class Replica {
         if (change.dot == null || change.positive < 0 || change.negative < 0) {
           throw FormatException('Invalid PN-Counter delta');
         }
-        _validateAddressType(addressTypes, change.crdtId, 'pn-counter');
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.pnCounter);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }
@@ -397,7 +399,7 @@ class Replica {
     required String replicaId,
     required String crdtId,
     required Dot? dot,
-    required String type,
+    required CrdtKind type,
     required String expectedId,
   }) {
     _validateMessageId(id, 'counter delta');
@@ -417,15 +419,15 @@ class Replica {
     }
   }
 
-  bool _isLegacyCounterId(String id, String replicaId, String type, Dot dot) {
-    return dot.crdtId == 'legacy/$type/$replicaId' &&
-        id == '$replicaId:$type:${dot.counter}';
+  bool _isLegacyCounterId(String id, String replicaId, CrdtKind type, Dot dot) {
+    return dot.crdtId == 'legacy/${type.wireName}/$replicaId' &&
+        id == '$replicaId:${type.wireName}:${dot.counter}';
   }
 
   void _validateAddressType(
-    Map<String, String> addressTypes,
+    Map<String, CrdtKind> addressTypes,
     String crdtId,
-    String type,
+    CrdtKind type,
   ) {
     final knownType = addressTypes[crdtId];
     if (knownType != null && knownType != type) {
@@ -434,16 +436,18 @@ class Replica {
     addressTypes[crdtId] = type;
   }
 
-  void _ensureLocalAddress(String crdtId, String type) {
+  void _ensureLocalAddress(String crdtId, CrdtKind type) {
     if (crdtId.isEmpty || crdtId.trim() != crdtId) {
       throw ArgumentError.value(crdtId, 'crdtId');
     }
     if (crdtId.startsWith('legacy/')) {
       throw ArgumentError.value(crdtId, 'crdtId', 'legacy/ is reserved');
     }
-    final otherType = type == 'g-counter'
-        ? _pnCounters.containsKey(crdtId)
-        : _gCounters.containsKey(crdtId);
+    final otherType =
+        state.addresses.contains(crdtId) ||
+        (type == CrdtKind.gCounter
+            ? _pnCounters.containsKey(crdtId)
+            : _gCounters.containsKey(crdtId));
     if (otherType) {
       throw StateError('CRDT address is already bound to another type');
     }
@@ -458,15 +462,6 @@ class Replica {
   void _validateReplicaId(String replicaId) {
     if (replicaId.isEmpty || replicaId.trim() != replicaId) {
       throw FormatException('Invalid replica ID');
-    }
-  }
-
-  void _observeOperationSequence(String operationId) {
-    final prefix = '$id:';
-    if (!operationId.startsWith(prefix)) return;
-    final sequence = int.tryParse(operationId.substring(prefix.length));
-    if (sequence != null && sequence > _operationSequence) {
-      _operationSequence = sequence;
     }
   }
 

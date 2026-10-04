@@ -1,6 +1,5 @@
 import 'delta_change.dart';
 import 'crdt.dart';
-import 'g_counter.dart';
 import 'identity.dart';
 
 /// Delta carrying positive and negative monotonic components of a PN-Counter.
@@ -16,13 +15,18 @@ class PnCounterDelta implements DeltaChange {
 
   @override
   final String id;
+  @override
   final String replicaId;
+  @override
   final String crdtId;
   final int positive;
   final int negative;
   final Dot? dot;
 
-  String get type => 'pn-counter';
+  @override
+  CrdtKind get kind => CrdtKind.pnCounter;
+
+  String get type => kind.wireName;
 
   @override
   Map<String, Object?> toJson() => {
@@ -57,7 +61,9 @@ class PnCounterDelta implements DeltaChange {
     }
     final crdtId =
         encodedCrdtId ??
-        (allowLegacyIdentity ? 'legacy/pn-counter/$replicaId' : null);
+        (allowLegacyIdentity
+            ? 'legacy/${CrdtKind.pnCounter.wireName}/$replicaId'
+            : null);
     if (crdtId is! String || crdtId.isEmpty || crdtId.trim() != crdtId) {
       throw FormatException('Invalid PN-Counter CRDT address');
     }
@@ -79,14 +85,15 @@ class PnCounterDelta implements DeltaChange {
       throw FormatException('Invalid PN-Counter dot origin');
     }
     final expectedId = counterDeltaId(
-      'pn-counter',
+      CrdtKind.pnCounter.wireName,
       crdtId,
       replicaId,
       dot.counter,
     );
-    final legacyId = '$replicaId:pn-counter:${dot.counter}';
+    final legacyId = '$replicaId:${CrdtKind.pnCounter.wireName}:${dot.counter}';
     if (id != expectedId &&
-        !(crdtId == 'legacy/pn-counter/$replicaId' && id == legacyId)) {
+        !(crdtId == 'legacy/${CrdtKind.pnCounter.wireName}/$replicaId' &&
+            id == legacyId)) {
       throw FormatException('Invalid PN-Counter delta ID');
     }
     return PnCounterDelta(
@@ -123,22 +130,18 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     Map<String, int> negative = const {},
     int? sequence,
   }) : replicaId = ReplicaId(replicaId).value,
-       _positive = GCounter(
-         replicaId,
-         crdtId: '$crdtId/positive',
-         components: positive,
-       ),
-       _negative = GCounter(
-         replicaId,
-         crdtId: '$crdtId/negative',
-         components: negative,
-       ),
+       _positive = Map.of(positive),
+       _negative = Map.of(negative),
        _sequence =
            sequence ??
            (positive[ReplicaId(replicaId).value] ?? 0) +
                (negative[ReplicaId(replicaId).value] ?? 0) {
     if (crdtId.isEmpty || crdtId.trim() != crdtId) {
       throw ArgumentError.value(crdtId, 'crdtId');
+    }
+    if (_positive.values.any((value) => value < 0) ||
+        _negative.values.any((value) => value < 0)) {
+      throw ArgumentError('PN-Counter components must be non-negative');
     }
     if (_sequence < 0) throw ArgumentError.value(sequence, 'sequence');
   }
@@ -147,68 +150,66 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
 
   /// Stable field/model address. Reuse same address when restoring this CRDT.
   final String crdtId;
-  final GCounter _positive;
-  final GCounter _negative;
+  final Map<String, int> _positive;
+  final Map<String, int> _negative;
   int _sequence;
 
   @override
-  int get value => _positive.value - _negative.value;
-  Map<String, int> get positive => _positive.components;
-  Map<String, int> get negative => _negative.components;
+  int get value => _sum(_positive) - _sum(_negative);
+  Map<String, int> get positive => Map.unmodifiable(_positive);
+  Map<String, int> get negative => Map.unmodifiable(_negative);
 
   PnCounterDelta increment([int amount = 1]) {
     if (amount <= 0) throw ArgumentError.value(amount, 'amount');
-    _positive.increment(amount);
+    _positive[replicaId] = (_positive[replicaId] ?? 0) + amount;
     return _delta();
   }
 
   PnCounterDelta decrement([int amount = 1]) {
     if (amount <= 0) throw ArgumentError.value(amount, 'amount');
-    _negative.increment(amount);
+    _negative[replicaId] = (_negative[replicaId] ?? 0) + amount;
     return _delta();
   }
 
   @override
   void applyDelta(PnCounterDelta delta) {
+    if (delta.id.isEmpty ||
+        delta.id.trim() != delta.id ||
+        delta.replicaId.isEmpty ||
+        delta.replicaId.trim() != delta.replicaId ||
+        delta.positive < 0 ||
+        delta.negative < 0 ||
+        delta.dot == null ||
+        delta.dot!.counter <= 0 ||
+        delta.dot!.replicaId != delta.replicaId ||
+        delta.dot!.crdtId != crdtId) {
+      throw FormatException('Invalid PN-Counter delta');
+    }
+    final expectedId = counterDeltaId(
+      CrdtKind.pnCounter.wireName,
+      crdtId,
+      delta.replicaId,
+      delta.dot!.counter,
+    );
+    final legacyId =
+        '${delta.replicaId}:${CrdtKind.pnCounter.wireName}:${delta.dot!.counter}';
+    if (delta.id != expectedId &&
+        !(crdtId ==
+                'legacy/${CrdtKind.pnCounter.wireName}/${delta.replicaId}' &&
+            delta.id == legacyId)) {
+      throw FormatException('Invalid PN-Counter delta ID');
+    }
     if (delta.crdtId != crdtId) {
       throw FormatException('PN-Counter address does not match instance');
     }
-    if (delta.dot != null && delta.dot!.replicaId != delta.replicaId) {
-      throw FormatException('Delta dot replica does not match origin');
+    final currentPositive = _positive[delta.replicaId] ?? 0;
+    final currentNegative = _negative[delta.replicaId] ?? 0;
+    if (delta.positive > currentPositive) {
+      _positive[delta.replicaId] = delta.positive;
     }
-    if (delta.dot != null && delta.dot!.crdtId != crdtId) {
-      throw FormatException('PN-Counter dot address does not match delta');
+    if (delta.negative > currentNegative) {
+      _negative[delta.replicaId] = delta.negative;
     }
-    _positive.applyDelta(
-      GCounterDelta(
-        id: delta.id,
-        replicaId: delta.replicaId,
-        crdtId: '$crdtId/positive',
-        value: delta.positive,
-        dot: delta.dot == null
-            ? null
-            : Dot(
-                replicaId: delta.dot!.replicaId,
-                counter: delta.dot!.counter,
-                crdtId: '$crdtId/positive',
-              ),
-      ),
-    );
-    _negative.applyDelta(
-      GCounterDelta(
-        id: delta.id,
-        replicaId: delta.replicaId,
-        crdtId: '$crdtId/negative',
-        value: delta.negative,
-        dot: delta.dot == null
-            ? null
-            : Dot(
-                replicaId: delta.dot!.replicaId,
-                counter: delta.dot!.counter,
-                crdtId: '$crdtId/negative',
-              ),
-      ),
-    );
     if (delta.replicaId == replicaId &&
         delta.dot != null &&
         delta.dot!.counter > _sequence) {
@@ -222,8 +223,8 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     if (state.crdtId != crdtId) {
       throw ArgumentError('Cannot merge counters with different addresses');
     }
-    _positive.mergeState(state._positive);
-    _negative.mergeState(state._negative);
+    _mergeMax(_positive, state._positive);
+    _mergeMax(_negative, state._negative);
     if (state.replicaId == replicaId && state._sequence > _sequence) {
       _sequence = state._sequence;
     }
@@ -239,11 +240,27 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
   };
 
   PnCounterDelta _delta() => PnCounterDelta(
-    id: counterDeltaId('pn-counter', crdtId, replicaId, ++_sequence),
+    id: counterDeltaId(
+      CrdtKind.pnCounter.wireName,
+      crdtId,
+      replicaId,
+      ++_sequence,
+    ),
     replicaId: replicaId,
     crdtId: crdtId,
-    positive: _positive.components[replicaId] ?? 0,
-    negative: _negative.components[replicaId] ?? 0,
+    positive: _positive[replicaId] ?? 0,
+    negative: _negative[replicaId] ?? 0,
     dot: Dot(replicaId: replicaId, counter: _sequence, crdtId: crdtId),
   );
+
+  static int _sum(Map<String, int> values) =>
+      values.values.fold(0, (sum, value) => sum + value);
+
+  static void _mergeMax(Map<String, int> target, Map<String, int> source) {
+    for (final entry in source.entries) {
+      if (entry.value > (target[entry.key] ?? 0)) {
+        target[entry.key] = entry.value;
+      }
+    }
+  }
 }

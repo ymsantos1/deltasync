@@ -21,6 +21,7 @@ class LwwDelta<T> implements DeltaChange {
   final String key;
   @override
   final String id;
+  @override
   final String replicaId;
   final HlcTimestamp timestamp;
   final T? value;
@@ -32,20 +33,42 @@ class LwwDelta<T> implements DeltaChange {
     if (timestamp is! Map) {
       throw FormatException('Missing or invalid timestamp');
     }
+    final deleted = json['deleted'];
+    if (deleted is! bool) throw FormatException('Invalid LWW deleted flag');
+    final value = json['value'];
+    if (deleted && value != null) {
+      throw FormatException('Deleted LWW delta cannot carry a value');
+    }
+    final encodedDot = json['dot'];
+    if (encodedDot != null && encodedDot is! Map) {
+      throw FormatException('Invalid LWW dot');
+    }
+    final key = _requiredString(json, 'key');
+    final id = _requiredString(json, 'id');
+    final replicaId = _requiredString(json, 'replicaId');
+    if (key.trim() != key || id.trim() != id || replicaId.trim() != replicaId) {
+      throw FormatException('Invalid LWW identity');
+    }
     return LwwDelta<T>(
-      key: _requiredString(json, 'key'),
-      id: _requiredString(json, 'id'),
-      replicaId: _requiredString(json, 'replicaId'),
+      key: key,
+      id: id,
+      replicaId: replicaId,
       timestamp: HlcTimestamp.fromJson(Map<String, Object?>.from(timestamp)),
       value: json['value'] as T?,
-      deleted: json['deleted'] == true,
-      dot: json['dot'] is Map
-          ? Dot.fromJson(Map<String, Object?>.from(json['dot'] as Map))
+      deleted: deleted,
+      dot: encodedDot is Map
+          ? Dot.fromJson(Map<String, Object?>.from(encodedDot))
           : null,
     );
   }
 
-  String get type => 'lww';
+  @override
+  CrdtKind get kind => CrdtKind.lww;
+
+  @override
+  String get crdtId => key;
+
+  String get type => kind.wireName;
 
   @override
   Map<String, Object?> toJson() => {

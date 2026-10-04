@@ -504,3 +504,86 @@ anterior e demais planos sem alterações neste turno.
 Limitações: alteração documental; exemplos não compilados/executados e nenhuma
 suíte Dart rodada. Não constitui implementação de R-09a/R-09b nem evidência de
 melhoria de execução. Escopo, prioridades, dependências e status preservados.
+
+## Execução R-09a — 2026-10-03
+
+Status final: em andamento
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-01 e R-02 concluídas; R-09a era única tarefa pronta. Inspecionados
+contratos exportados, codecs, Replica, ReplicaState, storage, consumidores e testes.
+Worktree já continha `prompt.txt` não rastreado; preservado.
+Implementação: `DeltaChange` passou a expor `CrdtKind`, endereço e origem tipados;
+labels estáveis continuam `lww`, `g-counter` e `pn-counter`, com rejeição explícita
+de desconhecidos. `OutboxEntry` usa origem comum sem switch por subclasse.
+`CrdtOperation` sem uso removido. Mutação LWW local valida chave e valor JSON antes
+de avançar clock ou sequência; regressões cobrem metadados, rejeição e round-trip.
+Review: etapa separada, aprovado para a mudança delimitada; sem revisão independente.
+Correção após review: parsing rejeita tipo não textual com `FormatException`; validação
+usa `jsonEncode` sem conversão implícita de objetos arbitrários. Review do delta
+corrigido não encontrou novo achado impeditivo na área alterada.
+Achados pendentes impeditivos para concluir R-09a: `OperationCrdt` e herança/operações
+legadas permanecem no caminho de `LwwRegister`; `Delta` ainda guarda operações e
+deltas nativos em listas paralelas; política de compatibilidade das APIs exportadas
+não foi documentada; fluxos e exemplos ainda não foram migrados integralmente.
+Validação: checks de core, storage, sync, transport e facade aprovados após correção.
+Comandos: em `packages/deltasync_core` e `packages/deltasync_storage`,
+`dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+em `packages/deltasync_sync`, `packages/deltasync_transport` e raiz,
+`dart analyze && dart test`. Todos retornaram código 0 em 2026-10-03.
+`python3 scripts/check_plan.py`: aprovado, 26 tarefas e 95 links locais; nenhuma
+tarefa pronta enquanto R-09a segue ativa. `git diff --check`: aprovado após
+manutenção.
+Critérios: evidência cobre metadados comuns, rótulos/round-trip dos três tipos
+atuais, rejeição de tipo desconhecido, validação local LWW, armazenamento sem switch
+de classe e ausência de `CrdtOperation`. Critérios restantes não têm evidência e
+seguem desmarcados na fase.
+Manutenção: fase e índice mantêm R-09a em andamento e identificam tarefa ativa;
+nenhuma decisão ou risco global alterado. Próximo passo é retomar R-09a e fechar
+critérios pendentes.
+Limitações: tarefa incompleta; não anunciar core nativo consolidado, política de
+compatibilidade, caminho operacional legado removido ou satisfação dos critérios
+restantes. Nenhuma suíte final de workspace foi executada como gate de conclusão.
+
+<a id="execucao-r-09a-2026-10-03-conclusao"></a>
+
+## Execução R-09a — 2026-10-03 (conclusão)
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-09a continuava ativa após execução parcial anterior; retomada autorizada.
+Revisados critérios, contratos exportados, formatos, fluxo dos consumidores,
+referências Dart pertinentes e limites de core/sync/storage/transport.
+Implementação: Delta agora contém um lote nativo; metadados comuns tipados e
+`CrdtKind` têm labels estáveis. Migração explícita lê Delta v1/v2 e snapshots
+legados; gravação usa formato atual versionado. LWW mantém um vencedor/tombstone
+nativo; tipos e caminho operacional antigos foram removidos ou delegados por
+wrappers depreciados. PN-Counter usa mapas internos e valida lote inteiro antes
+de aplicar join cumulativo por máximo. Endereços/valores locais são validados antes
+de alterar estado/clock. Outbox exige Delta válido e lê origem sem switch. Pacotes
+e facade passaram a 2.0.0. README descreve incompatibilidades, formatos, uso e
+arquivos/testes que localizam estado, mutação, delta, join e restauração. DEC-17
+formaliza a quebra; OPEN-07 mantém explícito que consumidores externos não foram
+inventariados.
+Review: aprovado
+Diff revisado em etapa separada pelo implementador, sem independência.
+Achados: iniciais: ACK de teste lia alias antigo; migração aceitava clock sem
+componente da réplica; snapshot legado não avançava HLC restaurado. Correções
+aplicadas e delta revisto. Regressão de snapshot revelou inicialmente diferença
+de clock; restauração foi ajustada para importar vencedor sem reobservar estado
+já restaurado. Review após correções: aprovado; sem achados impeditivos conhecidos.
+Validação: aprovada
+Todos os critérios R-09a ligados a regressões de nativos, validação
+sem mutação parcial, endereços inválidos, lotes, labels/IDs/round-trip, migração
+e rejeição; exemplo e README conferidos. Workspace completo aprovado.
+Comandos: em cada pacote raiz/core/sync/storage/transport, `dart format --output=none
+--set-exit-if-changed lib test`, `dart analyze` e `dart test`; raiz 2 testes,
+core 30, sync 19, storage 6, transport 2. `git diff --check`: aprovado.
+Critérios: satisfeitos; regressões nativas, validação sem mutação parcial,
+endereços inválidos, lotes, labels/IDs/round-trip, migração e rejeição; exemplo
+e README conferidos e critérios marcados na fase.
+Manutenção: critérios da fase marcados, R-09a concluída no índice, sem tarefa
+ativa; próxima pronta recomendada R-09b. Checker do plano executado após esta
+manutenção. `prompt.txt` pré-existente preservado.
+Limitações: consumidores externos não inventariados (OPEN-07); revisão não foi
+independente. Formatos legados cobertos pelos fixtures disponíveis, sem teste
+contra aplicativos consumidores externos desconhecidos.

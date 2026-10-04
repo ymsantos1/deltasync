@@ -60,12 +60,18 @@ class SyncEngine {
           }
           final encoded = snapshot.metadata['delta'];
           if (encoded is Map) {
-            replica.apply(Delta.fromJson(Map<String, Object?>.from(encoded)));
+            replica.apply(
+              Delta.fromJson(
+                Map<String, Object?>.from(encoded),
+                allowLegacyOperations: true,
+                allowLegacyCounterIdentity: true,
+              ),
+            );
           }
         }
       }
       for (final entry in await storage!.pending(replica.id)) {
-        if (entry.delta != null) replica.apply(entry.delta!);
+        replica.apply(entry.delta);
       }
     } else {
       replica.apply(await store!.read(replica.id));
@@ -76,17 +82,9 @@ class SyncEngine {
     await _saveSnapshot();
   }
 
-  Future<Operation> set(String key, Object? value) => _serialize(() async {
-    final candidate = replica.fork();
-    final change = candidate.set(key, value);
-    await _commitCandidate(
-      candidate,
-      Delta([change]),
-      OutboxEntry(operation: change),
-    );
-    replica.adopt(candidate);
-    return change;
-  });
+  @Deprecated('Use setDelta; returns native LwwDelta.')
+  Future<LwwDelta<Object?>> set(String key, Object? value) =>
+      setDelta(key, value);
 
   /// Applies remote changes after a serialized snapshot commit succeeds.
   Future<void> applyRemote(Delta delta) => _serialize(() async {
@@ -95,23 +93,14 @@ class SyncEngine {
     replica.adopt(candidate);
   });
 
-  Future<Operation> remove(String key) => _serialize(() async {
-    final candidate = replica.fork();
-    final change = candidate.remove(key);
-    await _commitCandidate(
-      candidate,
-      Delta([change]),
-      OutboxEntry(operation: change),
-    );
-    replica.adopt(candidate);
-    return change;
-  });
+  @Deprecated('Use removeDelta; returns native LwwDelta.')
+  Future<LwwDelta<Object?>> remove(String key) => removeDelta(key);
 
   Future<LwwDelta<Object?>> setDelta(String key, Object? value) =>
       _serialize(() async {
         final candidate = replica.fork();
         final change = candidate.setDelta(key, value);
-        final delta = Delta.crdt([change]);
+        final delta = Delta([change]);
         await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
         replica.adopt(candidate);
         return change;
@@ -120,7 +109,7 @@ class SyncEngine {
   Future<LwwDelta<Object?>> removeDelta(String key) => _serialize(() async {
     final candidate = replica.fork();
     final change = candidate.removeDelta(key);
-    final delta = Delta.crdt([change]);
+    final delta = Delta([change]);
     await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
     replica.adopt(candidate);
     return change;
@@ -131,7 +120,7 @@ class SyncEngine {
       _serialize(() async {
         final candidate = replica.fork();
         final change = candidate.incrementGCounter(crdtId, amount);
-        final delta = Delta.crdt([change]);
+        final delta = Delta([change]);
         await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
         replica.adopt(candidate);
         return change;
@@ -142,7 +131,7 @@ class SyncEngine {
       _serialize(() async {
         final candidate = replica.fork();
         final change = candidate.incrementPnCounter(crdtId, amount);
-        final delta = Delta.crdt([change]);
+        final delta = Delta([change]);
         await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
         replica.adopt(candidate);
         return change;
@@ -153,7 +142,7 @@ class SyncEngine {
       _serialize(() async {
         final candidate = replica.fork();
         final change = candidate.decrementPnCounter(crdtId, amount);
-        final delta = Delta.crdt([change]);
+        final delta = Delta([change]);
         await _commitCandidate(candidate, delta, OutboxEntry(delta: delta));
         replica.adopt(candidate);
         return change;
@@ -182,7 +171,7 @@ class SyncEngine {
       if (entries.isEmpty) return;
       var pending = const Delta.empty();
       for (final entry in entries) {
-        pending = pending.merge(entry.delta ?? Delta([entry.operation!]));
+        pending = pending.merge(entry.delta);
       }
       final ids = entries.expand((entry) => entry.changeIds).toList();
       await storage!.markSent(replica.id, ids);
