@@ -52,19 +52,27 @@ lacunas explícitas ou entrega causal garantida.
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
 que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
-`OutboxEntry` exige `delta` não vazio; `operation:` foi removido. `Replica.set`
+`OutboxEntry` exige exatamente uma mudança em `delta`; lotes são montados no
+envio. `operation:` foi removido. `Replica.set`
 e `Replica.remove` continuam como aliases depreciados, mas retornam `LwwDelta`;
 código tipado como `Operation` deve migrar para `LwwDelta<Object?>`. `Crdt`,
 `CrdtOperation` e `OperationCrdt` foram removidos. Consumidores externos não foram
 inventariados; devem compilar contra os contratos públicos acima e adaptar
 subclasses próprias de `DeltaChange` para metadados `kind`, `crdtId` e `replicaId`.
+`ReplicaSnapshot` atual recebe payload canônico; adaptadores leem objeto antigo
+com `ReplicaSnapshot.fromJson` e convertem antes de escrever. Outboxes antigas com
+várias mudanças por entrada devem ser divididas em uma entrada por mudança na
+migração. `PendingDeltaStore` e `MemoryPendingDeltaStore` seguem depreciados como
+ponte; API nova usa `SyncEngine.withStorage`.
 
 Inventário público após consolidação: `deltasync_core` exporta contratos e tipos
 de mudança (`DeltaChange`, `CrdtKind`, `Delta`, `DeltaCodec`, `DeltaCrdt`),
 `Replica`/`ReplicaState`, LWW/counters, HLC, identidade e clocks; `Operation` e
 `migrateLegacyOperation` existem só para converter dados antigos. `deltasync_storage`
 exporta `ReplicaStorage`, `ReplicaSnapshot`, `OutboxEntry`, `OutboxStatus`,
-`MemoryStorage`, `PendingDeltaStore` e `MemoryPendingDeltaStore`. `deltasync_sync`
+`MemoryStorage`, `PendingDeltaStore` e `MemoryPendingDeltaStore`. Os dois últimos
+permanecem depreciados como adaptador de migração; fluxo novo usa
+`SyncEngine.withStorage` e `ReplicaStorage`. `deltasync_sync`
 exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
 `DeltaTransport`, `AcknowledgingDeltaTransport` e `DeltaEnvelope`. A facade
 `deltasync` reexporta esses quatro pacotes.
@@ -72,9 +80,22 @@ exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
 `DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
 operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
 físico sintético; `replicaId` e ID preservam desempate antigo. Vetores cuja soma
-excede o intervalo suportado são rejeitados. Snapshots internos versão 1 continuam
-legíveis, inclusive `legacyWinner`; gravação atual usa versão 2. Conversão fica no
-codec/snapshot restore, não no caminho normal de `Replica.apply`.
+excede o intervalo suportado são rejeitados. Snapshots internos versões 1 e 2
+continuam legíveis, inclusive `legacyWinner`; gravação atual usa versão 3 e guarda
+sequências por origem para bootstrap compacto. Conversão fica no codec/snapshot
+restore, não no caminho normal de `Replica.apply`.
+
+`Replica.export()` emite bootstrap compacto: vencedor LWW por endereço e
+componente cumulativo mais recente por origem para counters. `Replica.mergeSnapshotJson()`
+faz bootstrap por snapshot sem trocar identidade; `SyncEngine.applyRemoteSnapshot()`
+grava esse merge com `commitRemote`, sem criar pendência local. `export()` não é
+log completo, outbox nem histórico de ACK. Use `toSnapshotJson/exportSnapshot()` e
+`fromSnapshotJson()` para persistir/restaurar estado completo, inclusive tombstones,
+clocks e sequências. ID conflitante é rejeitado enquanto corresponder ao vencedor
+retido ou ao último estado conhecido do componente; não há deduplicação ilimitada
+de todo ID histórico após restauração. Snapshots internos v1/v2 sem sequências de
+origens remotas podem ser mesclados por `mergeSnapshotJson`; `export()` não inventa
+dots ausentes. Use transferência direta do snapshot para bootstrap desse estado.
 
 ### Onde alterar cada tipo
 
@@ -106,12 +127,21 @@ testes, exemplos e protótipos; todos os dados são perdidos quando o processo
 termina e não deve ser usado como storage de produção.
 
 Adaptadores de `ReplicaStorage` devem implementar `commit` para gravar snapshot
-e entradas novas da outbox atomicamente, e `commitRemote` para substituir snapshot
-após merge remoto. Falha deve preservar estado anterior. Esses métodos novos
-exigem atualização de implementações externas. Snapshots atuais usam formato 1,
-com estado materializado em `metadata['replicaState']`; estado LWW inclui
-tombstones e contadores guardam componentes/sequências. O reader ainda aceita
-snapshots antigos com `metadata['delta']` e os regrava no formato atual ao iniciar.
+canônico e entradas novas da outbox atomicamente, e `commitRemote` para substituir
+snapshot após merge remoto. Falha deve preservar estado anterior. Cada entrada
+outbox contém uma mudança; `SyncEngine` combina entradas em lote só no envio.
+`ReplicaSnapshot` v2 guarda payload `Replica.toSnapshotJson()` sem duplicar
+estado/clock em campos paralelos. O reader aceita snapshot v1 com
+`metadata['replicaState']` ou delta reexecutável; estado legado sem dados suficientes
+é rejeitado. Snapshots restaurados são regravados no formato atual ao iniciar.
+`saveReplica` serve a bootstrap/manutenção sem pendências; `enqueue` importa uma
+pendência fora de mutação local. Edições usam commit atômico.
+
+`ReplicaState` exposto por `Replica.state` é cópia isolada; consultas devolvem
+coleções aninhadas imutáveis. `SyncEngine` clona a `Replica` recebida e `engine.replica`
+devolve visão destacada, então escrita direta não contorna commits. Mutações passam
+por preparação, commit e adoção comuns; falha mantém estado/outbox prévios. Forks
+preservam fonte de tempo HLC injetada.
 
 ### Confirmação e retry
 
@@ -126,6 +156,38 @@ não armazena tentativas nem ACKs: mudanças enviadas ficam pendentes e cada `pu
 pode reenviá-las sem limite; `force` não altera esse comportamento. ACK confirma
 entrega, nunca autoriza coleta de tombstones. ACK separado por múltiplos peers
 depende de identidade de destino e permanece fora do contrato atual.
+`pending` significa tentativa zero; `sent` conta tentativa iniciada e exige
+`sentAt`. ACK remove entrada; `confirmed` só é lido em registros legados.
+
+`SyncEngine` inicia automaticamente antes da primeira operação; também aceita
+`start()` explícito e chamadas repetidas após sucesso. `lifecycle` expõe
+`created/starting/started/disposed`; falha de início retorna a `created` e permite
+retry. `replica` só fica consultável após restauração. Mutação concluída significa
+commit local, não confirmação remota.
+`pendingDelta()` consulta alterações ainda retidas localmente; `push()` retorna
+`SyncPushResult` com delta enviado e IDs confirmados. `fullyAcknowledged` é falso
+quando transporte não fornece ACK ou confirma só parte do lote. Falhas chamadas
+diretamente são lançadas ao chamador; `errors` expõe falhas de processamento do
+stream remoto e erros emitidos pelo stream de transporte. `dispose()` é terminal,
+cancela recepção, aguarda operações já iniciadas e rejeita novas operações.
+`PendingDeltaStore` não consegue remover uma mudança, mesmo após ACK remoto;
+resultado de push confirma transporte, enquanto `pendingDelta()` revela retenção
+local e possível reenvio.
+
+```dart
+final engine = SyncEngine.withStorage(
+  replica: Replica('device-a'),
+  storage: storage,
+  transport: transport,
+);
+final errors = engine.errors.listen((failure) => print(failure.error));
+await engine.start();
+await engine.setDelta('title', 'edited offline'); // commit local concluído
+final pending = await engine.pendingDelta();
+final result = await engine.push(); // ACKs estão em result.acknowledgedIds
+await engine.dispose();
+await errors.cancel();
+```
 
 ### Escopo da persistência
 

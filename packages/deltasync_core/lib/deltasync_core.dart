@@ -6,6 +6,7 @@ export 'src/delta_codec.dart';
 export 'src/delta_change.dart';
 export 'src/hlc.dart';
 export 'src/identity.dart';
+export 'src/json_value.dart';
 export 'src/g_counter.dart';
 export 'src/pn_counter.dart';
 export 'src/lww_register.dart';

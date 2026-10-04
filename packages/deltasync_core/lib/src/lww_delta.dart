@@ -1,6 +1,7 @@
 import 'delta_change.dart';
 import 'hlc.dart';
 import 'identity.dart';
+import 'json_value.dart';
 
 /// Delta produced by an LWW register.
 ///
@@ -49,12 +50,18 @@ class LwwDelta<T> implements DeltaChange {
     if (key.trim() != key || id.trim() != id || replicaId.trim() != replicaId) {
       throw FormatException('Invalid LWW identity');
     }
+    Object? copiedValue;
+    try {
+      copiedValue = copyJsonValue(value);
+    } on ArgumentError {
+      throw FormatException('Invalid LWW value');
+    }
     return LwwDelta<T>(
       key: key,
       id: id,
       replicaId: replicaId,
       timestamp: HlcTimestamp.fromJson(Map<String, Object?>.from(timestamp)),
-      value: json['value'] as T?,
+      value: copiedValue as T?,
       deleted: deleted,
       dot: encodedDot is Map
           ? Dot.fromJson(Map<String, Object?>.from(encodedDot))
@@ -77,14 +84,14 @@ class LwwDelta<T> implements DeltaChange {
     'id': id,
     'replicaId': replicaId,
     'timestamp': timestamp.toJson(),
-    'value': value,
+    'value': copyJsonValue(value),
     'deleted': deleted,
     if (dot != null) 'dot': dot!.toJson(),
   };
 
   @override
   bool operator ==(Object other) =>
-      other is LwwDelta<T> &&
+      other is LwwDelta &&
       other.key == key &&
       other.id == id &&
       other.replicaId == replicaId &&

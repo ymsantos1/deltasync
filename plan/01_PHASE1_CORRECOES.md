@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: ativa. Nenhuma tarefa de código em andamento.
+Estado: concluída.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -10,9 +10,9 @@ Saída: R-01 a R-05 e R-09a/R-09b concluídas, com evidências dos critérios.
 Riscos: [RISK-01 a RISK-05, RISK-07 e RISK-13 a RISK-16](RISKS.md).
 Exclusões: novos frameworks de objetos, codegen e GC destrutivo.
 
-R-01 a R-04 conservam conclusões históricas. Novos achados de isolamento,
-endereçamento e fila serão resolvidos em R-09a/R-09b/R-05. R-09a é próxima pronta.
-Fases posteriores usam contratos consolidados e fluxo inicial de R-08d.
+R-01 a R-05 e R-09a/R-09b estão concluídas. Fase seguinte usa os contratos
+consolidados; R-08a é próxima tarefa pronta para integrar envelopes antes do fluxo
+de duas réplicas de R-08d.
 
 <a id="r-01"></a>
 
@@ -194,7 +194,7 @@ Status: concluída.
 
 ## R-09b — Estado, snapshots e outbox consolidados
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-09a, R-03, R-04
 
@@ -204,29 +204,29 @@ por mudança e pipeline local de commit comum.
 
 Critérios:
 
-- [ ] Unificar estado por endereço, com vínculo de tipo incluindo LWW/counters;
+- [x] Unificar estado por endereço, com vínculo de tipo incluindo LWW/counters;
   consolidar Replica/ReplicaState conforme responsabilidade própria de cada uma.
-- [ ] Snapshot canônico guardar estado, tombstones, clocks/contexto e sequências;
+- [x] Snapshot canônico guardar estado, tombstones, clocks/contexto e sequências;
   eliminar duplicação entre state/clock e metadata['replicaState']; versionar formato
   e definir leitura/conversão ou rejeição explícita de snapshots anteriores.
-- [ ] Definir valores serializáveis e proteger entradas, consultas, cópias e
+- [x] Definir valores serializáveis e proteger entradas, consultas, cópias e
   snapshots contra mutação externa de listas/mapas aninhados. Fork preservar fonte
   de tempo injetada e isolamento necessário para falha de commit.
-- [ ] Engine controlar escrita na réplica ativa, inclusive referência originalmente
+- [x] Engine controlar escrita na réplica ativa, inclusive referência originalmente
   fornecida pelo consumidor; mutação externa não produzir perda ou colisão de IDs.
-- [ ] Histórico completo sair do caminho normal; outbox conservar somente pendências.
+- [x] Histórico completo sair do caminho normal; outbox conservar somente pendências.
   Definir exportação, bootstrap aplicável e alcance de rejeição de ID conflitante
   após restauração sem prometer deduplicação eterna por log ilimitado.
-- [ ] ReplicaStorage ser contrato principal; descontinuar PendingDeltaStore e
+- [x] ReplicaStorage ser contrato principal; descontinuar PendingDeltaStore e
   MemoryPendingDeltaStore do fluxo normal com compatibilidade explícita. Consolidar
   gravações em commit atômico; primitivas restantes terem função documentada.
-- [ ] Outbox ter uma entrada por mudança, identidade direta e ACK parcial sem perda;
+- [x] Outbox ter uma entrada por mudança, identidade direta e ACK parcial sem perda;
   lotes serem formados no envio. Tentativas e status terem significado consistente.
-- [ ] Nulabilidade refletir invariantes: entrada de outbox exigir mudança válida
+- [x] Nulabilidade refletir invariantes: entrada de outbox exigir mudança válida
   no tipo/construtor, sem campo opcional que todo consumidor precisa forçar com `!`.
   Rejeitar entradas inválidas na criação/restauração; ausência legítima continuar
   explícita, sem valores artificiais para esconder estado ausente.
-- [ ] Mutações locais compartilharem pipeline interno de preparação/commit/adoção;
+- [x] Mutações locais compartilharem pipeline interno de preparação/commit/adoção;
   falhas manterem estado e outbox anteriores, sem framework público de comandos.
 
 Validação: payload alterado pelo chamador e por consultas não altera estado/outbox;
@@ -235,13 +235,13 @@ snapshot/restauração e sequência, falhas locais/remotas, ACK parcial e compat
 Verificar contrato tipado da outbox, criação/restauração inválida e consumidores.
 MemoryStorage simula contrato; durabilidade continua em R-07c/R-07d.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-09b — 2026-10-03](TRACEABILITY.md#execucao-r-09b-2026-10-03).
 
 <a id="r-05"></a>
 
 ## R-05 — Lifecycle e processamento remoto
 
-Status: planejada
+Status: concluída
 MoSCoW: MUST
 Dependências: R-09b
 
@@ -253,20 +253,20 @@ Fila de commits aguarda rede em push, bloqueando edição local e aplicação re
 
 Critérios:
 
-- [ ] Definir contrato de uso antes de start e após dispose; impedir mutação antes
+- [x] Definir contrato de uso antes de start e após dispose; impedir mutação antes
   da restauração ou depois do descarte, conforme contrato.
-- [ ] Falha de start permite recuperação ou estado terminal documentado; _started
+- [x] Falha de start permite recuperação ou estado terminal documentado; _started
   não pode sugerir sucesso após falha de carregamento.
-- [ ] Processamento remoto aguardado/serializado; erros observáveis e sem aplicação
+- [x] Processamento remoto aguardado/serializado; erros observáveis e sem aplicação
   parcial ou confirmação antes do commit.
-- [ ] Envio e espera de ACK ocorrerem fora da fila de commits; edição local e
+- [x] Envio e espera de ACK ocorrerem fora da fila de commits; edição local e
   recepção continuarem enquanto rede estiver lenta ou indisponível. ACK só alcançar
   mudanças do lote enviado, preservando pendências criadas durante envio.
-- [ ] API pública permitir distinguir commit local concluído, mudanças pendentes
+- [x] API pública permitir distinguir commit local concluído, mudanças pendentes
   e confirmação remota, além de observar falhas e ciclo de vida; consumidor não
   depender de acesso a campos internos nem de framework de estados novo.
-- [ ] dispose trata operação em andamento e impede novos trabalhos.
-- [ ] Testar start falho, entrada inválida, falha de storage, concorrência e
+- [x] dispose trata operação em andamento e impede novos trabalhos.
+- [x] Testar start falho, entrada inválida, falha de storage, concorrência e
   cancelamento; guarda isolada não comprova lifecycle completo.
 
 Validação: start falho/repetido, perda de snapshot por uso antes da restauração,
@@ -275,7 +275,7 @@ pendente, ACK concorrente e dispose com trabalho em andamento. Duas engines e
 envio simultâneo são verificados em R-08d antes de expandir tipos.
 Resultados de commit/pendência/confirmação e erros devem ser verificáveis pela API pública.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [Execução R-05 — 2026-10-03](TRACEABILITY.md#execucao-r-05-2026-10-03).
 
 ## Gate da fase
 

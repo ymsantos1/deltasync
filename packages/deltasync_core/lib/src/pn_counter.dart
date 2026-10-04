@@ -128,12 +128,25 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     required this.crdtId,
     Map<String, int> positive = const {},
     Map<String, int> negative = const {},
+    Map<String, int>? sequences,
     int? sequence,
   }) : replicaId = ReplicaId(replicaId).value,
        _positive = Map.of(positive),
        _negative = Map.of(negative),
+       _sequences = Map<String, int>.of(
+         sequences ??
+             {
+               if (positive.containsKey(ReplicaId(replicaId).value) ||
+                   negative.containsKey(ReplicaId(replicaId).value))
+                 ReplicaId(replicaId).value:
+                     sequence ??
+                     (positive[ReplicaId(replicaId).value] ?? 0) +
+                         (negative[ReplicaId(replicaId).value] ?? 0),
+             },
+       ),
        _sequence =
            sequence ??
+           sequences?[ReplicaId(replicaId).value] ??
            (positive[ReplicaId(replicaId).value] ?? 0) +
                (negative[ReplicaId(replicaId).value] ?? 0) {
     if (crdtId.isEmpty || crdtId.trim() != crdtId) {
@@ -144,6 +157,17 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
       throw ArgumentError('PN-Counter components must be non-negative');
     }
     if (_sequence < 0) throw ArgumentError.value(sequence, 'sequence');
+    if (_sequences.entries.any(
+          (entry) =>
+              entry.key.isEmpty ||
+              entry.key.trim() != entry.key ||
+              entry.value < 0,
+        ) ||
+        _sequence < (_sequences[replicaId] ?? 0) ||
+        (((_positive[replicaId] ?? 0) > 0 || (_negative[replicaId] ?? 0) > 0) &&
+            (_sequences[replicaId] ?? 0) == 0)) {
+      throw ArgumentError('Invalid PN-Counter sequence state');
+    }
   }
 
   final String replicaId;
@@ -152,6 +176,7 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
   final String crdtId;
   final Map<String, int> _positive;
   final Map<String, int> _negative;
+  final Map<String, int> _sequences;
   int _sequence;
 
   @override
@@ -204,11 +229,32 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     }
     final currentPositive = _positive[delta.replicaId] ?? 0;
     final currentNegative = _negative[delta.replicaId] ?? 0;
-    if (delta.positive > currentPositive) {
+    final currentSequence = _sequences[delta.replicaId];
+    if (currentSequence == null) {
+      if (delta.positive >= currentPositive &&
+          delta.negative >= currentNegative) {
+        _positive[delta.replicaId] = delta.positive;
+        _negative[delta.replicaId] = delta.negative;
+        _sequences[delta.replicaId] = delta.dot!.counter;
+      } else if (delta.positive > currentPositive ||
+          delta.negative > currentNegative) {
+        throw FormatException('PN-Counter component regressed');
+      }
+    } else if (delta.dot!.counter > currentSequence) {
+      if (delta.positive < currentPositive ||
+          delta.negative < currentNegative) {
+        throw FormatException('PN-Counter component regressed');
+      }
       _positive[delta.replicaId] = delta.positive;
-    }
-    if (delta.negative > currentNegative) {
       _negative[delta.replicaId] = delta.negative;
+      _sequences[delta.replicaId] = delta.dot!.counter;
+    } else if (delta.dot!.counter == currentSequence &&
+        (delta.positive != currentPositive ||
+            delta.negative != currentNegative)) {
+      throw FormatException('Conflicting PN-Counter delta sequence');
+    } else if (delta.positive > currentPositive ||
+        delta.negative > currentNegative) {
+      throw FormatException('PN-Counter component regressed');
     }
     if (delta.replicaId == replicaId &&
         delta.dot != null &&
@@ -225,6 +271,11 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     }
     _mergeMax(_positive, state._positive);
     _mergeMax(_negative, state._negative);
+    for (final entry in state._sequences.entries) {
+      if (entry.value > (_sequences[entry.key] ?? 0)) {
+        _sequences[entry.key] = entry.value;
+      }
+    }
     if (state.replicaId == replicaId && state._sequence > _sequence) {
       _sequence = state._sequence;
     }
@@ -236,22 +287,57 @@ class PnCounter implements DeltaCrdt<int, PnCounterDelta> {
     'crdtId': crdtId,
     'positive': positive,
     'negative': negative,
+    'sequences': Map<String, int>.unmodifiable(_sequences),
     'sequence': _sequence,
   };
 
-  PnCounterDelta _delta() => PnCounterDelta(
-    id: counterDeltaId(
-      CrdtKind.pnCounter.wireName,
-      crdtId,
-      replicaId,
-      ++_sequence,
-    ),
-    replicaId: replicaId,
-    crdtId: crdtId,
-    positive: _positive[replicaId] ?? 0,
-    negative: _negative[replicaId] ?? 0,
-    dot: Dot(replicaId: replicaId, counter: _sequence, crdtId: crdtId),
-  );
+  Iterable<PnCounterDelta> exportChanges({bool requireSequences = true}) sync* {
+    for (final origin in {
+      ..._positive.keys,
+      ..._negative.keys,
+      ..._sequences.keys,
+    }) {
+      final counter = _sequences[origin];
+      if (counter == null) {
+        if (requireSequences) {
+          throw StateError('Counter bootstrap needs missing origin sequence');
+        }
+        continue;
+      }
+      if (counter <= 0) continue;
+      yield PnCounterDelta(
+        id: counterDeltaId(
+          CrdtKind.pnCounter.wireName,
+          crdtId,
+          origin,
+          counter,
+        ),
+        replicaId: origin,
+        crdtId: crdtId,
+        positive: _positive[origin] ?? 0,
+        negative: _negative[origin] ?? 0,
+        dot: Dot(replicaId: origin, counter: counter, crdtId: crdtId),
+      );
+    }
+  }
+
+  PnCounterDelta _delta() {
+    final sequence = ++_sequence;
+    _sequences[replicaId] = sequence;
+    return PnCounterDelta(
+      id: counterDeltaId(
+        CrdtKind.pnCounter.wireName,
+        crdtId,
+        replicaId,
+        sequence,
+      ),
+      replicaId: replicaId,
+      crdtId: crdtId,
+      positive: _positive[replicaId] ?? 0,
+      negative: _negative[replicaId] ?? 0,
+      dot: Dot(replicaId: replicaId, counter: sequence, crdtId: crdtId),
+    );
+  }
 
   static int _sum(Map<String, int> values) =>
       values.values.fold(0, (sum, value) => sum + value);

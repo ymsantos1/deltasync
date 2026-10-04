@@ -587,3 +587,141 @@ manutenção. `prompt.txt` pré-existente preservado.
 Limitações: consumidores externos não inventariados (OPEN-07); revisão não foi
 independente. Formatos legados cobertos pelos fixtures disponíveis, sem teste
 contra aplicativos consumidores externos desconhecidos.
+
+<a id="execucao-r-09b-2026-10-03"></a>
+
+## Execução R-09b — 2026-10-03
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-09b era a próxima tarefa pronta após R-09a. Revisados seus critérios,
+os limites entre core/sync/storage/transport, os contratos públicos e trechos
+pertinentes do guia Dart. Alterações preexistentes do worktree foram preservadas.
+
+Implementação: ReplicaState registra vínculo de tipo por endereço e Replica mantém
+estado LWW/counters consolidado por endereço, remove histórico operacional e exporta
+bootstrap compacto; snapshots internos v3 e storage canônico v2 preservam estado,
+tombstones, clocks e sequências disponíveis, lendo ou rejeitando formatos antigos
+explicitamente. Valores JSON são validados, copiados e congelados nos limites;
+fork conserva a fonte de relógio. SyncEngine trabalha em réplica isolada e usa
+preparação/commit/adoção comum. ReplicaStorage documenta as primitivas e commit;
+PendingDeltaStore e MemoryPendingDeltaStore ficam depreciados como ponte compatível.
+OutboxEntry exige uma mudança, identidade direta, wire format versionado e estados
+validados; envio forma lotes, ACK parcial remove só IDs confirmados. README e DEC-18
+documentam migração, export/bootstrap, limites de deduplicação e localização das
+responsabilidades e testes.
+
+Review: aprovado
+
+Review executado pelo mesmo agente em etapa separada; não é revisão independente.
+Achados iniciais: testes de sync pressupunham lote guardado numa entrada; snapshots
+legados de counters não preservavam sequências remotas conhecidas; Replica.apply
+podia aplicar parcialmente lote inválido; leitura da outbox passou a devolver cópia
+defensiva, tornando ineficaz o merge antigo de duplicatas. Correções foram aplicadas
+e revistas. A validação encontrou também expectativa histórica na facade; teste foi
+atualizado para verificar export compacto com tombstone e idempotência. Sem achados
+impeditivos conhecidos após rever as correções.
+
+Achados: os itens encontrados durante review e validação foram corrigidos,
+revistos e testados; sem achados impeditivos conhecidos.
+
+Validação: aprovada
+
+`dart analyze` sem issues e `dart test` aprovado na raiz (2 testes), core (39),
+sync (22), storage (10) e transport (2), total 75 testes.
+O workspace completo foi repetido após a correção da facade. `git diff --check`
+aprovado; checker do plano executado após manutenção.
+
+Comandos: `dart format packages/deltasync_core packages/deltasync_sync
+packages/deltasync_storage`; `dart format test/deltasync_test.dart`; em cada
+diretório `.`, `packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage` e `packages/deltasync_transport`, `dart analyze &&
+dart test`; `python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: todos satisfeitos e marcados em R-09b. Testes cobrem isolamento de
+valores e engine, snapshots/migração/sequências/bootstrap, conflitos atômicos,
+falhas locais/remotas, endereço/tipo, commit, contrato e codec da outbox, ACK
+parcial e compatibilidade. README foi conferido quanto ao percurso de consumo e
+manutenção. MemoryStorage continua volátil; não representa durabilidade em disco.
+
+Manutenção: R-09b concluída na fase e no índice; nenhuma tarefa ativa. R-05 passou
+a pronta, sem mudança de escopo. DEC-18 registra os contratos; RISK-13 e RISK-16
+foram atualizados com os limites ainda pendentes. `OPEN-07` continua aberto para
+inventário de consumidores externos. `prompt.txt` do usuário foi preservado.
+
+Limitações: revisão não independente; não há teste contra consumidores externos
+desconhecidos nem comprovação de durabilidade. Snapshots antigos sem estado
+reexecutável são rejeitados; snapshots legados de counter sem sequências remotas
+permitem merge por snapshot, mas `export()` falha em vez de inventar identidade.
+Deduplicação após restauração cobre somente winners/componentes retidos, não é
+histórico eterno. Durabilidade real segue em R-07c/R-07d; lifecycle completo segue
+em R-05.
+
+<a id="execucao-r-05-2026-10-03"></a>
+
+## Execução R-05 — 2026-10-03
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-05 era a próxima tarefa pronta; R-09b e demais dependências estavam
+concluídas. Inspecionados SyncEngine, transporte, outbox/storage, consumers/tests,
+critérios, DEC-13, RISK-05/14/15 e guia Dart pertinente. Worktree já continha
+alterações R-09b não confirmadas; preservadas.
+
+Implementação: primeira operação aguarda restauração; `start()` explícito é
+idempotente, compartilha início concorrente e retorna a `created` após falha para
+permitir retry. `lifecycle` torna estados públicos e `replica` rejeita leitura
+antes de restauração. Mutações locais e aplicação remota seguem serializadas e
+transacionais; preparo/marcação de envio e ACK passam pela fila, mas espera do
+transporte ocorre fora dela. ACK só confirma IDs do lote enviado. `pendingDelta()`
+mostra retenção local; `push()` retorna `SyncPushResult`; `errors` publica falhas de
+delta remoto e erros do stream. `dispose()` é terminal, cancela recepção, drena
+trabalho aceito e rejeita novas operações. README documenta contrato e caminho de
+consumo. O storage legado pode reter uma mudança já confirmada remotamente, pois
+`PendingDeltaStore` não define remoção/ACK; comportamento fica explícito e testado.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente; não é independente.
+
+Achados: ACK remoto com `PendingDeltaStore` não apaga delta local; documentação e
+regressão foram adicionadas para separar confirmação remota de retenção local.
+Correções de tipo e lint identificadas durante verificação foram aplicadas; diff
+final revisto, sem achados impeditivos conhecidos.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Workspace completo passou `dart format
+--output=none --set-exit-if-changed lib test`, `dart analyze` e `dart test` em
+raiz/core/sync/storage/transport; facade 2, core 39, sync 27, storage 10 e
+transport 2. Depois do teste final de ACK legado, pacote sync repetiu format,
+analyze e test: 28 aprovados, análise sem issues. Total final: 81 testes. `git diff
+--check` aprovado.
+
+Comandos: `dart format packages/deltasync_sync/lib/src/sync_engine.dart
+packages/deltasync_sync/test/sync_engine_test.dart`; para cada pacote, `dart format
+--output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: satisfeitos e marcados. Regressões demonstram restauração antes da
+primeira mutação, getter protegido antes do restore, retry após falha de storage,
+conflito remoto sem aplicação parcial e erros observáveis, edição/aplicação remota
+durante envio lento, ACK limitado ao lote preservando novas pendências, visibilidade
+de commit/pendência/ACK e descarte com push em voo, cancelamento do listener e
+rejeição de operações após dispose. Teste de 12 mutações confirma IDs/commits
+serializados; falhas de commit local/remoto cobertas. README orienta uso público.
+
+Manutenção: todos critérios R-05 marcados; R-05 e fase 1 concluídas no índice/fase.
+DEC-19 registra contrato; RISK-05/14/15 atualizados. Fase 4 ativada como próxima
+seleção; R-08a passou a pronta. Nenhuma tarefa seguinte iniciada.
+
+Limitações: review não independente; `MemoryStorage` não prova persistência real,
+que segue R-07c/R-07d. Transporte/Futures não têm cancelamento; `dispose()` aguarda
+I/O já iniciado e pode aguardar indefinidamente se adaptador nunca completar.
+Coordenação entre engines que compartilham storage segue R-08d; compatibilidade com
+consumidores externos permanece limitada pelo inventário em aberto OPEN-07. O
+adaptador legado mantém deltas confirmados para retry/entrega ao menos uma vez.

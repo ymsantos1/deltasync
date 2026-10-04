@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: planejada. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
+Estado: ativa. Próxima tarefa pronta: R-08a. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
 Saída: R-08a a R-08d concluídas com cenário/topologia e limitações declarados.
@@ -12,7 +12,7 @@ para topologia arbitrária e GC destrutivo de tombstones.
 
 ## R-08a — Integrar envelopes
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-09b
 

@@ -2,34 +2,61 @@ import 'lww_register.dart';
 import 'lww_delta.dart';
 import 'operation.dart';
 import 'hlc.dart';
+import 'delta_change.dart';
+import 'json_value.dart';
 
 /// Materialized state produced by applying changes in any order.
 class ReplicaState {
-  ReplicaState() : _entries = {};
+  ReplicaState() : _entries = {}, _addressKinds = {};
 
-  ReplicaState._(Map<String, LwwRegister<Object?>> entries)
-    : _entries = {
+  ReplicaState._(
+    Map<String, LwwRegister<Object?>> entries,
+    Map<String, CrdtKind> addressKinds,
+  ) : _entries = {
         for (final entry in entries.entries)
           entry.key: LwwRegister<Object?>()..mergeState(entry.value),
-      };
+      },
+      _addressKinds = Map.of(addressKinds);
 
   final Map<String, LwwRegister<Object?>> _entries;
+  final Map<String, CrdtKind> _addressKinds;
 
-  Set<String> get addresses => Set.unmodifiable(_entries.keys);
+  Set<String> get addresses => Set.unmodifiable(_addressKinds.keys);
 
   Map<String, Object?> get values => {
     for (final entry in _entries.entries)
-      if (entry.value.hasValue) entry.key: entry.value.value,
+      if (entry.value.hasValue)
+        entry.key: copyJsonValue(entry.value.value, freeze: true),
   };
 
   Object? operator [](String key) => values[key];
 
   void applyDelta(LwwDelta<Object?> delta) {
-    final register = _entries.putIfAbsent(delta.key, LwwRegister<Object?>.new);
+    final kind = _addressKinds[delta.key];
+    if (kind != null && kind != CrdtKind.lww) {
+      throw FormatException('CRDT address is already bound to another type');
+    }
+    final register = LwwRegister<Object?>();
+    final existing = _entries[delta.key];
+    if (existing != null) register.mergeState(existing);
     register.applyDelta(delta);
+    _entries[delta.key] = register;
+    _addressKinds[delta.key] = CrdtKind.lww;
   }
 
-  ReplicaState copy() => ReplicaState._(_entries);
+  ReplicaState copy() => ReplicaState._(_entries, _addressKinds);
+
+  CrdtKind? kindAt(String address) => _addressKinds[address];
+
+  LwwDelta<Object?>? winnerAt(String address) => _entries[address]?.winner;
+
+  void bind(String address, CrdtKind kind) {
+    final current = _addressKinds[address];
+    if (current != null && current != kind) {
+      throw StateError('CRDT address is already bound to another type');
+    }
+    _addressKinds[address] = kind;
+  }
 
   /// Encodes each native winning register, including tombstones.
   Map<String, Object?> toSnapshotJson() => {
@@ -78,5 +105,25 @@ class ReplicaState {
     _entries
       ..clear()
       ..addAll(other.copy()._entries);
+    _addressKinds
+      ..clear()
+      ..addAll(other._addressKinds);
+  }
+
+  void mergeState(ReplicaState other) {
+    for (final entry in other._addressKinds.entries) {
+      final current = _addressKinds[entry.key];
+      if (current != null && current != entry.value) {
+        throw FormatException('CRDT address is already bound to another type');
+      }
+    }
+    for (final entry in other._entries.entries) {
+      final register = _entries.putIfAbsent(
+        entry.key,
+        LwwRegister<Object?>.new,
+      );
+      register.mergeState(entry.value);
+    }
+    _addressKinds.addAll(other._addressKinds);
   }
 }

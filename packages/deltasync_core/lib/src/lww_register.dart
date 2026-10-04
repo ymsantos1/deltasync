@@ -1,5 +1,6 @@
 import 'crdt.dart';
 import 'lww_delta.dart';
+import 'json_value.dart';
 
 /// Last-write-wins register with one native HLC winner and retained tombstone.
 class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
@@ -10,7 +11,21 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
   bool get isDeleted => _winner?.deleted ?? false;
 
   @override
-  T? get value => hasValue ? _winner!.value : null;
+  T? get value => hasValue ? copyJsonValue(_winner!.value) as T? : null;
+
+  LwwDelta<T>? get winner {
+    final winner = _winner;
+    if (winner == null) return null;
+    return LwwDelta<T>(
+      key: winner.key,
+      id: winner.id,
+      replicaId: winner.replicaId,
+      timestamp: winner.timestamp,
+      value: winner.deleted ? null : copyJsonValue(winner.value) as T?,
+      deleted: winner.deleted,
+      dot: winner.dot,
+    );
+  }
 
   @override
   void applyDelta(LwwDelta<T> delta) {
@@ -32,7 +47,15 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
     }
     final current = _winner;
     if (current != null && _compare(delta, current) <= 0) return;
-    _winner = delta;
+    _winner = LwwDelta<T>(
+      key: delta.key,
+      id: delta.id,
+      replicaId: delta.replicaId,
+      timestamp: delta.timestamp,
+      value: delta.deleted ? null : copyJsonValue(delta.value) as T?,
+      deleted: delta.deleted,
+      dot: delta.dot,
+    );
   }
 
   @override
@@ -43,7 +66,7 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
 
   @override
   Map<String, Object?> toJson() => {
-    if (_winner case final winner?) 'winner': winner.toJson(),
+    if (winner case final winner?) 'winner': winner.toJson(),
   };
 
   int _compare(LwwDelta<T> first, LwwDelta<T> second) {

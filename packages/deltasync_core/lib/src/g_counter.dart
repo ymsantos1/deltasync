@@ -118,14 +118,38 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
     String replicaId, {
     required this.crdtId,
     Map<String, int> components = const {},
+    Map<String, int>? sequences,
     int? sequence,
   }) : replicaId = ReplicaId(replicaId).value,
        _components = Map<String, int>.of(components),
-       _sequence = sequence ?? components[ReplicaId(replicaId).value] ?? 0 {
+       _sequences = Map<String, int>.of(
+         sequences ??
+             {
+               if (components.containsKey(ReplicaId(replicaId).value))
+                 ReplicaId(replicaId).value:
+                     sequence ?? components[ReplicaId(replicaId).value]!,
+             },
+       ),
+       _sequence =
+           sequence ??
+           sequences?[ReplicaId(replicaId).value] ??
+           components[ReplicaId(replicaId).value] ??
+           0 {
     _validateAddress(crdtId);
     if (_sequence < 0) throw ArgumentError.value(sequence, 'sequence');
     if (_components.values.any((value) => value < 0)) {
       throw ArgumentError.value(components, 'components');
+    }
+    if (_sequences.entries.any(
+          (entry) =>
+              entry.key.isEmpty ||
+              entry.key.trim() != entry.key ||
+              entry.value < 0,
+        ) ||
+        _sequence < (_sequences[replicaId] ?? 0) ||
+        ((_components[replicaId] ?? 0) > 0 &&
+            (_sequences[replicaId] ?? 0) == 0)) {
+      throw ArgumentError('Invalid G-Counter sequence state');
     }
   }
 
@@ -134,6 +158,7 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
   /// Stable field/model address. Reuse same address when restoring this CRDT.
   final String crdtId;
   final Map<String, int> _components;
+  final Map<String, int> _sequences;
   int _sequence;
 
   @override
@@ -146,6 +171,7 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
     final next = (_components[replicaId] ?? 0) + amount;
     _components[replicaId] = next;
     final sequence = ++_sequence;
+    _sequences[replicaId] = sequence;
     return GCounterDelta(
       id: counterDeltaId(
         CrdtKind.gCounter.wireName,
@@ -192,7 +218,22 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
       throw FormatException('Invalid G-Counter delta ID');
     }
     final current = _components[delta.replicaId] ?? 0;
-    if (delta.value > current) _components[delta.replicaId] = delta.value;
+    final currentSequence = _sequences[delta.replicaId];
+    if (currentSequence == null) {
+      if (delta.value >= current) {
+        _components[delta.replicaId] = delta.value;
+        _sequences[delta.replicaId] = delta.dot!.counter;
+      }
+    } else if (delta.dot!.counter > currentSequence) {
+      if (delta.value < current) throw FormatException('G-Counter regressed');
+      _components[delta.replicaId] = delta.value;
+      _sequences[delta.replicaId] = delta.dot!.counter;
+    } else if (delta.dot!.counter == currentSequence &&
+        delta.value != current) {
+      throw FormatException('Conflicting G-Counter delta sequence');
+    } else if (delta.value > current) {
+      throw FormatException('G-Counter component regressed');
+    }
     if (delta.replicaId == replicaId &&
         delta.dot != null &&
         delta.dot!.counter > _sequence) {
@@ -210,6 +251,11 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
       final current = _components[entry.key] ?? 0;
       if (entry.value > current) _components[entry.key] = entry.value;
     }
+    for (final entry in state._sequences.entries) {
+      if (entry.value > (_sequences[entry.key] ?? 0)) {
+        _sequences[entry.key] = entry.value;
+      }
+    }
     if (state.replicaId == replicaId && state._sequence > _sequence) {
       _sequence = state._sequence;
     }
@@ -220,8 +266,30 @@ class GCounter implements DeltaCrdt<int, GCounterDelta> {
     'replicaId': replicaId,
     'crdtId': crdtId,
     'components': components,
+    'sequences': Map<String, int>.unmodifiable(_sequences),
     'sequence': _sequence,
   };
+
+  Iterable<GCounterDelta> exportChanges({bool requireSequences = true}) sync* {
+    for (final origin in {..._components.keys, ..._sequences.keys}) {
+      final value = _components[origin] ?? 0;
+      final counter = _sequences[origin];
+      if (counter == null) {
+        if (requireSequences) {
+          throw StateError('Counter bootstrap needs missing origin sequence');
+        }
+        continue;
+      }
+      if (counter <= 0) continue;
+      yield GCounterDelta(
+        id: counterDeltaId(CrdtKind.gCounter.wireName, crdtId, origin, counter),
+        replicaId: origin,
+        crdtId: crdtId,
+        value: value,
+        dot: Dot(replicaId: origin, counter: counter, crdtId: crdtId),
+      );
+    }
+  }
 
   static void _validateAddress(String address) {
     if (address.isEmpty || address.trim() != address) {

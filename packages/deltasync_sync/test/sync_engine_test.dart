@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 
 import 'package:deltasync_core/deltasync_core.dart';
@@ -18,7 +20,7 @@ void main() {
 
     final operation = await engine.setDelta('title', 'draft');
 
-    expect(store.readCount, 1);
+    expect(store.readCount, 2);
     expect(store.deltaFor('device-a').changes, [operation]);
     expect(engine.replica.state.values['title'], 'draft');
   });
@@ -106,6 +108,26 @@ void main() {
   });
 
   test(
+    'legacy storage exposes remote ACK but retains its pending delta',
+    () async {
+      final store = TestPendingDeltaStore();
+      final engine = SyncEngine(
+        replica: Replica('device-a'),
+        store: store,
+        transport: AcknowledgingTestDeltaTransport(),
+      );
+      final change = await engine.setDelta('title', 'draft');
+
+      final result = await engine.push();
+
+      expect(result.acknowledgedIds, {change.id});
+      expect(result.fullyAcknowledged, isTrue);
+      expect((await engine.pendingDelta()).changes.single.id, change.id);
+      await engine.dispose();
+    },
+  );
+
+  test(
     'SyncEngine routes mixed addressed counters and restores sequences',
     () async {
       final storage = MemoryStorage();
@@ -183,11 +205,50 @@ void main() {
   });
 
   test(
+    'remote snapshot bootstrap commits state and preserves local outbox',
+    () async {
+      final storage = MemoryStorage();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      final local = await engine.setDelta('local', 'pending');
+      final remote = Replica('server')
+        ..setDelta('remote', 'bootstrapped')
+        ..incrementGCounter('items', 3);
+
+      await engine.applyRemoteSnapshot(remote.toSnapshotJson());
+
+      expect(engine.replica.state.values, {
+        'local': 'pending',
+        'remote': 'bootstrapped',
+      });
+      expect(engine.replica.gCounterValue('items'), 3);
+      expect((await storage.pending('device-a')).single.changeIds, [local.id]);
+      await engine.dispose();
+
+      final restarted = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      await restarted.start();
+      expect(restarted.replica.state.values, {
+        'local': 'pending',
+        'remote': 'bootstrapped',
+      });
+      expect(restarted.replica.gCounterValue('items'), 3);
+      await restarted.dispose();
+    },
+  );
+
+  test(
     'legacy operation snapshot migrates to compact native snapshot',
     () async {
       final storage = MemoryStorage();
       await storage.saveReplica(
-        ReplicaSnapshot(
+        ReplicaSnapshot.legacy(
           replicaId: 'device-a',
           state: const {},
           clock: VectorClock({'device-a': 1}),
@@ -217,9 +278,8 @@ void main() {
       await engine.start();
 
       expect(engine.replica.state.values, {'title': 'legacy'});
-      expect((await storage.loadReplica('device-a'))!.metadata.keys, {
-        'replicaState',
-      });
+      expect((await storage.loadReplica('device-a'))!.version, 2);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 3);
       await engine.dispose();
     },
   );
@@ -243,6 +303,48 @@ void main() {
       expect((await storage.pending('device-a')).single.changeIds, [
         committed.id,
       ]);
+    },
+  );
+
+  test(
+    'failed counter commit leaves state, outbox and sequence unchanged',
+    () async {
+      final storage = FailOnceCommitStorage();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+
+      await expectLater(engine.incrementPnCounter('balance'), throwsStateError);
+      expect(engine.replica.pnCounterValue('balance'), 0);
+      expect(await storage.pending('device-a'), isEmpty);
+      expect((await engine.incrementPnCounter('balance')).dot!.counter, 1);
+      expect(await storage.pending('device-a'), hasLength(1));
+    },
+  );
+
+  test(
+    'engine isolates caller and read-view mutations during commit',
+    () async {
+      final storage = GatedCommitStorage();
+      final supplied = Replica('device-a');
+      final engine = SyncEngine.withStorage(
+        replica: supplied,
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+      final commit = engine.setDelta('owned', 'committed');
+      await storage.commitStarted.future;
+      supplied.setDelta('outside', 'must stay outside');
+      final view = engine.replica;
+      view.setDelta('view', 'must stay detached');
+      storage.releaseCommit.complete();
+      await commit;
+
+      expect(engine.replica.state.values, {'owned': 'committed'});
+      expect(supplied.state.values, {'outside': 'must stay outside'});
+      expect(await storage.pending('device-a'), hasLength(1));
     },
   );
 
@@ -301,14 +403,13 @@ void main() {
     await engine.dispose();
   });
 
-  test('ACK handles all changes in one outbox entry', () async {
+  test('ACK handles a send batch backed by one entry per change', () async {
     final storage = MemoryStorage();
     final first = Replica('device-a');
     final firstChange = first.setDelta('first', 1);
     final secondChange = first.setDelta('second', 2);
-    await storage.enqueue(
-      OutboxEntry(delta: Delta([firstChange, secondChange])),
-    );
+    await storage.enqueue(OutboxEntry(delta: Delta([firstChange])));
+    await storage.enqueue(OutboxEntry(delta: Delta([secondChange])));
     final transport = AcknowledgingTestDeltaTransport();
     final engine = SyncEngine.withStorage(
       replica: Replica('device-a'),
@@ -330,7 +431,8 @@ void main() {
       final first = source.setDelta('first', 1);
       final second = source.setDelta('second', 2);
       final deferred = source.setDelta('deferred', 3);
-      await storage.enqueue(OutboxEntry(delta: Delta([first, second])));
+      await storage.enqueue(OutboxEntry(delta: Delta([first])));
+      await storage.enqueue(OutboxEntry(delta: Delta([second])));
       await storage.enqueue(OutboxEntry(delta: Delta([deferred])));
       await storage.markSent('device-a', [deferred.id]);
 
@@ -476,6 +578,145 @@ void main() {
 
     expect(engine.replica.state.values, isEmpty);
   });
+
+  test(
+    'first mutation restores before writing and lifecycle is observable',
+    () async {
+      final storage = MemoryStorage();
+      final restored = Replica('device-a')..setDelta('saved', 'from disk');
+      await storage.saveReplica(ReplicaSnapshot.fromReplica(restored));
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(),
+      );
+
+      expect(engine.lifecycle, SyncEngineLifecycle.created);
+      expect(() => engine.replica, throwsStateError);
+      final local = await engine.setDelta('local', 'new edit');
+
+      expect(engine.lifecycle, SyncEngineLifecycle.started);
+      expect(engine.replica.state.values, {
+        'saved': 'from disk',
+        'local': 'new edit',
+      });
+      expect((await engine.pendingDelta()).changes.single.id, local.id);
+      await engine.start();
+      expect(engine.lifecycle, SyncEngineLifecycle.started);
+      await engine.dispose();
+      expect(engine.lifecycle, SyncEngineLifecycle.disposed);
+      await expectLater(engine.setDelta('late', true), throwsStateError);
+      await expectLater(
+        engine.applyRemote(const Delta.empty()),
+        throwsStateError,
+      );
+      await expectLater(engine.pendingDelta(), throwsStateError);
+      await expectLater(engine.push(), throwsStateError);
+    },
+  );
+
+  test('failed start returns to created and can be retried', () async {
+    final storage = FailOnceLoadStorage();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: TestDeltaTransport(),
+    );
+
+    await expectLater(engine.start(), throwsStateError);
+    expect(engine.lifecycle, SyncEngineLifecycle.created);
+    await engine.start();
+    expect(engine.lifecycle, SyncEngineLifecycle.started);
+    await engine.dispose();
+  });
+
+  test('slow send does not block local commit or remote application', () async {
+    final storage = MemoryStorage();
+    final transport = GatedAckTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+    final first = await engine.setDelta('first', 1);
+    final pushing = engine.push();
+    await transport.sendStarted.future;
+
+    final local = await engine.setDelta('during-send', 2);
+    final remote = Replica('remote')..setDelta('remote', 3);
+    await engine.applyRemote(remote.export());
+    expect(engine.replica.state.values, {
+      'first': 1,
+      'during-send': 2,
+      'remote': 3,
+    });
+
+    transport.release.complete();
+    final result = await pushing;
+    expect(result.sent.changes.map((change) => change.id), [first.id]);
+    expect(result.acknowledgedIds, {first.id});
+    expect(result.fullyAcknowledged, isTrue);
+    expect((await engine.pendingDelta()).changes.map((change) => change.id), [
+      local.id,
+    ]);
+    await engine.dispose();
+  });
+
+  test('incoming failures are observable and do not partially apply', () async {
+    final storage = MemoryStorage();
+    final transport = TestDeltaTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+    final failureFuture = engine.errors.first;
+    await engine.start();
+
+    final lww = Replica('remote-lww')..setDelta('collision', 'value');
+    final counter = Replica('remote-counter')
+      ..incrementGCounter('collision', 1);
+    transport.emit(lww.export().merge(counter.export()));
+    final failure = await failureFuture.timeout(const Duration(seconds: 1));
+
+    expect(failure.source, SyncFailureSource.incomingDelta);
+    expect(failure.error, isA<FormatException>());
+    expect(engine.replica.state.values, isEmpty);
+    expect(engine.replica.gCounterValue('collision'), 0);
+
+    final streamErrorFuture = engine.errors.first;
+    transport.emitError(StateError('incoming stream failed'));
+    final streamFailure = await streamErrorFuture.timeout(
+      const Duration(seconds: 1),
+    );
+    expect(streamFailure.source, SyncFailureSource.incomingStream);
+    expect(streamFailure.error, isA<StateError>());
+    await engine.dispose();
+  });
+
+  test('dispose waits for active push and then rejects new work', () async {
+    final storage = MemoryStorage();
+    final transport = GatedAckTransport();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: transport,
+    );
+    await engine.setDelta('title', 'pending');
+    final pushing = engine.push();
+    await transport.sendStarted.future;
+    final disposing = engine.dispose();
+    expect(engine.lifecycle, SyncEngineLifecycle.disposed);
+    await Future<void>.delayed(Duration.zero);
+    expect(await storage.pending('device-a'), hasLength(1));
+
+    transport.release.complete();
+    final result = await pushing;
+    await disposing;
+    expect(result.fullyAcknowledged, isTrue);
+    expect(await storage.pending('device-a'), isEmpty);
+    await expectLater(engine.push(), throwsStateError);
+  });
 }
 
 class TestPendingDeltaStore implements PendingDeltaStore {
@@ -514,6 +755,21 @@ class FailOnceCommitStorage extends MemoryStorage {
   }
 }
 
+class GatedCommitStorage extends MemoryStorage {
+  final commitStarted = Completer<void>();
+  final releaseCommit = Completer<void>();
+
+  @override
+  Future<void> commit(
+    ReplicaSnapshot snapshot,
+    Iterable<OutboxEntry> entries,
+  ) async {
+    commitStarted.complete();
+    await releaseCommit.future;
+    await super.commit(snapshot, entries);
+  }
+}
+
 class FailOnceSnapshotStorage extends MemoryStorage {
   bool failNextSnapshot = false;
 
@@ -524,6 +780,19 @@ class FailOnceSnapshotStorage extends MemoryStorage {
       throw StateError('snapshot commit failed');
     }
     await super.commitRemote(snapshot);
+  }
+}
+
+class FailOnceLoadStorage extends MemoryStorage {
+  bool _fail = true;
+
+  @override
+  Future<ReplicaSnapshot?> loadReplica(String replicaId) async {
+    if (_fail) {
+      _fail = false;
+      throw StateError('load failed');
+    }
+    return super.loadReplica(replicaId);
   }
 }
 
@@ -538,6 +807,8 @@ class TestDeltaTransport implements DeltaTransport {
   Future<void> send(Delta delta) async => sent.add(delta);
 
   void emit(Delta delta) => _incoming.add(delta);
+
+  void emitError(Object error) => _incoming.addError(error, StackTrace.current);
 }
 
 class FailOnceDeltaTransport extends TestDeltaTransport {
@@ -586,6 +857,20 @@ class TimeoutOnceAckTransport extends TestDeltaTransport
       _timeout = false;
       throw TimeoutException('ACK timed out');
     }
+    return delta.changes.map((change) => change.id);
+  }
+}
+
+class GatedAckTransport extends TestDeltaTransport
+    implements AcknowledgingDeltaTransport {
+  final sendStarted = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<Iterable<String>> sendAndAwaitAck(Delta delta) async {
+    sent.add(delta);
+    sendStarted.complete();
+    await release.future;
     return delta.changes.map((change) => change.id);
   }
 }

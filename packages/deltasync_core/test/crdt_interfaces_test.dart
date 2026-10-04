@@ -35,6 +35,9 @@ void main() {
 
     expect(() => replica.setDelta('', 'invalid'), throwsArgumentError);
     expect(() => replica.setDelta('title', Object()), throwsArgumentError);
+    final cyclic = <Object?>[];
+    cyclic.add(cyclic);
+    expect(() => replica.setDelta('cycle', cyclic), throwsArgumentError);
     expect(() => replica.incrementGCounter(''), throwsArgumentError);
     expect(
       () => replica.incrementGCounter('cart/items', 0),
@@ -567,7 +570,7 @@ void main() {
     final replica = Replica('target')..apply(Delta([delta]));
 
     expect(replica.state.values, {'title': 'native'});
-    expect(replica.export().changes, [delta]);
+    expect(replica.export().changes.single.toJson(), delta.toJson());
   });
 
   test('legacy operations require explicit migration into native LWW', () {
@@ -610,7 +613,7 @@ void main() {
     });
 
     expect(replica.state.values, {'title': 'value'});
-    expect(replica.toSnapshotJson()['version'], 2);
+    expect(replica.toSnapshotJson()['version'], 3);
     final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
     expect(
       replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),
@@ -632,6 +635,213 @@ void main() {
     right.apply(first.export());
 
     expect(left.state.values, right.state.values);
+  });
+
+  test('Replica protects nested values, reads, copies and snapshots', () {
+    final input = {
+      'labels': ['draft'],
+      'settings': {'visible': true},
+    };
+    final replica = Replica('isolation')..setDelta('document', input);
+    (input['labels'] as List<Object?>).add('outside');
+    (input['settings']! as Map<String, Object?>)['visible'] = false;
+
+    expect(replica.state['document'], {
+      'labels': ['draft'],
+      'settings': {'visible': true},
+    });
+    final read = replica.state.values['document'] as Map<String, Object?>;
+    expect(
+      () => (read['labels'] as List).add('outside'),
+      throwsUnsupportedError,
+    );
+    final snapshot = replica.toSnapshotJson();
+    expect(
+      () => ((snapshot['lww'] as Map)['document'] as Map).clear(),
+      throwsUnsupportedError,
+    );
+
+    final detached = replica.state;
+    detached.applyDelta(
+      const LwwDelta<Object?>(
+        key: 'document',
+        id: 'elsewhere:delta:1',
+        replicaId: 'elsewhere',
+        timestamp: HlcTimestamp(999, 0),
+        value: 'detached',
+      ),
+    );
+    expect(replica.state['document'], {
+      'labels': ['draft'],
+      'settings': {'visible': true},
+    });
+  });
+
+  test('Replica fork preserves injected HLC source and compact export', () {
+    var physical = 10;
+    final replica = Replica(
+      'device',
+      hlc: HlcClock(nowMilliseconds: () => physical),
+    );
+    replica
+      ..setDelta('title', 'old')
+      ..setDelta('title', 'current')
+      ..incrementGCounter('items', 5)
+      ..incrementGCounter('items', 2);
+    final fork = replica.fork();
+    physical = 20;
+    expect(fork.setDelta('other', true).timestamp.physicalMilliseconds, 20);
+
+    final bootstrap = replica.export();
+    expect(bootstrap.changes, hasLength(2));
+    final restored = Replica('peer')..apply(bootstrap);
+    expect(restored.state.values, {'title': 'current'});
+    expect(restored.gCounterValue('items'), 7);
+    expect(restored.export().changes, hasLength(2));
+    expect(replica.incrementGCounter('items').dot!.counter, 3);
+  });
+
+  test('restored current winner rejects divergent reuse of its ID', () {
+    final replica = Replica('device')..setDelta('title', 'current');
+    final winner = replica.export().changes.single as LwwDelta<Object?>;
+    final conflicting = LwwDelta<Object?>(
+      key: winner.key,
+      id: winner.id,
+      replicaId: winner.replicaId,
+      timestamp: winner.timestamp,
+      value: 'conflicting',
+      dot: winner.dot,
+    );
+
+    expect(() => replica.apply(Delta([conflicting])), throwsFormatException);
+    expect(replica.state['title'], 'current');
+  });
+
+  test('snapshot preserves address kind and latest counter identity', () {
+    final original = Replica('device')
+      ..incrementGCounter('items', 5)
+      ..incrementGCounter('items', 2);
+    final restored = Replica.fromSnapshotJson(original.toSnapshotJson());
+
+    expect(restored.state.kindAt('items'), CrdtKind.gCounter);
+    expect(
+      restored.export().changes.single.id,
+      original.export().changes.single.id,
+    );
+    expect(restored.incrementGCounter('items').dot!.counter, 3);
+    expect(() => restored.setDelta('items', 'wrong type'), throwsStateError);
+  });
+
+  test('legacy counter snapshot does not invent remote dot sequences', () {
+    final restored = Replica.fromSnapshotJson({
+      'version': 2,
+      'replicaId': 'device',
+      'clock': <String, Object?>{},
+      'hlc': const HlcTimestamp(0, 0).toJson(),
+      'deltaSequence': 0,
+      'lww': <String, Object?>{},
+      'gCounters': {
+        'items': {
+          'replicaId': 'device',
+          'crdtId': 'items',
+          'components': {'device': 5, 'peer': 5},
+          'sequence': 1,
+        },
+      },
+      'pnCounters': <String, Object?>{},
+    });
+    expect(() => restored.export(), throwsStateError);
+
+    final stale = GCounterDelta(
+      id: counterDeltaId('g-counter', 'items', 'peer', 1),
+      replicaId: 'peer',
+      crdtId: 'items',
+      value: 5,
+      dot: const Dot(replicaId: 'peer', counter: 1, crdtId: 'items'),
+    );
+    restored.apply(Delta([stale]));
+    final next = GCounterDelta(
+      id: counterDeltaId('g-counter', 'items', 'peer', 2),
+      replicaId: 'peer',
+      crdtId: 'items',
+      value: 7,
+      dot: const Dot(replicaId: 'peer', counter: 2, crdtId: 'items'),
+    );
+    restored.apply(Delta([next]));
+    expect(restored.gCounterValue('items'), 12);
+    expect(restored.export().changes, hasLength(2));
+  });
+
+  test('snapshot winner protects local delta sequence from reuse', () {
+    final original = Replica('device')..setDelta('title', 'winner');
+    final encoded = original.toSnapshotJson();
+    final state = Map<String, Object?>.from(encoded);
+    state['deltaSequence'] = 0;
+    final winner = (state['lww'] as Map)['title'] as Map;
+    final winnerDelta = Map<String, Object?>.from(winner['winner'] as Map);
+    winnerDelta['id'] = 'device:delta:10';
+    state['lww'] = {
+      'title': {'winner': winnerDelta},
+    };
+
+    final restored = Replica.fromSnapshotJson(state);
+    expect(restored.setDelta('title', 'next').id, 'device:delta:11');
+  });
+
+  test('invalid later counter change does not partially apply a batch', () {
+    final source = Replica('peer')..incrementGCounter('items', 5);
+    final target = Replica('target')..apply(source.export());
+    final unrelated = Replica('other').setDelta('title', 'must not appear');
+    final regressed = GCounterDelta(
+      id: counterDeltaId('g-counter', 'items', 'peer', 2),
+      replicaId: 'peer',
+      crdtId: 'items',
+      value: 4,
+      dot: const Dot(replicaId: 'peer', counter: 2, crdtId: 'items'),
+    );
+
+    expect(
+      () => target.apply(Delta([unrelated, regressed])),
+      throwsFormatException,
+    );
+    expect(target.state.values, isEmpty);
+    expect(target.gCounterValue('items'), 5);
+  });
+
+  test('snapshot bootstrap merges state without taking peer identity', () {
+    final local = Replica('local')
+      ..setDelta('local-only', true)
+      ..incrementPnCounter('balance', 2);
+    final remote = Replica('remote')
+      ..setDelta('remote-only', {
+        'labels': ['ready'],
+      })
+      ..incrementGCounter('items', 4)
+      ..incrementPnCounter('balance', 5);
+
+    local.mergeSnapshotJson(remote.toSnapshotJson());
+
+    expect(local.id, 'local');
+    expect(local.state.values['local-only'], true);
+    expect(local.state.values['remote-only'], {
+      'labels': ['ready'],
+    });
+    expect(local.gCounterValue('items'), 4);
+    expect(local.pnCounterValue('balance'), 7);
+    expect(local.clock.entries['remote'], 1);
+    expect(local.setDelta('local-only', false).id, 'local:delta:2');
+  });
+
+  test('conflicting snapshot address type leaves replica unchanged', () {
+    final local = Replica('local')..setDelta('shared', 'lww');
+    final remote = Replica('remote')..incrementGCounter('shared', 3);
+
+    expect(
+      () => local.mergeSnapshotJson(remote.toSnapshotJson()),
+      throwsFormatException,
+    );
+    expect(local.state.values, {'shared': 'lww'});
+    expect(local.gCounterValue('shared'), 0);
   });
 }
 

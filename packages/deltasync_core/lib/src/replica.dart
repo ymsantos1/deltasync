@@ -9,6 +9,7 @@ import 'lww_delta.dart';
 import 'identity.dart';
 import 'g_counter.dart';
 import 'pn_counter.dart';
+import 'json_value.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -18,13 +19,15 @@ class Replica {
       _hlc = hlc ?? HlcClock();
 
   final String id;
-  final ReplicaState state = ReplicaState();
-  final List<DeltaChange> _deltaHistory = [];
+  final ReplicaState _state = ReplicaState();
   final Map<String, GCounter> _gCounters = {};
   final Map<String, PnCounter> _pnCounters = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
+
+  /// Detached read-only state; mutations must go through this Replica.
+  ReplicaState get state => _state.copy();
 
   VectorClock get clock => _clock;
 
@@ -46,21 +49,16 @@ class Replica {
 
   /// Creates isolated working copy for a transaction or rollback boundary.
   Replica fork() {
-    final copy = Replica(
-      id,
-      initialClock: _clock,
-      hlc: HlcClock(initial: _hlc.current),
-    );
-    copy.state.replaceWith(state);
-    copy
-      .._deltaHistory.addAll(_deltaHistory)
-      .._deltaSequence = _deltaSequence;
+    final copy = Replica(id, initialClock: _clock, hlc: _hlc.copy());
+    copy._state.replaceWith(_state);
+    copy._deltaSequence = _deltaSequence;
     for (final entry in _gCounters.entries) {
       final json = entry.value.toJson();
       copy._gCounters[entry.key] = GCounter(
         id,
         crdtId: entry.key,
         components: _intMap(json['components']),
+        sequences: _optionalIntMap(json['sequences']),
         sequence: json['sequence'] as int,
       );
     }
@@ -71,6 +69,7 @@ class Replica {
         crdtId: entry.key,
         positive: _intMap(json['positive']),
         negative: _intMap(json['negative']),
+        sequences: _optionalIntMap(json['sequences']),
         sequence: json['sequence'] as int,
       );
     }
@@ -80,10 +79,7 @@ class Replica {
   /// Replaces this replica with an already committed isolated candidate.
   void adopt(Replica candidate) {
     if (candidate.id != id) throw ArgumentError('Replica ID mismatch');
-    state.replaceWith(candidate.state);
-    _deltaHistory
-      ..clear()
-      ..addAll(candidate._deltaHistory);
+    _state.replaceWith(candidate._state);
     final copiedCounters = candidate.fork();
     _gCounters
       ..clear()
@@ -97,24 +93,28 @@ class Replica {
   }
 
   /// Compact, versioned materialized state for durable snapshots.
-  Map<String, Object?> toSnapshotJson() => {
-    'version': 2,
-    'replicaId': id,
-    'clock': _clock.toJson(),
-    'hlc': _hlc.current.toJson(),
-    'deltaSequence': _deltaSequence,
-    'lww': state.toSnapshotJson(),
-    'gCounters': {
-      for (final entry in _gCounters.entries) entry.key: entry.value.toJson(),
-    },
-    'pnCounters': {
-      for (final entry in _pnCounters.entries) entry.key: entry.value.toJson(),
-    },
-  };
+  Map<String, Object?> toSnapshotJson() =>
+      copyJsonValue({
+            'version': 3,
+            'replicaId': id,
+            'clock': _clock.toJson(),
+            'hlc': _hlc.current.toJson(),
+            'deltaSequence': _deltaSequence,
+            'lww': _state.toSnapshotJson(),
+            'gCounters': {
+              for (final entry in _gCounters.entries)
+                entry.key: entry.value.toJson(),
+            },
+            'pnCounters': {
+              for (final entry in _pnCounters.entries)
+                entry.key: entry.value.toJson(),
+            },
+          }, freeze: true)
+          as Map<String, Object?>;
 
   /// Reconstructs materialized state without replaying prior delta history.
   static Replica fromSnapshotJson(Map<String, Object?> json) {
-    if (json['version'] != 1 && json['version'] != 2) {
+    if (json['version'] != 1 && json['version'] != 2 && json['version'] != 3) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -124,6 +124,8 @@ class Replica {
     final gCounters = json['gCounters'];
     final pnCounters = json['pnCounters'];
     if (replicaId is! String ||
+        replicaId.isEmpty ||
+        replicaId.trim() != replicaId ||
         clock is! Map ||
         hlc is! Map ||
         lww is! Map ||
@@ -138,7 +140,7 @@ class Replica {
         initial: HlcTimestamp.fromJson(Map<String, Object?>.from(hlc)),
       ),
     );
-    final restoredLwwTimestamp = restored.state.restoreSnapshotJson(
+    final restoredLwwTimestamp = restored._state.restoreSnapshotJson(
       Map<String, Object?>.from(lww),
     );
     if (restoredLwwTimestamp != null) {
@@ -152,6 +154,7 @@ class Replica {
       if (encoded['crdtId'] != entry.key || encoded['replicaId'] != replicaId) {
         throw FormatException('G-Counter snapshot identity mismatch');
       }
+      restored._state.bind(entry.key as String, CrdtKind.gCounter);
       restored._gCounters[entry.key as String] = GCounter(
         replicaId,
         crdtId: entry.key as String,
@@ -167,6 +170,7 @@ class Replica {
       if (encoded['crdtId'] != entry.key || encoded['replicaId'] != replicaId) {
         throw FormatException('PN-Counter snapshot identity mismatch');
       }
+      restored._state.bind(entry.key as String, CrdtKind.pnCounter);
       restored._pnCounters[entry.key as String] = PnCounter(
         replicaId,
         crdtId: entry.key as String,
@@ -176,15 +180,24 @@ class Replica {
       );
     }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
+    for (final address in restored._state.addresses) {
+      final winner = restored._state.winnerAt(address);
+      if (winner != null) restored._observeDeltaSequence(winner.id);
+    }
     return restored;
   }
 
   void apply(Delta delta) {
     _validateBatch(delta);
+    final candidate = fork().._applyValidated(delta);
+    adopt(candidate);
+  }
+
+  void _applyValidated(Delta delta) {
     for (final change in delta.changes) {
       switch (change) {
         case LwwDelta<Object?>():
-          state.applyDelta(change);
+          _state.applyDelta(change);
           if (change.dot != null) {
             _clock = _clock.merge(
               VectorClock({change.dot!.replicaId: change.dot!.counter}),
@@ -193,6 +206,7 @@ class Replica {
           _hlc.observe(change.timestamp);
           break;
         case GCounterDelta():
+          _state.bind(change.crdtId, CrdtKind.gCounter);
           _gCounters
               .putIfAbsent(
                 change.crdtId,
@@ -201,6 +215,7 @@ class Replica {
               .applyDelta(change);
           break;
         case PnCounterDelta():
+          _state.bind(change.crdtId, CrdtKind.pnCounter);
           _pnCounters
               .putIfAbsent(
                 change.crdtId,
@@ -211,14 +226,51 @@ class Replica {
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
-      if (!_deltaHistory.any((item) => item.id == change.id)) {
-        _deltaHistory.add(change);
-        _observeDeltaSequence(change.id);
-      }
+      _observeDeltaSequence(change.id);
     }
   }
 
-  Delta export() => Delta(_deltaHistory);
+  /// Exports current winners and cumulative counter components for bootstrap.
+  /// It is not a durable operation log or peer-specific ACK history.
+  Delta export() => Delta([
+    ..._lwwWinners,
+    ..._gCounters.values.expand((counter) => counter.exportChanges()),
+    ..._pnCounters.values.expand((counter) => counter.exportChanges()),
+  ]);
+
+  /// Compact, versioned materialized state for bootstrap and storage.
+  Map<String, Object?> exportSnapshot() => toSnapshotJson();
+
+  /// Joins a peer snapshot without replacing this replica's identity.
+  ///
+  /// Useful for initial bootstrap when a peer lacks deltas. The merge is
+  /// isolated: malformed or conflicting state leaves this replica unchanged.
+  void mergeSnapshotJson(Map<String, Object?> json) {
+    final remote = Replica.fromSnapshotJson(json);
+    final candidate = fork();
+    candidate._state.mergeState(remote._state);
+    for (final entry in remote._gCounters.entries) {
+      final counter = candidate._gCounters.putIfAbsent(
+        entry.key,
+        () => GCounter(id, crdtId: entry.key),
+      );
+      counter.mergeState(entry.value);
+    }
+    for (final entry in remote._pnCounters.entries) {
+      final counter = candidate._pnCounters.putIfAbsent(
+        entry.key,
+        () => PnCounter(id, crdtId: entry.key),
+      );
+      counter.mergeState(entry.value);
+    }
+    candidate
+      .._clock = _clock.merge(remote._clock)
+      .._hlc.restore(remote.hlcTimestamp);
+    if (remote.id == id && remote._deltaSequence > candidate._deltaSequence) {
+      candidate._deltaSequence = remote._deltaSequence;
+    }
+    adopt(candidate);
+  }
 
   /// Creates and applies native LWW delta.
   LwwDelta<Object?> setDelta(String key, Object? value) =>
@@ -238,12 +290,12 @@ class Replica {
   GCounterDelta incrementGCounter(String crdtId, [int amount = 1]) {
     if (amount <= 0) throw ArgumentError.value(amount, 'amount');
     _ensureLocalAddress(crdtId, CrdtKind.gCounter);
+    _state.bind(crdtId, CrdtKind.gCounter);
     final counter = _gCounters.putIfAbsent(
       crdtId,
       () => GCounter(id, crdtId: crdtId),
     );
     final delta = counter.increment(amount);
-    _deltaHistory.add(delta);
     return delta;
   }
 
@@ -273,8 +325,7 @@ class Replica {
       deleted: deleted,
       dot: dot,
     );
-    state.applyDelta(delta);
-    _deltaHistory.add(delta);
+    _state.applyDelta(delta);
     return delta;
   }
 
@@ -282,13 +333,14 @@ class Replica {
     if (key.isEmpty || key.trim() != key) {
       throw ArgumentError.value(key, 'key');
     }
-    if (_gCounters.containsKey(key) || _pnCounters.containsKey(key)) {
+    if (_state.kindAt(key) case final kind? when kind != CrdtKind.lww) {
       throw StateError('CRDT address is already bound to another type');
     }
   }
 
   void _validateJsonValue(Object? value) {
     try {
+      copyJsonValue(value);
       jsonEncode(
         value,
         toEncodable: (_) => throw UnsupportedError('Not a JSON value'),
@@ -307,23 +359,31 @@ class Replica {
   ) {
     if (amount <= 0) throw ArgumentError.value(amount, 'amount');
     _ensureLocalAddress(crdtId, CrdtKind.pnCounter);
+    _state.bind(crdtId, CrdtKind.pnCounter);
     final counter = _pnCounters.putIfAbsent(
       crdtId,
       () => PnCounter(id, crdtId: crdtId),
     );
     final delta = mutate(counter);
-    _deltaHistory.add(delta);
     return delta;
   }
 
   void _validateBatch(Delta delta) {
     // Merge is also the shared check for duplicate IDs with divergent payloads.
     const Delta.empty().merge(delta);
-    Delta(_deltaHistory).merge(delta);
-
+    final retained = <DeltaChange>[
+      ..._lwwWinners,
+      ..._gCounters.values.expand(
+        (counter) => counter.exportChanges(requireSequences: false),
+      ),
+      ..._pnCounters.values.expand(
+        (counter) => counter.exportChanges(requireSequences: false),
+      ),
+    ];
+    Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
-    for (final address in state.addresses) {
-      addressTypes[address] = CrdtKind.lww;
+    for (final address in _state.addresses) {
+      addressTypes[address] = _state.kindAt(address)!;
     }
     for (final address in _gCounters.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.gCounter);
@@ -337,6 +397,8 @@ class Replica {
         _validateReplicaId(change.replicaId);
         if (change.key.isEmpty ||
             change.key.trim() != change.key ||
+            change.timestamp.physicalMilliseconds < 0 ||
+            change.timestamp.logical < 0 ||
             (change.deleted && change.value != null) ||
             (change.dot != null &&
                 (change.dot!.counter <= 0 ||
@@ -394,6 +456,13 @@ class Replica {
     }
   }
 
+  Iterable<LwwDelta<Object?>> get _lwwWinners sync* {
+    for (final address in _state.addresses) {
+      final winner = _state.winnerAt(address);
+      if (winner != null) yield winner;
+    }
+  }
+
   void _validateCounterDelta({
     required String id,
     required String replicaId,
@@ -444,7 +513,7 @@ class Replica {
       throw ArgumentError.value(crdtId, 'crdtId', 'legacy/ is reserved');
     }
     final otherType =
-        state.addresses.contains(crdtId) ||
+        _state.kindAt(crdtId) == CrdtKind.lww ||
         (type == CrdtKind.gCounter
             ? _pnCounters.containsKey(crdtId)
             : _gCounters.containsKey(crdtId));
@@ -483,6 +552,9 @@ class Replica {
       return MapEntry(key, item);
     });
   }
+
+  static Map<String, int>? _optionalIntMap(Object? value) =>
+      value == null ? null : _intMap(value);
 
   static int _requiredSequence(Object? value) {
     if (value is! int || value < 0) {

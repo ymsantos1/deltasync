@@ -51,6 +51,10 @@ class HlcClock {
 
   HlcTimestamp get current => _last;
 
+  /// Copies clock state while retaining its injected physical-time source.
+  HlcClock copy() =>
+      HlcClock(nowMilliseconds: _nowMilliseconds, initial: _last);
+
   void restore(HlcTimestamp timestamp) {
     if (timestamp.compareTo(_last) > 0) _last = timestamp;
   }
