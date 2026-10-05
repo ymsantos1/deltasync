@@ -980,3 +980,103 @@ mesma suíte não foi executada contra SQLite; R-07c fará isso. Fixture em mem�
 injeta falha na fronteira do commit; adapters persistentes devem injetar após
 preparar escritas para exercitar rollback transacional real. Nenhuma conclusão sobre
 durabilidade entre processos.
+
+<a id="execucao-r-07c-2026-10-04"></a>
+
+## Execução R-07c — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: selecionada como próxima tarefa pronta após R-07b. Critérios exigem
+schema SQLite versionado, transações, identidade/backup, contrato real e isolamento
+de dependências. Worktree estava limpo antes desta execução.
+
+Implementação: criado `packages/deltasync_storage_sqflite/`, membro do workspace,
+com `SqfliteReplicaStorage` sobre `sqflite_common.DatabaseFactory`. App Flutter pode
+passar factory do plugin `sqflite`; suíte Linux usa SQLite real por
+`sqflite_common_ffi`. Schema user_version 1 tem tabela de snapshot com payload
+canônico e tabela de outbox por réplica/peer/mudança. Commit local grava snapshot
+e outbox em transação; merge remoto substitui snapshot transacionalmente. ACK e
+metadados de envio persistem; ID de réplica restaura sem clonagem automática.
+README documenta integração, schema/migração e backup fechado com arquivos WAL/SHM
+quando presentes ou API SQLite de backup.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente; não independente. Inspecionados pacote,
+workspace, semântica de snapshot/outbox e diff de testes. Primeira execução da suíte
+revelou fixture instalando trigger de falha antes de inserir outbox de baseline;
+fixture foi ajustada para instalar trigger após enqueue. Delta final revisado;
+nenhum achado impeditivo restante.
+
+Achados: corrigido setup do trigger de falha para atingir o commit candidato após
+preservar snapshot/outbox de baseline. Sem achados impeditivos restantes.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64; SQLite real via `sqflite_common_ffi` 2.4.3. Formatação
+sem alterações, análises sem issues e 107 testes aprovados: raiz 2, core 39, sync
+35, storage 12, storage_testing 6, storage_sqflite 7 e transport 6. Teste fecha e
+reabre banco preservando snapshot/replicaId; versão de schema superior causa falha
+explícita e mantém linha armazenada. Gatilho SQLite real prova rollback de snapshot
+e outbox no commit local. `core`, `sync` e contrato `storage` não declaram
+dependência de Flutter, SQL ou sqflite.
+
+Comandos: `dart pub get`; `dart format --output=none --set-exit-if-changed
+packages/deltasync_storage_sqflite/lib packages/deltasync_storage_sqflite/test`;
+para cada diretório `.`, `packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage`, `packages/deltasync_storage_testing`,
+`packages/deltasync_storage_sqflite`, `packages/deltasync_transport`, `dart analyze
+&& dart test`; no pacote adapter, repetidos `dart format --output=none
+--set-exit-if-changed lib test`, `dart analyze` e `dart test` após a última asserção;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: todos satisfeitos e marcados em R-07c. Schema e formato interno são
+versionados separadamente; estado e clocks permanecem no payload de snapshot, sem
+colunas/estado paralelos. Falha SQL dentro da transação deixa snapshot/outbox
+anteriores intactos; commit remoto preserva outbox. Testes usam a suíte R-07b
+compartilhada. Factory injetável mantém integração simples: consumer escolhe plugin
+sqflite ou FFI compatível; core/sync/storage seguem Dart puro. Backup/restauração e
+ID ficam documentados no README do pacote.
+
+Manutenção: R-07c concluída; R-07d liberada e definida como próxima tarefa pronta.
+Fase 3 permanece ativa. DEC-02/05/22 e RISK-04/06/14 atualizados; OPEN-03 resolvida
+pela identidade snapshot preservada e política de cópia. Checker e `git diff
+--check` executados após manutenção.
+
+Limitações: review não independente. Execução SQLite ocorreu em Linux x64 pela
+factory FFI compatível; plugin Flutter `sqflite` não foi executado em Android/iOS.
+R-07d ainda deve provar recuperação do SyncEngine, retry e cenários de duas engines
+após reabertura de processo.
+
+## Manutenção — Escopo de storage extensível — 2026-10-04
+
+Skill: plan-maintainer.
+
+Autorização: autor pediu registrar o meio termo entre extensibilidade e escopo
+reduzido de implementação: contrato abstrato com um adaptador persistente oficial.
+
+Alteração documental: `plan/README.md` centraliza o escopo de storage;
+`DECISIONS.md` registra DEC-23 e distingue `ReplicaStorage` da factory SQLite.
+Invariantes exigem commit atômico por transação ou mecanismo equivalente validado.
+Fases 2/3 distinguem fluxo público, evidência SQLite e adaptadores do consumidor;
+VAL-04 explicita guia de implementação e suíte compartilhada, sem exigir outro
+backend persistente. RISK-11 registra o limite para ORM, plugins e adaptadores
+oficiais adicionais.
+
+Revisão documental: realizada pelo mesmo agente, em etapa distinta da edição.
+Escopo, referências e critérios permanecem coerentes: SQLite é a referência
+persistente do TCC; consumidores podem implementar outros backends pelo contrato.
+Preservadas alterações anteriores de R-07c, pacote SQLite e workspace. Nenhum
+status, dependência ou critério de produto foi marcado como satisfeito nesta
+manutenção; R-07d continua pronta e próxima recomendada.
+
+Validação documental: aprovada. Na raiz, `python3 scripts/check_plan.py` e
+`git diff --check` passaram, com IDs, dependências, status, links/anchors e
+frontmatter consistentes. Alteração apenas documental; testes Dart não executados.
+
+Limitações: revisão não independente. A extensibilidade do contrato não constitui
+evidência de durabilidade de backends adicionais; esses adaptadores devem validar
+as garantias do contrato em sua própria implementação.

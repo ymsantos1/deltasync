@@ -5,6 +5,7 @@ workspace:
   - packages/deltasync_core
   - packages/deltasync_sync
   - packages/deltasync_storage
+  - packages/deltasync_storage_sqflite
   - packages/deltasync_storage_testing
   - packages/deltasync_transport
 

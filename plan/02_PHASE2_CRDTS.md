@@ -142,6 +142,9 @@ Dependências: R-07d, R-06a, R-06b, R-06c, R-06d, R-06e
 Objetivo: consolidar conjunto de oito tipos já integrados individualmente,
 incluindo lotes mistos e snapshots restauráveis em storage durável.
 
+O fluxo usa `ReplicaStorage`; SQLite é o backend da evidência durável de referência,
+conforme o [escopo de storage](README.md#storage-e-adaptadores).
+
 Critérios:
 
 - [ ] Codec, roteamento, estado, snapshot e outbox cobrem todos os tipos.

@@ -1,0 +1,15 @@
+name: deltasync_storage_sqflite
+description: SQLite persistence adapter for DeltaSync ReplicaStorage.
+version: 2.0.0
+resolution: workspace
+environment:
+  sdk: ^3.12.0
+dependencies:
+  deltasync_storage: ^2.0.0
+  sqflite_common: ^2.5.6
+
+dev_dependencies:
+  deltasync_core: ^2.0.0
+  deltasync_storage_testing: ^2.0.0
+  sqflite_common_ffi: ^2.3.6
+  test: ^1.25.6

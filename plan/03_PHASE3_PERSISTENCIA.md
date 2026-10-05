@@ -3,10 +3,13 @@
 Estado: ativa. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
 Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
 Não depende de finalizar cinco tipos restantes.
-Saída: contrato validado, adaptador sqflite e recuperação real com falhas testadas.
+Saída: contrato validado, adaptador persistente de referência SQLite/sqflite e
+recuperação real com falhas testadas.
 Riscos: commit parcial, regressão de identidade/clocks, backup com ID duplicado.
-Exclusões: suporte simultâneo a todos os bancos e persistência de réplicas remotas
-inteiras. Tabelas são detalhes do adaptador, não contrato obrigatório do core.
+Exclusões: entrega/manutenção de adaptadores persistentes oficiais adicionais e
+persistência de réplicas remotas inteiras. Adaptadores do consumidor permanecem
+permitidos pelo contrato público. Tabelas e `DatabaseFactory` são detalhes do
+adaptador SQLite; regras gerais estão no [escopo de storage](README.md#storage-e-adaptadores).
 
 <a id="r-07b"></a>
 
@@ -37,34 +40,35 @@ Evidência de conclusão: execução R-07b em TRACEABILITY.md.
 
 ## R-07c — Adaptador SQLite/sqflite
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07b
 
 Áreas: novo packages/deltasync_storage_sqflite/, workspace e testes de integração.
-Objetivo: implementar adaptador opcional ao consumidor e entregue no TCC.
+Objetivo: implementar o único adaptador persistente oficial de referência do TCC,
+opcional ao consumidor que escolha outro backend via `ReplicaStorage`.
 
 Critérios:
 
-- [ ] Schema inicial versionado e tratamento de versão incompatível definidos.
-- [ ] Estado, clocks e outbox persistidos na mesma transação local.
-- [ ] Merge remoto persistido atomicamente.
-- [ ] Identidade durável; comportamento de cópia/backup documentado.
-- [ ] Suíte R-07b aprovada no adaptador.
-- [ ] Core e sync continuam sem dependência de Flutter, SQL ou sqflite.
-- [ ] Adaptador consumir contrato consolidado; schema não duplicar estados/clocks
+- [x] Schema inicial versionado e tratamento de versão incompatível definidos.
+- [x] Estado, clocks e outbox persistidos na mesma transação local.
+- [x] Merge remoto persistido atomicamente.
+- [x] Identidade durável; comportamento de cópia/backup documentado.
+- [x] Suíte R-07b aprovada no adaptador.
+- [x] Core e sync continuam sem dependência de Flutter, SQL ou sqflite.
+- [x] Adaptador consumir contrato consolidado; schema não duplicar estados/clocks
   nem adicionar abstrações de bancos sem uso no cenário do TCC.
 
 Validação: analisar/buildar pacote na plataforma suportada e executar contrato
 com SQLite real. Registrar dispositivo/plataforma; não substituir por mock.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-07c em TRACEABILITY.md.
 
 <a id="r-07d"></a>
 
 ## R-07d — Recuperação durável e falhas
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07c, R-08d
 

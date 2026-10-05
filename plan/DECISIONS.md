@@ -1,15 +1,15 @@
 # Decisões — DeltaSync
 
-Revisão: 2026-10-03. “Adotada” é escolha de planejamento/arquitetura;
+Revisão: 2026-10-04. “Adotada” é escolha de planejamento/arquitetura;
 não significa implementação concluída.
 
 | ID | Estado | Decisão e fundamento |
 |---|---|---|
 | DEC-01 | adotada | Oito CRDTs do PDF preservados; autor reafirmou escopo em 2026-10-03. Limpeza da implementação antecede expansão; ferramentas sugeridas não ampliam requisitos acadêmicos. |
-| DEC-02 | adotada | Core/sync/storage abstrato/transport em Dart puro; SQLite/sqflite em adaptador de referência previsto no TCC e opcional ao consumidor. |
+| DEC-02 | adotada | Core/sync/storage abstrato/transport em Dart puro; SQLite/sqflite em adaptador de referência previsto no TCC e opcional ao consumidor. `ReplicaStorage` é o ponto de extensão para outros backends. `DatabaseFactory` de `sqflite_common` configura somente o adaptador SQLite de R-07c. |
 | DEC-03 | adotada | DeltaCrdt como contrato central; HLC para LWW nativo, dots/contexto causal para tipos observados. Legado exige correção ou migração explícita. |
 | DEC-04 | adotada | Roteamento e identidade únicos por CRDT; endereço estável acompanha mudança e dot local é namespaceado por `crdtId`. |
-| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; isolamento de payload/referência e fila requerem R-09b/R-05. Durabilidade continua pendente em R-07c/R-07d. |
+| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; R-07c valida transação SQLite real. Recuperação do ciclo sync entre sessões e falhas segue pendente em R-07d. |
 | DEC-06 | adotada | Preservar tombstones/contexto necessário; nenhum GC destrutivo por idade ou ACK de envio. |
 | DEC-07 | adotada | Demonstração mínima mantida como MUST pelo contexto atual; PDF a apresenta como possibilidade. Sem framework de objetos obrigatório. |
 | DEC-08 | adotada | build_runner, codegen, ObjectCrdt, migração genérica de modelos, sequências e anti-entropy arbitrário ficam WON'T-YET. |
@@ -26,13 +26,14 @@ não significa implementação concluída.
 | DEC-19 | adotada | R-05 restaura antes da primeira operação (ou via `start()` idempotente); falha permite retry. Lifecycle é terminal após `dispose`. Commit e aplicação remota ficam serializados; I/O de push ocorre fora da fila e ACK volta à fila apenas para IDs do lote capturado. `pendingDelta()`, `SyncPushResult` e `errors` distinguem retenção, confirmação e falhas do listener. Storage legado pode reter mudança já confirmada remotamente. |
 | DEC-20 | adotada | `DeltaTransport` e `SyncEngine` usam `DeltaEnvelope` v2, com remetente/destinatário e payload `DeltaCodec`. `senderReplicaId` pode diferir das origens CRDT em mudanças encaminhadas. `send` confirma transmissão local; `DeltaAcknowledgement` distingue recebimento de incorporação/persistência. Serialização permanece neutra a protocolo; adapters antigos precisam migrar campos/assinaturas. |
 | DEC-21 | adotada | Topologia R-08b é enlace ponto a ponto para peer fixo por `DeltaTransport`. Cada entrada outbox grava destinatário; envio, ACK parcial e remoção ficam limitados a esse peer. Ausência/falha mantém dados para retry; troca de adapter para outro peer não herda nem confirma pendência antiga. Destinatários adicionais exigem cópia por peer e ACK independente. Deltas G/PN atuais carregam componentes cumulativos; dot máximo de origem não é tratado como prova de que eventos individuais sem payload cumulativo foram recebidos. Tipos futuros com eventos individuais exigem contexto causal com lacunas ou entrega causal. |
+| DEC-22 | adotada | R-07c mantém um payload `ReplicaSnapshot` versionado e outbox por mudança no schema SQLite v1. Versões de schema desconhecidas falham sem apagar dados; migrações futuras devem ser explícitas. `replicaId` restaura sem clonagem automática. Backup exige banco fechado e arquivos WAL/SHM juntos quando presentes, ou API SQLite de backup. |
+| DEC-23 | adotada | Autor confirmou em 2026-10-04 o recorte de storage extensível com um único adaptador persistente oficial de referência. Outros backends são integrados pelo consumidor via `ReplicaStorage`; limites e evidências estão no [escopo de storage](README.md#storage-e-adaptadores). Não exigir outro backend persistente, ORM ou framework de plugins para concluir o TCC. |
 
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
-| OPEN-03 | R-07c | Criação da identidade persistente e política de backup/restore. R-04 restaura o mesmo `replicaId` do snapshot e não clona identidade ativa. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
 | OPEN-05 | VAL-04 | Fonte editável e atualização do texto acadêmico; PDF de referência permanece preservado. |
 | OPEN-06 | VAL-05 | Prazo, esforço disponível e cronograma. Viabilidade no prazo ainda não confirmada. |
@@ -56,8 +57,9 @@ Mudança material de recorte acadêmico ou ação externa depende de direção d
   pré-condições explícitas de entrega; testar perda do evento anterior.
 - Cada dispositivo persiste sua réplica materializada e conhecimento causal
   necessário, sem exigir cópias completas de todas as réplicas remotas.
-- Persistir estado, clocks e outbox local em uma transação. Só confirmar sucesso
-  da mutação quando commit terminar; falha não pode deixar memória e disco
+- Persistir estado, clocks e outbox local em um commit atômico, com transação do
+  backend ou mecanismo equivalente validado. Só confirmar sucesso da mutação
+  quando commit terminar; falha não pode deixar memória e dados persistidos
   discordantes. Serializar commits e merges remotos.
 - Espera de rede/ACK ocorrer fora da fila de commits; edição local e recepção
   precisam continuar durante envio. Inicialização restaurar antes de aceitar

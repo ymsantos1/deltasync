@@ -1,6 +1,6 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-10-03. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
@@ -35,7 +35,8 @@ schema de modelos e anti-entropy genérico. Também repetiam tarefas concluídas
 tratavam persistência/lifecycle parciais como concluídos. Esta revisão separa
 requisitos acadêmicos, decisões técnicas de execução e extensões.
 
-Autor decidiu manter oito CRDTs e SQLite/sqflite. Prioridade atual: consolidar
+Autor decidiu manter oito CRDTs e SQLite/sqflite como adaptador persistente de
+referência, com contrato de storage extensível. Prioridade atual: consolidar
 caminho nativo, estado e storage; fechar fluxo real dos três tipos existentes;
 entregar recuperação durável e integrar tipos restantes progressivamente.
 Refatoração reduz sobreposição de classes e contratos, sem quota de classes nem
@@ -98,7 +99,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **3 — persistência durável de referência**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-07c — Adaptador SQLite/sqflite**.
+Próxima tarefa pronta: **R-07d — Recuperação durável e falhas**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -155,8 +156,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |
 | [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
 | [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | concluída | MUST | R-08d |
-| [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | pronta | MUST | R-07b |
-| [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | planejada | MUST | R-07c, R-08d |
+| [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | concluída | MUST | R-07b |
+| [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | pronta | MUST | R-07c, R-08d |
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
@@ -195,6 +196,32 @@ OR-Map continua obrigatório, incluindo valores CRDT e semântica de existência
 documentada. Isso não exige um framework separado de objetos arbitrários.
 Add-wins de OR-Set/OR-Map não impõe automaticamente update-wins a todo objeto ou
 registrador. LWW mantém sua própria política.
+
+### Storage e adaptadores
+
+`deltasync_storage` fornece o contrato público `ReplicaStorage`, independente de
+banco. Core, sync, contrato de storage e facade permanecem sem dependência de
+SQL, Flutter ou sqflite. Cada adaptador deve garantir commit atômico de snapshot
+(incluindo clocks) e outbox, restauração, isolamento dos dados e confirmação por
+peer. Pode usar transação do backend ou mecanismo equivalente que preserve essas
+garantias e seja validado.
+
+O recorte do TCC entrega `MemoryStorage` para testes/protótipos e **um único
+adaptador persistente oficial de referência: SQLite/sqflite**, em pacote separado.
+A utilização desse adaptador é opcional para aplicações consumidoras.
+`DatabaseFactory` pertence ao adaptador SQLite; escolher factory sqflite ou FFI
+compatível configura esse adaptador, sem substituir a extensão por `ReplicaStorage`.
+
+Consumidores podem implementar `ReplicaStorage` diretamente para outros bancos ou
+mecanismos de persistência, usando os modelos públicos e a suíte compartilhada de
+contrato. O guia previsto em VAL-04 deve explicar esse caminho e suas garantias.
+Entrega/manutenção de outros adaptadores persistentes oficiais, ORM genérico e
+framework de plugins de banco ficam fora deste recorte.
+
+R-07a, R-07d e VAL-02 usam SQLite para comprovar durabilidade no backend de
+referência. Essa evidência não constitui validação universal de outros bancos.
+O gate do TCC exige o contrato extensível, a suíte reutilizável, a documentação de
+integração e o adaptador SQLite; não exige um segundo backend persistente.
 
 ## Gates e critérios de conclusão
 

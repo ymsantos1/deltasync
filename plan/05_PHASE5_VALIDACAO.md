@@ -108,13 +108,18 @@ Objetivo: alinhar texto/diagrama acadêmicos com entrega efetiva.
 
 Critérios:
 
-- [ ] Quatro subpacotes/facade e storage abstrato com adaptador sqflite descritos.
+- [ ] Quatro subpacotes/facade e storage abstrato com adaptador SQLite/sqflite de
+  referência descritos, com escolha de backend pelo consumidor conforme o
+  [escopo de storage](README.md#storage-e-adaptadores).
 - [ ] Correspondência da API real com métodos conceituais do PDF documentada.
 - [ ] Contratos consolidados de core, estado, storage e mensagem terem diagrama
   curto e exemplos que expliquem mutação, delta, join, commit e restauração.
 - [ ] Guia de integração/manutenção apontar arquivos e testes para alterar um
   comportamento de CRDT ou implementar adaptador de storage, incluindo invariantes
-  e compatibilidade. Usar uma alteração real das tarefas como percurso documentado
+  e compatibilidade. Explicar implementação direta de `ReplicaStorage` e execução
+  da suíte compartilhada, com commit atômico por transação ou mecanismo equivalente;
+  exemplos podem usar adaptadores existentes, sem exigir outro backend persistente.
+  Usar uma alteração real das tarefas como percurso documentado
   para contribuidores/forks; evitar criar extensão sem uso para demonstrar facilidade.
 - [ ] Quando Compass for demonstrado, relatar consumo da API e adaptações feitas
   no app sem inferir mudanças necessárias na biblioteca; separar essa evidência
