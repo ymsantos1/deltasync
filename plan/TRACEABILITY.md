@@ -179,6 +179,67 @@ Manutenção: R-03 concluída no índice/fase; R-02 passou a pronta pois depend�
 
 Limitações: `PendingDeltaStore` legado pode reenviar sem limite; várias entregas por peer não têm ACK isolado; `MemoryStorage` continua volátil.
 
+## Execução R-07d — 2026-10-04
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-07c e R-08d concluídas; R-07d era a próxima tarefa pronta. Critérios
+cobrem restauração durável, continuidade de identidade/HLC/dots/sequências,
+tombstones, interrupções, atomicidade, backup/plataforma e fluxo das duas engines
+com os três tipos atuais.
+
+Implementação: adicionada integração SQLite real em
+`packages/deltasync_storage_sqflite/test/sync_recovery_test.dart`, usando a API
+pública SyncEngine + ReplicaStorage em dois bancos SQLite. Testes recriam engine
+após fechar banco, repetem entrega antes/depois do ACK, injetam falhas SQL em
+commit local/remoto e verificam envio simultâneo, retry e edição com ACK retido
+para LWW/G-Counter/PN-Counter. Não foi necessária alteração na implementação de
+produção: commit e recuperação existentes satisfizeram as regressões. README do
+adaptador registra plataforma executada e limite Android/iOS; dependências sync e
+transport adicionadas somente para testes do pacote.
+
+Review: aprovado
+
+Achados: um import redundante e uma asserção insuficiente no harness foram
+removidos/corrigidos antes da revisão final. Conferidos fluxo real de close/open,
+ACK por IDs, atomicidade SQLite, IDs/dots após restore e os três tipos nas duas
+réplicas. Também conferido close/open do receptor após commit remoto sem ACK.
+Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Comandos: na raiz, `dart format packages/deltasync_storage_sqflite/test/sync_recovery_test.dart`;
+para `.`, `packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage`, `packages/deltasync_storage_testing`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`,
+`dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+`git diff --check`. Após remover import redundante, raiz e adaptador foram
+reanalisados e retestados; após ampliar o cenário integrado para três tipos,
+adaptador foi novamente formatado, analisado e testado; cenário de ACK perdido
+repetido com fechamento/reabertura do receptor. Resultado final: formato
+aprovado; análise sem issues; 112 testes aprovados no workspace (raiz 2, core 39,
+sync 35, storage 12, storage_testing 6, SQLite FFI 12, transport 6); testes finais
+repetidos na raiz e no adaptador passaram; diff sem erros. Plataforma real:
+Linux 7.2.7-zen1-1-zen x86_64, SQLite nativo por sqflite_common_ffi.
+
+Critérios: reabertura compara identidade, estado, tombstone, pendências, HLC
+não regressivo e continuação de dots; retry após falha pré-entrega e após commit
+remoto sem ACK confirma recuperação e deduplicação. Trigger de outbox prova que
+falha local mantém estado persistido/ativo sem outbox parcial; trigger remoto
+prova que falha de commit não confirma outbox do remetente. Duas engines SQLite
+trocam LWW e counters nas duas direções, retêm uma edição durante ACK pendente e
+convergem após retry; a aplicação remota também sobrevive a close/open antes do
+retry idempotente. README documenta fechamento/cópia com WAL/SHM ou backup API,
+preservação de IDs e plataforma coberta/não coberta.
+
+Manutenção: critérios R-07d marcados; fase 3 concluída; índice sincronizado e fase
+2 ativa com tarefa ativa vazia e R-06a como próxima pronta. DECISIONS/RISKS não
+mudaram. Checker e `git diff --check` executados após esta manutenção.
+
+Limitações: integração usa transporte em processo para controlar pontos de falha;
+ambos os storages usam SQLite real, mas plugins Flutter Android/iOS não foram
+executados. Backup é instruído, não testado como operação do consumidor.
+
 ## Execução R-02 — 2026-09-28
 
 Status final: concluída

@@ -1,6 +1,6 @@
 # Fase 2 — Completar CRDTs e integração
 
-Estado: planejada. Objetivo: completar os oito tipos previstos no PDF.
+Estado: ativa. Objetivo: completar os oito tipos previstos no PDF.
 Entrada: R-08d concluída, comprovando três tipos atuais sob contratos consolidados.
 Saída: cinco tipos restantes e R-07a concluídos.
 Riscos: contexto causal e lacunas, composição observada e crescimento de metadados.

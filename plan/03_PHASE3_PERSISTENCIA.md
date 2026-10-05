@@ -1,6 +1,6 @@
 # Fase 3 — Persistência durável de referência
 
-Estado: ativa. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
+Estado: concluída. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
 Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
 Não depende de finalizar cinco tipos restantes.
 Saída: contrato validado, adaptador persistente de referência SQLite/sqflite e
@@ -68,7 +68,7 @@ Evidência de conclusão: execução R-07c em TRACEABILITY.md.
 
 ## R-07d — Recuperação durável e falhas
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07c, R-08d
 
@@ -77,18 +77,18 @@ Objetivo: comprovar recuperação entre sessões, não apenas reuso de objeto em
 
 Critérios:
 
-- [ ] Fechar/reabrir banco e recriar engine preserva estado e pendências.
-- [ ] Identidade, HLC, dots, sequências e tombstones não regressam.
-- [ ] Interrupção antes do envio e após envio/antes do ACK mantém recuperação.
-- [ ] Falhas transacionais não produzem snapshot sem outbox necessária.
-- [ ] Limites de backup/restore e plataforma documentados.
-- [ ] Cenários de duas engines de R-08d serem executados com SQLite real, incluindo
+- [x] Fechar/reabrir banco e recriar engine preserva estado e pendências.
+- [x] Identidade, HLC, dots, sequências e tombstones não regressam.
+- [x] Interrupção antes do envio e após envio/antes do ACK mantém recuperação.
+- [x] Falhas transacionais não produzem snapshot sem outbox necessária.
+- [x] Limites de backup/restore e plataforma documentados.
+- [x] Cenários de duas engines de R-08d serem executados com SQLite real, incluindo
   envio simultâneo, falha/retry e mutação enquanto ACK estiver pendente.
 
 Validação: integração SQLite real, reabertura e falhas em etapas do commit;
 registrar evidências específicas, separadas dos testes de MemoryStorage.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-07d em TRACEABILITY.md.
 
 
 ## Gate da fase

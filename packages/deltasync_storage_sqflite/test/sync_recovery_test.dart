@@ -1,0 +1,334 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:deltasync_core/deltasync_core.dart';
+import 'package:deltasync_storage/deltasync_storage.dart';
+import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
+import 'package:deltasync_sync/deltasync_sync.dart';
+import 'package:deltasync_transport/deltasync_transport.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:test/test.dart';
+
+void main() {
+  sqfliteFfiInit();
+
+  group('SQLite sync recovery', () {
+    late Directory directory;
+
+    setUp(() async {
+      directory = await Directory.systemTemp.createTemp('deltasync-recovery-');
+    });
+
+    tearDown(() => directory.delete(recursive: true));
+
+    test(
+      'restores identity, HLC, counter dots, tombstone, and pending outbox',
+      () async {
+        const replicaId = 'durable-device';
+        final path = '${directory.path}/replica.sqlite';
+        final transport = _PeerTransport('peer');
+        var storage = _storage(path);
+        var engine = _engine(replicaId, storage, transport);
+        await engine.start();
+        await engine.setDelta('name', 'Ada');
+        final tombstone = await engine.removeDelta('name');
+        final g1 = await engine.incrementGCounter('visits');
+        final p1 = await engine.incrementPnCounter('balance', 4);
+        final before = engine.replica;
+        final timestamp = before.hlcTimestamp;
+        final pendingIds = (await storage.pending(replicaId))
+            .expand((entry) => entry.delta.changes)
+            .map((change) => change.id)
+            .toSet();
+        expect(pendingIds, containsAll([g1.id, p1.id]));
+        expect(before.state.winnerAt('name')!.deleted, isTrue);
+
+        await engine.dispose();
+        await storage.close();
+        storage = _storage(path);
+        engine = _engine(replicaId, storage, transport);
+        await engine.start();
+        final restored = engine.replica;
+        expect(restored.id, replicaId);
+        expect(
+          restored.hlcTimestamp.compareTo(timestamp),
+          greaterThanOrEqualTo(0),
+        );
+        expect(restored.state.winnerAt('name')!.deleted, isTrue);
+        expect(restored.gCounterValue('visits'), 1);
+        expect(restored.pnCounterValue('balance'), 4);
+        expect(
+          (await storage.pending(replicaId))
+              .expand((entry) => entry.delta.changes)
+              .map((change) => change.id)
+              .toSet(),
+          pendingIds,
+        );
+        final next = await engine.setDelta('after-reopen', true);
+        final g2 = await engine.incrementGCounter('visits');
+        final p2 = await engine.decrementPnCounter('balance', 2);
+        expect(next.timestamp.compareTo(timestamp), greaterThan(0));
+        expect(pendingIds, isNot(contains(next.id)));
+        expect(pendingIds, contains(tombstone.id));
+        expect(g2.dot!.counter, greaterThan(g1.dot!.counter));
+        expect(p2.dot!.counter, greaterThan(p1.dot!.counter));
+        await engine.dispose();
+        await storage.close();
+        await transport.close();
+      },
+    );
+
+    test('retries after interruption before remote delivery', () async {
+      var senderStorage = _storage('${directory.path}/sender.sqlite');
+      final receiverStorage = _storage('${directory.path}/receiver.sqlite');
+      final receiverTransport = _PeerTransport('sender');
+      final senderTransport = _PeerTransport('receiver')
+        ..receiver = _engine('receiver', receiverStorage, receiverTransport)
+        ..failBeforeDeliveryOnce = true;
+      var sender = _engine('sender', senderStorage, senderTransport);
+      await senderTransport.receiver!.start();
+      await sender.start();
+      await sender.setDelta('item', 'value');
+      await expectLater(sender.push(), throwsStateError);
+      expect(
+        (await senderStorage.pending('sender')).single.status,
+        OutboxStatus.sent,
+      );
+      expect(sender.replica.state.values, {'item': 'value'});
+      expect(senderTransport.receiver!.replica.state.values, isEmpty);
+
+      await sender.dispose();
+      await senderStorage.close();
+      senderStorage = _storage('${directory.path}/sender.sqlite');
+      sender = _engine('sender', senderStorage, senderTransport);
+      await sender.start();
+      await sender.push(force: true);
+      expect(senderTransport.receiver!.replica.state.values, {'item': 'value'});
+      expect(await senderStorage.pending('sender'), isEmpty);
+      await _dispose(
+        [sender, senderTransport.receiver!],
+        [senderStorage, receiverStorage],
+        [senderTransport, receiverTransport],
+      );
+    });
+
+    test('retries idempotently after delivery but before ACK', () async {
+      var senderStorage = _storage('${directory.path}/sender.sqlite');
+      var receiverStorage = _storage('${directory.path}/receiver.sqlite');
+      final receiverTransport = _PeerTransport('sender');
+      final senderTransport = _PeerTransport('receiver')
+        ..receiver = _engine('receiver', receiverStorage, receiverTransport)
+        ..failAfterDeliveryOnce = true;
+      var sender = _engine('sender', senderStorage, senderTransport);
+      await senderTransport.receiver!.start();
+      await sender.start();
+      await sender.setDelta('item', 'value');
+      await expectLater(sender.push(), throwsStateError);
+      expect(senderTransport.receiver!.replica.state.values, {'item': 'value'});
+      expect(await senderStorage.pending('sender'), hasLength(1));
+
+      await senderTransport.receiver!.dispose();
+      await receiverStorage.close();
+      receiverStorage = _storage('${directory.path}/receiver.sqlite');
+      senderTransport.receiver = _engine(
+        'receiver',
+        receiverStorage,
+        receiverTransport,
+      );
+      await senderTransport.receiver!.start();
+      expect(senderTransport.receiver!.replica.state.values, {'item': 'value'});
+
+      await sender.dispose();
+      await senderStorage.close();
+      senderStorage = _storage('${directory.path}/sender.sqlite');
+      sender = _engine('sender', senderStorage, senderTransport);
+      await sender.start();
+      await sender.push(force: true);
+      expect(senderTransport.receiver!.replica.state.values, {'item': 'value'});
+      expect(await senderStorage.pending('sender'), isEmpty);
+      await _dispose(
+        [sender, senderTransport.receiver!],
+        [senderStorage, receiverStorage],
+        [senderTransport, receiverTransport],
+      );
+    });
+
+    test(
+      'keeps local state and outbox atomic when SQLite commit fails',
+      () async {
+        final path = '${directory.path}/replica.sqlite';
+        final storage = _storage(path);
+        final transport = _PeerTransport('peer');
+        final engine = _engine('sender', storage, transport);
+        await engine.start();
+        final database = await databaseFactoryFfi.openDatabase(path);
+        await database.execute('''
+        CREATE TRIGGER reject_outbox BEFORE INSERT ON deltasync_outbox
+        BEGIN SELECT RAISE(ABORT, 'injected outbox failure'); END
+      ''');
+
+        await expectLater(
+          engine.setDelta('item', 'value'),
+          throwsA(isA<DatabaseException>()),
+        );
+        expect(engine.replica.state.values, isEmpty);
+        expect(await storage.pending('sender'), isEmpty);
+        final snapshot = await storage.loadReplica('sender');
+        expect(
+          Replica.fromSnapshotJson(snapshot!.snapshot!).state.values,
+          isEmpty,
+        );
+
+        await engine.dispose();
+        await storage.close();
+        await transport.close();
+      },
+    );
+
+    test(
+      'two durable engines retry remote commit failure and mutation during ACK',
+      () async {
+        final pathA = '${directory.path}/a.sqlite';
+        final pathB = '${directory.path}/b.sqlite';
+        final storageA = _storage(pathA);
+        final storageB = _storage(pathB);
+        final transportA = _PeerTransport('b');
+        final transportB = _PeerTransport('a');
+        final engineA = _engine('a', storageA, transportA);
+        final engineB = _engine('b', storageB, transportB);
+        transportA.receiver = engineB;
+        transportB.receiver = engineA;
+        await engineA.start();
+        await engineB.start();
+        await engineB.setDelta('from-b', 3);
+        await engineB.incrementGCounter('visits');
+        await engineB.incrementPnCounter('balance', 5);
+
+        final databaseB = await databaseFactoryFfi.openDatabase(pathB);
+        await databaseB.execute('''
+        CREATE TRIGGER reject_remote BEFORE INSERT ON deltasync_snapshots
+        WHEN NEW.replica_id = 'b'
+        BEGIN SELECT RAISE(ABORT, 'injected remote commit failure'); END
+      ''');
+        await engineA.setDelta('first', 1);
+        await engineA.incrementGCounter('visits', 2);
+        await engineA.decrementPnCounter('balance', 2);
+        await expectLater(engineA.push(), throwsA(isA<DatabaseException>()));
+        expect(
+          (await storageA.pending('a')).expand((entry) => entry.delta.changes),
+          hasLength(3),
+        );
+        expect(engineB.replica.state.values, {'from-b': 3});
+        await databaseB.execute('DROP TRIGGER reject_remote');
+
+        final gate = Completer<void>();
+        transportA.acknowledgementGate = gate;
+        final firstPush = engineA.push(force: true);
+        await transportA.firstDelivery.future;
+        final duringAck = await engineA.setDelta('during-ack', 2);
+        final simultaneous = engineB.push(force: true);
+        await transportB.firstDelivery.future;
+        gate.complete();
+        await Future.wait([firstPush, simultaneous]);
+        final retainedIds = (await storageA.pending('a'))
+            .expand((entry) => entry.delta.changes)
+            .map((change) => change.id)
+            .toSet();
+        expect(retainedIds, {duringAck.id});
+        await engineA.push(force: true);
+        expect(engineB.replica.state.values, {
+          'first': 1,
+          'during-ack': 2,
+          'from-b': 3,
+        });
+        expect(engineA.replica.gCounterValue('visits'), 3);
+        expect(engineB.replica.gCounterValue('visits'), 3);
+        expect(engineA.replica.pnCounterValue('balance'), 3);
+        expect(engineB.replica.pnCounterValue('balance'), 3);
+        expect(await storageA.pending('a'), isEmpty);
+
+        await _dispose([engineA, engineB], [storageA, storageB], [
+          transportA,
+          transportB,
+        ]);
+      },
+    );
+  });
+}
+
+SqfliteReplicaStorage _storage(String path) => SqfliteReplicaStorage(
+  databaseFactory: databaseFactoryFfi,
+  databasePath: path,
+);
+
+SyncEngine _engine(
+  String id,
+  ReplicaStorage storage,
+  DeltaTransport transport,
+) => SyncEngine.withStorage(
+  replica: Replica(id),
+  storage: storage,
+  transport: transport,
+);
+
+Future<void> _dispose(
+  List<SyncEngine> engines,
+  List<SqfliteReplicaStorage> stores,
+  List<_PeerTransport> transports,
+) async {
+  for (final engine in engines) {
+    await engine.dispose();
+  }
+  for (final store in stores) {
+    await store.close();
+  }
+  for (final transport in transports) {
+    await transport.close();
+  }
+}
+
+class _PeerTransport implements AcknowledgingDeltaTransport {
+  _PeerTransport(this.peerReplicaId);
+
+  @override
+  final String peerReplicaId;
+  final _incoming = StreamController<DeltaEnvelope>.broadcast();
+  SyncEngine? receiver;
+  bool failBeforeDeliveryOnce = false;
+  bool failAfterDeliveryOnce = false;
+  Completer<void>? acknowledgementGate;
+  final firstDelivery = Completer<void>();
+
+  @override
+  Stream<DeltaEnvelope> get incoming => _incoming.stream;
+
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {
+    await sendAndAwaitAck(envelope);
+  }
+
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
+    if (envelope.recipientReplicaId != peerReplicaId) {
+      throw StateError('Envelope addressed to wrong peer');
+    }
+    if (failBeforeDeliveryOnce) {
+      failBeforeDeliveryOnce = false;
+      throw StateError('interrupted before delivery');
+    }
+    await receiver!.applyRemote(envelope.delta);
+    if (!firstDelivery.isCompleted) firstDelivery.complete();
+    if (failAfterDeliveryOnce) {
+      failAfterDeliveryOnce = false;
+      throw StateError('interrupted before ACK');
+    }
+    await acknowledgementGate?.future;
+    return DeltaAcknowledgement(
+      peerReplicaId: peerReplicaId,
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: envelope.delta.changes.map((change) => change.id),
+    );
+  }
+
+  Future<void> close() => _incoming.close();
+}
