@@ -6,20 +6,23 @@ void main() {
     final first = Replica('first');
     final second = Replica('second');
 
-    first.set('title', 'offline edit');
+    first.setDelta('title', 'offline edit');
     second.apply(first.export());
 
     expect(second.state.values['title'], 'offline edit');
   });
 
-  test('deletes and duplicate changes are idempotent', () {
+  test('export keeps the tombstone winner and duplicate is idempotent', () {
     final replica = Replica('first');
-    replica.set('title', 'draft');
-    replica.remove('title');
+    replica.setDelta('title', 'draft');
+    replica.removeDelta('title');
     final delta = replica.export();
 
     replica.apply(delta);
     expect(replica.state.values, isEmpty);
-    expect(delta.merge(delta).changes, hasLength(2));
+    expect(delta.changes, hasLength(1));
+    expect(delta.changes.single, isA<LwwDelta<Object?>>());
+    expect((delta.changes.single as LwwDelta<Object?>).deleted, isTrue);
+    expect(delta.merge(delta).changes, hasLength(1));
   });
 }

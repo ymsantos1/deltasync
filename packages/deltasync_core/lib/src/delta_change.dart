@@ -5,5 +5,28 @@
 abstract interface class DeltaChange {
   String get id;
 
+  CrdtKind get kind;
+
+  String get crdtId;
+
+  String get replicaId;
+
   Map<String, Object?> toJson();
+}
+
+enum CrdtKind {
+  lww('lww'),
+  gCounter('g-counter'),
+  pnCounter('pn-counter');
+
+  const CrdtKind(this.wireName);
+
+  final String wireName;
+
+  static CrdtKind fromWire(String value) {
+    for (final kind in values) {
+      if (kind.wireName == value) return kind;
+    }
+    throw FormatException('Unsupported CRDT delta type');
+  }
 }

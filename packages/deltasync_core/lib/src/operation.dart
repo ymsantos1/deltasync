@@ -1,6 +1,10 @@
+import 'lww_delta.dart';
+import 'identity.dart';
+import 'hlc.dart';
 import 'vector_clock.dart';
 
-/// Transport-neutral envelope. CRDTs interpret [type] and [payload].
+/// Legacy operation shape accepted only by explicit version 1/2 migration.
+@Deprecated('Legacy codec input only; create native DeltaChange values.')
 class Operation {
   Operation({
     required this.id,
@@ -35,15 +39,6 @@ class Operation {
     'vectorClock': vectorClock.toJson(),
     'payload': payload,
   };
-
-  /// Causal order; concurrent operations use deterministic tie-breakers.
-  int compareTo(Operation other) {
-    final relation = vectorClock.compare(other.vectorClock);
-    if (relation == ClockRelation.before) return -1;
-    if (relation == ClockRelation.after) return 1;
-    final replica = replicaId.compareTo(other.replicaId);
-    return replica == 0 ? id.compareTo(other.id) : replica;
-  }
 
   @override
   bool operator ==(Object other) =>
@@ -85,4 +80,47 @@ class Operation {
     }
     return true;
   }
+}
+
+/// Converts one version 1/2 LWW operation into a native delta.
+///
+/// The legacy vector-clock weight becomes a synthetic HLC physical value;
+/// replica ID and operation ID retain the old deterministic tie-break order.
+LwwDelta<Object?> migrateLegacyOperation(Operation operation) {
+  if (operation.type != 'lww.set' && operation.type != 'lww.delete') {
+    throw FormatException('Unsupported legacy operation type');
+  }
+  if (operation.id.isEmpty ||
+      operation.id.trim() != operation.id ||
+      operation.replicaId.isEmpty ||
+      operation.replicaId.trim() != operation.replicaId) {
+    throw FormatException('Invalid legacy operation identity');
+  }
+  final key = operation.payload['key'];
+  if (key is! String || key.isEmpty || key.trim() != key) {
+    throw FormatException('Invalid legacy LWW address');
+  }
+  if (operation.type == 'lww.set' && !operation.payload.containsKey('value')) {
+    throw FormatException('Legacy LWW set requires value');
+  }
+  final weight = operation.vectorClock.entries.values.fold<BigInt>(
+    BigInt.zero,
+    (sum, counter) => sum + BigInt.from(counter),
+  );
+  if (weight > BigInt.from(0x7fffffffffffffff)) {
+    throw FormatException('Legacy LWW clock exceeds migration range');
+  }
+  final ownCounter = operation.vectorClock.entries[operation.replicaId] ?? 0;
+  if (ownCounter <= 0) {
+    throw FormatException('Legacy LWW clock does not include its origin');
+  }
+  return LwwDelta<Object?>(
+    key: key,
+    id: operation.id,
+    replicaId: operation.replicaId,
+    timestamp: HlcTimestamp(weight.toInt(), 0),
+    value: operation.payload['value'],
+    deleted: operation.type == 'lww.delete',
+    dot: Dot(replicaId: operation.replicaId, counter: ownCounter),
+  );
 }
