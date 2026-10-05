@@ -190,6 +190,27 @@ class SyncEngine {
   Future<GSetDelta> addAllGSet(String crdtId, Iterable<Object?> elements) =>
       _commitLocal((candidate) => candidate.addAllGSet(crdtId, elements));
 
+  /// Adds [element] to the addressed 2P-Set and commits its change to the outbox.
+  Future<TwoPSetDelta> addTwoPSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addTwoPSet(crdtId, element));
+
+  /// Adds [elements] to the addressed 2P-Set as one committed change.
+  Future<TwoPSetDelta> addAllTwoPSet(
+    String crdtId,
+    Iterable<Object?> elements,
+  ) => _commitLocal((candidate) => candidate.addAllTwoPSet(crdtId, elements));
+
+  /// Permanently removes [element] from the addressed 2P-Set.
+  Future<TwoPSetDelta> removeTwoPSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.removeTwoPSet(crdtId, element));
+
+  /// Permanently removes [elements] from the addressed 2P-Set in one change.
+  Future<TwoPSetDelta> removeAllTwoPSet(
+    String crdtId,
+    Iterable<Object?> elements,
+  ) =>
+      _commitLocal((candidate) => candidate.removeAllTwoPSet(crdtId, elements));
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {

@@ -4,6 +4,7 @@ import 'g_set.dart';
 import 'lww_delta.dart';
 import 'operation.dart';
 import 'pn_counter.dart';
+import 'two_p_set.dart';
 
 /// Immutable batch of native CRDT changes.
 class Delta {
@@ -95,6 +96,7 @@ DeltaChange _decodeChange(
       allowLegacyIdentity: allowLegacyCounterIdentity,
     ),
     CrdtKind.gSet => GSetDelta.fromJson(value),
+    CrdtKind.twoPSet => TwoPSetDelta.fromJson(value),
   };
 }
 

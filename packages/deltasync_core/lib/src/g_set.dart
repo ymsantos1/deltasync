@@ -1,10 +1,8 @@
-import 'dart:collection';
-import 'dart:convert';
-
 import 'crdt.dart';
 import 'delta_change.dart';
 import 'identity.dart';
 import 'json_value.dart';
+import 'json_set_value.dart';
 
 /// One batch of values added to an addressed G-Set.
 class GSetDelta implements DeltaChange {
@@ -14,7 +12,7 @@ class GSetDelta implements DeltaChange {
     required this.crdtId,
     required Iterable<Object?> elements,
     required this.dot,
-  }) : elements = _normalizeElements(elements) {
+  }) : elements = normalizeJsonSetElements(elements) {
     if (id.isEmpty || id.trim() != id) {
       throw ArgumentError.value(id, 'id');
     }
@@ -89,8 +87,8 @@ class GSetDelta implements DeltaChange {
       replicaId == other.replicaId &&
       crdtId == other.crdtId &&
       dot == other.dot &&
-      _elementKeys(elements).join('\u0000') ==
-          _elementKeys(other.elements).join('\u0000');
+      jsonSetElementKeys(elements).join('\u0000') ==
+          jsonSetElementKeys(other.elements).join('\u0000');
 
   @override
   int get hashCode => Object.hash(
@@ -98,7 +96,7 @@ class GSetDelta implements DeltaChange {
     replicaId,
     crdtId,
     dot,
-    Object.hashAll(_elementKeys(elements)),
+    Object.hashAll(jsonSetElementKeys(elements)),
   );
 }
 
@@ -125,7 +123,7 @@ class GSet implements DeltaCrdt<Set<Object?>, GSetDelta> {
     for (final entry in _entries.entries) {
       elements[entry.key] = entry.value.element;
     }
-    return _JsonValueSet(elements);
+    return jsonSetValueView(elements);
   }
 
   /// Adds [element] and returns its incremental change.
@@ -133,12 +131,12 @@ class GSet implements DeltaCrdt<Set<Object?>, GSetDelta> {
 
   /// Adds [elements] as one incremental change.
   GSetDelta addAll(Iterable<Object?> elements) {
-    final additions = _normalizeElements(elements);
+    final additions = normalizeJsonSetElements(elements);
     if (additions.isEmpty) {
       throw ArgumentError.value(elements, 'elements', 'must not be empty');
     }
     final novel = additions
-        .where((element) => !_entries.containsKey(_canonicalJson(element)))
+        .where((element) => !_entries.containsKey(canonicalJsonSetKey(element)))
         .toList();
     final dot = Dot(replicaId: replicaId, counter: ++_sequence, crdtId: crdtId);
     final delta = GSetDelta(
@@ -163,7 +161,7 @@ class GSet implements DeltaCrdt<Set<Object?>, GSetDelta> {
       }
     }
     for (final element in delta.elements) {
-      final key = _canonicalJson(element);
+      final key = canonicalJsonSetKey(element);
       final current = _entries[key];
       if (current == null || delta.id.compareTo(current.change.id) < 0) {
         _entries[key] = _GSetEntry(element, delta);
@@ -244,34 +242,6 @@ class _GSetEntry {
   final GSetDelta change;
 }
 
-List<Object?> _normalizeElements(Iterable<Object?> elements) {
-  final normalized = <String, Object?>{};
-  try {
-    for (final element in elements) {
-      final copy = copyJsonValue(element, freeze: true);
-      normalized.putIfAbsent(_canonicalJson(copy), () => copy);
-    }
-  } on ArgumentError {
-    throw ArgumentError.value(elements, 'elements', 'must be JSON-compatible');
-  }
-  final keys = normalized.keys.toList()..sort();
-  return List<Object?>.unmodifiable([for (final key in keys) normalized[key]]);
-}
-
-List<String> _elementKeys(Iterable<Object?> elements) =>
-    elements.map(_canonicalJson).toList()..sort();
-
-String _canonicalJson(Object? value) => jsonEncode(_canonicalValue(value));
-
-Object? _canonicalValue(Object? value) {
-  if (value is List) return [for (final item in value) _canonicalValue(item)];
-  if (value is Map) {
-    final keys = value.keys.cast<String>().toList()..sort();
-    return {for (final key in keys) key: _canonicalValue(value[key])};
-  }
-  return value;
-}
-
 void _validateAddress(String crdtId) {
   if (crdtId.isEmpty ||
       crdtId.trim() != crdtId ||
@@ -286,47 +256,4 @@ String _requiredString(Map<String, Object?> json, String key) {
     throw FormatException('Invalid G-Set $key');
   }
   return value;
-}
-
-class _JsonValueSet extends SetBase<Object?> {
-  _JsonValueSet(this._elements);
-
-  final Map<String, Object?> _elements;
-
-  @override
-  int get length => _elements.length;
-
-  @override
-  Iterator<Object?> get iterator => _elements.values.iterator;
-
-  @override
-  bool contains(Object? element) {
-    try {
-      return _elements.containsKey(_canonicalJson(element));
-    } on ArgumentError {
-      return false;
-    }
-  }
-
-  @override
-  Object? lookup(Object? element) {
-    try {
-      return _elements[_canonicalJson(element)];
-    } on ArgumentError {
-      return null;
-    }
-  }
-
-  @override
-  Set<Object?> toSet() => {..._elements.values};
-
-  @override
-  bool add(Object? value) => throw UnsupportedError('G-Set value is read-only');
-
-  @override
-  bool remove(Object? value) =>
-      throw UnsupportedError('G-Set value is read-only');
-
-  @override
-  void clear() => throw UnsupportedError('G-Set value is read-only');
 }

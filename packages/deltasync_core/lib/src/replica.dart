@@ -9,6 +9,7 @@ import 'lww_delta.dart';
 import 'identity.dart';
 import 'g_counter.dart';
 import 'g_set.dart';
+import 'two_p_set.dart';
 import 'pn_counter.dart';
 import 'json_value.dart';
 
@@ -24,6 +25,7 @@ class Replica {
   final Map<String, GCounter> _gCounters = {};
   final Map<String, PnCounter> _pnCounters = {};
   final Map<String, GSet> _gSets = {};
+  final Map<String, TwoPSet> _twoPSets = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -44,6 +46,10 @@ class Replica {
   /// Read-only value of addressed G-Set, empty before its first addition.
   Set<Object?> gSetValue(String crdtId) =>
       _gSets[crdtId]?.value ?? const <Object?>{};
+
+  /// Read-only value of addressed 2P-Set, empty before its first addition.
+  Set<Object?> twoPSetValue(String crdtId) =>
+      _twoPSets[crdtId]?.value ?? const <Object?>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -82,6 +88,9 @@ class Replica {
     for (final entry in _gSets.entries) {
       copy._gSets[entry.key] = GSet.fromJson(entry.value.toJson());
     }
+    for (final entry in _twoPSets.entries) {
+      copy._twoPSets[entry.key] = TwoPSet.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -99,6 +108,9 @@ class Replica {
     _gSets
       ..clear()
       ..addAll(copiedCounters._gSets);
+    _twoPSets
+      ..clear()
+      ..addAll(copiedCounters._twoPSets);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -107,7 +119,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 4,
+            'version': 5,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -125,13 +137,21 @@ class Replica {
               for (final entry in _gSets.entries)
                 entry.key: entry.value.toJson(),
             },
+            'twoPSets': {
+              for (final entry in _twoPSets.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
   /// Reconstructs materialized state without replaying prior delta history.
   static Replica fromSnapshotJson(Map<String, Object?> json) {
     final version = json['version'];
-    if (version != 1 && version != 2 && version != 3 && version != 4) {
+    if (version != 1 &&
+        version != 2 &&
+        version != 3 &&
+        version != 4 &&
+        version != 5) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -142,7 +162,16 @@ class Replica {
     final pnCounters = json['pnCounters'];
     final encodedGSets = json['gSets'];
     final gSets =
-        encodedGSets ?? (version == 4 ? null : const <String, Object?>{});
+        encodedGSets ??
+        (version == 1 || version == 2 || version == 3
+            ? const <String, Object?>{}
+            : null);
+    final encodedTwoPSets = json['twoPSets'];
+    final twoPSets =
+        encodedTwoPSets ??
+        (version == 1 || version == 2 || version == 3 || version == 4
+            ? const <String, Object?>{}
+            : null);
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -151,7 +180,8 @@ class Replica {
         lww is! Map ||
         gCounters is! Map ||
         pnCounters is! Map ||
-        gSets is! Map) {
+        gSets is! Map ||
+        twoPSets is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -217,6 +247,21 @@ class Replica {
       restored._state.bind(entry.key as String, CrdtKind.gSet);
       restored._gSets[entry.key as String] = set;
     }
+    for (final entry in twoPSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid 2P-Set snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['replicaId'] != replicaId || encoded['crdtId'] != entry.key) {
+        throw FormatException('2P-Set snapshot identity mismatch');
+      }
+      final set = TwoPSet.fromJson(encoded);
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('2P-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.twoPSet);
+      restored._twoPSets[entry.key as String] = set;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -267,6 +312,15 @@ class Replica {
               .putIfAbsent(change.crdtId, () => GSet(id, crdtId: change.crdtId))
               .applyDelta(change);
           break;
+        case TwoPSetDelta():
+          _state.bind(change.crdtId, CrdtKind.twoPSet);
+          _twoPSets
+              .putIfAbsent(
+                change.crdtId,
+                () => TwoPSet(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -281,6 +335,7 @@ class Replica {
     ..._gCounters.values.expand((counter) => counter.exportChanges()),
     ..._pnCounters.values.expand((counter) => counter.exportChanges()),
     ..._gSets.values.expand((set) => set.exportChanges()),
+    ..._twoPSets.values.expand((set) => set.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -312,6 +367,13 @@ class Replica {
       final set = candidate._gSets.putIfAbsent(
         entry.key,
         () => GSet(id, crdtId: entry.key),
+      );
+      set.mergeState(entry.value);
+    }
+    for (final entry in remote._twoPSets.entries) {
+      final set = candidate._twoPSets.putIfAbsent(
+        entry.key,
+        () => TwoPSet(id, crdtId: entry.key),
       );
       set.mergeState(entry.value);
     }
@@ -372,6 +434,38 @@ class Replica {
     final delta = created.addAll(elements);
     _state.bind(crdtId, CrdtKind.gSet);
     _gSets[crdtId] = created;
+    return delta;
+  }
+
+  /// Adds [element] to the addressed 2P-Set and returns its delta.
+  TwoPSetDelta addTwoPSet(String crdtId, Object? element) =>
+      addAllTwoPSet(crdtId, [element]);
+
+  /// Adds [elements] to the addressed 2P-Set in one delta.
+  TwoPSetDelta addAllTwoPSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.twoPSet);
+    final existing = _twoPSets[crdtId];
+    if (existing != null) return existing.addAll(elements);
+    final created = TwoPSet(id, crdtId: crdtId);
+    final delta = created.addAll(elements);
+    _state.bind(crdtId, CrdtKind.twoPSet);
+    _twoPSets[crdtId] = created;
+    return delta;
+  }
+
+  /// Permanently removes [element] from the addressed 2P-Set.
+  TwoPSetDelta removeTwoPSet(String crdtId, Object? element) =>
+      removeAllTwoPSet(crdtId, [element]);
+
+  /// Permanently removes [elements] from the addressed 2P-Set in one delta.
+  TwoPSetDelta removeAllTwoPSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.twoPSet);
+    final existing = _twoPSets[crdtId];
+    if (existing != null) return existing.removeAll(elements);
+    final created = TwoPSet(id, crdtId: crdtId);
+    final delta = created.removeAll(elements);
+    _state.bind(crdtId, CrdtKind.twoPSet);
+    _twoPSets[crdtId] = created;
     return delta;
   }
 
@@ -448,6 +542,7 @@ class Replica {
         (counter) => counter.exportChanges(requireSequences: false),
       ),
       ..._gSets.values.expand((set) => set.exportChanges()),
+      ..._twoPSets.values.expand((set) => set.exportChanges()),
     ];
     Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
@@ -462,6 +557,9 @@ class Replica {
     }
     for (final address in _gSets.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.gSet);
+    }
+    for (final address in _twoPSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.twoPSet);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -548,6 +646,32 @@ class Replica {
           }
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.gSet);
+      } else if (change is TwoPSetDelta) {
+        _validateMessageId(change.id, '2P-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.twoPSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                )) {
+          throw FormatException('Invalid 2P-Set delta identity');
+        }
+        for (final element in change.elements) {
+          try {
+            _validateJsonValue(element);
+          } on ArgumentError {
+            throw FormatException('Invalid 2P-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.twoPSet);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }

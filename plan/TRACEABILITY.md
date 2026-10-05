@@ -1191,3 +1191,55 @@ e `git diff --check` executados após manutenção.
 Limitações: MemoryStorage demonstra fluxo e reabertura lógica, não durabilidade
 após queda de processo; persistência SQLite dos oito tipos pertence a R-07a. Review
 não independente.
+
+## Execução R-06b — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída, R-06a concluída; R-06b era próxima pronta. Critérios
+exigem remoção definitiva contra readição/mensagem antiga, tombstones em merge e
+restore, e fluxo comum de integração por tipo.
+
+Implementação: `two_p_set.dart` modela duas operações monotônicas, `add` e
+`remove`, em deltas com `CrdtKind.twoPSet`, label estável `2p-set`, endereço e dot.
+Join une adições e tombstones; consulta retorna diferença estrutural dos conjuntos.
+`json_set_value.dart` centraliza normalização, igualdade JSON e consulta somente
+leitura compartilhadas por G-Set/2P-Set. `Replica` integra estado, codec, merge,
+export, API e snapshot v5, lendo versões 1–4; `SyncEngine` comita as quatro
+operações públicas na outbox. Facade, README e pontos de manutenção atualizados.
+
+Review: aprovado
+
+Achados: revisão do diff incluindo arquivos novos. Identificada consulta `contains`
+com valor JSON inválido que podia escapar validação; view passou a validar/copiar
+antes de canonicalizar, com regressão. Re-review da correção sem achados pendentes.
+Review pelo próprio implementador em etapa distinta; não independente.
+
+Validação: aprovada
+
+Após correção, core passou formatação, análise sem issues e 52 testes; sync passou
+análise e 35 testes; facade passou análise e 4 testes. Formatação sem alterações
+em todos os pacotes. Total: 91 testes aprovados. Cobertos join associativo,
+comutativo e idempotente, remoção antes da adição, readição e mensagem antiga,
+codec, igualdade JSON, snapshots v4/v5, reconciliação de snapshot versus deltas,
+conflito de endereço, outbox, duas engines e restore lógico com MemoryStorage.
+
+Comandos: no core, sync e raiz, `dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`; `dart format` nos caminhos alterados; `python3 scripts/check_plan.py`; `git diff --check`. Dart SDK 3.13.0, Linux x64. Validação Dart executada com acesso ao SDK após cache Flutter ser somente leitura no sandbox.
+
+Critérios: elemento removido não retorna após readição ou delta antigo, demonstrado
+na classe, Replica e duas engines. Tombstones sobrevivem a join, codec, snapshot e
+restart lógico. Critérios comuns cobertos por API que retorna deltas, consulta,
+join algébrico, serialização/restauração, duplicação/reordenação, reconciliação,
+roteamento, snapshot, outbox e fluxo entre engines. Snapshot v5 é incompatível
+com leitores antigos; leitor atual continua lendo v1–v4. SQLite real dos tipos
+integrados continua pertencendo a R-07a.
+
+Manutenção: R-06b e critérios marcados; índice/fase sincronizados; fase 2 ativa;
+R-06c é próxima recomendada. DECISIONS/RISKS sem alterações. Checker e diff check
+executados após manutenção.
+
+Limitações: tombstones são permanentes e crescem com valores removidos; GC fica
+fora do escopo. MemoryStorage não comprova queda/reabertura de processo. Review não
+independente.

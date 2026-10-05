@@ -4,7 +4,7 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Pacotes
 
-- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, estado de réplicas e deltas.
+- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, 2P-Set, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
@@ -23,8 +23,12 @@ print(remote.state.values);
 final apples = replica.incrementGCounter('cart/apples', 2);
 final balance = replica.decrementPnCounter('account/balance', 1);
 final tags = replica.addAllGSet('document/tags', ['draft', 'shared']);
-remote.apply(Delta([apples, balance, tags]));
+final members = replica.addTwoPSet('document/members', 'device-a');
+remote.apply(Delta([apples, balance, tags, members]));
 print(remote.gSetValue('document/tags'));
+final removal = replica.removeTwoPSet('document/members', 'device-a');
+remote.apply(Delta([removal]));
+print(remote.twoPSetValue('document/members'));
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo. Execute `dart run example/deltasync_example.dart` para um consumidor mínimo com duas engines conectadas; o link em memória só demonstra o contrato público e não é transporte de produção.
@@ -51,9 +55,9 @@ sequenceDiagram
   A->>SA: limpar IDs confirmados
 ```
 
-O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter e
-G-Set; demais tipos previstos e persistência SQLite dos oito tipos ainda não foram
-implementados.
+O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
+G-Set e 2P-Set; demais tipos previstos e persistência SQLite dos oito tipos ainda
+não foram implementados.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -76,10 +80,17 @@ lacunas explícitas ou entrega causal garantida.
 G-Set usa `Replica.addGSet/addAllGSet` ou métodos correspondentes de
 `SyncEngine`. Endereço estável identifica o campo; cada delta traz adições JSON
 com dot namespaced, e o join une eventos enquanto a consulta deduplica valores
-JSON estruturalmente iguais. Não há remoção. Snapshot interno de réplica agora é
-v4; leitores continuam aceitando snapshots v1–v3 sem G-Set. Consumidores antigos
-não leem snapshot v4; o envelope externo `ReplicaSnapshot` continua v2. Delta
-Codec mantém v3 e leitores antigos rejeitam o label desconhecido `g-set`.
+JSON estruturalmente iguais. Não há remoção. G-Set entrou no snapshot interno v4;
+formato atual é v5 e leitores atuais aceitam snapshots v1–v4 sem 2P-Set. Consumidores
+antigos não leem snapshot v5. O envelope externo `ReplicaSnapshot` continua v2.
+`DeltaCodec` mantém v3; leitores antigos rejeitam os labels desconhecidos `g-set`
+e `2p-set`.
+
+2P-Set usa `Replica.addTwoPSet/addAllTwoPSet` e
+`Replica.removeTwoPSet/removeAllTwoPSet`, com métodos equivalentes em `SyncEngine`.
+Adições e tombstones de remoção são conjuntos monotônicos unidos no merge; valor
+visível é adições menos remoções. Readição e delta antigo não ressuscitam valor
+removido. Não há operação para desfazer tombstone.
 
 ### Compatibilidade de API e formatos
 
@@ -165,6 +176,9 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   e une deltas por ID. `Replica` faz roteamento, isolamento, export e snapshot;
   `SyncEngine` grava mudanças na outbox. Testes cobrem join, ordem, duplicação,
   codec e duas engines.
+- **2P-Set:** `two_p_set.dart` mantém adições e tombstones monotônicos; valor é a
+  diferença dos conjuntos. `Replica` roteia e versiona snapshot; `SyncEngine`
+  comita operações na outbox. A semântica não permite readição após remoção.
 - **Contrato/wire:** `delta_change.dart` define metadados comuns e labels estáveis;
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam

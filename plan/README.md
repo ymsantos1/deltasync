@@ -21,10 +21,12 @@ Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
 
 A proposta é coerente como biblioteca modular de CRDTs com sincronização
 incremental e persistência local. A implementação atual ainda não satisfaz esse
-escopo: há três dos oito CRDTs integrados em Replica/SyncEngine e armazenamento
-apenas em memória. Revisão de 2026-10-03 reproduziu bloqueio entre engines,
-mutação antes da restauração com perda de snapshot e valores compartilhados que
-alteram estado sem delta. Aprovação de 55 testes não cobre essas garantias.
+escopo: há cinco dos oito CRDTs integrados em Replica/SyncEngine. Adaptador SQLite
+existe; evidência de recuperação real cobre três tipos, não todos os oito. A
+baseline de 2026-10-03 reproduziu bloqueio entre engines, mutação antes da
+restauração com perda de snapshot e valores compartilhados que alteram estado sem
+delta; tarefas posteriores trataram esses defeitos. Os 55 testes daquela baseline
+não cobrem garantias atuais nem tipos recém-integrados.
 A viabilidade no prazo não pode ser confirmada sem datas, esforço
 disponível e estimativas das tarefas restantes; OR-Set, OR-Map, recuperação durável
 e integração são os maiores riscos.
@@ -99,7 +101,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **2 — completar CRDTs e integração**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-06b — 2P-Set**.
+Próxima tarefa pronta: **R-06c — MV-Register**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -150,7 +152,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | concluída | MUST | R-09a, R-03, R-04 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | concluída | MUST | R-09b |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
-| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | pronta | MUST | R-08d |
+| [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | pronta | MUST | R-08d |
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-08d |
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |

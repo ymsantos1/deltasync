@@ -172,11 +172,13 @@ void main() {
         left.incrementGCounter('items', 2),
         left.decrementPnCounter('balance', 3),
         left.addAllGSet('tags', ['from-left', 'shared']),
+        left.addAllTwoPSet('membership', ['from-left', 'shared']),
         left.removeDelta('obsolete'),
         right.setDelta('title', 'from right'),
         right.incrementGCounter('items', 4),
         right.incrementPnCounter('balance', 8),
         right.addAllGSet('tags', ['from-right', 'shared']),
+        right.addAllTwoPSet('membership', ['from-right', 'shared']),
       ]);
       expect(
         (await leftStorage.pending('left'))
@@ -188,6 +190,12 @@ void main() {
         (await rightStorage.pending('right'))
             .expand((entry) => entry.delta.changes)
             .where((change) => change.kind == CrdtKind.gSet),
+        hasLength(1),
+      );
+      expect(
+        (await leftStorage.pending('left'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.twoPSet),
         hasLength(1),
       );
       final results = await Future.wait([left.push(), right.push()]);
@@ -214,8 +222,33 @@ void main() {
           engine.replica.gSetValue('tags'),
           containsAll(['from-left', 'from-right', 'shared']),
         );
+        expect(
+          engine.replica.twoPSetValue('membership'),
+          containsAll(['from-left', 'from-right', 'shared']),
+        );
         expect(engine.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       }
+
+      await left.removeTwoPSet('membership', 'shared');
+      await left.push();
+      expect(
+        left.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      expect(
+        right.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      await right.addTwoPSet('membership', 'shared');
+      await right.push();
+      expect(
+        left.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      expect(
+        right.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
 
       // Restart from each MemoryStorage instance to verify snapshot identities,
       // tombstones, and counter sequence state survive the simulated recovery.
@@ -235,6 +268,18 @@ void main() {
       expect(
         restoredLeft.replica.gSetValue('tags'),
         containsAll(['from-left', 'from-right', 'shared']),
+      );
+      expect(
+        restoredLeft.replica.twoPSetValue('membership'),
+        containsAll(['from-left', 'from-right']),
+      );
+      expect(
+        (await restoredLeft.addTwoPSet('membership', 'shared')).dot.counter,
+        3,
+      );
+      expect(
+        restoredLeft.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
       );
       expect(restoredLeft.replica.state.values['title'], 'from right');
       final restoredSnapshot = restoredLeft.replica.toSnapshotJson();
@@ -631,7 +676,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 4);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 5);
       await engine.dispose();
     },
   );

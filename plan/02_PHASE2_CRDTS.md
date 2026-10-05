@@ -2,7 +2,7 @@
 
 Estado: ativa. Objetivo: completar os oito tipos previstos no PDF.
 Entrada: R-08d concluída, comprovando três tipos atuais sob contratos consolidados.
-Saída: cinco tipos restantes e R-07a concluídos.
+Saída: três tipos restantes e R-07a concluídos.
 Riscos: contexto causal e lacunas, composição observada e crescimento de metadados.
 Exclusões: ObjectCrdt obrigatório, gerador de modelos e sequências experimentais.
 
@@ -57,7 +57,7 @@ de snapshots v3 sem G-Set. Detalhes e comandos em
 
 ## R-06b — 2P-Set
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -66,11 +66,11 @@ Objetivo: conjuntos de adições e remoções com remoção definitiva do elemen
 
 Critérios:
 
-- [ ] Elemento removido não retorna por readição ou mensagem antiga.
-- [ ] Metadados de remoção preservados em merge e restauração.
-- [ ] Critérios e validação comuns dos tipos satisfeitos.
+- [x] Elemento removido não retorna por readição ou mensagem antiga.
+- [x] Metadados de remoção preservados em merge e restauração.
+- [x] Critérios e validação comuns dos tipos satisfeitos.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: ver [TRACEABILITY](TRACEABILITY.md#execução-r-06b--2026-10-04).
 
 <a id="r-06c"></a>
 

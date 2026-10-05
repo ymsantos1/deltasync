@@ -35,4 +35,18 @@ void main() {
     second.apply(DeltaCodec.decode(DeltaCodec.encode(Delta([delta]))));
     expect(second.gSetValue('tags'), containsAll(['offline', 'shared']));
   });
+
+  test('facade exposes permanent 2P-Set removals', () {
+    final first = Replica('first');
+    final second = Replica('second');
+    final addition = first.addTwoPSet('members', 'device-a');
+    final removal = first.removeTwoPSet('members', 'device-a');
+
+    second.apply(
+      DeltaCodec.decode(DeltaCodec.encode(Delta([addition, removal]))),
+    );
+    expect(second.twoPSetValue('members'), isEmpty);
+    second.apply(Delta([addition]));
+    expect(second.twoPSetValue('members'), isEmpty);
+  });
 }
