@@ -1141,3 +1141,53 @@ frontmatter consistentes. Alteração apenas documental; testes Dart não execut
 Limitações: revisão não independente. A extensibilidade do contrato não constitui
 evidência de durabilidade de backends adicionais; esses adaptadores devem validar
 as garantias do contrato em sua própria implementação.
+
+## Execução R-06a — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída e R-06a era a tarefa pronta; escopo comum exige join,
+codec, roteamento, snapshot, outbox e fluxo entre engines.
+
+Implementação: `packages/deltasync_core/lib/src/g_set.dart` adiciona G-Set para
+valores JSON com igualdade estrutural, delta incremental namespaced por endereço,
+join e export determinísticos. `Replica` integra mutação, merge, isolamento,
+roteamento e snapshot interno v4; mantém leitura de versões 1–3. `SyncEngine`
+persiste a mutação na outbox. Facade e README mostram consumo; formato e locais de
+manutenção estão documentados. IDs de counter permanecem iguais via delegação ao
+novo helper compartilhado.
+
+Review: aprovado
+
+Achados: review em etapa separada verificou identidade/dot, validação antes de
+vincular endereço, compatibilidade de snapshots, sequência em reconciliação e
+cópias dos valores. Foi adicionada validação explícita de dot positivo no
+roteamento de Replica. Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Dart format sem alterações; `dart analyze` sem issues e testes
+aprovados em `packages/deltasync_core` (45), `packages/deltasync_sync` (35) e raiz
+(3), total 83. Cobertura inclui join associativo/comutativo/idempotente,
+duplicação/reordenação, JSON estrutural, round-trip DeltaCodec, restauração de
+snapshot, reconciliação via snapshots versus deltas, outbox e duas engines com
+MemoryStorage. Snapshot v3 sem G-Set continua legível.
+
+Comandos: em cada diretório `.`, `packages/deltasync_core` e
+`packages/deltasync_sync`, `dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`; formatação dos caminhos alterados com `dart format`; `git diff --check`. Checker de plano executado após manutenção.
+
+Critérios: os três itens de R-06a marcados. União e duplicação preservam valor;
+deltas trocam incrementos; o fluxo cobre API pública, codec, roteamento, snapshot,
+outbox e restauração. Snapshot interno v4 é escrito; consumidores antigos não
+leem esse formato, enquanto o leitor atual aceita snapshots v1–v3. DeltaCodec
+mantém versão 3 e decodificadores antigos rejeitam o label desconhecido `g-set`.
+
+Manutenção: R-06a concluída na fase e no índice; R-06b é a próxima pronta. Fase 2
+continua ativa. Nenhuma decisão ou risco alterado. `python3 scripts/check_plan.py`
+e `git diff --check` executados após manutenção.
+
+Limitações: MemoryStorage demonstra fluxo e reabertura lógica, não durabilidade
+após queda de processo; persistência SQLite dos oito tipos pertence a R-07a. Review
+não independente.

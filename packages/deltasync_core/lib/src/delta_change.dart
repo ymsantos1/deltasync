@@ -17,7 +17,8 @@ abstract interface class DeltaChange {
 enum CrdtKind {
   lww('lww'),
   gCounter('g-counter'),
-  pnCounter('pn-counter');
+  pnCounter('pn-counter'),
+  gSet('g-set');
 
   const CrdtKind(this.wireName);
 

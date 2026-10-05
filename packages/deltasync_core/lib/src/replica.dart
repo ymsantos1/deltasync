@@ -8,6 +8,7 @@ import 'hlc.dart';
 import 'lww_delta.dart';
 import 'identity.dart';
 import 'g_counter.dart';
+import 'g_set.dart';
 import 'pn_counter.dart';
 import 'json_value.dart';
 
@@ -22,6 +23,7 @@ class Replica {
   final ReplicaState _state = ReplicaState();
   final Map<String, GCounter> _gCounters = {};
   final Map<String, PnCounter> _pnCounters = {};
+  final Map<String, GSet> _gSets = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -38,6 +40,10 @@ class Replica {
 
   /// Value of addressed PN-Counter, or zero before its first change.
   int pnCounterValue(String crdtId) => _pnCounters[crdtId]?.value ?? 0;
+
+  /// Read-only value of addressed G-Set, empty before its first addition.
+  Set<Object?> gSetValue(String crdtId) =>
+      _gSets[crdtId]?.value ?? const <Object?>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -73,6 +79,9 @@ class Replica {
         sequence: json['sequence'] as int,
       );
     }
+    for (final entry in _gSets.entries) {
+      copy._gSets[entry.key] = GSet.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -87,6 +96,9 @@ class Replica {
     _pnCounters
       ..clear()
       ..addAll(copiedCounters._pnCounters);
+    _gSets
+      ..clear()
+      ..addAll(copiedCounters._gSets);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -95,7 +107,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 3,
+            'version': 4,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -109,12 +121,17 @@ class Replica {
               for (final entry in _pnCounters.entries)
                 entry.key: entry.value.toJson(),
             },
+            'gSets': {
+              for (final entry in _gSets.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
   /// Reconstructs materialized state without replaying prior delta history.
   static Replica fromSnapshotJson(Map<String, Object?> json) {
-    if (json['version'] != 1 && json['version'] != 2 && json['version'] != 3) {
+    final version = json['version'];
+    if (version != 1 && version != 2 && version != 3 && version != 4) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -123,6 +140,9 @@ class Replica {
     final lww = json['lww'];
     final gCounters = json['gCounters'];
     final pnCounters = json['pnCounters'];
+    final encodedGSets = json['gSets'];
+    final gSets =
+        encodedGSets ?? (version == 4 ? null : const <String, Object?>{});
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -130,7 +150,8 @@ class Replica {
         hlc is! Map ||
         lww is! Map ||
         gCounters is! Map ||
-        pnCounters is! Map) {
+        pnCounters is! Map ||
+        gSets is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -181,6 +202,21 @@ class Replica {
         sequence: _requiredSequence(encoded['sequence']),
       );
     }
+    for (final entry in gSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid G-Set snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['replicaId'] != replicaId || encoded['crdtId'] != entry.key) {
+        throw FormatException('G-Set snapshot identity mismatch');
+      }
+      final set = GSet.fromJson(encoded);
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('G-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.gSet);
+      restored._gSets[entry.key as String] = set;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -225,6 +261,12 @@ class Replica {
               )
               .applyDelta(change);
           break;
+        case GSetDelta():
+          _state.bind(change.crdtId, CrdtKind.gSet);
+          _gSets
+              .putIfAbsent(change.crdtId, () => GSet(id, crdtId: change.crdtId))
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -238,6 +280,7 @@ class Replica {
     ..._lwwWinners,
     ..._gCounters.values.expand((counter) => counter.exportChanges()),
     ..._pnCounters.values.expand((counter) => counter.exportChanges()),
+    ..._gSets.values.expand((set) => set.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -264,6 +307,13 @@ class Replica {
         () => PnCounter(id, crdtId: entry.key),
       );
       counter.mergeState(entry.value);
+    }
+    for (final entry in remote._gSets.entries) {
+      final set = candidate._gSets.putIfAbsent(
+        entry.key,
+        () => GSet(id, crdtId: entry.key),
+      );
+      set.mergeState(entry.value);
     }
     candidate
       .._clock = _clock.merge(remote._clock)
@@ -308,6 +358,22 @@ class Replica {
   /// Decrements addressed PN-Counter and returns its transportable delta.
   PnCounterDelta decrementPnCounter(String crdtId, [int amount = 1]) =>
       _changePnCounter(crdtId, (counter) => counter.decrement(amount), amount);
+
+  /// Adds [element] to the addressed G-Set and returns its delta.
+  GSetDelta addGSet(String crdtId, Object? element) =>
+      addAllGSet(crdtId, [element]);
+
+  /// Adds [elements] to the addressed G-Set as one delta.
+  GSetDelta addAllGSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.gSet);
+    final existing = _gSets[crdtId];
+    if (existing != null) return existing.addAll(elements);
+    final created = GSet(id, crdtId: crdtId);
+    final delta = created.addAll(elements);
+    _state.bind(crdtId, CrdtKind.gSet);
+    _gSets[crdtId] = created;
+    return delta;
+  }
 
   LwwDelta<Object?> _recordDelta(
     String key,
@@ -381,6 +447,7 @@ class Replica {
       ..._pnCounters.values.expand(
         (counter) => counter.exportChanges(requireSequences: false),
       ),
+      ..._gSets.values.expand((set) => set.exportChanges()),
     ];
     Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
@@ -392,6 +459,9 @@ class Replica {
     }
     for (final address in _pnCounters.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.pnCounter);
+    }
+    for (final address in _gSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.gSet);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -452,6 +522,32 @@ class Replica {
           throw FormatException('Invalid PN-Counter delta');
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.pnCounter);
+      } else if (change is GSetDelta) {
+        _validateMessageId(change.id, 'G-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.gSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                )) {
+          throw FormatException('Invalid G-Set delta identity');
+        }
+        for (final element in change.elements) {
+          try {
+            _validateJsonValue(element);
+          } on ArgumentError {
+            throw FormatException('Invalid G-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.gSet);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }
@@ -514,12 +610,8 @@ class Replica {
     if (crdtId.startsWith('legacy/')) {
       throw ArgumentError.value(crdtId, 'crdtId', 'legacy/ is reserved');
     }
-    final otherType =
-        _state.kindAt(crdtId) == CrdtKind.lww ||
-        (type == CrdtKind.gCounter
-            ? _pnCounters.containsKey(crdtId)
-            : _gCounters.containsKey(crdtId));
-    if (otherType) {
+    final currentType = _state.kindAt(crdtId);
+    if (currentType != null && currentType != type) {
       throw StateError('CRDT address is already bound to another type');
     }
   }

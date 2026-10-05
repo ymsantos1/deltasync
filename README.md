@@ -4,7 +4,7 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Pacotes
 
-- `deltasync_core`: LWW, G-Counter, PN-Counter, estado de réplicas e deltas.
+- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
@@ -22,7 +22,9 @@ final remote = Replica('device-b')..apply(Delta([delta]));
 print(remote.state.values);
 final apples = replica.incrementGCounter('cart/apples', 2);
 final balance = replica.decrementPnCounter('account/balance', 1);
-remote.apply(Delta([apples, balance]));
+final tags = replica.addAllGSet('document/tags', ['draft', 'shared']);
+remote.apply(Delta([apples, balance, tags]));
+print(remote.gSetValue('document/tags'));
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo. Execute `dart run example/deltasync_example.dart` para um consumidor mínimo com duas engines conectadas; o link em memória só demonstra o contrato público e não é transporte de produção.
@@ -49,8 +51,9 @@ sequenceDiagram
   A->>SA: limpar IDs confirmados
 ```
 
-O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter e PN-Counter;
-demais tipos previstos e persistência SQLite ainda não foram implementados.
+O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter e
+G-Set; demais tipos previstos e persistência SQLite dos oito tipos ainda não foram
+implementados.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -69,6 +72,14 @@ Endereços iniciados por `legacy/` são reservados. G-Counter e PN-Counter carre
 componentes cumulativos, então lacunas de dot não impedem merge; CRDTs futuros
 que dependam de eventos individuais precisam de contexto causal por endereço com
 lacunas explícitas ou entrega causal garantida.
+
+G-Set usa `Replica.addGSet/addAllGSet` ou métodos correspondentes de
+`SyncEngine`. Endereço estável identifica o campo; cada delta traz adições JSON
+com dot namespaced, e o join une eventos enquanto a consulta deduplica valores
+JSON estruturalmente iguais. Não há remoção. Snapshot interno de réplica agora é
+v4; leitores continuam aceitando snapshots v1–v3 sem G-Set. Consumidores antigos
+não leem snapshot v4; o envelope externo `ReplicaSnapshot` continua v2. Delta
+Codec mantém v3 e leitores antigos rejeitam o label desconhecido `g-set`.
 
 ### Compatibilidade de API e formatos
 
@@ -150,6 +161,10 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
 - **PN-Counter:** positivos, negativos, validação completa e join por máximo vivem
   em `pn_counter.dart`; delta público transporta ambos os componentes. Testes cobrem
   convergência, decremento, delta inválido sem efeito parcial e sequência.
+- **G-Set:** `g_set.dart` valida e copia elementos JSON, gera adições incrementais
+  e une deltas por ID. `Replica` faz roteamento, isolamento, export e snapshot;
+  `SyncEngine` grava mudanças na outbox. Testes cobrem join, ordem, duplicação,
+  codec e duas engines.
 - **Contrato/wire:** `delta_change.dart` define metadados comuns e labels estáveis;
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam

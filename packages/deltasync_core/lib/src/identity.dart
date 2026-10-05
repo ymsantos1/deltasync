@@ -72,6 +72,14 @@ class Dot {
   int get hashCode => Object.hash(replicaId, counter, crdtId);
 }
 
+/// Stable message ID for an addressed CRDT change and replica sequence.
+String crdtDeltaId(
+  String type,
+  String crdtId,
+  String replicaId,
+  int sequence,
+) => '$type:${jsonEncode([crdtId, replicaId, sequence])}';
+
 /// Stable message ID for a counter delta, namespaced by CRDT and replica.
 String counterDeltaId(String type, String crdtId, String replicaId, int dot) =>
-    '$type:${jsonEncode([crdtId, replicaId, dot])}';
+    crdtDeltaId(type, crdtId, replicaId, dot);

@@ -37,7 +37,7 @@ requisitos acadêmicos, decisões técnicas de execução e extensões.
 
 Autor decidiu manter oito CRDTs e SQLite/sqflite como adaptador persistente de
 referência, com contrato de storage extensível. Prioridade atual: consolidar
-caminho nativo, estado e storage; fechar fluxo real dos três tipos existentes;
+caminho nativo, estado e storage; fechar fluxo real dos tipos existentes;
 entregar recuperação durável e integrar tipos restantes progressivamente.
 Refatoração reduz sobreposição de classes e contratos, sem quota de classes nem
 framework genérico novo. Detalhes e diagnósticos estão na análise vinculada acima.
@@ -99,7 +99,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **2 — completar CRDTs e integração**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-06a — G-Set**.
+Próxima tarefa pronta: **R-06b — 2P-Set**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -149,7 +149,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | concluída | MUST | R-01, R-02 |
 | [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | concluída | MUST | R-09a, R-03, R-04 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | concluída | MUST | R-09b |
-| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | pronta | MUST | R-08d |
+| [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | pronta | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | pronta | MUST | R-08d |
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-08d |

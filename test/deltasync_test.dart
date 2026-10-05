@@ -25,4 +25,14 @@ void main() {
     expect((delta.changes.single as LwwDelta<Object?>).deleted, isTrue);
     expect(delta.merge(delta).changes, hasLength(1));
   });
+
+  test('facade exposes G-Set incremental delta API', () {
+    final first = Replica('first');
+    final second = Replica('second');
+    final delta = first.addAllGSet('tags', ['offline', 'shared']);
+
+    expect(delta, isA<GSetDelta>());
+    second.apply(DeltaCodec.decode(DeltaCodec.encode(Delta([delta]))));
+    expect(second.gSetValue('tags'), containsAll(['offline', 'shared']));
+  });
 }

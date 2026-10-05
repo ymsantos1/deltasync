@@ -8,6 +8,7 @@ export 'src/hlc.dart';
 export 'src/identity.dart';
 export 'src/json_value.dart';
 export 'src/g_counter.dart';
+export 'src/g_set.dart';
 export 'src/pn_counter.dart';
 export 'src/lww_register.dart';
 export 'src/lww_delta.dart';

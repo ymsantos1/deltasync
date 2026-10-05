@@ -182,6 +182,14 @@ class SyncEngine {
   Future<PnCounterDelta> decrementPnCounter(String crdtId, [int amount = 1]) =>
       _commitLocal((candidate) => candidate.decrementPnCounter(crdtId, amount));
 
+  /// Adds [element] to the addressed G-Set and commits its change to the outbox.
+  Future<GSetDelta> addGSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addGSet(crdtId, element));
+
+  /// Adds [elements] to the addressed G-Set as one committed change.
+  Future<GSetDelta> addAllGSet(String crdtId, Iterable<Object?> elements) =>
+      _commitLocal((candidate) => candidate.addAllGSet(crdtId, elements));
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {

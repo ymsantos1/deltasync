@@ -8,25 +8,30 @@ void main() {
       replica.setDelta('title', 'draft'),
       replica.incrementGCounter('cart/count'),
       replica.incrementPnCounter('wallet/balance'),
+      replica.addGSet('labels', 'draft'),
     ];
 
     expect(changes.map((change) => change.kind), [
       CrdtKind.lww,
       CrdtKind.gCounter,
       CrdtKind.pnCounter,
+      CrdtKind.gSet,
     ]);
     expect(changes.map((change) => change.crdtId), [
       'title',
       'cart/count',
       'wallet/balance',
+      'labels',
     ]);
     expect(changes.map((change) => change.replicaId), everyElement('device'));
     expect(changes.map((change) => change.toJson()['type']), [
       'lww',
       'g-counter',
       'pn-counter',
+      'g-set',
     ]);
     expect(CrdtKind.fromWire('pn-counter'), CrdtKind.pnCounter);
+    expect(CrdtKind.fromWire('g-set'), CrdtKind.gSet);
     expect(() => CrdtKind.fromWire('future'), throwsFormatException);
   });
 
@@ -39,6 +44,9 @@ void main() {
     cyclic.add(cyclic);
     expect(() => replica.setDelta('cycle', cyclic), throwsArgumentError);
     expect(() => replica.incrementGCounter(''), throwsArgumentError);
+    expect(() => replica.addGSet('', 'invalid'), throwsArgumentError);
+    expect(() => replica.addAllGSet('labels', []), throwsArgumentError);
+    expect(() => replica.addGSet('labels', Object()), throwsArgumentError);
     expect(
       () => replica.incrementGCounter('cart/items', 0),
       throwsArgumentError,
@@ -92,6 +100,12 @@ void main() {
     );
   });
 
+  test('invalid G-Set addition does not bind replica address', () {
+    final replica = Replica('device');
+    expect(() => replica.addGSet('labels', Object()), throwsArgumentError);
+    expect(replica.setDelta('labels', 'text').id, 'device:delta:1');
+  });
+
   test('DeltaCodec round trips and rejects unknown versions', () {
     final replica = Replica('device-a');
     final delta = Delta([replica.setDelta('title', 'draft')]);
@@ -111,7 +125,8 @@ void main() {
       final replica = Replica('device')
         ..setDelta('title', 'draft')
         ..incrementGCounter('cart/count')
-        ..incrementPnCounter('wallet/balance');
+        ..incrementPnCounter('wallet/balance')
+        ..addGSet('labels', 'draft');
       final delta = DeltaCodec.decode(DeltaCodec.encode(replica.export()));
 
       expect(delta.changes, replica.export().changes);
@@ -119,6 +134,7 @@ void main() {
         'lww',
         'g-counter',
         'pn-counter',
+        'g-set',
       ]);
       expect(
         () => DeltaCodec.decode({
@@ -153,6 +169,163 @@ void main() {
     expect(firstDelta.dot!.counter, 1);
   });
 
+  test(
+    'G-Set unions additions idempotently and retains incremental deltas',
+    () {
+      final alice = GSet('alice', crdtId: 'labels');
+      final bob = GSet('bob', crdtId: 'labels');
+      final first = alice.addAll([
+        'red',
+        {
+          'name': 'blue',
+          'shade': [2, 4],
+        },
+      ]);
+      final second = alice.add('red');
+      final nestedDuplicate = alice.add({
+        'shade': [2, 4],
+        'name': 'blue',
+      });
+      final third = bob.addAll(['green', 'red']);
+      final decoded = [first, second, third]
+          .map(
+            (change) =>
+                DeltaCodec.decode(
+                      DeltaCodec.encode(Delta([change])),
+                    ).changes.single
+                    as GSetDelta,
+          )
+          .toList();
+
+      final orders = [
+        decoded,
+        [decoded[2], decoded[0], decoded[1]],
+        [decoded[1], decoded[2], decoded[0]],
+      ];
+      final states = <GSet>[];
+      for (final order in orders) {
+        final state = GSet('receiver', crdtId: 'labels');
+        for (final change in order) {
+          state.applyDelta(change);
+          state.applyDelta(change);
+        }
+        expect(state.value.length, 3);
+        expect(state.value.contains('red'), isTrue);
+        expect(state.value.contains('green'), isTrue);
+        expect(
+          state.value.contains({
+            'name': 'blue',
+            'shade': [2, 4],
+          }),
+          isTrue,
+        );
+        states.add(state);
+      }
+      expect(states[0].toJson(), states[1].toJson());
+      expect(states[1].toJson(), states[2].toJson());
+      expect(first.elements, [
+        'red',
+        {
+          'name': 'blue',
+          'shade': [2, 4],
+        },
+      ]);
+      expect(nestedDuplicate.elements, [
+        {
+          'name': 'blue',
+          'shade': [2, 4],
+        },
+      ]);
+      expect(alice.value.length, 2);
+      expect(
+        alice.value.contains({
+          'shade': [2, 4],
+          'name': 'blue',
+        }),
+        isTrue,
+      );
+      expect(alice.exportChanges(), hasLength(1));
+      expect(
+        () => states[0].value.add('write-through'),
+        throwsUnsupportedError,
+      );
+      expect(second.elements, ['red']);
+
+      final conflicting = GSetDelta(
+        id: first.id,
+        replicaId: first.replicaId,
+        crdtId: first.crdtId,
+        elements: ['different'],
+        dot: first.dot,
+      );
+      expect(() => alice.applyDelta(conflicting), throwsFormatException);
+    },
+  );
+
+  test('G-Set state join is associative, commutative, and idempotent', () {
+    final a = GSet('a', crdtId: 'tags')..addAll(['x', 'shared']);
+    final b = GSet('b', crdtId: 'tags')..addAll(['y', 'shared']);
+    final c = GSet('c', crdtId: 'tags')..addAll(['z']);
+
+    GSet copy(GSet source) => GSet.fromJson(source.toJson());
+    GSet join(GSet first, GSet second) => copy(first)..mergeState(second);
+
+    final ab = join(a, b);
+    final ba = join(b, a);
+    expect(ab.value, ba.value);
+    expect(
+      ab.exportChanges().map((change) => change.id).toSet(),
+      ba.exportChanges().map((change) => change.id).toSet(),
+    );
+    final aa = join(a, a);
+    expect(aa.toJson(), a.toJson());
+    expect(join(ab, c).toJson(), join(a, join(b, c)).toJson());
+    expect(join(ab, c).value, containsAll(['x', 'shared', 'y', 'z']));
+  });
+
+  test('G-Set snapshot join preserves local sequence after duplicate adds', () {
+    final original = GSet('device', crdtId: 'tags')..add('known');
+    final restored = GSet.fromJson(original.toJson());
+    restored.add('known');
+    final target = GSet.fromJson(original.toJson())..mergeState(restored);
+
+    expect(target.add('next').dot.counter, 3);
+  });
+
+  test(
+    'Replica routes G-Set through delta codec, export, and snapshot restore',
+    () {
+      final source = Replica('source');
+      final first = source.addAllGSet('labels', ['one', 'two']);
+      final repeated = source.addGSet('labels', 'one');
+      final delta = DeltaCodec.decode(DeltaCodec.encode(source.export()));
+      final remote = Replica('remote')..apply(delta);
+
+      expect(delta.changes, contains(first));
+      expect(delta.changes, isNot(contains(repeated)));
+      expect(repeated.elements, ['one']);
+      expect(remote.gSetValue('labels').length, 2);
+      expect(remote.gSetValue('labels'), containsAll(['one', 'two']));
+      expect(source.toSnapshotJson()['version'], 4);
+      final setSnapshot =
+          ((source.toSnapshotJson()['gSets'] as Map)['labels'] as Map);
+      expect(setSnapshot['changes'], hasLength(1));
+
+      final restored = Replica.fromSnapshotJson(source.toSnapshotJson());
+      expect(restored.gSetValue('labels'), containsAll(['one', 'two']));
+      final next = restored.addGSet('labels', 'three');
+      expect(next.dot.counter, 3);
+
+      final conflicting = Replica('other')..setDelta('shared-address', true);
+      final gSetDelta = Replica('gset-source').addGSet('shared-address', 'x');
+      expect(
+        () => conflicting.apply(Delta([gSetDelta])),
+        throwsFormatException,
+      );
+      expect(conflicting.state.values, {'shared-address': true});
+    },
+  );
+
   test('PN-Counter converges across increment and decrement deltas', () {
     final first = PnCounter('first', crdtId: 'shared-balance');
     final second = PnCounter('second', crdtId: 'shared-balance');
@@ -168,6 +341,23 @@ void main() {
     expect(left.value, 3);
     expect(left.positive, right.positive);
     expect(left.negative, right.negative);
+  });
+
+  test('G-Set snapshot reconciliation matches exchanged deltas', () {
+    final first = Replica('first')..addAllGSet('tags', ['a', 'shared']);
+    final second = Replica('second')..addAllGSet('tags', ['b', 'shared']);
+    final exchanged = Replica('receiver')
+      ..apply(Delta([...first.export().changes, ...second.export().changes]));
+    final reconciled = Replica('receiver')
+      ..mergeSnapshotJson(first.toSnapshotJson())
+      ..mergeSnapshotJson(second.toSnapshotJson());
+
+    expect(exchanged.gSetValue('tags'), containsAll(['a', 'b', 'shared']));
+    expect(reconciled.gSetValue('tags'), exchanged.gSetValue('tags'));
+    expect(
+      reconciled.export().changes.map((change) => change.id).toSet(),
+      exchanged.export().changes.map((change) => change.id).toSet(),
+    );
   });
 
   test('PN-Counter rejects malformed delta without partial component join', () {
@@ -521,6 +711,13 @@ void main() {
       expect(restored.incrementGCounter('items').dot!.counter, 2);
       expect(restored.incrementPnCounter('balance').dot!.counter, 2);
       expect(restored.setDelta('legacy', false).id, 'snapshot-source:delta:4');
+      final versionThree = Map<String, Object?>.of(source.toSnapshotJson())
+        ..remove('gSets')
+        ..['version'] = 3;
+      expect(
+        Replica.fromSnapshotJson(versionThree).gSetValue('labels'),
+        isEmpty,
+      );
       expect(
         () => Replica.fromSnapshotJson({'version': 99}),
         throwsFormatException,
@@ -613,7 +810,7 @@ void main() {
     });
 
     expect(replica.state.values, {'title': 'value'});
-    expect(replica.toSnapshotJson()['version'], 3);
+    expect(replica.toSnapshotJson()['version'], 4);
     final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
     expect(
       replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),

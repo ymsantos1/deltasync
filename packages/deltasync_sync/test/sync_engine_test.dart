@@ -171,11 +171,25 @@ void main() {
         left.setDelta('title', 'from left'),
         left.incrementGCounter('items', 2),
         left.decrementPnCounter('balance', 3),
+        left.addAllGSet('tags', ['from-left', 'shared']),
         left.removeDelta('obsolete'),
         right.setDelta('title', 'from right'),
         right.incrementGCounter('items', 4),
         right.incrementPnCounter('balance', 8),
+        right.addAllGSet('tags', ['from-right', 'shared']),
       ]);
+      expect(
+        (await leftStorage.pending('left'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.gSet),
+        hasLength(1),
+      );
+      expect(
+        (await rightStorage.pending('right'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.gSet),
+        hasLength(1),
+      );
       final results = await Future.wait([left.push(), right.push()]);
 
       expect(
@@ -196,6 +210,10 @@ void main() {
         expect(engine.replica.state.values['title'], isNotNull);
         expect(engine.replica.gCounterValue('items'), 6);
         expect(engine.replica.pnCounterValue('balance'), 5);
+        expect(
+          engine.replica.gSetValue('tags'),
+          containsAll(['from-left', 'from-right', 'shared']),
+        );
         expect(engine.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       }
 
@@ -214,9 +232,23 @@ void main() {
       expect(restoredLeft.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       expect(restoredLeft.replica.gCounterValue('items'), 6);
       expect(restoredLeft.replica.pnCounterValue('balance'), 5);
+      expect(
+        restoredLeft.replica.gSetValue('tags'),
+        containsAll(['from-left', 'from-right', 'shared']),
+      );
       expect(restoredLeft.replica.state.values['title'], 'from right');
       final restoredSnapshot = restoredLeft.replica.toSnapshotJson();
       expect(restoredSnapshot['deltaSequence'], leftSnapshot['deltaSequence']);
+      final oldGSet = leftSnapshot['gSets'] as Map<String, Object?>;
+      final restoredGSet = restoredSnapshot['gSets'] as Map<String, Object?>;
+      expect(
+        (restoredGSet['tags'] as Map<String, Object?>)['sequence'],
+        (oldGSet['tags'] as Map<String, Object?>)['sequence'],
+      );
+      expect(
+        (await restoredLeft.addGSet('tags', 'after-restart')).dot.counter,
+        2,
+      );
       final expectedGCounter =
           leftSnapshot['gCounters'] as Map<String, Object?>;
       final restoredGCounter =
@@ -599,7 +631,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 3);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 4);
       await engine.dispose();
     },
   );

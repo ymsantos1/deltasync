@@ -33,7 +33,7 @@ pré-condições de entrega com mecanismo que as assegure.
 
 ## R-06a — G-Set
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -42,11 +42,16 @@ Objetivo: conjunto com adições e união de estados.
 
 Critérios:
 
-- [ ] União e adições repetidas preservam valor.
-- [ ] Delta permite troca incremental de elementos adicionados.
-- [ ] Critérios e validação comuns dos tipos satisfeitos.
+- [x] União e adições repetidas preservam valor.
+- [x] Delta permite troca incremental de elementos adicionados.
+- [x] Critérios e validação comuns dos tipos satisfeitos.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência: `GSet` cobre join associativo, comutativo e idempotente, duplicação,
+reordenação, JSON estrutural, deltas incrementais e snapshot. `Replica` integra
+codec, roteamento, merge, export e snapshot v4; `SyncEngine` grava G-Set na outbox.
+Testes cobrem duas engines com `MemoryStorage`, restauração, API da facade e leitura
+de snapshots v3 sem G-Set. Detalhes e comandos em
+[TRACEABILITY](TRACEABILITY.md#execução-r-06a--2026-10-04).
 
 <a id="r-06b"></a>
 
@@ -163,5 +168,5 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## Gate da fase
 
-R-06a a R-06e e R-07a concluídas com evidências por tipo. Três tipos atuais são
-baseline implementada, não prova de que integração completa já existe.
+R-06a a R-06e e R-07a concluídas com evidências por tipo. Tipos integrados
+anteriormente são baseline implementada, não prova de que integração completa já existe.

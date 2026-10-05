@@ -1,5 +1,6 @@
 import 'delta_change.dart';
 import 'g_counter.dart';
+import 'g_set.dart';
 import 'lww_delta.dart';
 import 'operation.dart';
 import 'pn_counter.dart';
@@ -93,6 +94,7 @@ DeltaChange _decodeChange(
       value,
       allowLegacyIdentity: allowLegacyCounterIdentity,
     ),
+    CrdtKind.gSet => GSetDelta.fromJson(value),
   };
 }
 
