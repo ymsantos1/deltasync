@@ -75,7 +75,7 @@ Evidência de conclusão: [execução VAL-02](TRACEABILITY.md#execucao-val-02-20
 
 ## VAL-03 — Relatório e rastreabilidade finais
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: VAL-01, VAL-02, R-07d, R-08c
 
@@ -84,21 +84,21 @@ Objetivo: ligar requisitos a código, testes, comandos e resultados finais.
 
 Critérios:
 
-- [ ] Cada requisito MUST tem implementação e evidência adequada.
-- [ ] Unidade, integração, recuperação real e demonstração identificadas separadamente.
-- [ ] Topologia, semântica de ACK, retenção de metadados e limites documentados.
-- [ ] Não alegar ganhos de desempenho ou correção universal sem evidência.
+- [x] Cada requisito MUST tem implementação e evidência adequada.
+- [x] Unidade, integração, recuperação real e demonstração identificadas separadamente.
+- [x] Topologia, semântica de ACK, retenção de metadados e limites documentados.
+- [x] Não alegar ganhos de desempenho ou correção universal sem evidência.
 
 Validação: conferir matriz contra arquivos e resultados de VAL-01/VAL-02,
 R-07d e R-08c; lacunas mantêm requisito incompleto.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [execução VAL-03](TRACEABILITY.md#execucao-val-03-2026-10-06).
 
 <a id="val-04"></a>
 
 ## VAL-04 — Alinhar texto acadêmico
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08c, VAL-02
 
@@ -108,36 +108,36 @@ Objetivo: alinhar texto/diagrama acadêmicos com entrega efetiva.
 
 Critérios:
 
-- [ ] Quatro subpacotes/facade e storage abstrato com adaptador SQLite/sqflite de
+- [x] Quatro subpacotes/facade e storage abstrato com adaptador SQLite/sqflite de
   referência descritos, com escolha de backend pelo consumidor conforme o
   [escopo de storage](README.md#storage-e-adaptadores).
-- [ ] Correspondência da API real com métodos conceituais do PDF documentada.
-- [ ] Contratos consolidados de core, estado, storage e mensagem terem diagrama
+- [x] Correspondência da API real com métodos conceituais do PDF documentada.
+- [x] Contratos consolidados de core, estado, storage e mensagem terem diagrama
   curto e exemplos que expliquem mutação, delta, join, commit e restauração.
-- [ ] Guia de integração/manutenção apontar arquivos e testes para alterar um
+- [x] Guia de integração/manutenção apontar arquivos e testes para alterar um
   comportamento de CRDT ou implementar adaptador de storage, incluindo invariantes
   e compatibilidade. Explicar implementação direta de `ReplicaStorage` e execução
   da suíte compartilhada, com commit atômico por transação ou mecanismo equivalente;
   exemplos podem usar adaptadores existentes, sem exigir outro backend persistente.
   Usar uma alteração real das tarefas como percurso documentado
   para contribuidores/forks; evitar criar extensão sem uso para demonstrar facilidade.
-- [ ] Quando Compass for demonstrado, relatar consumo da API e adaptações feitas
+- [x] Quando Compass for demonstrado, relatar consumo da API e adaptações feitas
   no app sem inferir mudanças necessárias na biblioteca; separar essa evidência
   dos resultados gerais de CRDTs, manutenção e durabilidade.
-- [ ] Oito tipos e distinção de extensões futuras preservados.
-- [ ] Demonstração e limitações refletem resultados obtidos.
+- [x] Oito tipos e distinção de extensões futuras preservados.
+- [x] Demonstração e limitações refletem resultados obtidos.
 
 Validação: revisão textual e correspondência com implementação final.
 Somente PDF de referência disponível hoje: preparação da lista de alterações é
 possível; edição final depende da fonte editável, sem sobrescrever o PDF.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-2026-10-06).
 
 <a id="val-05"></a>
 
 ## VAL-05 — Gate final do TCC
 
-Status: planejada
+Status: em validação
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04
 
@@ -146,14 +146,14 @@ Objetivo: verificar conclusão do recorte acadêmico, sem ampliar escopo.
 
 Critérios:
 
-- [ ] Oito tipos integrados e propriedades/deltas validados.
-- [ ] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados.
-- [ ] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
-- [ ] Transporte abstrato e formatos compatíveis/versionados verificados.
-- [ ] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
+- [x] Oito tipos integrados e propriedades/deltas validados.
+- [x] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados.
+- [x] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
+- [x] Transporte abstrato e formatos compatíveis/versionados verificados.
+- [x] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
   públicos terem responsabilidade demonstrável, sem quota de classes removidas.
 - [ ] Demonstração executada; matriz e texto acadêmico alinhados.
-- [ ] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
+- [x] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
   geral de integração/manutenção. Uso do Compass é exemplo adicional e não requisito
   da biblioteca; execução isolada não comprova funcionalidade ou usabilidade geral.
 - [ ] Requisitos MUST concluídos; limitações explícitas.
@@ -162,7 +162,9 @@ Validação: revisar evidências de todas as tarefas MUST e executar conjunto fi
 de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
 da baseline ou da revisão de 2026-10-03, isoladamente, não conclui TCC.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência da revisão: [execução VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-06).
+Gate incompleto: falta alinhar o relatório acadêmico final com a implementação;
+OPEN-05 registra ausência da fonte editável. Critérios 6 e 8 permanecem abertos.
 
 <a id="val-06"></a>
 

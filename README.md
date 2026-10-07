@@ -4,7 +4,8 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Pacotes
 
-- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, 2P-Set, MV-Register, estado de réplicas e deltas.
+- `deltasync_core`: LWW-Register, MV-Register, G-Counter, PN-Counter, G-Set,
+  2P-Set, OR-Set, OR-Map, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
@@ -239,6 +240,57 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam
   nos pacotes core e transport.
+
+### Percurso de integração e manutenção
+
+O PDF usa nomes conceituais para operações que hoje pertencem a contratos
+distintos. Esta tabela orienta a leitura sem criar aliases na API:
+
+| Conceito no PDF | API atual | Responsabilidade |
+|---|---|---|
+| `query()` | `value` do CRDT ou consulta da aplicação sobre `Replica` | Leitura de valor; a regra de negócio e o mapeamento de modelos ficam no consumidor. |
+| `merge(other)` | `mergeState(other)` | Join de estado entre instâncias compatíveis do mesmo CRDT. |
+| `generateDelta()` | Métodos de mutação, como `setDelta()` ou `addOrSet()` | A mutação local produz deltas; `SyncEngine` com storage também os registra na outbox. |
+| `applyDelta(delta)` | `applyDelta()` no CRDT; `Replica.apply(Delta)` ou `SyncEngine.applyRemote(Delta)` | Aplicação de mudança; no engine, commit remoto antes de adoção. |
+| `toJson()` | `DeltaCodec.encode()` para delta; `Replica.toSnapshotJson()` para estado | Codificações diferentes para mudança e snapshot; não intercambiáveis. |
+| `fromJson(...)` | `DeltaCodec.decode()` ou `Replica.fromSnapshotJson()` | Decodificação validada de delta ou restauração de estado, conforme o formato. |
+
+Fluxo de uma edição offline com storage: a aplicação chama a API de mutação;
+`SyncEngine` prepara estado candidato e delta, `ReplicaStorage.commit` grava
+snapshot e outbox atomicamente, e só então o engine adota o estado. No recebimento,
+decodifica-se o envelope/delta, aplica-se o join e `commitRemote` grava o snapshot;
+na abertura seguinte, `start()` restaura o snapshot antes das operações.
+O delta contém mudanças tipadas; `DeltaEnvelope` acrescenta versão e endereços de
+sender/recipient para transporte, sem assumir protocolo de rede.
+
+```mermaid
+flowchart LR
+  A[App: mutação] --> B[Core: delta + estado candidato]
+  B --> C[Storage: commit atômico snapshot + outbox]
+  C --> D[Sync: envia delta em envelope]
+  D --> E[Peer: aplica delta e faz join]
+  E --> F[Storage remoto: commitRemote]
+  F --> G[Restore: snapshot antes do uso]
+```
+
+Um percurso real para contribuidores é a inclusão do OR-Set: comportamento e
+invariantes vivem em `packages/deltasync_core/lib/src/or_set.dart`; roteamento e
+snapshot em `replica.dart`; persistência da mutação em `packages/deltasync_sync/lib/src/sync_engine.dart`.
+Comece por `packages/deltasync_core/test/or_set_test.dart`, siga para
+`packages/deltasync_sync/test/sync_engine_test.dart` e para os testes do adaptador
+SQLite quando mudar persistência. Tags dot identificam adições; remoção só elimina
+tags observadas, e join une tags sem inferir entrega pelo contador máximo. Mudanças
+de formato devem preservar os codecs/versionamento e snapshots legados documentados
+em [compatibilidade](#compatibilidade-de-api-e-formatos).
+
+Para implementar outro storage, implemente diretamente o contrato público
+`ReplicaStorage` em `packages/deltasync_storage/lib/src/replica_storage.dart` e
+execute `replicaStorageContractTests` da fixture em
+`packages/deltasync_storage_testing`. `commit` deve tornar snapshot e novas entradas
+de outbox visíveis juntos, ou manter ambos anteriores quando falhar; `commitRemote`
+não apaga outbox local. O adaptador de referência e os testes de recuperação ficam
+em `packages/deltasync_storage_sqflite`. Core, sync e contrato não exigem banco ou
+Flutter; o consumidor escolhe e fornece o backend ao compor `SyncEngine.withStorage`.
 
 ### Storage
 

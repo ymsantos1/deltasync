@@ -1,6 +1,6 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-06. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
@@ -20,16 +20,18 @@ Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
 ## Situação e referência acadêmica
 
 A proposta é coerente como biblioteca modular de CRDTs com sincronização
-incremental e persistência local. A implementação atual ainda não satisfaz esse
-escopo: há cinco dos oito CRDTs integrados em Replica/SyncEngine. Adaptador SQLite
-existe; evidência de recuperação real cobre três tipos, não todos os oito. A
-baseline de 2026-10-03 reproduziu bloqueio entre engines, mutação antes da
-restauração com perda de snapshot e valores compartilhados que alteram estado sem
-delta; tarefas posteriores trataram esses defeitos. Os 55 testes daquela baseline
-não cobrem garantias atuais nem tipos recém-integrados.
+incremental e persistência local. Oito tipos estão integrados em Replica/SyncEngine;
+R-07a valida recuperação SQLite dos oito, R-07d/R-08c validam falhas e reconciliação,
+e VAL-02 demonstra dois tipos em consumidor após reinício de processo. Essa cobertura
+não valida plugins Flutter móveis nem topologias além do peer fixo. A baseline de
+2026-10-03 reproduziu bloqueio entre engines, mutação antes da restauração com perda
+de snapshot e valores compartilhados que alteram estado sem delta; tarefas posteriores
+trataram esses defeitos. Os 55 testes daquela baseline não cobrem garantias atuais.
 A viabilidade no prazo não pode ser confirmada sem datas, esforço
-disponível e estimativas das tarefas restantes; OR-Set, OR-Map, recuperação durável
-e integração são os maiores riscos.
+disponível e estimativas. Limites atuais: plugins Flutter móveis não executados,
+Compass e consumidores externos não inventariados, usabilidade não avaliada com
+participantes e alinhamento do texto acadêmico ainda pendente (RISK-09/10/17,
+OPEN-07).
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
 `ObjectCrdt`, política global add/update-wins para objetos, geração de código,
@@ -100,8 +102,8 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **VAL-03 — Relatório e rastreabilidade finais**; VAL-04 e VAL-06 também estão prontas.
+Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **VAL-05**.
+VAL-06 — Medir tamanho dos deltas (SHOULD) também está pronta.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -165,9 +167,9 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | concluída | MUST | R-07a, R-07d, R-08d |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | concluída | MUST | R-07a |
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
-| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | pronta | MUST | VAL-01, VAL-02, R-07d, R-08c |
-| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | pronta | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | planejada | MUST | VAL-03, VAL-04 |
+| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
+| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | em validação | MUST | VAL-03, VAL-04 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | pronta | SHOULD | VAL-02 |
 
 ## Escopo e prioridades
@@ -215,7 +217,8 @@ compatível configura esse adaptador, sem substituir a extensão por `ReplicaSto
 
 Consumidores podem implementar `ReplicaStorage` diretamente para outros bancos ou
 mecanismos de persistência, usando os modelos públicos e a suíte compartilhada de
-contrato. O guia previsto em VAL-04 deve explicar esse caminho e suas garantias.
+contrato. O guia em [integração e manutenção](../README.md#percurso-de-integração-e-manutenção)
+explica esse caminho, o commit atômico e as garantias.
 Entrega/manutenção de outros adaptadores persistentes oficiais, ORM genérico e
 framework de plugins de banco ficam fora deste recorte.
 

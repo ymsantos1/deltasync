@@ -1,6 +1,6 @@
 # Decisões — DeltaSync
 
-Revisão: 2026-10-04. “Adotada” é escolha de planejamento/arquitetura;
+Revisão: 2026-10-06. “Adotada” é escolha de planejamento/arquitetura;
 não significa implementação concluída.
 
 | ID | Estado | Decisão e fundamento |
@@ -9,7 +9,7 @@ não significa implementação concluída.
 | DEC-02 | adotada | Core/sync/storage abstrato/transport em Dart puro; SQLite/sqflite em adaptador de referência previsto no TCC e opcional ao consumidor. `ReplicaStorage` é o ponto de extensão para outros backends. `DatabaseFactory` de `sqflite_common` configura somente o adaptador SQLite de R-07c. |
 | DEC-03 | adotada | DeltaCrdt como contrato central; HLC para LWW nativo, dots/contexto causal para tipos observados. Legado exige correção ou migração explícita. |
 | DEC-04 | adotada | Roteamento e identidade únicos por CRDT; endereço estável acompanha mudança e dot local é namespaceado por `crdtId`. |
-| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; R-07c valida transação SQLite real. Recuperação do ciclo sync entre sessões e falhas segue pendente em R-07d. |
+| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; R-07c valida transação SQLite real; R-07d valida recuperação do ciclo sync entre sessões e falhas, e R-08c valida reconciliação offline integrada após reinício. |
 | DEC-06 | adotada | Preservar tombstones/contexto necessário; nenhum GC destrutivo por idade ou ACK de envio. |
 | DEC-07 | adotada | Demonstração mínima mantida como MUST pelo contexto atual; PDF a apresenta como possibilidade. Sem framework de objetos obrigatório. |
 | DEC-08 | adotada | build_runner, codegen, ObjectCrdt, migração genérica de modelos, sequências e anti-entropy arbitrário ficam WON'T-YET. |
@@ -35,7 +35,7 @@ não significa implementação concluída.
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-05 | VAL-04 | Fonte editável e atualização do texto acadêmico; PDF de referência permanece preservado. |
+| OPEN-05 | VAL-04, VAL-05 | Fonte editável e atualização do relatório acadêmico final; PDF de referência permanece preservado. |
 | OPEN-06 | VAL-05 | Prazo, esforço disponível e cronograma. Viabilidade no prazo ainda não confirmada. |
 | OPEN-07 | R-09a, R-09b | Consumidores externos não foram localizados/inventariados. R-09a/R-09b registram quebras 2.0.0, aliases temporários e migração de formatos; confirmar consumidores conhecidos antes de fechar documentação de integração. |
 
