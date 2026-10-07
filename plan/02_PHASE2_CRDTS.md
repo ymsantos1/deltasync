@@ -96,7 +96,7 @@ Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06c--2026-10-06).
 
 ## R-06d — OR-Set
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -105,18 +105,18 @@ Objetivo: remover adições observadas e permitir adição concorrente/readiçã
 
 Critérios:
 
-- [ ] Remoção elimina apenas tags observadas.
-- [ ] Adição concorrente vence remoção; readição é permitida.
-- [ ] Deltas antigos não ressuscitam tags removidas após restauração.
-- [ ] Critérios e validação comuns dos tipos satisfeitos.
+- [x] Remoção elimina apenas tags observadas.
+- [x] Adição concorrente vence remoção; readição é permitida.
+- [x] Deltas antigos não ressuscitam tags removidas após restauração.
+- [x] Critérios e validação comuns dos tipos satisfeitos.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06d--2026-10-06).
 
 <a id="r-06e"></a>
 
 ## R-06e — OR-Map
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-06d
 

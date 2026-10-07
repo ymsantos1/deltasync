@@ -11,6 +11,7 @@ export 'src/g_counter.dart';
 export 'src/g_set.dart';
 export 'src/two_p_set.dart';
 export 'src/mv_register.dart';
+export 'src/or_set.dart';
 export 'src/pn_counter.dart';
 export 'src/lww_register.dart';
 export 'src/lww_delta.dart';

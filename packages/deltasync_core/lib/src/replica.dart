@@ -13,6 +13,7 @@ import 'two_p_set.dart';
 import 'pn_counter.dart';
 import 'json_value.dart';
 import 'mv_register.dart';
+import 'or_set.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -28,6 +29,7 @@ class Replica {
   final Map<String, GSet> _gSets = {};
   final Map<String, TwoPSet> _twoPSets = {};
   final Map<String, MvRegister> _mvRegisters = {};
+  final Map<String, OrSet> _orSets = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -55,6 +57,10 @@ class Replica {
 
   Set<Object?> mvRegisterValue(String crdtId) =>
       _mvRegisters[crdtId]?.value ?? const <Object?>{};
+
+  /// Read-only value of addressed OR-Set, empty before its first change.
+  Set<Object?> orSetValue(String crdtId) =>
+      _orSets[crdtId]?.value ?? const <Object?>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -99,6 +105,9 @@ class Replica {
     for (final entry in _mvRegisters.entries) {
       copy._mvRegisters[entry.key] = MvRegister.fromJson(entry.value.toJson());
     }
+    for (final entry in _orSets.entries) {
+      copy._orSets[entry.key] = OrSet.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -122,6 +131,9 @@ class Replica {
     _mvRegisters
       ..clear()
       ..addAll(copiedCounters._mvRegisters);
+    _orSets
+      ..clear()
+      ..addAll(copiedCounters._orSets);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -130,7 +142,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 6,
+            'version': 7,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -156,6 +168,10 @@ class Replica {
               for (final entry in _mvRegisters.entries)
                 entry.key: entry.value.toJson(),
             },
+            'orSets': {
+              for (final entry in _orSets.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
@@ -167,7 +183,8 @@ class Replica {
         version != 3 &&
         version != 4 &&
         version != 5 &&
-        version != 6) {
+        version != 6 &&
+        version != 7) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -188,7 +205,13 @@ class Replica {
         (version == 1 || version == 2 || version == 3 || version == 4
             ? const <String, Object?>{}
             : null);
-    final mvRegisters = json['mvRegisters'] ?? const <String, Object?>{};
+    final encodedMvRegisters = json['mvRegisters'];
+    final mvRegisters =
+        encodedMvRegisters ??
+        (version == 6 || version == 7 ? null : const <String, Object?>{});
+    final encodedOrSets = json['orSets'];
+    final orSets =
+        encodedOrSets ?? (version == 7 ? null : const <String, Object?>{});
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -199,7 +222,8 @@ class Replica {
         pnCounters is! Map ||
         gSets is! Map ||
         twoPSets is! Map ||
-        mvRegisters is! Map) {
+        mvRegisters is! Map ||
+        orSets is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -293,6 +317,17 @@ class Replica {
       restored._state.bind(entry.key as String, CrdtKind.mvRegister);
       restored._mvRegisters[entry.key as String] = register;
     }
+    for (final entry in orSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid OR-Set snapshot');
+      }
+      final set = OrSet.fromJson(Map<String, Object?>.from(entry.value as Map));
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('OR-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.orSet);
+      restored._orSets[entry.key as String] = set;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -361,6 +396,15 @@ class Replica {
               )
               .applyDelta(change);
           break;
+        case OrSetDelta():
+          _state.bind(change.crdtId, CrdtKind.orSet);
+          _orSets
+              .putIfAbsent(
+                change.crdtId,
+                () => OrSet(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -377,6 +421,7 @@ class Replica {
     ..._gSets.values.expand((set) => set.exportChanges()),
     ..._twoPSets.values.expand((set) => set.exportChanges()),
     ..._mvRegisters.values.expand((register) => register.exportChanges()),
+    ..._orSets.values.expand((set) => set.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -421,6 +466,11 @@ class Replica {
     for (final entry in remote._mvRegisters.entries) {
       candidate._mvRegisters
           .putIfAbsent(entry.key, () => MvRegister(id, crdtId: entry.key))
+          .mergeState(entry.value);
+    }
+    for (final entry in remote._orSets.entries) {
+      candidate._orSets
+          .putIfAbsent(entry.key, () => OrSet(id, crdtId: entry.key))
           .mergeState(entry.value);
     }
     candidate
@@ -529,6 +579,28 @@ class Replica {
     return delta;
   }
 
+  /// Adds [element] to the addressed OR-Set with a unique observed-remove tag.
+  OrSetDelta addOrSet(String crdtId, Object? element) {
+    _validateJsonValue(element);
+    _ensureLocalAddress(crdtId, CrdtKind.orSet);
+    final set = _orSets.putIfAbsent(crdtId, () => OrSet(id, crdtId: crdtId));
+    _state.bind(crdtId, CrdtKind.orSet);
+    final delta = set.add(element);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
+  /// Removes only OR-Set add tags for [element] already observed locally.
+  OrSetDelta removeOrSet(String crdtId, Object? element) {
+    _validateJsonValue(element);
+    _ensureLocalAddress(crdtId, CrdtKind.orSet);
+    final set = _orSets.putIfAbsent(crdtId, () => OrSet(id, crdtId: crdtId));
+    _state.bind(crdtId, CrdtKind.orSet);
+    final delta = set.remove(element);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
   LwwDelta<Object?> _recordDelta(
     String key,
     Object? value, {
@@ -604,6 +676,7 @@ class Replica {
       ..._gSets.values.expand((set) => set.exportChanges()),
       ..._twoPSets.values.expand((set) => set.exportChanges()),
       ..._mvRegisters.values.expand((register) => register.exportChanges()),
+      ..._orSets.values.expand((set) => set.exportChanges()),
     ];
     Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
@@ -624,6 +697,9 @@ class Replica {
     }
     for (final address in _mvRegisters.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.mvRegister);
+    }
+    for (final address in _orSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.orSet);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -765,6 +841,38 @@ class Replica {
           throw FormatException('Invalid MV-Register value');
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.mvRegister);
+      } else if (change is OrSetDelta) {
+        _validateMessageId(change.id, 'OR-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.orSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                ) ||
+            change.observedDots.any(
+              (dot) =>
+                  dot.replicaId.trim() != dot.replicaId ||
+                  dot.counter <= 0 ||
+                  dot.crdtId != change.crdtId,
+            )) {
+          throw FormatException('Invalid OR-Set delta identity or context');
+        }
+        if (change.action == OrSetAction.add) {
+          try {
+            _validateJsonValue(change.element);
+          } on ArgumentError {
+            throw FormatException('Invalid OR-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.orSet);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }

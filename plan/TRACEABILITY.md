@@ -1300,3 +1300,53 @@ mudou. Checker de plano e `git diff --check` executados após manutenção.
 
 Limitações: integração usa MemoryStorage; SQLite dos oito tipos será validado em
 R-07a. Review não independente.
+
+## Execução R-06d — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-06d era a próxima tarefa pronta após R-06c. Remoção usa tags dot
+explicitamente observadas, pois máximos de sequência não provam que eventos
+anteriores chegaram; tags e tombstones ficam no estado restaurável até eventual
+GC fora do escopo.
+
+Implementação: `or_set.dart` define ações com labels estáveis, delta tipado,
+adições por dot e remoções pelo conjunto exato de dots observados. `Replica`
+integra consulta, mutação, codec, join, export e snapshot v7 (leitura v1–v6);
+`SyncEngine` persiste as operações na outbox. README explica semântica, consumo,
+compatibilidade e responsabilidade de manutenção. Testes cobrem concorrência,
+readição, replay antigo após restore, join algébrico, duplicação/reordenação,
+reconciliação por deltas, dados inválidos, codec, facade, duas engines e restore
+lógico com MemoryStorage.
+
+Review: aprovado
+
+Achados: revisão separada do diff, incluindo arquivo novo, não encontrou defeito
+impeditivo; pré-validação core e sync confirmou joins, endereço e restauração.
+Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test`, `dart analyze`
+e `dart test` passaram em core, sync, storage, storage_sqflite, transport e raiz.
+Total: core 62, sync 37, storage 12, SQLite 13, transport 6, facade 6 testes;
+sem issues de análise, formatação sem alterações. SQLite executou os contratos e
+recuperação existentes, mas não cobre OR-Set; durabilidade desse tipo segue para
+R-07a. Dart SDK 3.13.0, Linux x64.
+
+Critérios: remoção guarda só dots observados e concorrência permanece visível;
+readição ganha tag nova; replay da adição removida não retorna após snapshot,
+restauração e fluxo SyncEngine. Testes comprovam join associativo, comutativo e
+idempotente, envio fora de ordem/duplicado e estado equivalente à reconciliação
+por deltas. Codec e label inválido, roteamento, snapshot, outbox e duas engines
+foram exercitados; MemoryStorage simula restore lógico, não queda de processo.
+
+Manutenção: critérios da R-06d marcados e índice/fase sincronizados. R-06e é a
+próxima pronta: R-06d concluída e tipos disponíveis para valores CRDT já prontos.
+RISK-07 atualizado; DECISIONS não mudou. Checker e `git diff --check` executados
+após manutenção.
+
+Limitações: eventos/tombstones crescem sem GC causal; SQLite não exercita OR-Set;
+review não independente.

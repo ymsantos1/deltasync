@@ -215,6 +215,14 @@ class SyncEngine {
   Future<MvRegisterDelta> writeMvRegister(String crdtId, Object? value) =>
       _commitLocal((candidate) => candidate.writeMvRegister(crdtId, value));
 
+  /// Adds an OR-Set value and commits its unique tag to the outbox.
+  Future<OrSetDelta> addOrSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addOrSet(crdtId, element));
+
+  /// Removes OR-Set tags observed by this replica and commits removal context.
+  Future<OrSetDelta> removeOrSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.removeOrSet(crdtId, element));
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {

@@ -63,4 +63,19 @@ void main() {
     second.apply(Delta([resolved]));
     expect(second.mvRegisterValue('title'), {'resolved'});
   });
+
+  test('facade exposes observed-remove OR-Set operations', () {
+    final first = Replica('first');
+    final second = Replica('second');
+    final oldTag = first.addOrSet('members', 'reader');
+    second.apply(Delta([oldTag]));
+    final removal = first.removeOrSet('members', 'reader');
+    final concurrentAdd = second.addOrSet('members', 'reader');
+
+    first.apply(Delta([removal, concurrentAdd]));
+    second.apply(Delta([removal]));
+    expect(first.orSetValue('members'), {'reader'});
+    expect(second.orSetValue('members'), {'reader'});
+    expect(removal.observedDots, [oldTag.dot]);
+  });
 }

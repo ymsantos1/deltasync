@@ -39,6 +39,12 @@ print(replica.mvRegisterValue('document/title')); // {'local', 'remote'}
 final resolved = replica.writeMvRegister('document/title', 'resolved');
 remote.apply(Delta([resolved]));
 print(remote.mvRegisterValue('document/title')); // {'resolved'}
+
+final roleTag = replica.addOrSet('document/roles', 'reader');
+remote.apply(Delta([roleTag]));
+final roleRemoval = replica.removeOrSet('document/roles', 'reader');
+remote.apply(Delta([roleRemoval]));
+print(remote.orSetValue('document/roles')); // {}
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo. Execute `dart run example/deltasync_example.dart` para um consumidor mínimo com duas engines conectadas; o link em memória só demonstra o contrato público e não é transporte de produção.
@@ -66,8 +72,8 @@ sequenceDiagram
 ```
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
-G-Set, 2P-Set e MV-Register; OR-Set e OR-Map ainda estão pendentes. SQLite real
-para os oito tipos será consolidado em R-07a.
+G-Set, 2P-Set, MV-Register e OR-Set; OR-Map ainda está pendente. SQLite real para
+os oito tipos será consolidado em R-07a.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -91,10 +97,10 @@ G-Set usa `Replica.addGSet/addAllGSet` ou métodos correspondentes de
 `SyncEngine`. Endereço estável identifica o campo; cada delta traz adições JSON
 com dot namespaced, e o join une eventos enquanto a consulta deduplica valores
 JSON estruturalmente iguais. Não há remoção. G-Set entrou no snapshot interno v4;
-leitores atuais aceitam snapshots v1–v5, e o formato atual é v6. Consumidores
-antigos não leem snapshot v6. O envelope externo `ReplicaSnapshot` continua v2.
+leitores atuais aceitam snapshots v1–v6, e o formato atual é v7. Consumidores
+antigos não leem snapshot v7. O envelope externo `ReplicaSnapshot` continua v2.
 `DeltaCodec` mantém v3; leitores antigos rejeitam os labels desconhecidos `g-set`
-e `2p-set`.
+`2p-set`, `mv-register` e `or-set`.
 
 2P-Set usa `Replica.addTwoPSet/addAllTwoPSet` e
 `Replica.removeTwoPSet/removeAllTwoPSet`, com métodos equivalentes em `SyncEngine`.
@@ -106,8 +112,14 @@ MV-Register usa `Replica.writeMvRegister` e `SyncEngine.writeMvRegister`. Cada
 delta guarda dot da escrita e conjunto exato de dots observados. Join une versões
 e remove somente dots cobertos pelo contexto de outra versão; assim, escritas
 concorrentes permanecem visíveis e delta atrasado não desfaz escrita causal. O
-contexto completo sobrevive no snapshot v6; snapshots v1–v5 continuam legíveis.
-Como não há GC causal no escopo, contexto cresce com histórico observado.
+contexto completo sobrevive no snapshot; sem GC causal, cresce com histórico.
+
+OR-Set usa `Replica.addOrSet/removeOrSet` e equivalentes de `SyncEngine`. Cada
+adição recebe tag dot exclusivo; remoção carrega exatamente tags já observadas.
+Join une adições e tombstones. Adição concorrente e readição recebem tags novas
+e sobrevivem; replay de adição removida permanece oculto após restore. Snapshot
+v7 mantém tags/tombstones e leitores atuais aceitam v1–v6. Sem GC no escopo,
+eventos de adição/remoção e tombstones continuam armazenados.
 
 ### Compatibilidade de API e formatos
 
@@ -201,6 +213,10 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   máximo. Join une versões e elimina as que foram observadas por outra versão.
   `Replica` roteia, exporta e restaura; `SyncEngine` persiste cada escrita na
   outbox. Testes cobrem concorrência, entrega atrasada, join, JSON e duas engines.
+- **OR-Set:** `or_set.dart` mantém adições por tag dot e remoções por conjunto de
+  tags observadas. Join une ambos, sem usar contador máximo como prova de entrega.
+  `Replica` roteia, exporta e restaura; `SyncEngine` comita adição/remoção na
+  outbox. Testes cobrem adição concorrente, readição, replay antigo e duas engines.
 - **Contrato/wire:** `delta_change.dart` define metadados comuns e labels estáveis;
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam

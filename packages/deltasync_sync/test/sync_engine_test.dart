@@ -95,6 +95,72 @@ void main() {
     await engine.dispose();
   });
 
+  test(
+    'OR-Set sync keeps concurrent tags and old tags removed after restore',
+    () async {
+      final leftStorage = MemoryStorage();
+      final rightStorage = MemoryStorage();
+      final leftLink = ConnectedPeerTransport(
+        localReplicaId: 'left-or',
+        peerReplicaId: 'right-or',
+      );
+      final rightLink = ConnectedPeerTransport(
+        localReplicaId: 'right-or',
+        peerReplicaId: 'left-or',
+      );
+      var left = SyncEngine.withStorage(
+        replica: Replica('left-or'),
+        storage: leftStorage,
+        transport: leftLink,
+      );
+      var right = SyncEngine.withStorage(
+        replica: Replica('right-or'),
+        storage: rightStorage,
+        transport: rightLink,
+      );
+      leftLink.receiver = right;
+      rightLink.receiver = left;
+      await Future.wait([left.start(), right.start()]);
+
+      final original = await left.addOrSet('members', 'reader');
+      await left.push();
+      final observedRemoval = await right.removeOrSet('members', 'reader');
+      final concurrentAdd = await left.addOrSet('members', 'reader');
+      expect(observedRemoval.observedDots, [original.dot]);
+      await left.push();
+      await right.push();
+      expect(left.replica.orSetValue('members'), {'reader'});
+      expect(right.replica.orSetValue('members'), {'reader'});
+
+      await right.removeOrSet('members', 'reader');
+      await right.push();
+      expect(left.replica.orSetValue('members'), isEmpty);
+      expect(right.replica.orSetValue('members'), isEmpty);
+
+      await left.addOrSet('members', 'reader');
+      await left.push();
+      expect(right.replica.orSetValue('members'), {'reader'});
+      await right.removeOrSet('members', 'reader');
+      await right.push();
+      expect(left.replica.orSetValue('members'), isEmpty);
+      expect(right.replica.orSetValue('members'), isEmpty);
+      await right.dispose();
+
+      right = SyncEngine.withStorage(
+        replica: Replica('right-or'),
+        storage: rightStorage,
+        transport: TestDeltaTransport(peerReplicaId: 'left-or'),
+      );
+      await right.start();
+      await right.applyRemote(Delta([original, concurrentAdd]));
+      expect(right.replica.orSetValue('members'), isEmpty);
+      await left.dispose();
+      await right.dispose();
+      await leftLink.close();
+      await rightLink.close();
+    },
+  );
+
   test('peer reconnect applies changes durably before partial ACK', () async {
     final senderStorage = MemoryStorage();
     final receiverStorage = MemoryStorage();
@@ -683,7 +749,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 6);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 7);
       await engine.dispose();
     },
   );
