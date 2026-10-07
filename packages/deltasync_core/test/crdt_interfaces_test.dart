@@ -188,6 +188,27 @@ void main() {
     expect(firstDelta.dot!.counter, 1);
   });
 
+  test('G-Counter state join is associative, commutative, and idempotent', () {
+    final first = GCounter('first', crdtId: 'shared-items')..increment(2);
+    final second = GCounter('second', crdtId: 'shared-items')..increment(3);
+    final third = GCounter('third', crdtId: 'shared-items')..increment(5);
+
+    GCounter merge(GCounter left, GCounter right) =>
+        GCounter('join', crdtId: 'shared-items')
+          ..mergeState(left)
+          ..mergeState(right);
+
+    final firstSecond = merge(first, second);
+    final secondFirst = merge(second, first);
+    final leftAssociated = merge(firstSecond, third);
+    final rightAssociated = merge(first, merge(second, third));
+
+    expect(firstSecond.toJson(), secondFirst.toJson());
+    final empty = GCounter('empty', crdtId: 'shared-items');
+    expect(merge(first, first).toJson(), merge(first, empty).toJson());
+    expect(leftAssociated.toJson(), rightAssociated.toJson());
+  });
+
   test(
     'G-Set unions additions idempotently and retains incremental deltas',
     () {
@@ -360,6 +381,30 @@ void main() {
     expect(left.value, 3);
     expect(left.positive, right.positive);
     expect(left.negative, right.negative);
+  });
+
+  test('PN-Counter state join is associative, commutative, and idempotent', () {
+    final first = PnCounter('first', crdtId: 'shared-balance')..increment(5);
+    final second = PnCounter('second', crdtId: 'shared-balance')..decrement(2);
+    final third = PnCounter('third', crdtId: 'shared-balance')
+      ..increment(3)
+      ..decrement(1);
+
+    PnCounter merge(PnCounter left, PnCounter right) =>
+        PnCounter('join', crdtId: 'shared-balance')
+          ..mergeState(left)
+          ..mergeState(right);
+
+    final firstSecond = merge(first, second);
+    final secondFirst = merge(second, first);
+    final leftAssociated = merge(firstSecond, third);
+    final rightAssociated = merge(first, merge(second, third));
+
+    expect(firstSecond.toJson(), secondFirst.toJson());
+    final empty = PnCounter('empty', crdtId: 'shared-balance');
+    expect(merge(first, first).toJson(), merge(first, empty).toJson());
+    expect(leftAssociated.toJson(), rightAssociated.toJson());
+    expect(leftAssociated.value, 5);
   });
 
   test('G-Set snapshot reconciliation matches exchanged deltas', () {
@@ -686,6 +731,50 @@ void main() {
     expect(left.value, 'second');
     expect(left.value, right.value);
     expect(left.toJson(), right.toJson());
+  });
+
+  test('LWW state join is associative, commutative, and idempotent', () {
+    const firstDelta = LwwDelta<String>(
+      key: 'title',
+      id: 'first:1',
+      replicaId: 'first',
+      timestamp: HlcTimestamp(10, 0),
+      value: 'first',
+    );
+    const secondDelta = LwwDelta<String>(
+      key: 'title',
+      id: 'second:1',
+      replicaId: 'second',
+      timestamp: HlcTimestamp(10, 0),
+      value: 'second',
+    );
+    const thirdDelta = LwwDelta<String>(
+      key: 'title',
+      id: 'third:1',
+      replicaId: 'third',
+      timestamp: HlcTimestamp(10, 0),
+      value: 'third',
+    );
+    final first = LwwRegister<String>()..applyDelta(firstDelta);
+    final second = LwwRegister<String>()..applyDelta(secondDelta);
+    final third = LwwRegister<String>()..applyDelta(thirdDelta);
+
+    LwwRegister<String> merge(
+      LwwRegister<String> left,
+      LwwRegister<String> right,
+    ) => LwwRegister<String>()
+      ..mergeState(left)
+      ..mergeState(right);
+
+    final firstSecond = merge(first, second);
+    final secondFirst = merge(second, first);
+    final leftAssociated = merge(firstSecond, third);
+    final rightAssociated = merge(first, merge(second, third));
+
+    expect(firstSecond.toJson(), secondFirst.toJson());
+    expect(merge(first, first).toJson(), first.toJson());
+    expect(leftAssociated.toJson(), rightAssociated.toJson());
+    expect(leftAssociated.value, 'third');
   });
 
   test('DeltaCrdt contract merges complete LWW state', () {

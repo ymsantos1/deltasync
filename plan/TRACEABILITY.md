@@ -1517,3 +1517,78 @@ manutenção.
 Limitações: SQLite via FFI/Linux, sem dispositivo Flutter; topologia continua
 limitada a peer fixo. Concorrência de múltiplas engines sobre mesma outbox SQLite
 compartilhada não foi testada. Review não independente.
+
+<a id="execucao-val-01-2026-10-06"></a>
+
+## Execução VAL-01 — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-07a estava concluída; VAL-01 e VAL-02 estavam prontas. VAL-01 foi
+selecionada por ordem do plano. Revisados os critérios, testes dos oito CRDTs,
+regressões e limites documentados em R-09a/R-09b/R-05/R-08d, além do guia Dart
+pertinente. Worktree estava limpo.
+
+Implementação: `packages/deltasync_core/test/crdt_interfaces_test.dart` agora
+verifica associatividade, comutatividade e idempotência do join de estado para
+LWW, G-Counter e PN-Counter em fixtures fixos de três réplicas. LWW usa timestamps
+iguais para exercer desempate determinístico; PN mistura incremento/decremento.
+Comparações de counters normalizam identidade local ao comparar estado replicado.
+Nenhuma API ou formato mudou.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente, não independente. A revisão detectou
+que `toJson()` de counters inclui identidade/sequência local, além do estado
+replicado. A idempotência foi corrigida para comparar joins normalizados sob a
+mesma identidade; diff revisto após correção, sem achados impeditivos.
+
+Achados: somente o problema de comparação de identidade/sequência local descrito
+acima; correção aplicada e re-revisada. Sem achados impeditivos restantes.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64. Para raiz e pacotes `deltasync_core`, `deltasync_sync`,
+`deltasync_storage`, `deltasync_storage_sqflite` e `deltasync_transport`,
+`dart format --output=none --set-exit-if-changed lib test`, `dart analyze` e
+`dart test` passaram; `git diff --check` passou antes da manutenção. Testes
+aprovados: raiz 7, core 72, sync 38, storage 12, SQLite FFI 14, transport 6
+(149 no total). Formatação sem alterações; análises sem issues. SQLite foi
+validado em Linux via FFI, sem dispositivo Flutter.
+
+Comandos: em cada diretório `.`, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`, executar
+`dart format --output=none --set-exit-if-changed lib test && dart analyze &&
+dart test`; `git diff --check`; após manutenção, `python3 scripts/check_plan.py`
+e `git diff --check`.
+
+Critérios: cobertura dos oito tipos vem dos testes unitários e de join em
+`crdt_interfaces_test.dart`, `two_p_set_test.dart`, `mv_register_test.dart`,
+`or_set_test.dart` e `or_map_test.dart`; codecs/snapshots dos tipos são verificados
+nesses testes e por `SQLite sync recovery restores all eight CRDTs and mixed
+outbox before SQLite peer delivery`. Concorrência, duplicação, reordenação e
+tombstones têm regressões em core/sync e na recuperação SQLite R-07d/R-08c.
+F-01 a F-06 têm regressões em R-08d/R-05 (push e commit), R-05 (restore/lifecycle),
+R-09b (isolamento e transação), R-09a/R-05 (validação local) e core
+(`PN-Counter rejects malformed delta without partial component join`). Outras
+inconsistências aplicáveis têm correção ou limite explícito nos registros R-09a,
+R-09b, R-05 e R-08d: endereço/tipo, relógio injetado, identidade conflitante,
+export após restore, APIs legadas, histórico sem benchmark e canal de erro remoto.
+As fixtures são determinísticas e enumeradas manualmente; não há RNG nem semente
+(N/A). Convergência exige igualdade do estado serializado/canônico após juntar o
+mesmo conjunto de estados; casos com remoção exigem tombstone preservado após
+replay/restauração. Limites de consumidores externos (OPEN-07), histórico sem
+benchmark e topologia de peer fixo permanecem documentados; não são alegados como
+garantias universais.
+
+Manutenção: todos critérios VAL-01 marcados; fase 5 permanece ativa; VAL-01
+concluída no índice/fase, tarefa ativa limpa e VAL-02 segue próxima pronta.
+DECISIONS/RISKS sem mudança. Checker do plano e `git diff --check` executados após
+manutenção.
+
+Limitações: review não independente; FFI/Linux não valida dispositivo Flutter.
+Fixtures algébricas são determinísticas e finitas, sem geração aleatória nem
+semente. Compatibilidade de consumidores externos desconhecidos continua OPEN-07.

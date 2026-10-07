@@ -11,7 +11,7 @@ Exclusões: codegen, ObjectCrdt obrigatório e otimização sem medida.
 
 ## VAL-01 — Propriedades e regressão completas
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07a
 
@@ -20,16 +20,16 @@ Objetivo: consolidar propriedades dos oito CRDTs e regressões das correções.
 
 Critérios:
 
-- [ ] Unidade, join algébrico, deltas, JSON/restauração cobrem oito tipos.
-- [ ] Casos de concorrência, duplicação/reordenação e tombstones cobertos.
-- [ ] Diagnósticos da baseline têm regressões ou limitação/compatibilidade explícita.
-- [ ] Achados F-01 a F-06 da análise e demais inconsistências aplicáveis terem
+- [x] Unidade, join algébrico, deltas, JSON/restauração cobrem oito tipos.
+- [x] Casos de concorrência, duplicação/reordenação e tombstones cobertos.
+- [x] Diagnósticos da baseline têm regressões ou limitação/compatibilidade explícita.
+- [x] Achados F-01 a F-06 da análise e demais inconsistências aplicáveis terem
   evidência de correção ou limite explícito nas tarefas R-09a/R-09b/R-05/R-08d.
-- [ ] Geração determinística informa sementes e condições de convergência.
+- [x] Geração determinística informa sementes e condições de convergência.
 
 Validação: suíte completa na raiz e todos os pacotes; evidência por requisito.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [execução VAL-01](TRACEABILITY.md#execucao-val-01-2026-10-06).
 
 <a id="val-02"></a>
 
