@@ -4,7 +4,7 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Pacotes
 
-- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, 2P-Set, estado de réplicas e deltas.
+- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, 2P-Set, MV-Register, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
@@ -29,6 +29,16 @@ print(remote.gSetValue('document/tags'));
 final removal = replica.removeTwoPSet('document/members', 'device-a');
 remote.apply(Delta([removal]));
 print(remote.twoPSetValue('document/members'));
+
+// MV-Register preserva escritas concorrentes até escrita observar ambas.
+final localWrite = replica.writeMvRegister('document/title', 'local');
+final concurrentWrite = remote.writeMvRegister('document/title', 'remote');
+replica.apply(Delta([concurrentWrite]));
+remote.apply(Delta([localWrite]));
+print(replica.mvRegisterValue('document/title')); // {'local', 'remote'}
+final resolved = replica.writeMvRegister('document/title', 'resolved');
+remote.apply(Delta([resolved]));
+print(remote.mvRegisterValue('document/title')); // {'resolved'}
 ```
 
 Cada adaptador de storage ou transporte pertence à aplicação consumidora. SQLite, HTTP e WebSocket não são dependências do núcleo. Execute `dart run example/deltasync_example.dart` para um consumidor mínimo com duas engines conectadas; o link em memória só demonstra o contrato público e não é transporte de produção.
@@ -56,8 +66,8 @@ sequenceDiagram
 ```
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
-G-Set e 2P-Set; demais tipos previstos e persistência SQLite dos oito tipos ainda
-não foram implementados.
+G-Set, 2P-Set e MV-Register; OR-Set e OR-Map ainda estão pendentes. SQLite real
+para os oito tipos será consolidado em R-07a.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -73,16 +83,16 @@ silenciosa entre instâncias. Deltas v2 carregam endereço e dot namespaced; cod
 continua lendo formato v1 e atribui endereço legado por tipo/réplica. Dados v1
 com IDs conflitantes não podem ser separados automaticamente e são rejeitados.
 Endereços iniciados por `legacy/` são reservados. G-Counter e PN-Counter carregam
-componentes cumulativos, então lacunas de dot não impedem merge; CRDTs futuros
-que dependam de eventos individuais precisam de contexto causal por endereço com
-lacunas explícitas ou entrega causal garantida.
+componentes cumulativos, então lacunas de dot não impedem merge. MV-Register e os
+tipos observados usam dots explícitos: um contador máximo não prova que dots
+anteriores chegaram.
 
 G-Set usa `Replica.addGSet/addAllGSet` ou métodos correspondentes de
 `SyncEngine`. Endereço estável identifica o campo; cada delta traz adições JSON
 com dot namespaced, e o join une eventos enquanto a consulta deduplica valores
 JSON estruturalmente iguais. Não há remoção. G-Set entrou no snapshot interno v4;
-formato atual é v5 e leitores atuais aceitam snapshots v1–v4 sem 2P-Set. Consumidores
-antigos não leem snapshot v5. O envelope externo `ReplicaSnapshot` continua v2.
+leitores atuais aceitam snapshots v1–v5, e o formato atual é v6. Consumidores
+antigos não leem snapshot v6. O envelope externo `ReplicaSnapshot` continua v2.
 `DeltaCodec` mantém v3; leitores antigos rejeitam os labels desconhecidos `g-set`
 e `2p-set`.
 
@@ -91,6 +101,13 @@ e `2p-set`.
 Adições e tombstones de remoção são conjuntos monotônicos unidos no merge; valor
 visível é adições menos remoções. Readição e delta antigo não ressuscitam valor
 removido. Não há operação para desfazer tombstone.
+
+MV-Register usa `Replica.writeMvRegister` e `SyncEngine.writeMvRegister`. Cada
+delta guarda dot da escrita e conjunto exato de dots observados. Join une versões
+e remove somente dots cobertos pelo contexto de outra versão; assim, escritas
+concorrentes permanecem visíveis e delta atrasado não desfaz escrita causal. O
+contexto completo sobrevive no snapshot v6; snapshots v1–v5 continuam legíveis.
+Como não há GC causal no escopo, contexto cresce com histórico observado.
 
 ### Compatibilidade de API e formatos
 
@@ -179,6 +196,11 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
 - **2P-Set:** `two_p_set.dart` mantém adições e tombstones monotônicos; valor é a
   diferença dos conjuntos. `Replica` roteia e versiona snapshot; `SyncEngine`
   comita operações na outbox. A semântica não permite readição após remoção.
+- **MV-Register:** `mv_register.dart` mantém dots observados, versões ativas e
+  contexto causal exato; contexto registra lacunas sem inferir entrega por contador
+  máximo. Join une versões e elimina as que foram observadas por outra versão.
+  `Replica` roteia, exporta e restaura; `SyncEngine` persiste cada escrita na
+  outbox. Testes cobrem concorrência, entrega atrasada, join, JSON e duas engines.
 - **Contrato/wire:** `delta_change.dart` define metadados comuns e labels estáveis;
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam

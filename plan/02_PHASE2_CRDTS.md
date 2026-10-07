@@ -76,7 +76,7 @@ Evidência de conclusão: ver [TRACEABILITY](TRACEABILITY.md#execução-r-06b--2
 
 ## R-06c — MV-Register
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08d
 
@@ -85,12 +85,12 @@ Objetivo: preservar versões concorrentes, removendo versões observadas dominad
 
 Critérios:
 
-- [ ] Escritas concorrentes permanecem visíveis.
-- [ ] Escrita posterior observada domina versões anteriores.
-- [ ] Contexto e dots sobrevivem à serialização; lacunas não ocultam versões.
-- [ ] Critérios e validação comuns dos tipos satisfeitos.
+- [x] Escritas concorrentes permanecem visíveis.
+- [x] Escrita posterior observada domina versões anteriores.
+- [x] Contexto e dots sobrevivem à serialização; lacunas não ocultam versões.
+- [x] Critérios e validação comuns dos tipos satisfeitos.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06c--2026-10-06).
 
 <a id="r-06d"></a>
 

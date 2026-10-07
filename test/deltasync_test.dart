@@ -49,4 +49,18 @@ void main() {
     second.apply(Delta([addition]));
     expect(second.twoPSetValue('members'), isEmpty);
   });
+
+  test('facade exposes causal MV-Register writes', () {
+    final first = Replica('first');
+    final second = Replica('second');
+    final concurrentA = first.writeMvRegister('title', 'A');
+    final concurrentB = second.writeMvRegister('title', 'B');
+    first.apply(Delta([concurrentB]));
+    second.apply(Delta([concurrentA]));
+
+    expect(first.mvRegisterValue('title'), {'A', 'B'});
+    final resolved = first.writeMvRegister('title', 'resolved');
+    second.apply(Delta([resolved]));
+    expect(second.mvRegisterValue('title'), {'resolved'});
+  });
 }

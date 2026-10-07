@@ -173,12 +173,14 @@ void main() {
         left.decrementPnCounter('balance', 3),
         left.addAllGSet('tags', ['from-left', 'shared']),
         left.addAllTwoPSet('membership', ['from-left', 'shared']),
+        left.writeMvRegister('profile', 'left'),
         left.removeDelta('obsolete'),
         right.setDelta('title', 'from right'),
         right.incrementGCounter('items', 4),
         right.incrementPnCounter('balance', 8),
         right.addAllGSet('tags', ['from-right', 'shared']),
         right.addAllTwoPSet('membership', ['from-right', 'shared']),
+        right.writeMvRegister('profile', 'right'),
       ]);
       expect(
         (await leftStorage.pending('left'))
@@ -226,6 +228,7 @@ void main() {
           engine.replica.twoPSetValue('membership'),
           containsAll(['from-left', 'from-right', 'shared']),
         );
+        expect(engine.replica.mvRegisterValue('profile'), {'left', 'right'});
         expect(engine.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       }
 
@@ -273,6 +276,10 @@ void main() {
         restoredLeft.replica.twoPSetValue('membership'),
         containsAll(['from-left', 'from-right']),
       );
+      expect(restoredLeft.replica.mvRegisterValue('profile'), {
+        'left',
+        'right',
+      });
       expect(
         (await restoredLeft.addTwoPSet('membership', 'shared')).dot.counter,
         3,
@@ -676,7 +683,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 5);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 6);
       await engine.dispose();
     },
   );

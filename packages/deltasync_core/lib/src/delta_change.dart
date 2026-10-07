@@ -19,7 +19,8 @@ enum CrdtKind {
   gCounter('g-counter'),
   pnCounter('pn-counter'),
   gSet('g-set'),
-  twoPSet('2p-set');
+  twoPSet('2p-set'),
+  mvRegister('mv-register');
 
   const CrdtKind(this.wireName);
 

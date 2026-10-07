@@ -12,6 +12,7 @@ import 'g_set.dart';
 import 'two_p_set.dart';
 import 'pn_counter.dart';
 import 'json_value.dart';
+import 'mv_register.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -26,6 +27,7 @@ class Replica {
   final Map<String, PnCounter> _pnCounters = {};
   final Map<String, GSet> _gSets = {};
   final Map<String, TwoPSet> _twoPSets = {};
+  final Map<String, MvRegister> _mvRegisters = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -50,6 +52,9 @@ class Replica {
   /// Read-only value of addressed 2P-Set, empty before its first addition.
   Set<Object?> twoPSetValue(String crdtId) =>
       _twoPSets[crdtId]?.value ?? const <Object?>{};
+
+  Set<Object?> mvRegisterValue(String crdtId) =>
+      _mvRegisters[crdtId]?.value ?? const <Object?>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -91,6 +96,9 @@ class Replica {
     for (final entry in _twoPSets.entries) {
       copy._twoPSets[entry.key] = TwoPSet.fromJson(entry.value.toJson());
     }
+    for (final entry in _mvRegisters.entries) {
+      copy._mvRegisters[entry.key] = MvRegister.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -111,6 +119,9 @@ class Replica {
     _twoPSets
       ..clear()
       ..addAll(copiedCounters._twoPSets);
+    _mvRegisters
+      ..clear()
+      ..addAll(copiedCounters._mvRegisters);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -119,7 +130,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 5,
+            'version': 6,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -141,6 +152,10 @@ class Replica {
               for (final entry in _twoPSets.entries)
                 entry.key: entry.value.toJson(),
             },
+            'mvRegisters': {
+              for (final entry in _mvRegisters.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
@@ -151,7 +166,8 @@ class Replica {
         version != 2 &&
         version != 3 &&
         version != 4 &&
-        version != 5) {
+        version != 5 &&
+        version != 6) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -172,6 +188,7 @@ class Replica {
         (version == 1 || version == 2 || version == 3 || version == 4
             ? const <String, Object?>{}
             : null);
+    final mvRegisters = json['mvRegisters'] ?? const <String, Object?>{};
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -181,7 +198,8 @@ class Replica {
         gCounters is! Map ||
         pnCounters is! Map ||
         gSets is! Map ||
-        twoPSets is! Map) {
+        twoPSets is! Map ||
+        mvRegisters is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -262,6 +280,19 @@ class Replica {
       restored._state.bind(entry.key as String, CrdtKind.twoPSet);
       restored._twoPSets[entry.key as String] = set;
     }
+    for (final entry in mvRegisters.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid MV-Register snapshot');
+      }
+      final register = MvRegister.fromJson(
+        Map<String, Object?>.from(entry.value as Map),
+      );
+      if (register.replicaId != replicaId || register.crdtId != entry.key) {
+        throw FormatException('MV-Register snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.mvRegister);
+      restored._mvRegisters[entry.key as String] = register;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -321,6 +352,15 @@ class Replica {
               )
               .applyDelta(change);
           break;
+        case MvRegisterDelta():
+          _state.bind(change.crdtId, CrdtKind.mvRegister);
+          _mvRegisters
+              .putIfAbsent(
+                change.crdtId,
+                () => MvRegister(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -336,6 +376,7 @@ class Replica {
     ..._pnCounters.values.expand((counter) => counter.exportChanges()),
     ..._gSets.values.expand((set) => set.exportChanges()),
     ..._twoPSets.values.expand((set) => set.exportChanges()),
+    ..._mvRegisters.values.expand((register) => register.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -376,6 +417,11 @@ class Replica {
         () => TwoPSet(id, crdtId: entry.key),
       );
       set.mergeState(entry.value);
+    }
+    for (final entry in remote._mvRegisters.entries) {
+      candidate._mvRegisters
+          .putIfAbsent(entry.key, () => MvRegister(id, crdtId: entry.key))
+          .mergeState(entry.value);
     }
     candidate
       .._clock = _clock.merge(remote._clock)
@@ -469,6 +515,20 @@ class Replica {
     return delta;
   }
 
+  /// Writes an addressed MV-Register value and returns its causal delta.
+  MvRegisterDelta writeMvRegister(String crdtId, Object? value) {
+    _validateJsonValue(value);
+    _ensureLocalAddress(crdtId, CrdtKind.mvRegister);
+    final register = _mvRegisters.putIfAbsent(
+      crdtId,
+      () => MvRegister(id, crdtId: crdtId),
+    );
+    _state.bind(crdtId, CrdtKind.mvRegister);
+    final delta = register.write(value);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
   LwwDelta<Object?> _recordDelta(
     String key,
     Object? value, {
@@ -543,6 +603,7 @@ class Replica {
       ),
       ..._gSets.values.expand((set) => set.exportChanges()),
       ..._twoPSets.values.expand((set) => set.exportChanges()),
+      ..._mvRegisters.values.expand((register) => register.exportChanges()),
     ];
     Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
@@ -560,6 +621,9 @@ class Replica {
     }
     for (final address in _twoPSets.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.twoPSet);
+    }
+    for (final address in _mvRegisters.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.mvRegister);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -672,6 +736,35 @@ class Replica {
           }
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.twoPSet);
+      } else if (change is MvRegisterDelta) {
+        _validateMessageId(change.id, 'MV-Register delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.mvRegister.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                ) ||
+            change.context.any(
+              (dot) => dot.crdtId != change.crdtId || dot.counter <= 0,
+            )) {
+          throw FormatException(
+            'Invalid MV-Register delta identity or context',
+          );
+        }
+        try {
+          _validateJsonValue(change.value);
+        } on ArgumentError {
+          throw FormatException('Invalid MV-Register value');
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.mvRegister);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }

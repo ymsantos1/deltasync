@@ -1243,3 +1243,60 @@ executados após manutenção.
 Limitações: tombstones são permanentes e crescem com valores removidos; GC fica
 fora do escopo. MemoryStorage não comprova queda/reabertura de processo. Review não
 independente.
+
+## Execução R-06c — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída e R-06c era próxima tarefa pronta. Critérios pedem
+concorrência visível, escrita posterior que domina apenas dots observados,
+contexto causal com lacunas, serialização e fluxo integrado por duas engines.
+Contrato não podia usar máximo de VectorClock como prova de entrega; conjunto de
+dots explícitos preserva exatamente o que a escrita observou.
+
+Implementação: `mv_register.dart` adiciona delta imutável com dot/contexto, valor
+JSON, join e snapshot local. `Replica` integra leitura, escrita, roteamento, merge,
+export e snapshot v6 (lê v1–v5); `DeltaCodec` usa label estável `mv-register`;
+`SyncEngine.writeMvRegister` grava cada alteração na outbox. `README.md` documenta
+semântica, exemplo público, compatibilidade e crescimento do contexto. Testes core,
+sync e facade cobrem concorrência, escrita observada, entrega atrasada, duplicação,
+join algébrico, reconciliação por deltas, JSON estrutural, invalidez, codec, snapshot,
+outbox, duas engines e restauração com MemoryStorage.
+
+Review: aprovado
+
+Achados: revisão do diff incluindo arquivo novo encontrou comparação de objetos JSON
+dependente da ordem de chaves, snapshot aceitando contexto causal de outro endereço,
+e endereço sendo vinculado antes de rejeitar valor local inválido. Corrigidos com
+canonicalização JSON, validação do snapshot e validação antes da mutação. Re-review
+do diff corrigido e adições de teste/documentação sem achados impeditivos. Review
+pelo próprio implementador em etapa distinta; não independente.
+
+Validação: aprovada
+
+Comandos: em `packages/deltasync_core`, `packages/deltasync_sync` e raiz,
+`dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+em `packages/deltasync_storage`, `packages/deltasync_storage_sqflite` e
+`packages/deltasync_transport`, `dart analyze && dart test`. Todos passaram em
+2026-10-06, Dart SDK 3.13.0, Linux x64. Tentativas iniciais apontaram formatação
+pendente e expectativa legada de snapshot v5; arquivo foi formatado, expectativa
+migrou para v6, e validações finais passaram. SQLite executou contrato/recuperação
+existentes, mas esses cenários não exercitam MV-Register; durabilidade MV segue para
+R-07a.
+
+Critérios: concorrência segue visível em ambas as engines; contexto de escrita
+posterior elimina dots anteriores observados e suprime chegada atrasada, sem inferir
+recebimento de dot ausente. Deltas e snapshot restauram dots/contexto. Testes verificam
+idempotência, comutatividade e associatividade do join, deltas duplicados/reordenados,
+reconciliação por deltas igual ao join e valores JSON estruturalmente iguais. A suíte
+sync exercita outbox e recuperação lógica em MemoryStorage; não comprova durabilidade
+entre processos. Sem GC causal no escopo, contexto completo cresce com dots conhecidos.
+
+Manutenção: critérios R-06c marcados, índice/fase sincronizados e tarefa ativa limpa;
+R-06d é próxima tarefa pronta. README atualizado; RISK-07 ajustado; DECISIONS não
+mudou. Checker de plano e `git diff --check` executados após manutenção.
+
+Limitações: integração usa MemoryStorage; SQLite dos oito tipos será validado em
+R-07a. Review não independente.

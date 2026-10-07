@@ -211,6 +211,10 @@ class SyncEngine {
   ) =>
       _commitLocal((candidate) => candidate.removeAllTwoPSet(crdtId, elements));
 
+  /// Writes an MV-Register version and commits its causal delta to the outbox.
+  Future<MvRegisterDelta> writeMvRegister(String crdtId, Object? value) =>
+      _commitLocal((candidate) => candidate.writeMvRegister(crdtId, value));
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {

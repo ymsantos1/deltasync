@@ -101,7 +101,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **2 — completar CRDTs e integração**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-06c — MV-Register**.
+Próxima tarefa pronta: **R-06d — OR-Set**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -153,7 +153,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | concluída | MUST | R-09b |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
-| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | pronta | MUST | R-08d |
+| [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | pronta | MUST | R-08d |
 | [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | planejada | MUST | R-06d |
 | [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |

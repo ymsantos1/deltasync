@@ -102,7 +102,7 @@ void main() {
     );
 
     final snapshot = source.toSnapshotJson();
-    expect(snapshot['version'], 5);
+    expect(snapshot['version'], 6);
     final restored = Replica.fromSnapshotJson(snapshot);
     expect(restored.twoPSetValue('members'), isEmpty);
     expect(restored.addTwoPSet('members', 'shared').dot.counter, 3);
