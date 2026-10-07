@@ -29,5 +29,8 @@ replica IDs, so do not run two independent replicas with one ID unless they
 intentionally share the same state and outbox.
 
 For desktop tests, `sqflite_common_ffi` supplies a real SQLite `DatabaseFactory`.
-The package's contract test runs against that backend; it does not claim that
-MemoryStorage proves durability.
+The package's contract and sync recovery tests run against real SQLite through
+FFI on Linux x64. Flutter applications pass the platform `sqflite` factory;
+Android/iOS plugin behavior is not exercised by these desktop tests. Other
+platforms can use any factory compatible with `sqflite_common` and supported by
+their runtime. `MemoryStorage` tests do not prove durability.

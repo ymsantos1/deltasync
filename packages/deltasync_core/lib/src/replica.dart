@@ -8,8 +8,12 @@ import 'hlc.dart';
 import 'lww_delta.dart';
 import 'identity.dart';
 import 'g_counter.dart';
+import 'g_set.dart';
+import 'two_p_set.dart';
 import 'pn_counter.dart';
 import 'json_value.dart';
+import 'mv_register.dart';
+import 'or_set.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -22,6 +26,10 @@ class Replica {
   final ReplicaState _state = ReplicaState();
   final Map<String, GCounter> _gCounters = {};
   final Map<String, PnCounter> _pnCounters = {};
+  final Map<String, GSet> _gSets = {};
+  final Map<String, TwoPSet> _twoPSets = {};
+  final Map<String, MvRegister> _mvRegisters = {};
+  final Map<String, OrSet> _orSets = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -38,6 +46,21 @@ class Replica {
 
   /// Value of addressed PN-Counter, or zero before its first change.
   int pnCounterValue(String crdtId) => _pnCounters[crdtId]?.value ?? 0;
+
+  /// Read-only value of addressed G-Set, empty before its first addition.
+  Set<Object?> gSetValue(String crdtId) =>
+      _gSets[crdtId]?.value ?? const <Object?>{};
+
+  /// Read-only value of addressed 2P-Set, empty before its first addition.
+  Set<Object?> twoPSetValue(String crdtId) =>
+      _twoPSets[crdtId]?.value ?? const <Object?>{};
+
+  Set<Object?> mvRegisterValue(String crdtId) =>
+      _mvRegisters[crdtId]?.value ?? const <Object?>{};
+
+  /// Read-only value of addressed OR-Set, empty before its first change.
+  Set<Object?> orSetValue(String crdtId) =>
+      _orSets[crdtId]?.value ?? const <Object?>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -73,6 +96,18 @@ class Replica {
         sequence: json['sequence'] as int,
       );
     }
+    for (final entry in _gSets.entries) {
+      copy._gSets[entry.key] = GSet.fromJson(entry.value.toJson());
+    }
+    for (final entry in _twoPSets.entries) {
+      copy._twoPSets[entry.key] = TwoPSet.fromJson(entry.value.toJson());
+    }
+    for (final entry in _mvRegisters.entries) {
+      copy._mvRegisters[entry.key] = MvRegister.fromJson(entry.value.toJson());
+    }
+    for (final entry in _orSets.entries) {
+      copy._orSets[entry.key] = OrSet.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -87,6 +122,18 @@ class Replica {
     _pnCounters
       ..clear()
       ..addAll(copiedCounters._pnCounters);
+    _gSets
+      ..clear()
+      ..addAll(copiedCounters._gSets);
+    _twoPSets
+      ..clear()
+      ..addAll(copiedCounters._twoPSets);
+    _mvRegisters
+      ..clear()
+      ..addAll(copiedCounters._mvRegisters);
+    _orSets
+      ..clear()
+      ..addAll(copiedCounters._orSets);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -95,7 +142,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 3,
+            'version': 7,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -109,12 +156,35 @@ class Replica {
               for (final entry in _pnCounters.entries)
                 entry.key: entry.value.toJson(),
             },
+            'gSets': {
+              for (final entry in _gSets.entries)
+                entry.key: entry.value.toJson(),
+            },
+            'twoPSets': {
+              for (final entry in _twoPSets.entries)
+                entry.key: entry.value.toJson(),
+            },
+            'mvRegisters': {
+              for (final entry in _mvRegisters.entries)
+                entry.key: entry.value.toJson(),
+            },
+            'orSets': {
+              for (final entry in _orSets.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
   /// Reconstructs materialized state without replaying prior delta history.
   static Replica fromSnapshotJson(Map<String, Object?> json) {
-    if (json['version'] != 1 && json['version'] != 2 && json['version'] != 3) {
+    final version = json['version'];
+    if (version != 1 &&
+        version != 2 &&
+        version != 3 &&
+        version != 4 &&
+        version != 5 &&
+        version != 6 &&
+        version != 7) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -123,6 +193,25 @@ class Replica {
     final lww = json['lww'];
     final gCounters = json['gCounters'];
     final pnCounters = json['pnCounters'];
+    final encodedGSets = json['gSets'];
+    final gSets =
+        encodedGSets ??
+        (version == 1 || version == 2 || version == 3
+            ? const <String, Object?>{}
+            : null);
+    final encodedTwoPSets = json['twoPSets'];
+    final twoPSets =
+        encodedTwoPSets ??
+        (version == 1 || version == 2 || version == 3 || version == 4
+            ? const <String, Object?>{}
+            : null);
+    final encodedMvRegisters = json['mvRegisters'];
+    final mvRegisters =
+        encodedMvRegisters ??
+        (version == 6 || version == 7 ? null : const <String, Object?>{});
+    final encodedOrSets = json['orSets'];
+    final orSets =
+        encodedOrSets ?? (version == 7 ? null : const <String, Object?>{});
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -130,7 +219,11 @@ class Replica {
         hlc is! Map ||
         lww is! Map ||
         gCounters is! Map ||
-        pnCounters is! Map) {
+        pnCounters is! Map ||
+        gSets is! Map ||
+        twoPSets is! Map ||
+        mvRegisters is! Map ||
+        orSets is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -181,6 +274,60 @@ class Replica {
         sequence: _requiredSequence(encoded['sequence']),
       );
     }
+    for (final entry in gSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid G-Set snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['replicaId'] != replicaId || encoded['crdtId'] != entry.key) {
+        throw FormatException('G-Set snapshot identity mismatch');
+      }
+      final set = GSet.fromJson(encoded);
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('G-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.gSet);
+      restored._gSets[entry.key as String] = set;
+    }
+    for (final entry in twoPSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid 2P-Set snapshot');
+      }
+      final encoded = Map<String, Object?>.from(entry.value as Map);
+      if (encoded['replicaId'] != replicaId || encoded['crdtId'] != entry.key) {
+        throw FormatException('2P-Set snapshot identity mismatch');
+      }
+      final set = TwoPSet.fromJson(encoded);
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('2P-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.twoPSet);
+      restored._twoPSets[entry.key as String] = set;
+    }
+    for (final entry in mvRegisters.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid MV-Register snapshot');
+      }
+      final register = MvRegister.fromJson(
+        Map<String, Object?>.from(entry.value as Map),
+      );
+      if (register.replicaId != replicaId || register.crdtId != entry.key) {
+        throw FormatException('MV-Register snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.mvRegister);
+      restored._mvRegisters[entry.key as String] = register;
+    }
+    for (final entry in orSets.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid OR-Set snapshot');
+      }
+      final set = OrSet.fromJson(Map<String, Object?>.from(entry.value as Map));
+      if (set.replicaId != replicaId || set.crdtId != entry.key) {
+        throw FormatException('OR-Set snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.orSet);
+      restored._orSets[entry.key as String] = set;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -225,6 +372,39 @@ class Replica {
               )
               .applyDelta(change);
           break;
+        case GSetDelta():
+          _state.bind(change.crdtId, CrdtKind.gSet);
+          _gSets
+              .putIfAbsent(change.crdtId, () => GSet(id, crdtId: change.crdtId))
+              .applyDelta(change);
+          break;
+        case TwoPSetDelta():
+          _state.bind(change.crdtId, CrdtKind.twoPSet);
+          _twoPSets
+              .putIfAbsent(
+                change.crdtId,
+                () => TwoPSet(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
+        case MvRegisterDelta():
+          _state.bind(change.crdtId, CrdtKind.mvRegister);
+          _mvRegisters
+              .putIfAbsent(
+                change.crdtId,
+                () => MvRegister(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
+        case OrSetDelta():
+          _state.bind(change.crdtId, CrdtKind.orSet);
+          _orSets
+              .putIfAbsent(
+                change.crdtId,
+                () => OrSet(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -238,6 +418,10 @@ class Replica {
     ..._lwwWinners,
     ..._gCounters.values.expand((counter) => counter.exportChanges()),
     ..._pnCounters.values.expand((counter) => counter.exportChanges()),
+    ..._gSets.values.expand((set) => set.exportChanges()),
+    ..._twoPSets.values.expand((set) => set.exportChanges()),
+    ..._mvRegisters.values.expand((register) => register.exportChanges()),
+    ..._orSets.values.expand((set) => set.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -264,6 +448,30 @@ class Replica {
         () => PnCounter(id, crdtId: entry.key),
       );
       counter.mergeState(entry.value);
+    }
+    for (final entry in remote._gSets.entries) {
+      final set = candidate._gSets.putIfAbsent(
+        entry.key,
+        () => GSet(id, crdtId: entry.key),
+      );
+      set.mergeState(entry.value);
+    }
+    for (final entry in remote._twoPSets.entries) {
+      final set = candidate._twoPSets.putIfAbsent(
+        entry.key,
+        () => TwoPSet(id, crdtId: entry.key),
+      );
+      set.mergeState(entry.value);
+    }
+    for (final entry in remote._mvRegisters.entries) {
+      candidate._mvRegisters
+          .putIfAbsent(entry.key, () => MvRegister(id, crdtId: entry.key))
+          .mergeState(entry.value);
+    }
+    for (final entry in remote._orSets.entries) {
+      candidate._orSets
+          .putIfAbsent(entry.key, () => OrSet(id, crdtId: entry.key))
+          .mergeState(entry.value);
     }
     candidate
       .._clock = _clock.merge(remote._clock)
@@ -308,6 +516,90 @@ class Replica {
   /// Decrements addressed PN-Counter and returns its transportable delta.
   PnCounterDelta decrementPnCounter(String crdtId, [int amount = 1]) =>
       _changePnCounter(crdtId, (counter) => counter.decrement(amount), amount);
+
+  /// Adds [element] to the addressed G-Set and returns its delta.
+  GSetDelta addGSet(String crdtId, Object? element) =>
+      addAllGSet(crdtId, [element]);
+
+  /// Adds [elements] to the addressed G-Set as one delta.
+  GSetDelta addAllGSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.gSet);
+    final existing = _gSets[crdtId];
+    if (existing != null) return existing.addAll(elements);
+    final created = GSet(id, crdtId: crdtId);
+    final delta = created.addAll(elements);
+    _state.bind(crdtId, CrdtKind.gSet);
+    _gSets[crdtId] = created;
+    return delta;
+  }
+
+  /// Adds [element] to the addressed 2P-Set and returns its delta.
+  TwoPSetDelta addTwoPSet(String crdtId, Object? element) =>
+      addAllTwoPSet(crdtId, [element]);
+
+  /// Adds [elements] to the addressed 2P-Set in one delta.
+  TwoPSetDelta addAllTwoPSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.twoPSet);
+    final existing = _twoPSets[crdtId];
+    if (existing != null) return existing.addAll(elements);
+    final created = TwoPSet(id, crdtId: crdtId);
+    final delta = created.addAll(elements);
+    _state.bind(crdtId, CrdtKind.twoPSet);
+    _twoPSets[crdtId] = created;
+    return delta;
+  }
+
+  /// Permanently removes [element] from the addressed 2P-Set.
+  TwoPSetDelta removeTwoPSet(String crdtId, Object? element) =>
+      removeAllTwoPSet(crdtId, [element]);
+
+  /// Permanently removes [elements] from the addressed 2P-Set in one delta.
+  TwoPSetDelta removeAllTwoPSet(String crdtId, Iterable<Object?> elements) {
+    _ensureLocalAddress(crdtId, CrdtKind.twoPSet);
+    final existing = _twoPSets[crdtId];
+    if (existing != null) return existing.removeAll(elements);
+    final created = TwoPSet(id, crdtId: crdtId);
+    final delta = created.removeAll(elements);
+    _state.bind(crdtId, CrdtKind.twoPSet);
+    _twoPSets[crdtId] = created;
+    return delta;
+  }
+
+  /// Writes an addressed MV-Register value and returns its causal delta.
+  MvRegisterDelta writeMvRegister(String crdtId, Object? value) {
+    _validateJsonValue(value);
+    _ensureLocalAddress(crdtId, CrdtKind.mvRegister);
+    final register = _mvRegisters.putIfAbsent(
+      crdtId,
+      () => MvRegister(id, crdtId: crdtId),
+    );
+    _state.bind(crdtId, CrdtKind.mvRegister);
+    final delta = register.write(value);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
+  /// Adds [element] to the addressed OR-Set with a unique observed-remove tag.
+  OrSetDelta addOrSet(String crdtId, Object? element) {
+    _validateJsonValue(element);
+    _ensureLocalAddress(crdtId, CrdtKind.orSet);
+    final set = _orSets.putIfAbsent(crdtId, () => OrSet(id, crdtId: crdtId));
+    _state.bind(crdtId, CrdtKind.orSet);
+    final delta = set.add(element);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
+  /// Removes only OR-Set add tags for [element] already observed locally.
+  OrSetDelta removeOrSet(String crdtId, Object? element) {
+    _validateJsonValue(element);
+    _ensureLocalAddress(crdtId, CrdtKind.orSet);
+    final set = _orSets.putIfAbsent(crdtId, () => OrSet(id, crdtId: crdtId));
+    _state.bind(crdtId, CrdtKind.orSet);
+    final delta = set.remove(element);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
 
   LwwDelta<Object?> _recordDelta(
     String key,
@@ -381,6 +673,10 @@ class Replica {
       ..._pnCounters.values.expand(
         (counter) => counter.exportChanges(requireSequences: false),
       ),
+      ..._gSets.values.expand((set) => set.exportChanges()),
+      ..._twoPSets.values.expand((set) => set.exportChanges()),
+      ..._mvRegisters.values.expand((register) => register.exportChanges()),
+      ..._orSets.values.expand((set) => set.exportChanges()),
     ];
     Delta(retained).merge(delta);
     final addressTypes = <String, CrdtKind>{};
@@ -392,6 +688,18 @@ class Replica {
     }
     for (final address in _pnCounters.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.pnCounter);
+    }
+    for (final address in _gSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.gSet);
+    }
+    for (final address in _twoPSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.twoPSet);
+    }
+    for (final address in _mvRegisters.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.mvRegister);
+    }
+    for (final address in _orSets.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.orSet);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -452,6 +760,119 @@ class Replica {
           throw FormatException('Invalid PN-Counter delta');
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.pnCounter);
+      } else if (change is GSetDelta) {
+        _validateMessageId(change.id, 'G-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.gSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                )) {
+          throw FormatException('Invalid G-Set delta identity');
+        }
+        for (final element in change.elements) {
+          try {
+            _validateJsonValue(element);
+          } on ArgumentError {
+            throw FormatException('Invalid G-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.gSet);
+      } else if (change is TwoPSetDelta) {
+        _validateMessageId(change.id, '2P-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.twoPSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                )) {
+          throw FormatException('Invalid 2P-Set delta identity');
+        }
+        for (final element in change.elements) {
+          try {
+            _validateJsonValue(element);
+          } on ArgumentError {
+            throw FormatException('Invalid 2P-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.twoPSet);
+      } else if (change is MvRegisterDelta) {
+        _validateMessageId(change.id, 'MV-Register delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.mvRegister.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                ) ||
+            change.context.any(
+              (dot) => dot.crdtId != change.crdtId || dot.counter <= 0,
+            )) {
+          throw FormatException(
+            'Invalid MV-Register delta identity or context',
+          );
+        }
+        try {
+          _validateJsonValue(change.value);
+        } on ArgumentError {
+          throw FormatException('Invalid MV-Register value');
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.mvRegister);
+      } else if (change is OrSetDelta) {
+        _validateMessageId(change.id, 'OR-Set delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.orSet.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                ) ||
+            change.observedDots.any(
+              (dot) =>
+                  dot.replicaId.trim() != dot.replicaId ||
+                  dot.counter <= 0 ||
+                  dot.crdtId != change.crdtId,
+            )) {
+          throw FormatException('Invalid OR-Set delta identity or context');
+        }
+        if (change.action == OrSetAction.add) {
+          try {
+            _validateJsonValue(change.element);
+          } on ArgumentError {
+            throw FormatException('Invalid OR-Set element');
+          }
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.orSet);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }
@@ -514,12 +935,8 @@ class Replica {
     if (crdtId.startsWith('legacy/')) {
       throw ArgumentError.value(crdtId, 'crdtId', 'legacy/ is reserved');
     }
-    final otherType =
-        _state.kindAt(crdtId) == CrdtKind.lww ||
-        (type == CrdtKind.gCounter
-            ? _pnCounters.containsKey(crdtId)
-            : _gCounters.containsKey(crdtId));
-    if (otherType) {
+    final currentType = _state.kindAt(crdtId);
+    if (currentType != null && currentType != type) {
       throw StateError('CRDT address is already bound to another type');
     }
   }

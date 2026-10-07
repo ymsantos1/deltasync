@@ -179,6 +179,67 @@ Manutenção: R-03 concluída no índice/fase; R-02 passou a pronta pois depend�
 
 Limitações: `PendingDeltaStore` legado pode reenviar sem limite; várias entregas por peer não têm ACK isolado; `MemoryStorage` continua volátil.
 
+## Execução R-07d — 2026-10-04
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-07c e R-08d concluídas; R-07d era a próxima tarefa pronta. Critérios
+cobrem restauração durável, continuidade de identidade/HLC/dots/sequências,
+tombstones, interrupções, atomicidade, backup/plataforma e fluxo das duas engines
+com os três tipos atuais.
+
+Implementação: adicionada integração SQLite real em
+`packages/deltasync_storage_sqflite/test/sync_recovery_test.dart`, usando a API
+pública SyncEngine + ReplicaStorage em dois bancos SQLite. Testes recriam engine
+após fechar banco, repetem entrega antes/depois do ACK, injetam falhas SQL em
+commit local/remoto e verificam envio simultâneo, retry e edição com ACK retido
+para LWW/G-Counter/PN-Counter. Não foi necessária alteração na implementação de
+produção: commit e recuperação existentes satisfizeram as regressões. README do
+adaptador registra plataforma executada e limite Android/iOS; dependências sync e
+transport adicionadas somente para testes do pacote.
+
+Review: aprovado
+
+Achados: um import redundante e uma asserção insuficiente no harness foram
+removidos/corrigidos antes da revisão final. Conferidos fluxo real de close/open,
+ACK por IDs, atomicidade SQLite, IDs/dots após restore e os três tipos nas duas
+réplicas. Também conferido close/open do receptor após commit remoto sem ACK.
+Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Comandos: na raiz, `dart format packages/deltasync_storage_sqflite/test/sync_recovery_test.dart`;
+para `.`, `packages/deltasync_core`, `packages/deltasync_sync`,
+`packages/deltasync_storage`, `packages/deltasync_storage_testing`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`,
+`dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+`git diff --check`. Após remover import redundante, raiz e adaptador foram
+reanalisados e retestados; após ampliar o cenário integrado para três tipos,
+adaptador foi novamente formatado, analisado e testado; cenário de ACK perdido
+repetido com fechamento/reabertura do receptor. Resultado final: formato
+aprovado; análise sem issues; 112 testes aprovados no workspace (raiz 2, core 39,
+sync 35, storage 12, storage_testing 6, SQLite FFI 12, transport 6); testes finais
+repetidos na raiz e no adaptador passaram; diff sem erros. Plataforma real:
+Linux 7.2.7-zen1-1-zen x86_64, SQLite nativo por sqflite_common_ffi.
+
+Critérios: reabertura compara identidade, estado, tombstone, pendências, HLC
+não regressivo e continuação de dots; retry após falha pré-entrega e após commit
+remoto sem ACK confirma recuperação e deduplicação. Trigger de outbox prova que
+falha local mantém estado persistido/ativo sem outbox parcial; trigger remoto
+prova que falha de commit não confirma outbox do remetente. Duas engines SQLite
+trocam LWW e counters nas duas direções, retêm uma edição durante ACK pendente e
+convergem após retry; a aplicação remota também sobrevive a close/open antes do
+retry idempotente. README documenta fechamento/cópia com WAL/SHM ou backup API,
+preservação de IDs e plataforma coberta/não coberta.
+
+Manutenção: critérios R-07d marcados; fase 3 concluída; índice sincronizado e fase
+2 ativa com tarefa ativa vazia e R-06a como próxima pronta. DECISIONS/RISKS não
+mudaram. Checker e `git diff --check` executados após esta manutenção.
+
+Limitações: integração usa transporte em processo para controlar pontos de falha;
+ambos os storages usam SQLite real, mas plugins Flutter Android/iOS não foram
+executados. Backup é instruído, não testado como operação do consumidor.
+
 ## Execução R-02 — 2026-09-28
 
 Status final: concluída
@@ -1080,3 +1141,212 @@ frontmatter consistentes. Alteração apenas documental; testes Dart não execut
 Limitações: revisão não independente. A extensibilidade do contrato não constitui
 evidência de durabilidade de backends adicionais; esses adaptadores devem validar
 as garantias do contrato em sua própria implementação.
+
+## Execução R-06a — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída e R-06a era a tarefa pronta; escopo comum exige join,
+codec, roteamento, snapshot, outbox e fluxo entre engines.
+
+Implementação: `packages/deltasync_core/lib/src/g_set.dart` adiciona G-Set para
+valores JSON com igualdade estrutural, delta incremental namespaced por endereço,
+join e export determinísticos. `Replica` integra mutação, merge, isolamento,
+roteamento e snapshot interno v4; mantém leitura de versões 1–3. `SyncEngine`
+persiste a mutação na outbox. Facade e README mostram consumo; formato e locais de
+manutenção estão documentados. IDs de counter permanecem iguais via delegação ao
+novo helper compartilhado.
+
+Review: aprovado
+
+Achados: review em etapa separada verificou identidade/dot, validação antes de
+vincular endereço, compatibilidade de snapshots, sequência em reconciliação e
+cópias dos valores. Foi adicionada validação explícita de dot positivo no
+roteamento de Replica. Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Dart format sem alterações; `dart analyze` sem issues e testes
+aprovados em `packages/deltasync_core` (45), `packages/deltasync_sync` (35) e raiz
+(3), total 83. Cobertura inclui join associativo/comutativo/idempotente,
+duplicação/reordenação, JSON estrutural, round-trip DeltaCodec, restauração de
+snapshot, reconciliação via snapshots versus deltas, outbox e duas engines com
+MemoryStorage. Snapshot v3 sem G-Set continua legível.
+
+Comandos: em cada diretório `.`, `packages/deltasync_core` e
+`packages/deltasync_sync`, `dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`; formatação dos caminhos alterados com `dart format`; `git diff --check`. Checker de plano executado após manutenção.
+
+Critérios: os três itens de R-06a marcados. União e duplicação preservam valor;
+deltas trocam incrementos; o fluxo cobre API pública, codec, roteamento, snapshot,
+outbox e restauração. Snapshot interno v4 é escrito; consumidores antigos não
+leem esse formato, enquanto o leitor atual aceita snapshots v1–v3. DeltaCodec
+mantém versão 3 e decodificadores antigos rejeitam o label desconhecido `g-set`.
+
+Manutenção: R-06a concluída na fase e no índice; R-06b é a próxima pronta. Fase 2
+continua ativa. Nenhuma decisão ou risco alterado. `python3 scripts/check_plan.py`
+e `git diff --check` executados após manutenção.
+
+Limitações: MemoryStorage demonstra fluxo e reabertura lógica, não durabilidade
+após queda de processo; persistência SQLite dos oito tipos pertence a R-07a. Review
+não independente.
+
+## Execução R-06b — 2026-10-04
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída, R-06a concluída; R-06b era próxima pronta. Critérios
+exigem remoção definitiva contra readição/mensagem antiga, tombstones em merge e
+restore, e fluxo comum de integração por tipo.
+
+Implementação: `two_p_set.dart` modela duas operações monotônicas, `add` e
+`remove`, em deltas com `CrdtKind.twoPSet`, label estável `2p-set`, endereço e dot.
+Join une adições e tombstones; consulta retorna diferença estrutural dos conjuntos.
+`json_set_value.dart` centraliza normalização, igualdade JSON e consulta somente
+leitura compartilhadas por G-Set/2P-Set. `Replica` integra estado, codec, merge,
+export, API e snapshot v5, lendo versões 1–4; `SyncEngine` comita as quatro
+operações públicas na outbox. Facade, README e pontos de manutenção atualizados.
+
+Review: aprovado
+
+Achados: revisão do diff incluindo arquivos novos. Identificada consulta `contains`
+com valor JSON inválido que podia escapar validação; view passou a validar/copiar
+antes de canonicalizar, com regressão. Re-review da correção sem achados pendentes.
+Review pelo próprio implementador em etapa distinta; não independente.
+
+Validação: aprovada
+
+Após correção, core passou formatação, análise sem issues e 52 testes; sync passou
+análise e 35 testes; facade passou análise e 4 testes. Formatação sem alterações
+em todos os pacotes. Total: 91 testes aprovados. Cobertos join associativo,
+comutativo e idempotente, remoção antes da adição, readição e mensagem antiga,
+codec, igualdade JSON, snapshots v4/v5, reconciliação de snapshot versus deltas,
+conflito de endereço, outbox, duas engines e restore lógico com MemoryStorage.
+
+Comandos: no core, sync e raiz, `dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`; `dart format` nos caminhos alterados; `python3 scripts/check_plan.py`; `git diff --check`. Dart SDK 3.13.0, Linux x64. Validação Dart executada com acesso ao SDK após cache Flutter ser somente leitura no sandbox.
+
+Critérios: elemento removido não retorna após readição ou delta antigo, demonstrado
+na classe, Replica e duas engines. Tombstones sobrevivem a join, codec, snapshot e
+restart lógico. Critérios comuns cobertos por API que retorna deltas, consulta,
+join algébrico, serialização/restauração, duplicação/reordenação, reconciliação,
+roteamento, snapshot, outbox e fluxo entre engines. Snapshot v5 é incompatível
+com leitores antigos; leitor atual continua lendo v1–v4. SQLite real dos tipos
+integrados continua pertencendo a R-07a.
+
+Manutenção: R-06b e critérios marcados; índice/fase sincronizados; fase 2 ativa;
+R-06c é próxima recomendada. DECISIONS/RISKS sem alterações. Checker e diff check
+executados após manutenção.
+
+Limitações: tombstones são permanentes e crescem com valores removidos; GC fica
+fora do escopo. MemoryStorage não comprova queda/reabertura de processo. Review não
+independente.
+
+## Execução R-06c — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-08d concluída e R-06c era próxima tarefa pronta. Critérios pedem
+concorrência visível, escrita posterior que domina apenas dots observados,
+contexto causal com lacunas, serialização e fluxo integrado por duas engines.
+Contrato não podia usar máximo de VectorClock como prova de entrega; conjunto de
+dots explícitos preserva exatamente o que a escrita observou.
+
+Implementação: `mv_register.dart` adiciona delta imutável com dot/contexto, valor
+JSON, join e snapshot local. `Replica` integra leitura, escrita, roteamento, merge,
+export e snapshot v6 (lê v1–v5); `DeltaCodec` usa label estável `mv-register`;
+`SyncEngine.writeMvRegister` grava cada alteração na outbox. `README.md` documenta
+semântica, exemplo público, compatibilidade e crescimento do contexto. Testes core,
+sync e facade cobrem concorrência, escrita observada, entrega atrasada, duplicação,
+join algébrico, reconciliação por deltas, JSON estrutural, invalidez, codec, snapshot,
+outbox, duas engines e restauração com MemoryStorage.
+
+Review: aprovado
+
+Achados: revisão do diff incluindo arquivo novo encontrou comparação de objetos JSON
+dependente da ordem de chaves, snapshot aceitando contexto causal de outro endereço,
+e endereço sendo vinculado antes de rejeitar valor local inválido. Corrigidos com
+canonicalização JSON, validação do snapshot e validação antes da mutação. Re-review
+do diff corrigido e adições de teste/documentação sem achados impeditivos. Review
+pelo próprio implementador em etapa distinta; não independente.
+
+Validação: aprovada
+
+Comandos: em `packages/deltasync_core`, `packages/deltasync_sync` e raiz,
+`dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test`;
+em `packages/deltasync_storage`, `packages/deltasync_storage_sqflite` e
+`packages/deltasync_transport`, `dart analyze && dart test`. Todos passaram em
+2026-10-06, Dart SDK 3.13.0, Linux x64. Tentativas iniciais apontaram formatação
+pendente e expectativa legada de snapshot v5; arquivo foi formatado, expectativa
+migrou para v6, e validações finais passaram. SQLite executou contrato/recuperação
+existentes, mas esses cenários não exercitam MV-Register; durabilidade MV segue para
+R-07a.
+
+Critérios: concorrência segue visível em ambas as engines; contexto de escrita
+posterior elimina dots anteriores observados e suprime chegada atrasada, sem inferir
+recebimento de dot ausente. Deltas e snapshot restauram dots/contexto. Testes verificam
+idempotência, comutatividade e associatividade do join, deltas duplicados/reordenados,
+reconciliação por deltas igual ao join e valores JSON estruturalmente iguais. A suíte
+sync exercita outbox e recuperação lógica em MemoryStorage; não comprova durabilidade
+entre processos. Sem GC causal no escopo, contexto completo cresce com dots conhecidos.
+
+Manutenção: critérios R-06c marcados, índice/fase sincronizados e tarefa ativa limpa;
+R-06d é próxima tarefa pronta. README atualizado; RISK-07 ajustado; DECISIONS não
+mudou. Checker de plano e `git diff --check` executados após manutenção.
+
+Limitações: integração usa MemoryStorage; SQLite dos oito tipos será validado em
+R-07a. Review não independente.
+
+## Execução R-06d — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-06d era a próxima tarefa pronta após R-06c. Remoção usa tags dot
+explicitamente observadas, pois máximos de sequência não provam que eventos
+anteriores chegaram; tags e tombstones ficam no estado restaurável até eventual
+GC fora do escopo.
+
+Implementação: `or_set.dart` define ações com labels estáveis, delta tipado,
+adições por dot e remoções pelo conjunto exato de dots observados. `Replica`
+integra consulta, mutação, codec, join, export e snapshot v7 (leitura v1–v6);
+`SyncEngine` persiste as operações na outbox. README explica semântica, consumo,
+compatibilidade e responsabilidade de manutenção. Testes cobrem concorrência,
+readição, replay antigo após restore, join algébrico, duplicação/reordenação,
+reconciliação por deltas, dados inválidos, codec, facade, duas engines e restore
+lógico com MemoryStorage.
+
+Review: aprovado
+
+Achados: revisão separada do diff, incluindo arquivo novo, não encontrou defeito
+impeditivo; pré-validação core e sync confirmou joins, endereço e restauração.
+Review pelo próprio implementador; não independente.
+
+Validação: aprovada
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test`, `dart analyze`
+e `dart test` passaram em core, sync, storage, storage_sqflite, transport e raiz.
+Total: core 62, sync 37, storage 12, SQLite 13, transport 6, facade 6 testes;
+sem issues de análise, formatação sem alterações. SQLite executou os contratos e
+recuperação existentes, mas não cobre OR-Set; durabilidade desse tipo segue para
+R-07a. Dart SDK 3.13.0, Linux x64.
+
+Critérios: remoção guarda só dots observados e concorrência permanece visível;
+readição ganha tag nova; replay da adição removida não retorna após snapshot,
+restauração e fluxo SyncEngine. Testes comprovam join associativo, comutativo e
+idempotente, envio fora de ordem/duplicado e estado equivalente à reconciliação
+por deltas. Codec e label inválido, roteamento, snapshot, outbox e duas engines
+foram exercitados; MemoryStorage simula restore lógico, não queda de processo.
+
+Manutenção: critérios da R-06d marcados e índice/fase sincronizados. R-06e é a
+próxima pronta: R-06d concluída e tipos disponíveis para valores CRDT já prontos.
+RISK-07 atualizado; DECISIONS não mudou. Checker e `git diff --check` executados
+após manutenção.
+
+Limitações: eventos/tombstones crescem sem GC causal; SQLite não exercita OR-Set;
+review não independente.

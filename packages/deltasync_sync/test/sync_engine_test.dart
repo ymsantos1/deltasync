@@ -95,6 +95,72 @@ void main() {
     await engine.dispose();
   });
 
+  test(
+    'OR-Set sync keeps concurrent tags and old tags removed after restore',
+    () async {
+      final leftStorage = MemoryStorage();
+      final rightStorage = MemoryStorage();
+      final leftLink = ConnectedPeerTransport(
+        localReplicaId: 'left-or',
+        peerReplicaId: 'right-or',
+      );
+      final rightLink = ConnectedPeerTransport(
+        localReplicaId: 'right-or',
+        peerReplicaId: 'left-or',
+      );
+      var left = SyncEngine.withStorage(
+        replica: Replica('left-or'),
+        storage: leftStorage,
+        transport: leftLink,
+      );
+      var right = SyncEngine.withStorage(
+        replica: Replica('right-or'),
+        storage: rightStorage,
+        transport: rightLink,
+      );
+      leftLink.receiver = right;
+      rightLink.receiver = left;
+      await Future.wait([left.start(), right.start()]);
+
+      final original = await left.addOrSet('members', 'reader');
+      await left.push();
+      final observedRemoval = await right.removeOrSet('members', 'reader');
+      final concurrentAdd = await left.addOrSet('members', 'reader');
+      expect(observedRemoval.observedDots, [original.dot]);
+      await left.push();
+      await right.push();
+      expect(left.replica.orSetValue('members'), {'reader'});
+      expect(right.replica.orSetValue('members'), {'reader'});
+
+      await right.removeOrSet('members', 'reader');
+      await right.push();
+      expect(left.replica.orSetValue('members'), isEmpty);
+      expect(right.replica.orSetValue('members'), isEmpty);
+
+      await left.addOrSet('members', 'reader');
+      await left.push();
+      expect(right.replica.orSetValue('members'), {'reader'});
+      await right.removeOrSet('members', 'reader');
+      await right.push();
+      expect(left.replica.orSetValue('members'), isEmpty);
+      expect(right.replica.orSetValue('members'), isEmpty);
+      await right.dispose();
+
+      right = SyncEngine.withStorage(
+        replica: Replica('right-or'),
+        storage: rightStorage,
+        transport: TestDeltaTransport(peerReplicaId: 'left-or'),
+      );
+      await right.start();
+      await right.applyRemote(Delta([original, concurrentAdd]));
+      expect(right.replica.orSetValue('members'), isEmpty);
+      await left.dispose();
+      await right.dispose();
+      await leftLink.close();
+      await rightLink.close();
+    },
+  );
+
   test('peer reconnect applies changes durably before partial ACK', () async {
     final senderStorage = MemoryStorage();
     final receiverStorage = MemoryStorage();
@@ -171,11 +237,35 @@ void main() {
         left.setDelta('title', 'from left'),
         left.incrementGCounter('items', 2),
         left.decrementPnCounter('balance', 3),
+        left.addAllGSet('tags', ['from-left', 'shared']),
+        left.addAllTwoPSet('membership', ['from-left', 'shared']),
+        left.writeMvRegister('profile', 'left'),
         left.removeDelta('obsolete'),
         right.setDelta('title', 'from right'),
         right.incrementGCounter('items', 4),
         right.incrementPnCounter('balance', 8),
+        right.addAllGSet('tags', ['from-right', 'shared']),
+        right.addAllTwoPSet('membership', ['from-right', 'shared']),
+        right.writeMvRegister('profile', 'right'),
       ]);
+      expect(
+        (await leftStorage.pending('left'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.gSet),
+        hasLength(1),
+      );
+      expect(
+        (await rightStorage.pending('right'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.gSet),
+        hasLength(1),
+      );
+      expect(
+        (await leftStorage.pending('left'))
+            .expand((entry) => entry.delta.changes)
+            .where((change) => change.kind == CrdtKind.twoPSet),
+        hasLength(1),
+      );
       final results = await Future.wait([left.push(), right.push()]);
 
       expect(
@@ -196,8 +286,38 @@ void main() {
         expect(engine.replica.state.values['title'], isNotNull);
         expect(engine.replica.gCounterValue('items'), 6);
         expect(engine.replica.pnCounterValue('balance'), 5);
+        expect(
+          engine.replica.gSetValue('tags'),
+          containsAll(['from-left', 'from-right', 'shared']),
+        );
+        expect(
+          engine.replica.twoPSetValue('membership'),
+          containsAll(['from-left', 'from-right', 'shared']),
+        );
+        expect(engine.replica.mvRegisterValue('profile'), {'left', 'right'});
         expect(engine.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       }
+
+      await left.removeTwoPSet('membership', 'shared');
+      await left.push();
+      expect(
+        left.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      expect(
+        right.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      await right.addTwoPSet('membership', 'shared');
+      await right.push();
+      expect(
+        left.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
+      expect(
+        right.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
 
       // Restart from each MemoryStorage instance to verify snapshot identities,
       // tombstones, and counter sequence state survive the simulated recovery.
@@ -214,9 +334,39 @@ void main() {
       expect(restoredLeft.replica.state.winnerAt('obsolete')?.deleted, isTrue);
       expect(restoredLeft.replica.gCounterValue('items'), 6);
       expect(restoredLeft.replica.pnCounterValue('balance'), 5);
+      expect(
+        restoredLeft.replica.gSetValue('tags'),
+        containsAll(['from-left', 'from-right', 'shared']),
+      );
+      expect(
+        restoredLeft.replica.twoPSetValue('membership'),
+        containsAll(['from-left', 'from-right']),
+      );
+      expect(restoredLeft.replica.mvRegisterValue('profile'), {
+        'left',
+        'right',
+      });
+      expect(
+        (await restoredLeft.addTwoPSet('membership', 'shared')).dot.counter,
+        3,
+      );
+      expect(
+        restoredLeft.replica.twoPSetValue('membership'),
+        isNot(contains('shared')),
+      );
       expect(restoredLeft.replica.state.values['title'], 'from right');
       final restoredSnapshot = restoredLeft.replica.toSnapshotJson();
       expect(restoredSnapshot['deltaSequence'], leftSnapshot['deltaSequence']);
+      final oldGSet = leftSnapshot['gSets'] as Map<String, Object?>;
+      final restoredGSet = restoredSnapshot['gSets'] as Map<String, Object?>;
+      expect(
+        (restoredGSet['tags'] as Map<String, Object?>)['sequence'],
+        (oldGSet['tags'] as Map<String, Object?>)['sequence'],
+      );
+      expect(
+        (await restoredLeft.addGSet('tags', 'after-restart')).dot.counter,
+        2,
+      );
       final expectedGCounter =
           leftSnapshot['gCounters'] as Map<String, Object?>;
       final restoredGCounter =
@@ -599,7 +749,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 3);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 7);
       await engine.dispose();
     },
   );

@@ -182,6 +182,47 @@ class SyncEngine {
   Future<PnCounterDelta> decrementPnCounter(String crdtId, [int amount = 1]) =>
       _commitLocal((candidate) => candidate.decrementPnCounter(crdtId, amount));
 
+  /// Adds [element] to the addressed G-Set and commits its change to the outbox.
+  Future<GSetDelta> addGSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addGSet(crdtId, element));
+
+  /// Adds [elements] to the addressed G-Set as one committed change.
+  Future<GSetDelta> addAllGSet(String crdtId, Iterable<Object?> elements) =>
+      _commitLocal((candidate) => candidate.addAllGSet(crdtId, elements));
+
+  /// Adds [element] to the addressed 2P-Set and commits its change to the outbox.
+  Future<TwoPSetDelta> addTwoPSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addTwoPSet(crdtId, element));
+
+  /// Adds [elements] to the addressed 2P-Set as one committed change.
+  Future<TwoPSetDelta> addAllTwoPSet(
+    String crdtId,
+    Iterable<Object?> elements,
+  ) => _commitLocal((candidate) => candidate.addAllTwoPSet(crdtId, elements));
+
+  /// Permanently removes [element] from the addressed 2P-Set.
+  Future<TwoPSetDelta> removeTwoPSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.removeTwoPSet(crdtId, element));
+
+  /// Permanently removes [elements] from the addressed 2P-Set in one change.
+  Future<TwoPSetDelta> removeAllTwoPSet(
+    String crdtId,
+    Iterable<Object?> elements,
+  ) =>
+      _commitLocal((candidate) => candidate.removeAllTwoPSet(crdtId, elements));
+
+  /// Writes an MV-Register version and commits its causal delta to the outbox.
+  Future<MvRegisterDelta> writeMvRegister(String crdtId, Object? value) =>
+      _commitLocal((candidate) => candidate.writeMvRegister(crdtId, value));
+
+  /// Adds an OR-Set value and commits its unique tag to the outbox.
+  Future<OrSetDelta> addOrSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.addOrSet(crdtId, element));
+
+  /// Removes OR-Set tags observed by this replica and commits removal context.
+  Future<OrSetDelta> removeOrSet(String crdtId, Object? element) =>
+      _commitLocal((candidate) => candidate.removeOrSet(crdtId, element));
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {

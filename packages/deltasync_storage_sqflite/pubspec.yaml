@@ -11,5 +11,7 @@ dependencies:
 dev_dependencies:
   deltasync_core: ^2.0.0
   deltasync_storage_testing: ^2.0.0
+  deltasync_sync: ^2.0.0
+  deltasync_transport: ^2.0.0
   sqflite_common_ffi: ^2.3.6
   test: ^1.25.6
