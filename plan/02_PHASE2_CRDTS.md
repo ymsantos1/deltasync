@@ -116,30 +116,32 @@ Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06d--2026-10-06).
 
 ## R-06e — OR-Map
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-06d
 
 Áreas: core, roteamento de valores CRDT e testes de OR-Map.
 Objetivo: existência observada das chaves e join dos valores CRDT aninhados.
 Dependência adicional: tipos efetivamente usados como valores devem estar prontos.
+Valor escolhido para esta execução: G-Set, concluído em R-06a; composição
+manual, sem catálogo genérico de objetos.
 
 Critérios:
 
-- [ ] Documentar política de existência das chaves e atualização versus remoção.
-- [ ] Atualizações de valores CRDT convergem sem substituir estado concorrente.
-- [ ] Remoção observada, recriação e delta antigo são testados.
-- [ ] Critérios e validação comuns dos tipos satisfeitos.
+- [x] Documentar política de existência das chaves e atualização versus remoção.
+- [x] Atualizações de valores CRDT convergem sem substituir estado concorrente.
+- [x] Remoção observada, recriação e delta antigo são testados.
+- [x] Critérios e validação comuns dos tipos satisfeitos.
 
 Não impor update-wins global a objetos ou registradores; testar semântica escolhida.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06e--2026-10-06).
 
 <a id="r-07a"></a>
 
 ## R-07a — Integrar oito tipos e codecs
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07d, R-06a, R-06b, R-06c, R-06d, R-06e
 

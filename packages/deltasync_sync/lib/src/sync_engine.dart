@@ -223,6 +223,23 @@ class SyncEngine {
   Future<OrSetDelta> removeOrSet(String crdtId, Object? element) =>
       _commitLocal((candidate) => candidate.removeOrSet(crdtId, element));
 
+  /// Creates a key in an OR-Map with a nested G-Set value.
+  Future<OrMapDelta> addOrMapKey(String crdtId, String key) =>
+      _commitLocal((candidate) => candidate.addOrMapKey(crdtId, key));
+
+  /// Removes key incarnations observed by this replica.
+  Future<OrMapDelta> removeOrMapKey(String crdtId, String key) =>
+      _commitLocal((candidate) => candidate.removeOrMapKey(crdtId, key));
+
+  /// Adds a value to nested G-Sets for observed key incarnations.
+  Future<List<OrMapDelta>> addOrMapValue(
+    String crdtId,
+    String key,
+    Object? value,
+  ) => _commitLocalBatch(
+    (candidate) => candidate.addOrMapValue(crdtId, key, value),
+  );
+
   /// Sends current pending changes without holding the commit queue during I/O.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {
@@ -364,10 +381,10 @@ class SyncEngine {
   Future<void> _commitCandidate(
     Replica candidate,
     Delta delta,
-    OutboxEntry entry,
+    List<OutboxEntry> entries,
   ) async {
     if (storage != null) {
-      await storage!.commit(_snapshot(candidate), [entry]);
+      await storage!.commit(_snapshot(candidate), entries);
     } else {
       final pending = await store!.read(_replica.id);
       await store!.write(_replica.id, pending.merge(delta));
@@ -391,13 +408,31 @@ class SyncEngine {
       final candidate = _replica.fork();
       final change = mutate(candidate);
       final delta = Delta([change]);
-      await _commitCandidate(
-        candidate,
-        delta,
+      await _commitCandidate(candidate, delta, [
         OutboxEntry(delta: delta, recipientPeerId: transport.peerReplicaId),
-      );
+      ]);
       _replica.adopt(candidate);
       return change;
+    }),
+  );
+
+  Future<List<T>> _commitLocalBatch<T extends DeltaChange>(
+    List<T> Function(Replica candidate) mutate,
+  ) => _withStarted(
+    () => _serialize(() async {
+      final candidate = _replica.fork();
+      final changes = mutate(candidate);
+      if (changes.isEmpty) throw StateError('Local change batch is empty');
+      final delta = Delta(changes);
+      await _commitCandidate(candidate, delta, [
+        for (final change in changes)
+          OutboxEntry(
+            delta: Delta([change]),
+            recipientPeerId: transport.peerReplicaId,
+          ),
+      ]);
+      _replica.adopt(candidate);
+      return changes;
     }),
   );
 

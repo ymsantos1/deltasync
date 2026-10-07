@@ -101,7 +101,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **2 — completar CRDTs e integração**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-06e — OR-Map**.
+Próxima tarefa pronta: **R-07a — Integrar oito tipos e codecs**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -155,8 +155,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | concluída | MUST | R-08d |
-| [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | pronta | MUST | R-06d |
-| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
+| [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | concluída | MUST | R-06d |
+| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | pronta | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
 | [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | concluída | MUST | R-08d |
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | concluída | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | concluída | MUST | R-07c, R-08d |
