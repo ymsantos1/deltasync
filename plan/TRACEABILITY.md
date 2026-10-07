@@ -1455,3 +1455,65 @@ executados após manutenção.
 
 Limitações: SQLite validado com FFI/Linux, não dispositivo Flutter; não houve
 alteração de produção. Review não independente.
+
+## Execução R-08c — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-07a, R-07d e R-08d concluídas; R-08c era próxima tarefa pronta.
+DEC-21 fixa outbox por peer e retry até ACK `appliedAndPersisted`; OPEN-04 limita
+bootstrap a peer conhecido. R-07d já cobria falha antes da entrega, ACK perdido,
+reabertura SQLite e push simultâneo; faltava um cenário ponta a ponta de duas
+réplicas offline divergentes, peer alternativo, reordenação e reconexão após restart.
+
+Implementação: `sync_recovery_test.dart` agora exercita duas engines com bancos
+SQLite separados. Ambas editam enquanto offline e mantêm outbox; após restart,
+engine A ligada a peer C não consome entradas destinadas a B. Na reconexão com B,
+batch invertido aplica remoção OR-Set antes da adição; ACK perdido deixa outbox
+pendente. Após novo restart, snapshot de B já contém mudanças duráveis de A e A
+mantém suas entradas. Retry duplicado converge; durante ACK bloqueado, A aceita
+edição local e B envia simultaneamente; ACK limpa só lote capturado, edição nova
+permanece até retry final. Tudo usa API pública `SyncEngine`/`ReplicaStorage`;
+nenhuma API de produção ou camada nova foi necessária.
+
+Review: aprovado
+
+Achados: review inicial pediu verificar snapshot receptor e outbox remetente logo
+após restart anterior ao retry, para não deixar entrega idempotente mascarar falta
+de persistência. Auditoria final pediu também confirmar outbox ainda pendente no
+instante entre commit remoto e ACK liberado. Asserção foi adicionada dentro da
+janela de ACK retido; re-reviews aprovados. Review pelo próprio implementador em
+etapas distintas, não independente.
+
+Validação: aprovada
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test`,
+`dart analyze`, `dart test` em raiz, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`; `git diff
+--check`. Todos passaram após formatar um ajuste final que inicialmente fez o
+check de formatação parar antes da suíte SQLite. Formatação final sem alterações,
+análises sem issues. Testes: raiz 7, core 69, sync 38, storage 12, SQLite FFI 14,
+transport 6; total 146. Após asserção adicional da janela de ACK, suíte SQLite
+reexecutada: 14 testes aprovados. SDK 3.13.0, Linux x64, SQLite real via FFI.
+Regressões R-08d/R-07d executadas junto com a suíte completa.
+
+Critérios: cenários e evidências acima cobrem divergência offline/convergência,
+falhas pré-entrega e pós-commit, duplicação/reordenação, restart antes do envio
+e antes do ACK, recuperação de peer ausente pela mesma outbox endereçada, ACK só
+após `applyRemote` persistir (outbox continua pendente durante ACK retido), e
+edição/push simultâneo sem bloquear commits locais.
+Tombstone OR-Set mantém `from-a` removido após entrega fora de ordem e restart;
+ambos convergem para estados LWW, G-Counter e OR-Set iguais. R-07a cobre roteamento
+individual dos oito tipos; este cenário integrado usa dois tipos como permitido.
+
+Manutenção: R-08c concluída; fase 4 encerrada. Fase 5 ativa; VAL-01 e VAL-02
+liberadas como prontas; VAL-01 é próxima selecionada. RISK-04/06/08/13/14
+atualizados; DECISIONS sem mudança. Checker e `git diff --check` executados após
+manutenção.
+
+Limitações: SQLite via FFI/Linux, sem dispositivo Flutter; topologia continua
+limitada a peer fixo. Concorrência de múltiplas engines sobre mesma outbox SQLite
+compartilhada não foi testada. Review não independente.

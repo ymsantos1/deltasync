@@ -100,8 +100,8 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **4 — fluxo offline e reconciliação**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-08c — Reconciliação offline integrada**.
+Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **nenhuma**.
+Próxima tarefa pronta: **VAL-01 — Propriedades e regressão completas**; VAL-02 também está pronta.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -162,9 +162,9 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
-| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | pronta | MUST | R-07a, R-07d, R-08d |
-| [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | planejada | MUST | R-07a |
-| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | planejada | MUST | R-08c |
+| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | concluída | MUST | R-07a, R-07d, R-08d |
+| [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | pronta | MUST | R-07a |
+| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | pronta | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | planejada | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | planejada | MUST | R-07a, R-07d, R-08c, VAL-02 |
 | [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | planejada | MUST | VAL-03, VAL-04 |

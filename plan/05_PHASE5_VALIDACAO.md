@@ -1,6 +1,6 @@
 # Fase 5 — Validação acadêmica e entrega
 
-Estado: planejada. Objetivo: consolidar evidências e demonstração do TCC.
+Estado: ativa. Objetivo: consolidar evidências e demonstração do TCC.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
 Saída: VAL-05 concluída. Prazo e esforço disponíveis ainda não informados.
 Riscos: relatório extrapolar evidências; omissão de tipos; validação de memória
@@ -11,7 +11,7 @@ Exclusões: codegen, ObjectCrdt obrigatório e otimização sem medida.
 
 ## VAL-01 — Propriedades e regressão completas
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07a
 
@@ -35,7 +35,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## VAL-02 — Demonstração mínima
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-08c
 

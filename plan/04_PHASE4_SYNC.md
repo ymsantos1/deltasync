@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: ativa. R-08a, R-08b e R-08d concluídas; R-08c pronta após R-07a/R-07d. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
+Estado: concluída. R-08a a R-08d concluídas; objetivo de fluxo de duas réplicas atendido no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
 Saída: R-08a a R-08d concluídas com cenário/topologia e limitações declarados.
@@ -106,7 +106,7 @@ Evidência de conclusão: execução R-08d em TRACEABILITY.md.
 
 ## R-08c — Reconciliação offline integrada
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08d
 
@@ -115,19 +115,19 @@ Objetivo: demonstrar reconciliação após períodos offline e reinicializaçõe
 
 Critérios:
 
-- [ ] Duas réplicas divergem offline e convergem após entrega relevante completa.
-- [ ] Duplicação, reordenação, falha/retry e reconexão não perdem alterações.
-- [ ] Reinício antes do envio e antes do ACK preserva pendências.
-- [ ] Peer ausente recupera informação conforme política R-08b.
-- [ ] Aplicação remota confirmada somente conforme semântica definida.
-- [ ] Envio simultâneo e edição durante indisponibilidade não bloquearem commits
+- [x] Duas réplicas divergem offline e convergem após entrega relevante completa.
+- [x] Duplicação, reordenação, falha/retry e reconexão não perdem alterações.
+- [x] Reinício antes do envio e antes do ACK preserva pendências.
+- [x] Peer ausente recupera informação conforme política R-08b.
+- [x] Aplicação remota confirmada somente conforme semântica definida.
+- [x] Envio simultâneo e edição durante indisponibilidade não bloquearem commits
   locais; regressões de R-08d permanecerem aprovadas com storage durável.
 
 Validação: fluxo com SQLite real e falhas controladas; testes de roteamento cobrem
 oito tipos via R-07a. Cenário principal pode usar dois tipos, sem substituir
 validação individual dos demais.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-08c em TRACEABILITY.md.
 
 
 ## Gate da fase
