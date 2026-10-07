@@ -100,15 +100,14 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **2 — completar CRDTs e integração**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-06e — OR-Map**.
+Fase ativa: **4 — fluxo offline e reconciliação**. Tarefa ativa: **nenhuma**.
+Próxima tarefa pronta: **R-08c — Reconciliação offline integrada**.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-08a, R-08b e R-08d; depois contrato/SQLite e
-recuperação em R-07b/c/d. Cinco tipos restantes podem avançar após R-08d, com
-integração individual. Registrar fase ativa ao selecionar tarefa de outra fase.
-R-07a consolida oito tipos, inclusive persistência real; R-08c fecha reconciliação.
+recomendada: R-08a, R-08b e R-08d; depois contrato/SQLite e recuperação em
+R-07b/c/d. R-06a–R-06e integram os cinco tipos adicionais e R-07a valida os oito
+em SQLite; R-08c fecha reconciliação. Registrar fase ativa ao selecionar outra fase.
 
 R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
 correções obrigatórias em R-09a/R-09b/R-05; base inteira continua incompleta até
@@ -155,15 +154,15 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
 | [R-06d](02_PHASE2_CRDTS.md#r-06d) | OR-Set | concluída | MUST | R-08d |
-| [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | pronta | MUST | R-06d |
-| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | planejada | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
+| [R-06e](02_PHASE2_CRDTS.md#r-06e) | OR-Map | concluída | MUST | R-06d |
+| [R-07a](02_PHASE2_CRDTS.md#r-07a) | Integrar oito tipos e codecs | concluída | MUST | R-07d, R-06a, R-06b, R-06c, R-06d, R-06e |
 | [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | concluída | MUST | R-08d |
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | concluída | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | concluída | MUST | R-07c, R-08d |
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
-| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | planejada | MUST | R-07a, R-07d, R-08d |
+| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | pronta | MUST | R-07a, R-07d, R-08d |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | planejada | MUST | R-07a |
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | planejada | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | planejada | MUST | VAL-01, VAL-02, R-07d, R-08c |

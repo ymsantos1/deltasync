@@ -14,6 +14,7 @@ import 'pn_counter.dart';
 import 'json_value.dart';
 import 'mv_register.dart';
 import 'or_set.dart';
+import 'or_map.dart';
 
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
@@ -30,6 +31,7 @@ class Replica {
   final Map<String, TwoPSet> _twoPSets = {};
   final Map<String, MvRegister> _mvRegisters = {};
   final Map<String, OrSet> _orSets = {};
+  final Map<String, OrMap> _orMaps = {};
   VectorClock _clock;
   final HlcClock _hlc;
   int _deltaSequence = 0;
@@ -61,6 +63,10 @@ class Replica {
   /// Read-only value of addressed OR-Set, empty before its first change.
   Set<Object?> orSetValue(String crdtId) =>
       _orSets[crdtId]?.value ?? const <Object?>{};
+
+  /// Read-only map value; each present key contains its nested G-Set value.
+  Map<String, Set<Object?>> orMapValue(String crdtId) =>
+      _orMaps[crdtId]?.value ?? const <String, Set<Object?>>{};
 
   void restoreMetadata({
     required VectorClock clock,
@@ -108,6 +114,9 @@ class Replica {
     for (final entry in _orSets.entries) {
       copy._orSets[entry.key] = OrSet.fromJson(entry.value.toJson());
     }
+    for (final entry in _orMaps.entries) {
+      copy._orMaps[entry.key] = OrMap.fromJson(entry.value.toJson());
+    }
     return copy;
   }
 
@@ -134,6 +143,9 @@ class Replica {
     _orSets
       ..clear()
       ..addAll(copiedCounters._orSets);
+    _orMaps
+      ..clear()
+      ..addAll(copiedCounters._orMaps);
     _clock = candidate._clock;
     _hlc.restore(candidate.hlcTimestamp);
     _deltaSequence = candidate._deltaSequence;
@@ -142,7 +154,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 7,
+            'version': 8,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -172,6 +184,10 @@ class Replica {
               for (final entry in _orSets.entries)
                 entry.key: entry.value.toJson(),
             },
+            'orMaps': {
+              for (final entry in _orMaps.entries)
+                entry.key: entry.value.toJson(),
+            },
           }, freeze: true)
           as Map<String, Object?>;
 
@@ -184,7 +200,8 @@ class Replica {
         version != 4 &&
         version != 5 &&
         version != 6 &&
-        version != 7) {
+        version != 7 &&
+        version != 8) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -208,10 +225,16 @@ class Replica {
     final encodedMvRegisters = json['mvRegisters'];
     final mvRegisters =
         encodedMvRegisters ??
-        (version == 6 || version == 7 ? null : const <String, Object?>{});
+        (version == 6 || version == 7 || version == 8
+            ? null
+            : const <String, Object?>{});
     final encodedOrSets = json['orSets'];
     final orSets =
-        encodedOrSets ?? (version == 7 ? null : const <String, Object?>{});
+        encodedOrSets ??
+        (version == 7 || version == 8 ? null : const <String, Object?>{});
+    final encodedOrMaps = json['orMaps'];
+    final orMaps =
+        encodedOrMaps ?? (version == 8 ? null : const <String, Object?>{});
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -223,7 +246,8 @@ class Replica {
         gSets is! Map ||
         twoPSets is! Map ||
         mvRegisters is! Map ||
-        orSets is! Map) {
+        orSets is! Map ||
+        orMaps is! Map) {
       throw FormatException('Invalid replica snapshot');
     }
     final restored = Replica(
@@ -328,6 +352,17 @@ class Replica {
       restored._state.bind(entry.key as String, CrdtKind.orSet);
       restored._orSets[entry.key as String] = set;
     }
+    for (final entry in orMaps.entries) {
+      if (entry.key is! String || entry.value is! Map) {
+        throw FormatException('Invalid OR-Map snapshot');
+      }
+      final map = OrMap.fromJson(Map<String, Object?>.from(entry.value as Map));
+      if (map.replicaId != replicaId || map.crdtId != entry.key) {
+        throw FormatException('OR-Map snapshot identity mismatch');
+      }
+      restored._state.bind(entry.key as String, CrdtKind.orMap);
+      restored._orMaps[entry.key as String] = map;
+    }
     restored._deltaSequence = _requiredSequence(json['deltaSequence']);
     for (final address in restored._state.addresses) {
       final winner = restored._state.winnerAt(address);
@@ -405,6 +440,15 @@ class Replica {
               )
               .applyDelta(change);
           break;
+        case OrMapDelta():
+          _state.bind(change.crdtId, CrdtKind.orMap);
+          _orMaps
+              .putIfAbsent(
+                change.crdtId,
+                () => OrMap(id, crdtId: change.crdtId),
+              )
+              .applyDelta(change);
+          break;
         default:
           throw FormatException('Unsupported CRDT delta type');
       }
@@ -422,6 +466,7 @@ class Replica {
     ..._twoPSets.values.expand((set) => set.exportChanges()),
     ..._mvRegisters.values.expand((register) => register.exportChanges()),
     ..._orSets.values.expand((set) => set.exportChanges()),
+    ..._orMaps.values.expand((map) => map.exportChanges()),
   ]);
 
   /// Compact, versioned materialized state for bootstrap and storage.
@@ -471,6 +516,11 @@ class Replica {
     for (final entry in remote._orSets.entries) {
       candidate._orSets
           .putIfAbsent(entry.key, () => OrSet(id, crdtId: entry.key))
+          .mergeState(entry.value);
+    }
+    for (final entry in remote._orMaps.entries) {
+      candidate._orMaps
+          .putIfAbsent(entry.key, () => OrMap(id, crdtId: entry.key))
           .mergeState(entry.value);
     }
     candidate
@@ -601,6 +651,42 @@ class Replica {
     return delta;
   }
 
+  /// Adds a fresh OR-Map key incarnation with an empty G-Set value.
+  OrMapDelta addOrMapKey(String crdtId, String key) {
+    _ensureLocalAddress(crdtId, CrdtKind.orMap);
+    final map = _orMaps[crdtId] ?? OrMap(id, crdtId: crdtId);
+    final delta = map.addKey(key);
+    _orMaps[crdtId] = map;
+    _state.bind(crdtId, CrdtKind.orMap);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
+  /// Removes only observed OR-Map key incarnations.
+  OrMapDelta removeOrMapKey(String crdtId, String key) {
+    _ensureLocalAddress(crdtId, CrdtKind.orMap);
+    final map = _orMaps[crdtId] ?? OrMap(id, crdtId: crdtId);
+    final delta = map.removeKey(key);
+    _orMaps[crdtId] = map;
+    _state.bind(crdtId, CrdtKind.orMap);
+    _observeDeltaSequence(delta.id);
+    return delta;
+  }
+
+  /// Adds value to nested G-Set at each key incarnation observed locally.
+  List<OrMapDelta> addOrMapValue(String crdtId, String key, Object? value) {
+    _validateJsonValue(value);
+    _ensureLocalAddress(crdtId, CrdtKind.orMap);
+    final map = _orMaps[crdtId];
+    if (map == null) throw StateError('OR-Map key is not present');
+    final deltas = map.addValue(key, value);
+    _state.bind(crdtId, CrdtKind.orMap);
+    for (final delta in deltas) {
+      _observeDeltaSequence(delta.id);
+    }
+    return deltas;
+  }
+
   LwwDelta<Object?> _recordDelta(
     String key,
     Object? value, {
@@ -700,6 +786,9 @@ class Replica {
     }
     for (final address in _orSets.keys) {
       _validateAddressType(addressTypes, address, CrdtKind.orSet);
+    }
+    for (final address in _orMaps.keys) {
+      _validateAddressType(addressTypes, address, CrdtKind.orMap);
     }
     for (final change in delta.changes) {
       if (change is LwwDelta<Object?>) {
@@ -873,6 +962,31 @@ class Replica {
           }
         }
         _validateAddressType(addressTypes, change.crdtId, CrdtKind.orSet);
+      } else if (change is OrMapDelta) {
+        _validateMessageId(change.id, 'OR-Map delta');
+        _validateReplicaId(change.replicaId);
+        if (change.crdtId.isEmpty ||
+            change.crdtId.trim() != change.crdtId ||
+            change.crdtId.startsWith('legacy/') ||
+            change.dot.counter <= 0 ||
+            change.dot.replicaId != change.replicaId ||
+            change.dot.crdtId != change.crdtId ||
+            change.id !=
+                crdtDeltaId(
+                  CrdtKind.orMap.wireName,
+                  change.crdtId,
+                  change.replicaId,
+                  change.dot.counter,
+                ) ||
+            change.observedDots.any(
+              (dot) =>
+                  dot.replicaId.trim() != dot.replicaId ||
+                  dot.counter <= 0 ||
+                  dot.crdtId != change.crdtId,
+            )) {
+          throw FormatException('Invalid OR-Map delta identity or context');
+        }
+        _validateAddressType(addressTypes, change.crdtId, CrdtKind.orMap);
       } else {
         throw FormatException('Unsupported CRDT delta type');
       }

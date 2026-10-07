@@ -11,6 +11,7 @@ void main() {
       replica.addGSet('labels', 'draft'),
       replica.addTwoPSet('members', 'device'),
       replica.addOrSet('observed-members', 'device'),
+      replica.addOrMapKey('profile', 'roles'),
     ];
 
     expect(changes.map((change) => change.kind), [
@@ -20,6 +21,7 @@ void main() {
       CrdtKind.gSet,
       CrdtKind.twoPSet,
       CrdtKind.orSet,
+      CrdtKind.orMap,
     ]);
     expect(changes.map((change) => change.crdtId), [
       'title',
@@ -28,6 +30,7 @@ void main() {
       'labels',
       'members',
       'observed-members',
+      'profile',
     ]);
     expect(changes.map((change) => change.replicaId), everyElement('device'));
     expect(changes.map((change) => change.toJson()['type']), [
@@ -37,6 +40,7 @@ void main() {
       'g-set',
       '2p-set',
       'or-set',
+      'or-map',
     ]);
     expect(CrdtKind.fromWire('pn-counter'), CrdtKind.pnCounter);
     expect(CrdtKind.fromWire('g-set'), CrdtKind.gSet);
@@ -137,7 +141,8 @@ void main() {
         ..incrementPnCounter('wallet/balance')
         ..addGSet('labels', 'draft')
         ..addTwoPSet('members', 'draft')
-        ..addOrSet('observed-members', 'draft');
+        ..addOrSet('observed-members', 'draft')
+        ..addOrMapKey('profile', 'roles');
       final delta = DeltaCodec.decode(DeltaCodec.encode(replica.export()));
 
       expect(delta.changes, replica.export().changes);
@@ -148,6 +153,7 @@ void main() {
         'g-set',
         '2p-set',
         'or-set',
+        'or-map',
       ]);
       expect(
         () => DeltaCodec.decode({
@@ -319,7 +325,7 @@ void main() {
       expect(repeated.elements, ['one']);
       expect(remote.gSetValue('labels').length, 2);
       expect(remote.gSetValue('labels'), containsAll(['one', 'two']));
-      expect(source.toSnapshotJson()['version'], 7);
+      expect(source.toSnapshotJson()['version'], 8);
       final setSnapshot =
           ((source.toSnapshotJson()['gSets'] as Map)['labels'] as Map);
       expect(setSnapshot['changes'], hasLength(1));
@@ -823,7 +829,7 @@ void main() {
     });
 
     expect(replica.state.values, {'title': 'value'});
-    expect(replica.toSnapshotJson()['version'], 7);
+    expect(replica.toSnapshotJson()['version'], 8);
     final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
     expect(
       replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),

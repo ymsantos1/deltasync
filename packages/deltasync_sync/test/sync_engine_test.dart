@@ -161,6 +161,106 @@ void main() {
     },
   );
 
+  test(
+    'OR-Map nested values sync and old value stays hidden after restore',
+    () async {
+      final leftStorage = MemoryStorage();
+      final rightStorage = MemoryStorage();
+      final leftLink = ConnectedPeerTransport(
+        localReplicaId: 'left-map',
+        peerReplicaId: 'right-map',
+      );
+      final rightLink = ConnectedPeerTransport(
+        localReplicaId: 'right-map',
+        peerReplicaId: 'left-map',
+      );
+      var left = SyncEngine.withStorage(
+        replica: Replica('left-map'),
+        storage: leftStorage,
+        transport: leftLink,
+      );
+      var right = SyncEngine.withStorage(
+        replica: Replica('right-map'),
+        storage: rightStorage,
+        transport: rightLink,
+      );
+      leftLink.receiver = right;
+      rightLink.receiver = left;
+      await Future.wait([left.start(), right.start()]);
+
+      await left.addOrMapKey('settings', 'colors');
+      await left.push();
+      await right.addOrMapKey('settings', 'colors');
+      final oldValue = (await left.addOrMapValue(
+        'settings',
+        'colors',
+        'red',
+      )).single;
+      final concurrentValues = await right.addOrMapValue(
+        'settings',
+        'colors',
+        'blue',
+      );
+      expect(concurrentValues, hasLength(2));
+      await left.push();
+      await right.push();
+      expect(left.replica.orMapValue('settings')['colors'], {'red', 'blue'});
+      expect(
+        right.replica.orMapValue('settings'),
+        left.replica.orMapValue('settings'),
+      );
+
+      await left.removeOrMapKey('settings', 'colors');
+      await right.addOrMapKey('settings', 'colors');
+      await left.push();
+      await right.push();
+      expect(left.replica.orMapValue('settings'), {'colors': <Object?>{}});
+      expect(right.replica.orMapValue('settings'), {'colors': <Object?>{}});
+
+      await right.removeOrMapKey('settings', 'colors');
+      await right.push();
+      await right.dispose();
+      right = SyncEngine.withStorage(
+        replica: Replica('right-map'),
+        storage: rightStorage,
+        transport: TestDeltaTransport(peerReplicaId: 'left-map'),
+      );
+      await right.start();
+      await right.applyRemote(Delta([oldValue]));
+      expect(right.replica.orMapValue('settings'), isEmpty);
+      await left.dispose();
+      await right.dispose();
+      await leftLink.close();
+      await rightLink.close();
+    },
+  );
+
+  test('OR-Map multi-tag update commits state and outbox atomically', () async {
+    final storage = FailOnCommitNumberStorage(1);
+    final engine = SyncEngine.withStorage(
+      replica: Replica('local-map'),
+      storage: storage,
+      transport: TestDeltaTransport(peerReplicaId: 'remote-map'),
+    );
+    final remote = Replica('remote-map')
+      ..addOrMapKey('settings', 'colors')
+      ..addOrMapKey('settings', 'colors');
+    await engine.applyRemote(remote.export());
+
+    await expectLater(
+      engine.addOrMapValue('settings', 'colors', 'blue'),
+      throwsStateError,
+    );
+    expect(engine.replica.orMapValue('settings'), {'colors': <Object?>{}});
+    expect(await storage.pending('local-map'), isEmpty);
+
+    final committed = await engine.addOrMapValue('settings', 'colors', 'blue');
+    expect(committed, hasLength(2));
+    expect(engine.replica.orMapValue('settings')['colors'], {'blue'});
+    expect(await storage.pending('local-map'), hasLength(2));
+    await engine.dispose();
+  });
+
   test('peer reconnect applies changes durably before partial ACK', () async {
     final senderStorage = MemoryStorage();
     final receiverStorage = MemoryStorage();
@@ -749,7 +849,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 7);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 8);
       await engine.dispose();
     },
   );
@@ -1231,6 +1331,22 @@ class FailOnceCommitStorage extends MemoryStorage {
       _fail = false;
       throw StateError('commit failed');
     }
+    await super.commit(snapshot, entries);
+  }
+}
+
+class FailOnCommitNumberStorage extends MemoryStorage {
+  FailOnCommitNumberStorage(this.failAt);
+
+  final int failAt;
+  var _commitCount = 0;
+
+  @override
+  Future<void> commit(
+    ReplicaSnapshot snapshot,
+    Iterable<OutboxEntry> entries,
+  ) async {
+    if (++_commitCount == failAt) throw StateError('commit failed');
     await super.commit(snapshot, entries);
   }
 }

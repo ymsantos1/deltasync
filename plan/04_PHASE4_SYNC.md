@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: ativa. R-08a, R-08b e R-08d concluídas; R-08c aguarda R-07a/R-07d. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
+Estado: ativa. R-08a, R-08b e R-08d concluídas; R-08c pronta após R-07a/R-07d. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
 Saída: R-08a a R-08d concluídas com cenário/topologia e limitações declarados.
@@ -106,7 +106,7 @@ Evidência de conclusão: execução R-08d em TRACEABILITY.md.
 
 ## R-08c — Reconciliação offline integrada
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08d
 

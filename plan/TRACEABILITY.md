@@ -1350,3 +1350,108 @@ após manutenção.
 
 Limitações: eventos/tombstones crescem sem GC causal; SQLite não exercita OR-Set;
 review não independente.
+
+## Execução R-06e — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-06d concluída e R-06e pronta. G-Set já pronto em R-06a foi escolhido
+como valor composto: união de valores preserva atualizações concorrentes e evita
+introduzir catálogo/framework genérico de objetos. Política: chave add-wins por
+tags observadas; remoção apaga somente tags conhecidas; update não recria chave;
+recriação ganha tag e G-Set vazio. Valores são grow-only por contrato do G-Set.
+
+Implementação: `or_map.dart` define deltas tipados para criar/remover tags de chave
+e adicionar valores ao G-Set da encarnação observada. Deltas aninham GSetDelta e
+mantêm endereço composto por mapa/chave/tag. `Replica` integra consulta, mutação,
+codec, merge, export e snapshot v8 (lê v1–v7); `SyncEngine` grava atualizações
+multi-tag em commit atômico com uma entrada por delta. README mostra consumo,
+semântica, compatibilidade e limites. Testes cobrem concorrência, união de valores,
+remoção/recriação, replay antigo após restore, join algébrico, reconciliação por
+snapshot/deltas, conflito de IDs, codec, facade e duas engines com MemoryStorage.
+
+Review: aprovado
+
+Achados: primeira revisão encontrou criação de OR-Map vazio ao rejeitar operação
+local inválida, deixando endereço não vinculado que podia quebrar snapshot depois.
+Corrigido para só inserir estado após mutação válida; regressão testa nova mutação
+LWW e restore após falha. Re-review encontrou tags de remoção/valor cruzando chaves
+em mensagens fora de ordem; validação e regressão corrigidas. Review pelo próprio
+implementador em etapa separada, não independente.
+
+Validação: aprovada
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test`, `dart analyze`
+e `dart test` passaram em core, sync, storage, storage_sqflite, transport e raiz.
+Total: core 69, sync 38, storage 11, SQLite 12, transport 6 e facade 7 testes
+aprovados; sem issues de análise, formatação sem alterações. SQLite executou
+recuperação/contratos existentes, sem exercitar OR-Map; integração durável do tipo
+segue para R-07a. Dart SDK 3.13.0, Linux x64.
+
+Critérios: política de chave/update está documentada; updates G-Set concorrentes
+se unem sem substituição. Remoção concorrente preserva nova tag; recriação oculta
+valor e delta da chave antiga após restauração. Testes cobrem join associativo,
+comutativo/idempotente, duplicação/reordenação, equivalência com reconciliação por
+deltas e snapshot, codec, roteamento, outbox por mudança e fluxo entre duas engines.
+Falha de commit do lote multi-tag preserva estado/outbox e retry grava ambas as
+mudanças atomicamente.
+
+Manutenção: R-06e marcada, índice/fase sincronizados. R-07a é próxima pronta:
+R-07d e R-06a–R-06e estão concluídas. RISK-07 atualizado; DECISIONS sem mudança.
+Checker e `git diff --check` executados após manutenção.
+
+Limitações: valor composto desta entrega é G-Set; não há API genérica para qualquer
+tipo de objeto. Valores não removem elementos; remoção é por chave. SQLite de OR-Map
+fica para R-07a; tombstones permanecem sem GC. Review não independente.
+
+## Execução R-07a — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-07d e R-06a–R-06e concluídas; R-07a pronta. Codec e roteamento
+individual dos oito tipos já tinham cobertura nas tarefas R-06 e testes do core;
+faltava comprovar estado/outbox de todos em SQLite real, lote misto e entrega entre
+engines após reabertura.
+
+Implementação: `sync_recovery_test.dart` cria oito tipos e tombstones em duas
+engines com SQLite FFI, interrompe envio, fecha banco/engine, reabre ambos, verifica
+estado/outbox, reenvia adições antigas para provar tombstones preservados e entrega
+lote de 12 mudanças com ACK durável. Consumidor usa somente APIs públicas de sync;
+nenhuma API de produção ou dependência de codegen foi adicionada.
+
+Review: aprovado
+
+Achados: review inicial observou que valores vazios após reabertura não provavam
+persistência dos tombstones. Teste passou a reaplicar deltas antigos de 2P-Set,
+OR-Set e OR-Map após restore e confirmar que elementos/chave continuam removidos.
+Re-review aprovado. Review do próprio implementador em etapa separada, não
+independente.
+
+Validação: aprovada
+
+Comandos: em cada pacote `.`/raiz, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`:
+`dart format --output=none --set-exit-if-changed lib test`, `dart analyze`,
+`dart test`; depois `git diff --check`. Todos passaram; formatação sem alterações,
+análise sem issues. Testes aprovados: raiz 7, core 69, sync 38, storage 12,
+SQLite FFI 13, transport 6. Dart SDK 3.13.0, Linux x64. SQLite foi real via FFI;
+não foi validado em dispositivo Flutter.
+
+Critérios: codec/roteamento/snapshot/outbox cobertos individualmente pelos testes
+de R-06a–R-06e e `crdt_interfaces_test.dart`; codec rejeita tipo desconhecido e
+versões inválidas. Novo teste cobre fluxo local, storage SQLite, envio, aplicação
+remota e ACK de todos os oito tipos no mesmo lote. Outbox mantém 12 IDs após falha
+e restart; ACK remove todos. Tombstones sobrevivem ao restore e rejeitam deltas
+antigos. Workspace não usa build_runner para integrar tipos.
+
+Manutenção: R-07a concluída em fase/índice; fase 2 encerrada; R-08c liberada como
+próxima pronta na fase 4. DECISIONS/RISKS sem mudança. Checker e diff check
+executados após manutenção.
+
+Limitações: SQLite validado com FFI/Linux, não dispositivo Flutter; não houve
+alteração de produção. Review não independente.

@@ -21,7 +21,8 @@ enum CrdtKind {
   gSet('g-set'),
   twoPSet('2p-set'),
   mvRegister('mv-register'),
-  orSet('or-set');
+  orSet('or-set'),
+  orMap('or-map');
 
   const CrdtKind(this.wireName);
 

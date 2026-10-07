@@ -78,4 +78,18 @@ void main() {
     expect(second.orSetValue('members'), {'reader'});
     expect(removal.observedDots, [oldTag.dot]);
   });
+
+  test('facade exposes OR-Map with a composed G-Set value', () {
+    final first = Replica('first');
+    final second = Replica('second');
+    final key = first.addOrMapKey('profile', 'roles');
+    second.apply(Delta([key]));
+    final reader = first.addOrMapValue('profile', 'roles', 'reader').single;
+    final writer = second.addOrMapValue('profile', 'roles', 'writer').single;
+
+    first.apply(Delta([writer]));
+    second.apply(Delta([reader]));
+    expect(first.orMapValue('profile')['roles'], {'reader', 'writer'});
+    expect(second.orMapValue('profile'), first.orMapValue('profile'));
+  });
 }
