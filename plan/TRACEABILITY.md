@@ -1592,3 +1592,77 @@ manutenção.
 Limitações: review não independente; FFI/Linux não valida dispositivo Flutter.
 Fixtures algébricas são determinísticas e finitas, sem geração aleatória nem
 semente. Compatibilidade de consumidores externos desconhecidos continua OPEN-07.
+
+<a id="execucao-val-02-2026-10-06"></a>
+
+## Execução VAL-02 — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: VAL-01 e R-08c concluídas; VAL-02 era próxima MUST pronta. Compass não
+está disponível no checkout; o repositório tinha apenas exemplo com MemoryStorage.
+Critérios pedem consumidor reproduzível e SQLite real, então escolhi demo CLI
+desktop com SQLite FFI, sem adaptação do core.
+
+Implementação: `example/offline_reconciliation.dart` é consumidor pela facade
+pública. `ShoppingApp` mapeia nomes de compradores para campos LWW e itens para
+G-Counter; `ShoppingView` consulta estado; app apresenta commit local, pendências,
+erro de peer offline e confirmação. `DemoPeerLink` adapta fluxo ao contrato de
+transporte. Comandos `reset`, `offline` e `reconnect` permitem duas execuções de
+processo: primeira grava duas réplicas divergentes com SQLite real e outboxes
+pendentes; segunda reabre bancos, conecta peers, entrega/ACK, compara ambos os
+modelos, fecha e reabre bancos uma vez mais. Root `pubspec.yaml` inclui SQLite
+FFI e adaptador como dependências de desenvolvimento. README documenta configuração,
+comandos, resultado esperado, plataforma e limites; corrigiu descrições antigas
+que diziam que adaptador SQLite e cobertura dos oito tipos ainda não existiam.
+Nenhuma falha geral de API foi observada; nenhuma mudança de produção necessária.
+
+Review: aprovado
+
+Review em etapa separada pelo mesmo agente; não independente. Revisados ciclo de
+vida/fechamento de engines e DBs, isolamento de identidades, commit antes de push,
+ACK só após commit remoto, destino por peer e comparação de estado. Sem achados
+impeditivos; código não mudou após review.
+
+Achados: README continha descrição desatualizada de SQLite/cobertura; corrigida.
+Compass não disponível. Nenhum problema de contrato público apareceu no cenário.
+
+Validação: aprovada
+
+Dart SDK 3.13.0, Linux x64, SQLite real via `sqflite_common_ffi`; raiz, core, sync,
+storage, storage_sqflite, storage_testing e transport passaram format check,
+`dart analyze` e `dart test`. Testes: 7, 72, 38, 12, 14, 6 e 6 (155 total), sem
+issues de análise e sem alterações de formatação. A execução de demonstração em
+processos separados passou: offline gravou Ana/2 itens e Beto/3 itens, cada uma
+com duas pendências; push offline informou `Peer ... is offline` sem perda.
+Processo `reconnect` restaurou estado/outbox, convergiu ambos para Ana/Beto e
+5 itens, recebeu ACK e limpou pendências. Reabertura final confirmou estado
+convergido/outbox vazia. Uma reexecução adicional de `reconnect` foi idempotente.
+Plugins sqflite Android/iOS não foram exercitados.
+
+Comandos: `dart pub get`; `dart format example/offline_reconciliation.dart`;
+`dart analyze`; em cada diretório `.`, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite`, `packages/deltasync_storage_testing` e
+`packages/deltasync_transport`, `dart format --output=none --set-exit-if-changed
+lib test && dart analyze && dart test`; em invocações Dart separadas, `dart run
+example/offline_reconciliation.dart reset`, `offline`, `reconnect`; depois, nova
+execução de `reconnect`; `git diff --check`; `python3 scripts/check_plan.py`.
+
+Critérios: dois CRDTs, duas réplicas, edições offline, erro, consulta, pendência,
+commit local, ACK remoto e convergência demonstrados. Dois arquivos SQLite
+persistiram snapshot e outbox após fim do processo; segundo processo restaurou
+ambos antes de conectar. Modelo e status pertencem ao consumidor; sem dependência
+de codegen/framework de objetos. Experiência limitada a saída de terminal e a
+cenário sintético; nenhum participante avaliou usabilidade.
+
+Manutenção: critérios VAL-02 marcados, fase 5 ativa, VAL-02 concluída. VAL-03 e
+VAL-04 (MUST) e VAL-06 (SHOULD) passaram a prontas; VAL-03 selecionada como próxima
+MUST por posição no plano. DECISIONS/RISKS sem mudança. Checker e `git diff --check`
+aprovados após manutenção.
+
+Limitações: transporte conectado é um adaptador em memória, não protocolo/rede;
+SQLite FFI validado em Linux x64, não plugin Flutter mobile; demo demonstra fluxo
+e mensagens, não avaliação de usabilidade por usuários. Compass não está disponível.

@@ -101,7 +101,7 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **VAL-02 — Demonstração mínima**.
+Próxima tarefa pronta: **VAL-03 — Relatório e rastreabilidade finais**; VAL-04 e VAL-06 também estão prontas.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -164,11 +164,11 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
 | [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | concluída | MUST | R-07a, R-07d, R-08d |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | concluída | MUST | R-07a |
-| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | pronta | MUST | R-08c |
-| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | planejada | MUST | VAL-01, VAL-02, R-07d, R-08c |
-| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | planejada | MUST | R-07a, R-07d, R-08c, VAL-02 |
+| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
+| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | pronta | MUST | VAL-01, VAL-02, R-07d, R-08c |
+| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | pronta | MUST | R-07a, R-07d, R-08c, VAL-02 |
 | [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | planejada | MUST | VAL-03, VAL-04 |
-| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | planejada | SHOULD | VAL-02 |
+| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | pronta | SHOULD | VAL-02 |
 
 ## Escopo e prioridades
 

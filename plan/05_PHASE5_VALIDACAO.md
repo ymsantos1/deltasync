@@ -35,7 +35,7 @@ Evidência de conclusão: [execução VAL-01](TRACEABILITY.md#execucao-val-01-20
 
 ## VAL-02 — Demonstração mínima
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08c
 
@@ -45,22 +45,22 @@ pequeno. Compass pode ser usado como exemplo, se disponível.
 
 Critérios:
 
-- [ ] Dois tipos CRDT, duas réplicas, edição offline e convergência após reconexão.
-- [ ] SQLite preserva estado e pendências após reinício.
-- [ ] Aplicativo consumidor implementar mapeamento de seus modelos e fluxo contra
+- [x] Dois tipos CRDT, duas réplicas, edição offline e convergência após reconexão.
+- [x] SQLite preserva estado e pendências após reinício.
+- [x] Aplicativo consumidor implementar mapeamento de seus modelos e fluxo contra
   a API pública; regras de negócio/UI permanecem no app. Compass é evidência
   ilustrativa opcional, sem exigir mudanças em DeltaSync para atendê-lo.
-- [ ] Registrar passos de configuração e dificuldades de integração; corrigir
+- [x] Registrar passos de configuração e dificuldades de integração; corrigir
   falhas gerais do contrato na biblioteca, se confirmadas; resolver necessidades
   específicas por adaptação do consumidor, sem duplicar estado/sync ou sobrescrever
   implementação interna. Mudança em DeltaSync exige justificativa aplicável a
   consumidores gerais ou defeito confirmado.
-- [ ] Percurso no app comprovar edição/consulta durante indisponibilidade,
+- [x] Percurso no app comprovar edição/consulta durante indisponibilidade,
   apresentação coerente de pendência/erro/confirmação e recuperação após reinício.
   Registrar ações/resultados no consumidor escolhido; achados de usabilidade
   limitados ao cenário e aos participantes efetivamente avaliados.
-- [ ] Instruções de execução/plataforma e resultado esperado reproduzíveis.
-- [ ] Sem dependência de codegen ou framework de objetos.
+- [x] Instruções de execução/plataforma e resultado esperado reproduzíveis.
+- [x] Sem dependência de codegen ou framework de objetos.
 
 Validação: executar aplicação consumidora e registrar versão, cenário, ações e
 resultado, distinguindo integração e experiência offline. Compass, quando usado,
@@ -69,13 +69,13 @@ customização do core. Se não disponível, usar consumidor pequeno e reproduz�
 Exemplo de CRDT isolado sem storage/reconexão não satisfaz demonstração. Este
 cenário complementa cobertura geral dos oito tipos em VAL-01.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [execução VAL-02](TRACEABILITY.md#execucao-val-02-2026-10-06).
 
 <a id="val-03"></a>
 
 ## VAL-03 — Relatório e rastreabilidade finais
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: VAL-01, VAL-02, R-07d, R-08c
 
@@ -98,7 +98,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## VAL-04 — Alinhar texto acadêmico
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08c, VAL-02
 
@@ -168,7 +168,7 @@ Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
 
 ## VAL-06 — Medir tamanho dos deltas
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: VAL-02
 

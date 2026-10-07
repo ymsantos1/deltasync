@@ -78,8 +78,8 @@ sequenceDiagram
 ```
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
-G-Set, 2P-Set, MV-Register, OR-Set e OR-Map com valores G-Set. SQLite real para
-os oito tipos será consolidado em R-07a.
+G-Set, 2P-Set, MV-Register, OR-Set e OR-Map com valores G-Set. Testes de
+recuperação SQLite via FFI cobrem estado e outbox dos oito tipos.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -325,12 +325,12 @@ await errors.cancel();
 Cada dispositivo persiste somente sua própria réplica. O estado completo das
 outras réplicas não é armazenado localmente.
 
-O adaptador persistente ainda não existe. O modelo lógico planejado prevê três
-responsabilidades, cujas tabelas serão definidas na implementação:
-
-- `replicas`: identidade, `VectorClock`, contador local e metadados;
-- `state_entries` ou snapshots: estado dos CRDTs e tombstones;
-- `outbox`: deltas locais ainda não confirmados conforme o contrato de entrega.
+O adaptador [SQLite/sqflite](packages/deltasync_storage_sqflite/README.md)
+implementa `ReplicaStorage`. Cada dispositivo persiste seu snapshot canônico e
+outbox em tabelas próprias; estado, clocks, tombstones e sequências ficam no
+payload versionado do snapshot. Commit local grava snapshot e outbox na mesma
+transação. Commit remoto troca snapshot sem apagar pendências locais. Consumidor
+fornece factory SQLite compatível com sua plataforma.
 
 O `VectorClock` pode conter identificadores e contadores de outras réplicas.
 Isso registra conhecimento causal, não o estado completo delas. Operações
@@ -343,13 +343,34 @@ também podem ser persistidas futuramente para orientar compactação segura de
 operações e tombstones. Nenhuma dessas extensões armazena estados completos de
 outras réplicas.
 
+### Demonstração offline com SQLite
+
+Consumidor pequeno mapeia nomes de compradores para campos LWW e total de itens
+para G-Counter. Cada comando abaixo roda em processo separado; edições offline e
+outbox sobrevivem no banco entre execuções.
+
+```sh
+dart run example/offline_reconciliation.dart reset
+dart run example/offline_reconciliation.dart offline
+# Processo encerra aqui; iniciar novo processo para reconectar.
+dart run example/offline_reconciliation.dart reconnect
+```
+
+Resultado esperado: fase offline mostra commit local, duas pendências por réplica
+e falha de peer indisponível, sem perder edição. Reconexão restaura snapshots e
+outboxes, entrega e confirma deltas; ambas réplicas mostram os dois compradores e
+total cinco. Reabertura final confirma estado convergente e outboxes vazias.
+Exemplo foi executado em Linux x64 com SQLite real via `sqflite_common_ffi`;
+outros desktops, plugins Flutter Android/iOS e usabilidade com participantes não
+foram avaliados.
+
 ## Validação
 
 Testes da raiz cobrem somente a facade. Validar também cada subpacote:
 
 ```shell
 dart pub get
-for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_transport; do
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_transport; do
   (cd "$package" && dart analyze && dart test) || exit 1
 done
 ```
