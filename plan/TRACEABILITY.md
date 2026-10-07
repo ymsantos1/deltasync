@@ -1405,3 +1405,53 @@ Checker e `git diff --check` executados após manutenção.
 Limitações: valor composto desta entrega é G-Set; não há API genérica para qualquer
 tipo de objeto. Valores não removem elementos; remoção é por chave. SQLite de OR-Map
 fica para R-07a; tombstones permanecem sem GC. Review não independente.
+
+## Execução R-07a — 2026-10-06
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-07d e R-06a–R-06e concluídas; R-07a pronta. Codec e roteamento
+individual dos oito tipos já tinham cobertura nas tarefas R-06 e testes do core;
+faltava comprovar estado/outbox de todos em SQLite real, lote misto e entrega entre
+engines após reabertura.
+
+Implementação: `sync_recovery_test.dart` cria oito tipos e tombstones em duas
+engines com SQLite FFI, interrompe envio, fecha banco/engine, reabre ambos, verifica
+estado/outbox, reenvia adições antigas para provar tombstones preservados e entrega
+lote de 12 mudanças com ACK durável. Consumidor usa somente APIs públicas de sync;
+nenhuma API de produção ou dependência de codegen foi adicionada.
+
+Review: aprovado
+
+Achados: review inicial observou que valores vazios após reabertura não provavam
+persistência dos tombstones. Teste passou a reaplicar deltas antigos de 2P-Set,
+OR-Set e OR-Map após restore e confirmar que elementos/chave continuam removidos.
+Re-review aprovado. Review do próprio implementador em etapa separada, não
+independente.
+
+Validação: aprovada
+
+Comandos: em cada pacote `.`/raiz, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_transport`:
+`dart format --output=none --set-exit-if-changed lib test`, `dart analyze`,
+`dart test`; depois `git diff --check`. Todos passaram; formatação sem alterações,
+análise sem issues. Testes aprovados: raiz 7, core 69, sync 38, storage 12,
+SQLite FFI 13, transport 6. Dart SDK 3.13.0, Linux x64. SQLite foi real via FFI;
+não foi validado em dispositivo Flutter.
+
+Critérios: codec/roteamento/snapshot/outbox cobertos individualmente pelos testes
+de R-06a–R-06e e `crdt_interfaces_test.dart`; codec rejeita tipo desconhecido e
+versões inválidas. Novo teste cobre fluxo local, storage SQLite, envio, aplicação
+remota e ACK de todos os oito tipos no mesmo lote. Outbox mantém 12 IDs após falha
+e restart; ACK remove todos. Tombstones sobrevivem ao restore e rejeitam deltas
+antigos. Workspace não usa build_runner para integrar tipos.
+
+Manutenção: R-07a concluída em fase/índice; fase 2 encerrada; R-08c liberada como
+próxima pronta na fase 4. DECISIONS/RISKS sem mudança. Checker e diff check
+executados após manutenção.
+
+Limitações: SQLite validado com FFI/Linux, não dispositivo Flutter; não houve
+alteração de produção. Review não independente.

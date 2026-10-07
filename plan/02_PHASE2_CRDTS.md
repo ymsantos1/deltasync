@@ -1,8 +1,8 @@
 # Fase 2 — Completar CRDTs e integração
 
-Estado: ativa. Objetivo: completar os oito tipos previstos no PDF.
+Estado: concluída. Objetivo: completar os oito tipos previstos no PDF.
 Entrada: R-08d concluída, comprovando três tipos atuais sob contratos consolidados.
-Saída: três tipos restantes e R-07a concluídos.
+Saída: oito tipos integrados, restauráveis e validados em R-07a.
 Riscos: contexto causal e lacunas, composição observada e crescimento de metadados.
 Exclusões: ObjectCrdt obrigatório, gerador de modelos e sequências experimentais.
 
@@ -141,7 +141,7 @@ Evidência: [TRACEABILITY](TRACEABILITY.md#execução-r-06e--2026-10-06).
 
 ## R-07a — Integrar oito tipos e codecs
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07d, R-06a, R-06b, R-06c, R-06d, R-06e
 
@@ -154,18 +154,18 @@ conforme o [escopo de storage](README.md#storage-e-adaptadores).
 
 Critérios:
 
-- [ ] Codec, roteamento, estado, snapshot e outbox cobrem todos os tipos.
-- [ ] Lotes mistos preservam mudanças; tipos/versões inválidos têm erro explícito.
-- [ ] Cada tipo realiza fluxo mutação, storage, envio e aplicação remota.
-- [ ] SQLite real restaura snapshots/pendências dos oito tipos; integração
+- [x] Codec, roteamento, estado, snapshot e outbox cobrem todos os tipos.
+- [x] Lotes mistos preservam mudanças; tipos/versões inválidos têm erro explícito.
+- [x] Cada tipo realiza fluxo mutação, storage, envio e aplicação remota.
+- [x] SQLite real restaura snapshots/pendências dos oito tipos; integração
   individual anterior não ser apresentada como durabilidade já comprovada.
-- [ ] Nenhuma integração depende de build_runner.
+- [x] Nenhuma integração depende de build_runner.
 
 Validação: round-trip e fluxo conjunto de cada tipo, lote misto, snapshot com
 tombstones e mudanças posteriores, fechamento/reabertura de SQLite com estado
 dos oito tipos. Validar pacotes afetados, facade e plataforma do adaptador.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-07a em TRACEABILITY.md.
 
 
 ## Gate da fase

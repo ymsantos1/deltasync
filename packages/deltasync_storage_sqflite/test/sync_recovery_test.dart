@@ -78,6 +78,96 @@ void main() {
       },
     );
 
+    test(
+      'restores all eight CRDTs and mixed outbox before SQLite peer delivery',
+      () async {
+        var senderStorage = _storage('${directory.path}/sender-all.sqlite');
+        var receiverStorage = _storage('${directory.path}/receiver-all.sqlite');
+        final receiverTransport = _PeerTransport('sender-all');
+        final senderTransport = _PeerTransport('receiver-all')
+          ..receiver = _engine(
+            'receiver-all',
+            receiverStorage,
+            receiverTransport,
+          )
+          ..failBeforeDeliveryOnce = true;
+        var sender = _engine('sender-all', senderStorage, senderTransport);
+        await Future.wait([sender.start(), senderTransport.receiver!.start()]);
+
+        await sender.setDelta('lww', 'value');
+        await sender.incrementGCounter('g-counter', 2);
+        await sender.decrementPnCounter('pn-counter', 3);
+        await sender.addGSet('g-set', 'kept');
+        final twoPAdd = await sender.addTwoPSet('two-p-set', 'removed');
+        await sender.removeTwoPSet('two-p-set', 'removed');
+        await sender.writeMvRegister('mv-register', 'version');
+        final orSetAdd = await sender.addOrSet('or-set', 'removed');
+        await sender.removeOrSet('or-set', 'removed');
+        final orMapKeyAdd = await sender.addOrMapKey('or-map', 'removed');
+        final orMapValueAdd = (await sender.addOrMapValue(
+          'or-map',
+          'removed',
+          'value',
+        )).single;
+        await sender.removeOrMapKey('or-map', 'removed');
+
+        await expectLater(sender.push(), throwsStateError);
+        final pendingIds = (await senderStorage.pending(
+          'sender-all',
+        )).expand((entry) => entry.changeIds).toSet();
+        expect(pendingIds, hasLength(12));
+        expect(sender.replica.twoPSetValue('two-p-set'), isEmpty);
+        expect(sender.replica.orSetValue('or-set'), isEmpty);
+        expect(sender.replica.orMapValue('or-map'), isEmpty);
+
+        await _dispose(
+          [sender, senderTransport.receiver!],
+          [senderStorage, receiverStorage],
+          [senderTransport, receiverTransport],
+        );
+        senderStorage = _storage('${directory.path}/sender-all.sqlite');
+        receiverStorage = _storage('${directory.path}/receiver-all.sqlite');
+        final reopenedReceiverTransport = _PeerTransport('sender-all');
+        final reopenedSenderTransport = _PeerTransport('receiver-all')
+          ..receiver = _engine(
+            'receiver-all',
+            receiverStorage,
+            reopenedReceiverTransport,
+          );
+        sender = _engine('sender-all', senderStorage, reopenedSenderTransport);
+        reopenedSenderTransport.failBeforeDeliveryOnce = false;
+        await Future.wait([
+          sender.start(),
+          reopenedSenderTransport.receiver!.start(),
+        ]);
+
+        _expectAllCrdts(sender.replica);
+        await sender.applyRemote(
+          Delta([twoPAdd, orSetAdd, orMapKeyAdd, orMapValueAdd]),
+        );
+        expect(sender.replica.twoPSetValue('two-p-set'), isEmpty);
+        expect(sender.replica.orSetValue('or-set'), isEmpty);
+        expect(sender.replica.orMapValue('or-map'), isEmpty);
+        expect(
+          (await senderStorage.pending(
+            'sender-all',
+          )).expand((entry) => entry.changeIds).toSet(),
+          pendingIds,
+        );
+        final result = await sender.push(force: true);
+        expect(result.sent.changes, hasLength(12));
+        expect(result.acknowledgedIds, pendingIds);
+        expect(await senderStorage.pending('sender-all'), isEmpty);
+        _expectAllCrdts(reopenedSenderTransport.receiver!.replica);
+
+        await _dispose(
+          [sender, reopenedSenderTransport.receiver!],
+          [senderStorage, receiverStorage],
+          [reopenedSenderTransport, reopenedReceiverTransport],
+        );
+      },
+    );
+
     test('retries after interruption before remote delivery', () async {
       var senderStorage = _storage('${directory.path}/sender.sqlite');
       final receiverStorage = _storage('${directory.path}/receiver.sqlite');
@@ -254,6 +344,17 @@ void main() {
       },
     );
   });
+}
+
+void _expectAllCrdts(Replica replica) {
+  expect(replica.state.values, {'lww': 'value'});
+  expect(replica.gCounterValue('g-counter'), 2);
+  expect(replica.pnCounterValue('pn-counter'), -3);
+  expect(replica.gSetValue('g-set'), {'kept'});
+  expect(replica.twoPSetValue('two-p-set'), isEmpty);
+  expect(replica.mvRegisterValue('mv-register'), {'version'});
+  expect(replica.orSetValue('or-set'), isEmpty);
+  expect(replica.orMapValue('or-map'), isEmpty);
 }
 
 SqfliteReplicaStorage _storage(String path) => SqfliteReplicaStorage(
