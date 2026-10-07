@@ -1927,3 +1927,107 @@ decisão técnica nova. Próxima SHOULD VAL-06 continua pronta, sem ser iniciada
 Limitações: revisão não independente. Gate depende de fonte editável do relatório
 acadêmico; PDF de referência não foi alterado. VAL-05 não concluída; teste de
 esforço/prazo OPEN-06 também permanece fora das evidências disponíveis.
+
+## Retomada VAL-05 — 2026-10-07
+
+Status final: bloqueada
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: VAL-05 estava em validação desde 2026-10-06; fonte editável ainda não
+estava no checkout. Worktree iniciou limpo. Busca por `.doc`, `.docx`, `.tex`,
+`.odt` e nomes de relatório encontrou somente `proposta.md`, que declara ser
+contexto, não texto integral do TCC.
+
+Implementação: nenhum conteúdo acadêmico inventado e PDF preservado. VAL-05
+marcada bloqueada por impedimento externo registrado em OPEN-05; tarefa ativa
+limpa. VAL-06 permanece selecionável por dependência independente.
+
+Review: aprovado para estado documental
+
+Review separado pelo mesmo agente, não independente. Confirmado que critérios
+6/8 dependem de texto final alinhado; VAL-04 só pôde preparar lista de alterações.
+Nenhuma evidência nova removeu essa lacuna.
+
+Achados: bloqueio concreto é ausência da fonte editável. Não existe adaptação de
+código que satisfaça o critério sem inventar/substituir o relatório acadêmico.
+
+Validação: aprovada para manutenção do bloqueio
+
+Busca local confirmou ausência da fonte; links, status e dependências serão
+verificados após manutenção por checker e `git diff --check`. Nenhum check Dart
+necessário: sem alteração de código desde suítes completas aprovadas em 2026-10-06.
+
+Comandos: `git status --short --branch`; busca `find` por extensões editáveis e
+nomes relacionados a TCC/relatório; `python3 scripts/check_plan.py`;
+`git diff --check`.
+
+Critérios: 1–5 e 7 permanecem satisfeitos conforme registro de 2026-10-06; 6 e 8
+seguem abertos. VAL-05 não concluída.
+
+Manutenção: fase 5 ativa, VAL-05 bloqueada, tarefa ativa limpa; VAL-06 SHOULD
+segue pronta. OPEN-05/RISK-10 já registram dependência. Não houve mudança em
+DECISIONS/RISKS neste registro.
+
+Limitações: bloqueio persiste até autor fornecer arquivo editável; revisão não
+independente. A tarefa independente VAL-06 pode avançar sem alegar conclusão do TCC.
+
+<a id="execucao-val-06-2026-10-07"></a>
+
+## Execução VAL-06 — 2026-10-07
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: VAL-05 permanece bloqueada por OPEN-05; VAL-06 SHOULD estava pronta e
+depende apenas de VAL-02, já concluída. Critérios pedem bytes do estado/delta,
+metadados/serialização explícitos e conclusão limitada ao cenário. Preservado
+bloqueio do gate final; medição não o substitui.
+
+Implementação: `example/measure_delta_size.dart` cria `shopper-a` e `shopper-b`,
+cada uma com mutação LWW de nome e incremento G-Counter, usando IDs/valores fixos e
+relógio HLC injetado. Conta bytes UTF-8 de JSON compacto para `DeltaCodec`,
+`DeltaEnvelope` v2 e `Replica.toSnapshotJson()`. README documenta execução,
+metadados contados/excluídos, dados e resultado. Nenhuma dependência ou API de
+produção foi alterada.
+
+Review: aprovado
+
+Review em etapa distinta pelo mesmo agente, não independente. Conferidos o cenário
+contra a demo offline, HLC determinístico, codec/envelope reais e comparação de
+duas mensagens destinadas a peers fixos com snapshots locais pré-reconexão.
+Medida não inclui compressão, transporte, headers nem custo SQLite; claim delimitado
+ao JSON/payload medidos. Sem achados impeditivos.
+
+Achados: nenhuma correção necessária. Volume pequeno de estado faz envelope ficar
+próximo do snapshot; resultado não sustenta ganho geral.
+
+Validação: aprovada
+
+`dart format --output=none --set-exit-if-changed example/measure_delta_size.dart`
+passou sem mudanças; `dart analyze example/measure_delta_size.dart` sem issues;
+`dart run example/measure_delta_size.dart` passou e foi repetido com saída idêntica.
+Resultados: A delta 454 B/envelope 539 B/snapshot 627 B; B 455/540/628 B;
+totais 909/1.079/1.255 B. Envelopes/snapshots = 86,0% neste caso.
+
+Comandos: `dart format example/measure_delta_size.dart`;
+`dart format --output=none --set-exit-if-changed example/measure_delta_size.dart`;
+`dart analyze example/measure_delta_size.dart`;
+`dart run example/measure_delta_size.dart` (duas execuções, depois uma terceira
+após review); `python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: README e exemplo mostram mutações, metadados e serialização JSON UTF-8;
+script mede delta, envelope e snapshot reais com entradas reproduzíveis. O total
+comparou duas mensagens locais com os dois snapshots pré-sync. A conclusão registra
+14,0% menos bytes para envelope neste cenário e proíbe extrapolar para compressão,
+rede ou payloads gerais.
+
+Manutenção: VAL-06 concluída em fase/índice, fase 5 ativa, tarefa ativa limpa.
+VAL-05 continua bloqueada por OPEN-05/RISK-10; não há próxima tarefa selecionável
+até chegar fonte editável. `DECISIONS.md` sem mudança. Checker e `git diff --check`
+executados após manutenção.
+
+Limitações: medição sintética, dois CRDTs, quatro mutações, JSON sem whitespace,
+SQLite e transporte não medidos. Review não independente. VAL-05 continua bloqueada;
+esta medição SHOULD não conclui o TCC.

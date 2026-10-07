@@ -102,8 +102,9 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **VAL-05**.
-VAL-06 — Medir tamanho dos deltas (SHOULD) também está pronta.
+Fase ativa: **5 — validação acadêmica e entrega**. Tarefa ativa: **nenhuma**.
+VAL-05 segue bloqueada por falta da fonte editável (OPEN-05); demais tarefas
+selecionáveis estão concluídas.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
@@ -169,8 +170,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | em validação | MUST | VAL-03, VAL-04 |
-| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | pronta | SHOULD | VAL-02 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | bloqueada | MUST | VAL-03, VAL-04 |
+| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 
 ## Escopo e prioridades
 

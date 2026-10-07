@@ -137,7 +137,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Gate final do TCC
 
-Status: em validação
+Status: bloqueada
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04
 
@@ -163,14 +163,14 @@ de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos test
 da baseline ou da revisão de 2026-10-03, isoladamente, não conclui TCC.
 
 Evidência da revisão: [execução VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-06).
-Gate incompleto: falta alinhar o relatório acadêmico final com a implementação;
-OPEN-05 registra ausência da fonte editável. Critérios 6 e 8 permanecem abertos.
+Bloqueio externo: falta fonte editável para alinhar o relatório acadêmico final;
+OPEN-05 registra dependência. Critérios 6 e 8 permanecem abertos.
 
 <a id="val-06"></a>
 
 ## VAL-06 — Medir tamanho dos deltas
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: VAL-02
 
@@ -179,14 +179,14 @@ Objetivo: comparar bytes de delta e estado completo sob condições reproduzíve
 
 Critérios:
 
-- [ ] Informar tamanho do estado, mutações, metadados e forma de serialização.
-- [ ] Medir bytes efetivos e registrar procedimento/resultado.
-- [ ] Conclusão limitada ao cenário, sem ganho universal presumido.
+- [x] Informar tamanho do estado, mutações, metadados e forma de serialização.
+- [x] Medir bytes efetivos e registrar procedimento/resultado.
+- [x] Conclusão limitada ao cenário, sem ganho universal presumido.
 
 Validação: repetir medição documentada. SHOULD; ausência justificada não bloqueia
 VAL-05. Não introduzir suíte de benchmark obrigatória.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: [execução VAL-06](TRACEABILITY.md#execucao-val-06-2026-10-07).
 
 
 ## Gate da fase

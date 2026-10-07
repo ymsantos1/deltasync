@@ -416,6 +416,30 @@ Exemplo foi executado em Linux x64 com SQLite real via `sqflite_common_ffi`;
 outros desktops, plugins Flutter Android/iOS e usabilidade com participantes não
 foram avaliados.
 
+### Medição de tamanho
+
+`dart run example/measure_delta_size.dart` mede as quatro mutações offline acima
+antes da reconexão: cada réplica altera um nome LWW e seu componente G-Counter.
+Script fixa IDs, valores, quantidade e relógio HLC. Conta bytes UTF-8 de JSON
+compacto: `DeltaCodec` para mudanças, `DeltaEnvelope` v2 para mensagem completa e
+`Replica.toSnapshotJson()` para snapshot de cada réplica. Delta inclui metadados das
+mudanças; envelope acrescenta versão, remetente e destinatário; snapshot inclui
+estado materializado, clocks e metadados de réplica. Não inclui whitespace, gzip,
+headers, protocolo ou armazenamento SQLite.
+
+Resultado reproduzido duas vezes em Dart/Linux x64:
+
+| Réplica | Mutações | Delta | Envelope | Snapshot |
+|---|---:|---:|---:|---:|
+| `shopper-a` | 2 | 454 B | 539 B | 627 B |
+| `shopper-b` | 2 | 455 B | 540 B | 628 B |
+| Total | 4 | 909 B | 1.079 B | 1.255 B |
+
+Neste cenário, envelopes somam 86,0% dos snapshots separados (14,0% menos bytes).
+Isso compara a soma das duas mensagens destinadas ao peer fixo com os dois estados
+locais antes da reconexão. Resultado descreve apenas esse JSON, payload, valores e
+implementação; não demonstra ganho geral nem estima tráfego comprimido ou de rede.
+
 ## Validação
 
 Testes da raiz cobrem somente a facade. Validar também cada subpacote:
