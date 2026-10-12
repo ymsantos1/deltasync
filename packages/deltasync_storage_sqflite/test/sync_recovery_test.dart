@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:deltasync_core/deltasync_core.dart';
@@ -64,6 +65,75 @@ void main() {
       await storage.close();
       await transport.close();
     });
+
+    test(
+      'invalid MV sequence fails start without overwriting SQLite',
+      () async {
+        const replicaId = 'durable-device';
+        final path = '${directory.path}/invalid-mv-sequence.sqlite';
+        final storage = _storage(path);
+        final transport = _PeerTransport('peer');
+        final original = _engine(replicaId, storage, transport);
+        await original.start();
+        await original.writeMvRegister('field', 'old');
+        await original.writeMvRegister('field', 'current');
+        await original.dispose();
+        await storage.close();
+
+        final database = await databaseFactoryFfi.openDatabase(path);
+        final row = (await database.query('deltasync_snapshots')).single;
+        final validPayload = row['payload'] as String;
+        final invalid = jsonDecode(validPayload) as Map<String, dynamic>;
+        final snapshot = invalid['snapshot'] as Map<String, dynamic>;
+        final registers = snapshot['mvRegisters'] as Map<String, dynamic>;
+        final field = registers['field'] as Map<String, dynamic>;
+        field['sequence'] = 0;
+        final invalidPayload = jsonEncode(invalid);
+        await database.update(
+          'deltasync_snapshots',
+          {'payload': invalidPayload},
+          where: 'replica_id = ?',
+          whereArgs: [replicaId],
+        );
+        await database.close();
+
+        final reopenedStorage = _storage(path);
+        final engine = _engine(replicaId, reopenedStorage, transport);
+        for (var attempt = 0; attempt < 2; attempt++) {
+          await expectLater(engine.start(), throwsFormatException);
+          expect(engine.lifecycle, SyncEngineLifecycle.created);
+          expect(() => engine.replica, throwsStateError);
+          final stored = await databaseFactoryFfi.openDatabase(
+            path,
+            options: OpenDatabaseOptions(singleInstance: false),
+          );
+          expect(
+            (await stored.query('deltasync_snapshots')).single['payload'],
+            invalidPayload,
+          );
+          await stored.close();
+        }
+
+        await reopenedStorage.close();
+        final repaired = await databaseFactoryFfi.openDatabase(path);
+        await repaired.update(
+          'deltasync_snapshots',
+          {'payload': validPayload},
+          where: 'replica_id = ?',
+          whereArgs: [replicaId],
+        );
+        await repaired.close();
+
+        await engine.start();
+        expect(engine.replica.mvRegisterValue('field'), {'current'});
+        final next = await engine.writeMvRegister('field', 'next');
+        expect(next.dot.counter, 3);
+        expect(engine.replica.mvRegisterValue('field'), {'next'});
+        await engine.dispose();
+        await reopenedStorage.close();
+        await transport.close();
+      },
+    );
 
     test('concurrent callers share a failed open and later retry', () async {
       final gate = Completer<void>();

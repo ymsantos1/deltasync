@@ -231,6 +231,7 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
     }
   }
 
+  /// Restores state only if the local sequence cannot reuse an observed dot.
   factory MvRegister.fromJson(Map<String, Object?> json) {
     final replicaId = json['replicaId'],
         crdtId = json['crdtId'],
@@ -238,7 +239,12 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
         context = json['context'],
         versions = json['versions'];
     if (replicaId is! String ||
+        replicaId.isEmpty ||
+        replicaId.trim() != replicaId ||
         crdtId is! String ||
+        crdtId.isEmpty ||
+        crdtId.trim() != crdtId ||
+        crdtId.startsWith('legacy/') ||
         sequence is! int ||
         sequence < 0 ||
         context is! List ||
@@ -255,6 +261,13 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
         throw const FormatException('Invalid MV-Register context');
       }
       result._context.add(dot);
+    }
+    if (result._context.any(
+      (dot) => dot.replicaId == replicaId && dot.counter > sequence,
+    )) {
+      throw const FormatException(
+        'MV-Register sequence is behind local context',
+      );
     }
     for (final raw in versions) {
       if (raw is! Map || raw['dot'] is! Map || raw['context'] is! List) {

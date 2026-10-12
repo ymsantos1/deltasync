@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: reaberta em 2026-10-12; R-13/R-14/R-15/R-18 MUST pendentes.
+Estado: reaberta em 2026-10-12; R-13/R-15/R-18 MUST pendentes.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -345,7 +345,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-14 — Rejeitar sequência inválida no snapshot MV-Register
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-06c, R-07a
 
@@ -356,19 +356,19 @@ escrita falha. É entrada inconsistente; não foi observada em banco gerado pelo
 
 Critérios:
 
-- [ ] Sequência restaurada é compatível com os dots da própria réplica no contexto,
+- [x] Sequência restaurada é compatível com os dots da própria réplica no contexto,
   incluindo dots sem versão ativa; inconsistente falha antes de publicar estado.
-- [ ] Entradas inválidas falham explicitamente, sem corrigir silenciosamente IDs
+- [x] Entradas inválidas falham explicitamente, sem corrigir silenciosamente IDs
   nem alterar JSON, política causal ou dados persistidos.
-- [ ] Regressões cobrem sequência atrasada, versão substituída, réplica distinta,
+- [x] Regressões cobrem sequência atrasada, versão substituída, réplica distinta,
   restauração válida e novas escritas sem colisão de dots.
-- [ ] Validar o caminho de Replica e start da engine com snapshot inválido;
+- [x] Validar o caminho de Replica e start da engine com snapshot inválido;
   falha não sobrescreve o banco nem estado válido, e retry continua possível.
 
 Validação: core/facade, integração sync e recuperação SQLite quando afetada;
 reproduzir antes, revisar correções e executar regressões após review.
 Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-14 em 2026-10-12](TRACEABILITY.md#execucao-r-14-2026-10-12).
 
 <a id="r-15"></a>
 

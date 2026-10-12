@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
@@ -120,5 +122,69 @@ void main() {
       throwsArgumentError,
     );
     expect(replica.state.addresses, isEmpty);
+  });
+
+  test('rejects a sequence behind local dots, including replaced versions', () {
+    final original = MvRegister('local', crdtId: 'field');
+    final first = original.write('old');
+    final second = original.write('current');
+    final encoded = original.toJson();
+    expect(
+      (encoded['context'] as List).any(
+        (item) => (item as Map)['counter'] == first.dot.counter,
+      ),
+      isTrue,
+    );
+    expect(encoded['versions'], hasLength(1));
+
+    for (final staleSequence in [0, 1]) {
+      final invalid = Map<String, Object?>.from(encoded)
+        ..['sequence'] = staleSequence;
+      expect(
+        () => MvRegister.fromJson(invalid),
+        throwsA(isA<FormatException>()),
+      );
+    }
+
+    final unnormalized = Map<String, Object?>.from(encoded)
+      ..['replicaId'] = ' local ';
+    expect(() => MvRegister.fromJson(unnormalized), throwsFormatException);
+
+    final restored = MvRegister.fromJson(encoded);
+    final next = restored.write('next');
+    expect(next.dot.counter, 3);
+    expect(next.context, containsAll([first.dot, second.dot]));
+  });
+
+  test('remote dots do not consume the local sequence', () {
+    final remote = MvRegister('peer', crdtId: 'field')
+      ..write('old')
+      ..write('remote');
+    final local = MvRegister('local', crdtId: 'field')
+      ..applyDelta(remote.exportChanges().single);
+    final restored = MvRegister.fromJson(local.toJson());
+    final next = restored.write('local');
+    expect(next.dot.counter, 1);
+    expect(next.context.map((dot) => dot.replicaId).toSet(), {'peer'});
+    expect(next.context.map((dot) => dot.counter).toSet(), {1, 2});
+    expect(restored.value, {'local'});
+  });
+
+  test('Replica rejects a stale MV sequence before returning a snapshot', () {
+    final source = Replica('local')
+      ..writeMvRegister('field', 'old')
+      ..writeMvRegister('field', 'current');
+    final snapshot =
+        jsonDecode(jsonEncode(source.toSnapshotJson())) as Map<String, dynamic>;
+    final registers = snapshot['mvRegisters'] as Map<String, Object?>;
+    final field = registers['field'] as Map<String, Object?>;
+    field['sequence'] = 0;
+
+    expect(
+      () => Replica.fromSnapshotJson(snapshot),
+      throwsA(isA<FormatException>()),
+    );
+    expect(source.mvRegisterValue('field'), {'current'});
+    expect(source.writeMvRegister('field', 'next').dot.counter, 3);
   });
 }

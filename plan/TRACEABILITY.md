@@ -14,7 +14,8 @@ confirmou três defeitos apesar de 155 testes aprovados.
 no Moto G52 Android 13, com plugin sqflite e reinícios reais de processo.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
 A [revisão geral posterior](#revisao-geral-2026-10-12) confirmou novos defeitos;
-R-13/R-14/R-15/R-18 são MUST pendentes e VAL-05 foi reaberta. O autor informou
+[R-14](#execucao-r-14-2026-10-12) foi concluída; R-13/R-15/R-18 continuam MUST
+pendentes e VAL-05 foi reaberta. O autor informou
 entrega em 16/11 e pediu [planejamento das correções/refatoração](#manutencao-revisao-refatoracao-2026-10-12).
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
@@ -118,7 +119,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Matriz e fechamento técnico | VAL-03, VAL-04, VAL-05 | evidência por requisito, arquitetura/API e gate técnico da biblioteca |
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
 | Integração Flutter/sqflite mobile, SHOULD | VAL-07 | build/runtime, reinício de processo e reconciliação executados no Moto G52 Android 13/API 33 |
-| Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | igualdade/hash e sequência MV inválida reproduzidos; correções pendentes |
+| Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | R-14 concluída com regressões core/SQLite; igualdade/hash R-13 pendente |
 | Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | falha de UI e documentação inspecionadas; regressão e correções pendentes |
 | Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | inventário, preservação de comportamento e app interativo; SHOULD pendentes |
 | Validação ampliada e limites de custo | VAL-09, VAL-10 | histórias/metadados e cargas contrastantes; SHOULD pendentes |
@@ -130,7 +131,7 @@ Esta matriz resume implementação e execuções até 2026-10-12; a seção de b
 os registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
 reabriram o fechamento; R-10/R-11/R-12 corrigiram os três defeitos confirmados.
 Os novos achados de 2026-10-12 reabriram VAL-05; a matriz preserva execuções
-anteriores e identifica lacunas novas, sem declarar os MUST recém-criados corrigidos.
+anteriores, registra R-14 e identifica os demais MUST pendentes.
 Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
@@ -152,7 +153,7 @@ consumidora entre processos. Uma categoria não substitui outra.
 |---|---|---|---|
 | Oito CRDTs, mutações, deltas e joins | `packages/deltasync_core/lib/src/`; OR-Map compõe G-Set; fachada `lib/deltasync.dart` | Testes por tipo em `packages/deltasync_core/test/`; propriedades VAL-01; lote SQLite de oito tipos R-07a; coleções LWW tipadas e isolamento R-10 | Fixtures algébricas finitas; não constituem prova matemática universal; coleções tipadas exigem `decodeValue` |
 | Identidade, dots e roteamento por endereço | `identity.dart`, `replica.dart`, `delta_change.dart` | Testes `ReplicaId and Dot round trip and validate identity`, roteamento misto, conflito de endereço/tipo; R-02/R-09a/R-09b/R-07a | G/PN usam componentes cumulativos; tipos com eventos individuais mantêm contexto explícito |
-| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10; novo diagnóstico R-14 | Sequência MV inconsistente ainda é aceita; R-14 pendente; formatos antigos conforme migração documentada; consumidores externos desconhecidos |
+| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10; R-14 rejeita sequência MV atrasada em core e SQLite FFI | Formatos antigos conforme migração documentada; consumidores externos desconhecidos; VAL-05 aguarda demais MUST |
 | Core independente e contratos modulares | `deltasync_core`, `deltasync_storage`, `deltasync_sync`, `deltasync_transport`, facade | Analyze/test por pacote; integração pública R-08d e VAL-02 | SQLite fica no adaptador; nenhuma dependência de Flutter no core |
 | Storage substituível e `MemoryStorage` | `ReplicaStorage`, `MemoryStorage`, suíte `deltasync_storage_testing` | R-07b e contrato testado; `memory_storage_contract_test.dart` | Memória é volátil e não prova restart |
 | SQLite, outbox durável e recuperação | `packages/deltasync_storage_sqflite/lib/` | R-07c/R-07d, R-07a (oito tipos), R-08c, R-11 (ID divergente e rollback), R-12 (retry de abertura), VAL-02/VAL-05; VAL-07 no plugin sqflite Android com reinício de processo | Linux x64 via FFI; Moto G52 Android 13 com LWW/G-Counter; iOS e outros alvos não executados |
@@ -161,7 +162,7 @@ consumidora entre processos. Uma categoria não substitui outra.
 | Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02/VAL-05, com duas réplicas SQLite e processos separados | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
 | Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10/R-11/R-12 acrescentam regressões; VAL-05 repete sete suítes e consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
 | Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`, `example/flutter_mobile/`; configuração nos READMEs | VAL-02/VAL-05 e VAL-07: edição offline, falha visível, restart, reconexão, ACK e convergência; Android com plugin sqflite | Transporte sintético e peer fixo; sem participantes, rede real ou avaliação geral de usabilidade |
-| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12: reproduções de hash/sequência e inspeção da UI/retry | R-13/R-14/R-15/R-18 pendentes; evidência anterior não prova correção destes casos |
+| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-14 validou rejeição e retry com banco preservado | R-13/R-15/R-18 pendentes; evidência anterior não prova correção destes casos |
 | Core nativo, snapshot canônico, fila sem espera de rede | `Replica`, `ReplicaState`, `SyncEngine`, `OutboxEntry` | Regressões R-09a/R-09b/R-05; envio lento com commits locais em `sync_engine_test.dart` | Histórico e deduplicação limitados conforme R-09b; sem benchmark de escala |
 | Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a/R-10; R-10 documenta migração de `const LwwDelta` sem alterar wire JSON | Não há inventário de todos consumidores externos (OPEN-07) |
 
@@ -2745,3 +2746,68 @@ Não há implementação nem novos testes Dart/Flutter nesta manutenção.
 Próxima tarefa recomendada: R-14. R-13/R-15/R-18 também prontas; R-16/VAL-08/VAL-09
 aguardam correções. R-17 e VAL-10 já têm dependências satisfeitas, mas não antecedem
 os MUST por prioridade/risco. Tarefa ativa: nenhuma.
+
+<a id="execucao-r-14-2026-10-12"></a>
+
+## Execução R-14 — 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-06c/R-07a concluídas; R-14 pronta, MUST. O `MvRegister.fromJson`
+aceitava `sequence` inferior a um dot da própria réplica em `context`, inclusive
+dot cuja versão já fora substituída. O próximo `write` reutilizava a identidade e
+falhava. `Replica.fromSnapshotJson` e `SyncEngine.start` propagavam essa aceitação.
+Consultados contrato do snapshot, fluxo de restauração, testes existentes e guia
+Dart para validação de JSON; nenhuma nova abstração foi necessária.
+
+Implementação: `mv_register.dart` rejeita sequência inferior a dot local observado
+antes de retornar o registro. `fromJson` também rejeita IDs de réplica/endereço
+vazios, com espaços ou endereço legado, sem normalizar a entrada. JSON, versão,
+política causal e banco não mudaram; snapshots válidos seguem aceitos. Regressões
+em `mv_register_test.dart` cobrem sequência 0/1 contra dots 1/2, versão substituída,
+ID inválido, dot remoto sem consumir contador local, restauração válida, próxima
+escrita e rejeição via `Replica`. `sync_recovery_test.dart` grava dois valores em
+SQLite real, altera deliberadamente a sequência no payload, fecha/reabre banco e
+testa duas falhas de `start`, estado indisponível, payload intacto, reparo da fixture,
+retry e nova escrita com dot 3.
+
+Review: aprovado
+Achados: normalização de ID e conexão compartilhada da fixture foram corrigidas; nenhum impeditivo restante.
+Review feito pelo próprio implementador; não independente.
+Primeiro review encontrou normalização silenciosa do ID de réplica no parser JSON;
+foi corrigida e re-revisada. A primeira validação SQLite expôs que a conexão de
+inspeção da fixture fechava a conexão compartilhada pelo adapter; foi isolada com
+`singleInstance: false`, re-revisada e revalidada. Sem achado impeditivo restante.
+
+Validação: aprovada
+Ambiente: Linux x64, Dart 3.13.5, SQLite via sqflite_common_ffi.
+Antes da implementação, `dart test test/mv_register_test.dart --reporter expanded`
+falhou nas duas regressões de sequência/Replica; a regressão SQLite falhou porque
+`start()` aceitava o snapshot inválido. Após correção, comandos com
+`/home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart`:
+
+Comandos: format, analyze e test executados nos pacotes afetados, com resultados abaixo.
+
+- `format --output=none --set-exit-if-changed lib test`: core e SQLite adapter,
+  0 arquivos alterados.
+- `analyze`: raiz, core, sync e SQLite adapter, sem issues.
+- `test --reporter compact`: raiz, core e sync aprovados; SQLite executado após
+  revisão da fixture com `test --reporter expanded`, 22 testes aprovados.
+- `test test/sync_recovery_test.dart --plain-name 'invalid MV sequence fails start without overwriting SQLite' --reporter expanded`:
+  regressão durável aprovada após correção da fixture.
+
+Critérios: (1) o contexto inteiro é verificado, incluindo dots sem versão ativa;
+(2) `FormatException` explícita evita reutilização/normalização e preserva formato
+válido; (3) testes core cobrem sequência atrasada, dot remoto e escrita posterior;
+(4) teste SQLite comprova falha antes de adoção/publicação, bytes do payload sem
+alteração e retry bem-sucedido após reparo. `SyncEngine.replica` permanece
+indisponível enquanto o início falha; não houve sobrescrita do banco.
+
+Manutenção: critérios e status de R-14 marcados na fase e índice; matriz e
+RISK-23 atualizados. Fase 1 e VAL-05 continuam reabertas por R-13/R-15/R-18;
+R-16/VAL-09 ainda aguardam R-13. Próxima tarefa recomendada: R-13. Sem mudança
+de decisão arquitetural.
+Limitações: entrada inválida injetada no teste; não observada no banco do app Android.
+Validação mobile de R-14 não foi exigida, pois core/API/formato válido e plugin
+Flutter não mudaram.
