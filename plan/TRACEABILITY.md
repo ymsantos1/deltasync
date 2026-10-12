@@ -6,7 +6,8 @@ A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
 Estado atual — 2026-10-11: [revisão técnica](#revisao-tecnica-2026-10-11)
 confirmou três defeitos apesar de 155 testes aprovados. R-11 foi
-[concluída em 2026-10-12](#execucao-r-11-2026-10-12); R-10/R-12 são MUST prontas.
+[concluída em 2026-10-12](#execucao-r-11-2026-10-12); R-12 também foi
+[concluída em 2026-10-12](#execucao-r-12-2026-10-12). R-10 é MUST pronta;
 VAL-05 segue planejada; VAL-07 é SHOULD para evidência mobile.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
 
@@ -2288,3 +2289,72 @@ VAL-05 continua planejada até os MUST restantes, sem conclusão do TCC.
 Limitações: plugin Flutter mobile não foi executado; VAL-07 continua SHOULD.
 Teste de persistência usa SQLite FFI/Linux x64. R-10 e R-12 permanecem sem
 correção. O checker verifica estrutura do plano, não semântica do código.
+
+<a id="execucao-r-12-2026-10-12"></a>
+
+## Execução R-12 — 2026-10-12
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-12 era a próxima tarefa recomendada e estava pronta; R-05/R-07c/R-07d
+concluídas. Diagnóstico de 2026-10-11 reproduziu duas falhas de `loadReplica`
+após uma única falha de `openDatabase`. Inspecionados `_database`, `close`,
+`SyncEngine.start`, testes de recuperação SQLite e decisões DEC-19/22.
+Worktree continha mudanças autorizadas de planejamento e R-11, preservadas.
+Responsabilidade local: adaptador mantém abertura; engine controla lifecycle e
+restauração; estado, delta e commit continuam nos contratos existentes.
+
+Implementação: `_database` reaproveita Future em curso/bem-sucedido; falha limpa
+`_opening` apenas se ele ainda aponta para aquela tentativa. `catchError` repassa
+erro com stack original. `close` continua limpando referência e aguardando a
+abertura capturada. Não houve mudança em schema, JSON, API pública, core ou sync.
+`packages/deltasync_storage_sqflite/README.md` e `README.md` explicam retry,
+restauração antes da edição e limite de schema. Quatro regressões novas em
+`packages/deltasync_storage_sqflite/test/sync_recovery_test.dart` usam factory
+controlada para a falha inicial e SQLite FFI real para persistência e reabertura.
+
+Review: aprovado
+
+Achados: diff revisado após implementação. Nenhum achado impeditivo; conferidos
+erro original, compartilhamento de tentativa, proteção contra falha antiga,
+interação com `close`, lifecycle, outbox e preservação de dados em schema
+incompatível. Revisão feita pelo implementador em etapa distinta; não independente.
+Testes com falha injetada isolam abertura; a recuperação usa SQLite real.
+
+Validação: aprovada
+
+Ambiente: Dart 3.13.5, Linux x64, sqflite_common_ffi com SQLite real. No pacote
+`packages/deltasync_storage_sqflite`, format de `lib test` sem mudanças, analyze
+sem issues e 21 testes aprovados. `SyncEngine.start` falhou de forma observável,
+voltou a `created` e iniciou na segunda tentativa do mesmo adapter; snapshot e
+outbox antigos foram recuperados antes de nova mutação. Duas chamadas simultâneas
+usaram uma abertura falha; retry seguinte abriu o banco. Falha antiga após
+`close` não limpou conexão posterior bem-sucedida. Schema v2 incompatível falhou
+duas vezes e manteve snapshot no banco. Testes prévios de recuperação/contrato
+do pacote também passaram. Os outros pacotes não foram repetidos porque o código
+alterado pertence apenas ao adaptador; a integração com SyncEngine foi executada
+na suíte SQLite.
+
+Comandos: `/opt/flutter/bin/dart format` nos dois arquivos Dart editados;
+em `packages/deltasync_storage_sqflite`,
+`/opt/flutter/bin/dart format --output=none --set-exit-if-changed lib test`,
+`/opt/flutter/bin/dart analyze` e
+`/opt/flutter/bin/dart test --reporter expanded`;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: 1) Future falho sai do cache e a mesma instância abre novamente;
+2) concorrentes compartilham tentativa e erro antigo não invalida sucesso novo;
+3) `SyncEngine.start` retry recupera snapshot/outbox antes de nova edição;
+4) regressões cobrem falha, concorrência, `close` e recuperação SQLite real;
+5) schema incompatível permanece rejeitado e os dados continuam presentes;
+6) consumo e limites documentados sem dependência nova em core/sync.
+
+Manutenção: R-12 concluída na fase e índice; fase 3 concluída. DEC-26 registra
+semântica do cache e RISK-15/19 foram atualizados para o cenário validado.
+Tarefa ativa limpa; R-10 é próxima MUST pronta. VAL-05 continua planejada até
+R-10 concluída. A escrita do TCC permanece com o autor.
+
+Limitações: validação SQLite FFI/Linux x64; plugin Flutter mobile não foi
+executado e VAL-07 segue SHOULD. R-10 permanece pendente. Review não independente.

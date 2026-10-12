@@ -320,6 +320,9 @@ estado/clock em campos paralelos. O reader aceita snapshot v1 com
 é rejeitado. Snapshots restaurados são regravados no formato atual ao iniciar.
 `saveReplica` serve a bootstrap/manutenção sem pendências; `enqueue` importa uma
 pendência fora de mutação local. Edições usam commit atômico.
+No adaptador SQLite, uma falha transitória ao abrir o banco permite repetir
+`SyncEngine.start()` com os mesmos objetos; a restauração termina antes de novas
+edições. Erros de schema continuam explícitos e não migram dados automaticamente.
 
 `ReplicaState` exposto por `Replica.state` é cópia isolada; consultas devolvem
 coleções aninhadas imutáveis. `SyncEngine` clona a `Replica` recebida e `engine.replica`

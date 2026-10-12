@@ -21,6 +21,126 @@ void main() {
 
     tearDown(() => directory.delete(recursive: true));
 
+    test('start retries transient open and restores before editing', () async {
+      const replicaId = 'durable-device';
+      final path = '${directory.path}/open-retry.sqlite';
+      final originalStorage = _storage(path);
+      final originalTransport = _PeerTransport('peer');
+      final original = _engine(replicaId, originalStorage, originalTransport);
+      await original.start();
+      final oldChange = await original.setDelta('name', 'Ada');
+      await original.dispose();
+      await originalStorage.close();
+      await originalTransport.close();
+
+      final factory = _ControlledOpenFactory(failFirst: true);
+      final storage = SqfliteReplicaStorage(
+        databaseFactory: factory,
+        databasePath: path,
+      );
+      final transport = _PeerTransport('peer');
+      final engine = _engine(replicaId, storage, transport);
+
+      await expectLater(engine.start(), throwsStateError);
+      expect(factory.opens, 1);
+      expect(engine.lifecycle, SyncEngineLifecycle.created);
+
+      await engine.start();
+      expect(factory.opens, 2);
+      expect(engine.lifecycle, SyncEngineLifecycle.started);
+      expect(engine.replica.state.values, {'name': 'Ada'});
+      expect((await storage.pending(replicaId)).single.entryId, oldChange.id);
+
+      final next = await engine.setDelta('next', true);
+      expect(next.id, isNot(oldChange.id));
+      expect(engine.replica.state.values, {'name': 'Ada', 'next': true});
+      expect(
+        (await storage.pending(
+          replicaId,
+        )).map((entry) => entry.entryId).toSet(),
+        {oldChange.id, next.id},
+      );
+      await engine.dispose();
+      await storage.close();
+      await transport.close();
+    });
+
+    test('concurrent callers share a failed open and later retry', () async {
+      final gate = Completer<void>();
+      final factory = _ControlledOpenFactory(failFirst: true, firstGate: gate);
+      final storage = SqfliteReplicaStorage(
+        databaseFactory: factory,
+        databasePath: '${directory.path}/concurrent.sqlite',
+      );
+      final first = storage.loadReplica('device');
+      final second = storage.loadReplica('device');
+      expect(factory.opens, 1);
+      final firstError = expectLater(first, throwsStateError);
+      final secondError = expectLater(second, throwsStateError);
+      gate.complete();
+      await Future.wait([firstError, secondError]);
+
+      expect(await storage.loadReplica('device'), isNull);
+      expect(factory.opens, 2);
+      await storage.close();
+    });
+
+    test('old open failure cannot clear a newer successful opening', () async {
+      final gate = Completer<void>();
+      final factory = _ControlledOpenFactory(failFirst: true, firstGate: gate);
+      final storage = SqfliteReplicaStorage(
+        databaseFactory: factory,
+        databasePath: '${directory.path}/stale-open.sqlite',
+      );
+      final firstError = expectLater(
+        storage.loadReplica('device'),
+        throwsStateError,
+      );
+      final closeError = expectLater(storage.close(), throwsStateError);
+      expect(await storage.loadReplica('device'), isNull);
+      expect(factory.opens, 2);
+
+      gate.complete();
+      await Future.wait([firstError, closeError]);
+      expect(await storage.loadReplica('device'), isNull);
+      expect(factory.opens, 2);
+      await storage.close();
+    });
+
+    test('incompatible schema fails each retry and preserves data', () async {
+      final path = '${directory.path}/incompatible.sqlite';
+      final baseline = _storage(path);
+      final replica = Replica('device')..setDelta('name', 'Ada');
+      await baseline.saveReplica(ReplicaSnapshot.fromReplica(replica));
+      await baseline.close();
+      final newer = await databaseFactoryFfi.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 2),
+      );
+      await newer.close();
+
+      final factory = _ControlledOpenFactory();
+      final incompatible = SqfliteReplicaStorage(
+        databaseFactory: factory,
+        databasePath: path,
+      );
+      await expectLater(
+        incompatible.loadReplica(replica.id),
+        throwsFormatException,
+      );
+      await expectLater(
+        incompatible.loadReplica(replica.id),
+        throwsFormatException,
+      );
+      expect(factory.opens, 2);
+      final preserved = await databaseFactoryFfi.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 2),
+      );
+      expect(await preserved.query('deltasync_snapshots'), hasLength(1));
+      await preserved.close();
+    });
+
     test(
       'restores identity, HLC, counter dots, tombstone, and pending outbox',
       () async {
@@ -480,6 +600,31 @@ void _expectAllCrdts(Replica replica) {
   expect(replica.mvRegisterValue('mv-register'), {'version'});
   expect(replica.orSetValue('or-set'), isEmpty);
   expect(replica.orMapValue('or-map'), isEmpty);
+}
+
+class _ControlledOpenFactory implements DatabaseFactory {
+  _ControlledOpenFactory({this.failFirst = false, this.firstGate});
+
+  final bool failFirst;
+  final Completer<void>? firstGate;
+  int opens = 0;
+
+  @override
+  Future<Database> openDatabase(
+    String path, {
+    OpenDatabaseOptions? options,
+  }) async {
+    final attempt = ++opens;
+    if (attempt == 1 && failFirst) {
+      final gate = firstGate;
+      if (gate != null) await gate.future;
+      throw StateError('injected opening failure');
+    }
+    return databaseFactoryFfi.openDatabase(path, options: options);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 SqfliteReplicaStorage _storage(String path) => SqfliteReplicaStorage(

@@ -33,8 +33,8 @@ executados, Compass e consumidores externos não inventariados e usabilidade nã
 avaliada com participantes (RISK-09/17, OPEN-07). A revisão de 2026-10-11 registrou
 155 testes aprovados, mas reproduziu três defeitos não cobertos: coleções LWW tipadas,
 ID pendente divergente no SQLite e retry de abertura. R-10/R-11/R-12 são MUST;
-VAL-05 foi reaberta. R-11 foi corrigida e validada em 2026-10-12; R-10/R-12
-continuam pendentes. Diagnósticos e comandos estão na
+VAL-05 foi reaberta. R-11/R-12 foram corrigidas e validadas em 2026-10-12;
+R-10 continua pendente. Diagnósticos e comandos estão na
 [rastreabilidade](TRACEABILITY.md#revisao-tecnica-2026-10-11).
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
@@ -106,18 +106,18 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fases 1, 3 e 5: **reabertas por correções**; fases 2 e 4 conservam conclusões.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **R-12**, pronta.
-VAL-05 está planejada até R-10/R-11/R-12 concluídas. Escrita e revisão do TCC
+Fases 1 e 5: **reabertas por correções**; fases 2, 3 e 4 concluídas.
+Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **R-10**, pronta.
+VAL-05 está planejada até R-10 concluída. Escrita e revisão do TCC
 ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-11 (integridade snapshot/outbox) concluída; R-12 (retry de
-abertura) e R-10 (coleções tipadas) prontas, depois VAL-05 (novo fechamento).
+recomendada: R-11 (integridade snapshot/outbox) e R-12 (retry de abertura)
+concluídas; R-10 (coleções tipadas) pronta, depois VAL-05 (novo fechamento).
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 Depois, VAL-07 pode ampliar evidência mobile como SHOULD. Registrar fase ativa
-ao selecionar tarefa; a conclusão de R-11 não iniciou a próxima.
+ao selecionar tarefa; a conclusão de R-12 não iniciou a próxima.
 
 R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
 correções obrigatórias em tarefas sucessoras; R-09a/R-09b/R-05 já foram concluídas.
@@ -172,7 +172,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | concluída | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | concluída | MUST | R-07c, R-08d |
 | [R-11](03_PHASE3_PERSISTENCIA.md#r-11) | Rejeitar payload divergente para ID pendente | concluída | MUST | R-07b, R-07c, R-07d |
-| [R-12](03_PHASE3_PERSISTENCIA.md#r-12) | Retry após falha de abertura SQLite | pronta | MUST | R-05, R-07c, R-07d |
+| [R-12](03_PHASE3_PERSISTENCIA.md#r-12) | Retry após falha de abertura SQLite | concluída | MUST | R-05, R-07c, R-07d |
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |

@@ -26,6 +26,12 @@ metadata. Reusing that key with divergent content throws `FormatException`.
 In `commit`, the snapshot and all new outbox rows roll back together on conflict.
 The comparison uses the public `Delta.merge` rule, including nested JSON values.
 This behavior does not change the SQLite schema or persisted JSON format.
+If opening the database fails, the adapter reports that error and permits a new
+attempt through the same instance. Concurrent callers share one opening attempt.
+An incompatible schema still fails on every attempt without deleting data.
+`close()` waits for an opening already in progress and reports its error if it
+fails; call it before backup as described below. `SyncEngine.start()` can be
+retried after a transient open failure, restoring state and outbox before edits.
 
 Schema version starts at 1. Unknown upgrades or downgrades fail explicitly and
 preserve the database; add a versioned migration before changing the schema.

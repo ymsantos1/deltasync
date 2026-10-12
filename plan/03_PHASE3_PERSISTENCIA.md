@@ -1,6 +1,6 @@
 # Fase 3 — Persistência durável de referência
 
-Estado: pendente de R-12. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
+Estado: concluída. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
 Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
 Não depende de finalizar cinco tipos restantes.
 Saída: contrato validado, adaptador persistente de referência SQLite/sqflite e
@@ -132,7 +132,7 @@ Evidência de conclusão: [execução R-11 — 2026-10-12](TRACEABILITY.md#execu
 
 ## R-12 — Retry após falha de abertura SQLite
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-05, R-07c, R-07d
 
@@ -144,17 +144,17 @@ com apenas uma abertura na factory. Recuperação exige close explícito atualme
 
 Critérios:
 
-- [ ] Falha de abertura não mantém Future falho como resultado permanente;
+- [x] Falha de abertura não mantém Future falho como resultado permanente;
   nova chamada pode abrir o banco sem exigir close ou recriar o adaptador.
-- [ ] Chamadas concorrentes compartilham a tentativa em curso; tratamento de
+- [x] Chamadas concorrentes compartilham a tentativa em curso; tratamento de
   falha antiga não invalida abertura posterior bem-sucedida.
-- [ ] SyncEngine.start falha de forma observável, permite retry no mesmo
+- [x] SyncEngine.start falha de forma observável, permite retry no mesmo
   adaptador e restaura estado/outbox antes de aceitar mutações.
-- [ ] Regressões cobrem primeira abertura falha seguida de sucesso, concorrência
+- [x] Regressões cobrem primeira abertura falha seguida de sucesso, concorrência
   e close conforme contrato; SQLite real verifica estado recuperado.
-- [ ] Schema incompatível continua rejeitado sem apagar dados; retry não mascara
+- [x] Schema incompatível continua rejeitado sem apagar dados; retry não mascara
   erro persistente nem altera formatos/identidade para forçar recuperação.
-- [ ] Documentar retry e limites para consumidor/manutenção; core e sync não
+- [x] Documentar retry e limites para consumidor/manutenção; core e sync não
   adquirem dependência de SQLite ou política de reconexão do backend.
 
 Validação: factory com falha injetada na primeira abertura e SQLite real na segunda;
@@ -162,9 +162,9 @@ integração de start/retry com dados persistidos. Format/analyze/test nos pacot
 afetados e review após correções, incluindo lifecycle e concorrência.
 
 Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-12 — 2026-10-12](TRACEABILITY.md#execucao-r-12-2026-10-12).
 
 ## Gate da fase
 
-R-07b, R-07c, R-07d e R-11 concluídas. A fase exige R-12 antes de fechar;
-suporte durável aos oito tipos foi consolidado em R-07a.
+R-07b, R-07c, R-07d, R-11 e R-12 concluídas. Suporte durável aos oito tipos
+foi consolidado em R-07a. VAL-05 ainda depende de R-10, fora desta fase.

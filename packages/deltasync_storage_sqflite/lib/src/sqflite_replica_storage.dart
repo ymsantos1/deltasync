@@ -22,27 +22,38 @@ class SqfliteReplicaStorage implements ReplicaStorage {
   final String databasePath;
   Future<Database>? _opening;
 
-  Future<Database> _database() => _opening ??= databaseFactory.openDatabase(
-    databasePath,
-    options: OpenDatabaseOptions(
-      version: schemaVersion,
-      onCreate: (database, version) async {
-        await _createSchema(database);
-      },
-      onUpgrade: (database, oldVersion, newVersion) async {
-        throw FormatException(
-          'Unsupported DeltaSync SQLite schema upgrade: '
-          '$oldVersion to $newVersion',
-        );
-      },
-      onDowngrade: (database, oldVersion, newVersion) async {
-        throw FormatException(
-          'Unsupported DeltaSync SQLite schema downgrade: '
-          '$oldVersion to $newVersion',
-        );
-      },
-    ),
-  );
+  Future<Database> _database() {
+    final cached = _opening;
+    if (cached != null) return cached;
+    late final Future<Database> attempt;
+    attempt = databaseFactory
+        .openDatabase(
+          databasePath,
+          options: OpenDatabaseOptions(
+            version: schemaVersion,
+            onCreate: (database, version) async {
+              await _createSchema(database);
+            },
+            onUpgrade: (database, oldVersion, newVersion) async {
+              throw FormatException(
+                'Unsupported DeltaSync SQLite schema upgrade: '
+                '$oldVersion to $newVersion',
+              );
+            },
+            onDowngrade: (database, oldVersion, newVersion) async {
+              throw FormatException(
+                'Unsupported DeltaSync SQLite schema downgrade: '
+                '$oldVersion to $newVersion',
+              );
+            },
+          ),
+        )
+        .catchError((Object error, StackTrace stack) {
+          if (identical(_opening, attempt)) _opening = null;
+          Error.throwWithStackTrace(error, stack);
+        });
+    return _opening = attempt;
+  }
 
   /// Close this database before copying it. With WAL enabled, copy the database
   /// together with its `-wal` and `-shm` files, or use SQLite's online backup
