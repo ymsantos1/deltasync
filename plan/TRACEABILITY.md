@@ -14,8 +14,8 @@ confirmou três defeitos apesar de 155 testes aprovados.
 no Moto G52 Android 13, com plugin sqflite e reinícios reais de processo.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
 A [revisão geral posterior](#revisao-geral-2026-10-12) confirmou novos defeitos;
-[R-14](#execucao-r-14-2026-10-12) foi concluída; R-13/R-15/R-18 continuam MUST
-pendentes e VAL-05 foi reaberta. O autor informou
+[R-13](#execucao-r-13-2026-10-12) e [R-14](#execucao-r-14-2026-10-12) foram
+concluídas; R-15/R-18 continuam MUST pendentes e VAL-05 foi reaberta. O autor informou
 entrega em 16/11 e pediu [planejamento das correções/refatoração](#manutencao-revisao-refatoracao-2026-10-12).
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
@@ -119,7 +119,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Matriz e fechamento técnico | VAL-03, VAL-04, VAL-05 | evidência por requisito, arquitetura/API e gate técnico da biblioteca |
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
 | Integração Flutter/sqflite mobile, SHOULD | VAL-07 | build/runtime, reinício de processo e reconciliação executados no Moto G52 Android 13/API 33 |
-| Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | R-14 concluída com regressões core/SQLite; igualdade/hash R-13 pendente |
+| Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | R-13 concluída com regressões Set/Map; R-14 concluída com regressões core/SQLite |
 | Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | falha de UI e documentação inspecionadas; regressão e correções pendentes |
 | Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | inventário, preservação de comportamento e app interativo; SHOULD pendentes |
 | Validação ampliada e limites de custo | VAL-09, VAL-10 | histórias/metadados e cargas contrastantes; SHOULD pendentes |
@@ -131,7 +131,7 @@ Esta matriz resume implementação e execuções até 2026-10-12; a seção de b
 os registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
 reabriram o fechamento; R-10/R-11/R-12 corrigiram os três defeitos confirmados.
 Os novos achados de 2026-10-12 reabriram VAL-05; a matriz preserva execuções
-anteriores, registra R-14 e identifica os demais MUST pendentes.
+anteriores, registra R-13/R-14 e identifica os demais MUST pendentes.
 Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
@@ -152,7 +152,7 @@ consumidora entre processos. Uma categoria não substitui outra.
 | Requisito MUST | Implementação | Evidência executada | Limite declarado |
 |---|---|---|---|
 | Oito CRDTs, mutações, deltas e joins | `packages/deltasync_core/lib/src/`; OR-Map compõe G-Set; fachada `lib/deltasync.dart` | Testes por tipo em `packages/deltasync_core/test/`; propriedades VAL-01; lote SQLite de oito tipos R-07a; coleções LWW tipadas e isolamento R-10 | Fixtures algébricas finitas; não constituem prova matemática universal; coleções tipadas exigem `decodeValue` |
-| Identidade, dots e roteamento por endereço | `identity.dart`, `replica.dart`, `delta_change.dart` | Testes `ReplicaId and Dot round trip and validate identity`, roteamento misto, conflito de endereço/tipo; R-02/R-09a/R-09b/R-07a | G/PN usam componentes cumulativos; tipos com eventos individuais mantêm contexto explícito |
+| Identidade, dots e roteamento por endereço | `identity.dart`, `replica.dart`, `delta_change.dart`, `vector_clock.dart` | Testes `ReplicaId and Dot round trip and validate identity`, roteamento misto, conflito de endereço/tipo; R-02/R-09a/R-09b/R-07a; R-13 cobre igualdade/hash de clocks em Set/Map | G/PN usam componentes cumulativos; tipos com eventos individuais mantêm contexto explícito |
 | JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10; R-14 rejeita sequência MV atrasada em core e SQLite FFI | Formatos antigos conforme migração documentada; consumidores externos desconhecidos; VAL-05 aguarda demais MUST |
 | Core independente e contratos modulares | `deltasync_core`, `deltasync_storage`, `deltasync_sync`, `deltasync_transport`, facade | Analyze/test por pacote; integração pública R-08d e VAL-02 | SQLite fica no adaptador; nenhuma dependência de Flutter no core |
 | Storage substituível e `MemoryStorage` | `ReplicaStorage`, `MemoryStorage`, suíte `deltasync_storage_testing` | R-07b e contrato testado; `memory_storage_contract_test.dart` | Memória é volátil e não prova restart |
@@ -162,7 +162,7 @@ consumidora entre processos. Uma categoria não substitui outra.
 | Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02/VAL-05, com duas réplicas SQLite e processos separados | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
 | Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10/R-11/R-12 acrescentam regressões; VAL-05 repete sete suítes e consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
 | Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`, `example/flutter_mobile/`; configuração nos READMEs | VAL-02/VAL-05 e VAL-07: edição offline, falha visível, restart, reconexão, ACK e convergência; Android com plugin sqflite | Transporte sintético e peer fixo; sem participantes, rede real ou avaliação geral de usabilidade |
-| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-14 validou rejeição e retry com banco preservado | R-13/R-15/R-18 pendentes; evidência anterior não prova correção destes casos |
+| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-13 validou Set/Map/JSON; R-14 validou rejeição e retry com banco preservado | R-15/R-18 pendentes; evidência anterior não prova correção destes casos |
 | Core nativo, snapshot canônico, fila sem espera de rede | `Replica`, `ReplicaState`, `SyncEngine`, `OutboxEntry` | Regressões R-09a/R-09b/R-05; envio lento com commits locais em `sync_engine_test.dart` | Histórico e deduplicação limitados conforme R-09b; sem benchmark de escala |
 | Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a/R-10; R-10 documenta migração de `const LwwDelta` sem alterar wire JSON | Não há inventário de todos consumidores externos (OPEN-07) |
 
@@ -2811,3 +2811,49 @@ de decisão arquitetural.
 Limitações: entrada inválida injetada no teste; não observada no banco do app Android.
 Validação mobile de R-14 não foi exigida, pois core/API/formato válido e plugin
 Flutter não mudaram.
+
+<a id="execucao-r-13-2026-10-12"></a>
+
+## Execução R-13 — 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-02 concluída; R-13 pronta e MUST. `VectorClock.compare` considera
+componente ausente igual a zero, mas `hashCode` incluía entradas zero. `entries`
+é imutável, `toJson` conserva os valores fornecidos, e Replica/sync consomem o
+clock pela API pública. Consultados tarefa, risco, código, testes e guia Dart.
+Implementação: `VectorClock.hashCode` ignora entradas de valor zero antes de
+`Object.hashAllUnordered`. A igualdade, `entries`, `compare`, `tick`, `merge`,
+JSON e validação de entrada não mudaram. Novo `vector_clock_test.dart` verifica
+zeros ausentes/presentes, múltiplas réplicas, ordem distinta de inserção,
+deduplicação/consulta/atualização em Set e Map, clock diferente, round trip JSON
+com zero, operações causais e rejeição de valores inválidos.
+Review: aprovado
+Achados: nenhum impeditivo; formatação posterior apenas quebrou linhas do teste e foi re-revisada.
+Review feito pelo próprio implementador, não independente. Foi conferido o arquivo
+novo não rastreado, contrato de igualdade/hash, compatibilidade de JSON e uso na
+Replica e no caminho legado de sync. Nenhum tipo, camada ou formato foi criado.
+Validação: aprovada
+Comandos: Dart 3.13.5 em Linux x64; comandos e diretórios abaixo.
+
+- Antes da mudança, em `packages/deltasync_core`:
+  `/home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart test test/vector_clock_test.dart --reporter expanded`
+  falhou nos dois testes de hash/coleções previstos; teste de JSON/causalidade passou.
+- Após a mudança, no core:
+  `/home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart format test/vector_clock_test.dart`
+  formatou o teste; `format --output=none --set-exit-if-changed lib test` passou
+  com zero arquivos alterados; `analyze` sem issues; `test --reporter expanded`
+  aprovou 83 testes.
+- Em `packages/deltasync_sync`, `analyze` sem issues e `test --reporter expanded`
+  aprovou 39 testes. Na raiz, `analyze` sem issues e `test --reporter expanded`
+  aprovou 7 testes pela facade pública.
+
+Critérios: (1) testes verificam hash igual com ausência/zero, ordem e réplicas
+múltiplas; (2) Set/Map deduplicam e recuperam chaves equivalentes; (3) compare,
+tick, merge, JSON com zeros e entradas inválidas preservados e testados; (4)
+facade e sync analisados/testados sem alteração de contrato ou relógio novo.
+Zeros continuam presentes em `entries` e JSON; só o hash os desconsidera.
+Manutenção: R-13 concluída na fase/índice; RISK-22 e matriz atualizados.
+VAL-09 passou a pronta por dependências R-13/R-14 concluídas. R-16 ainda aguarda
+R-18; fase 1 e VAL-05 seguem reabertas por R-15/R-18. Próxima recomendada: R-15.
+Limitações: hash não prova convergência dos CRDTs; suíte cobre casos finitos e não altera plataforma Android.

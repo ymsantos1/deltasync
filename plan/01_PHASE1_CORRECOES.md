@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: reaberta em 2026-10-12; R-13/R-15/R-18 MUST pendentes.
+Estado: reaberta em 2026-10-12; R-15/R-18 MUST pendentes.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -318,7 +318,7 @@ Evidência de conclusão: [execução R-10](TRACEABILITY.md#execucao-r-10-2026-1
 
 ## R-13 — Corrigir igualdade e hash de VectorClock
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-02
 
@@ -329,17 +329,17 @@ diferentes; um Set mantém os dois. Gravidade média, com impacto em Set/Map.
 
 Critérios:
 
-- [ ] Relógios iguais têm hash igual, inclusive componente ausente versus zero,
+- [x] Relógios iguais têm hash igual, inclusive componente ausente versus zero,
   entradas em ordens diferentes e múltiplas réplicas.
-- [ ] Regressões verificam inserção, deduplicação e consulta em Set/Map.
-- [ ] Preservar compare/tick/merge, JSON aceito e rejeição de valores inválidos;
+- [x] Regressões verificam inserção, deduplicação e consulta em Set/Map.
+- [x] Preservar compare/tick/merge, JSON aceito e rejeição de valores inválidos;
   qualquer normalização de zeros tem compatibilidade explícita.
-- [ ] Consumidores e metadados existentes permanecem compatíveis; sem novo relógio.
+- [x] Consumidores e metadados existentes permanecem compatíveis; sem novo relógio.
 
 Validação: reprodução anterior, regressões, format/analyze/test do core e facade;
 review após correções. Não confundir hash com mecanismo de convergência.
 Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-13 em 2026-10-12](TRACEABILITY.md#execucao-r-13-2026-10-12).
 
 <a id="r-14"></a>
 

@@ -1,6 +1,6 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: reaberta em 2026-10-12; VAL-05 aguarda R-13/R-14/R-15/R-18.
+Estado: reaberta em 2026-10-12; VAL-05 aguarda R-15/R-18.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -274,7 +274,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## VAL-09 — Ampliar histórias e metadados nas propriedades dos CRDTs
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-13, R-14
 
