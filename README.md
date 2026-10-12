@@ -456,8 +456,13 @@ e falha de peer indisponível, sem perder edição. Reconexão restaura snapshot
 outboxes, entrega e confirma deltas; ambas réplicas mostram os dois compradores e
 total cinco. Reabertura final confirma estado convergente e outboxes vazias.
 Exemplo foi executado em Linux x64 com SQLite real via `sqflite_common_ffi`;
-outros desktops, plugins Flutter Android/iOS e usabilidade com participantes não
-foram avaliados.
+outros desktops e usabilidade com participantes não foram avaliados.
+
+O [consumidor Flutter Android](example/flutter_mobile/README.md) usa a factory do
+plugin `sqflite` e reproduz esse percurso pela UI. VAL-07 executou o app no
+Moto G52 com Android 13, incluindo dois reinícios reais de processo, restauração
+da outbox e confirmação durável. O exemplo resolve os pacotes locais em workspace
+próprio; core, sync e contrato de storage continuam Dart puro. iOS não foi avaliado.
 
 ### Medição de tamanho
 

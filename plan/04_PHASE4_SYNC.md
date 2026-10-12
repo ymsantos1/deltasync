@@ -130,6 +130,36 @@ validação individual dos demais.
 Evidência de conclusão: execução R-08c em TRACEABILITY.md.
 
 
+<a id="r-17"></a>
+
+## R-17 — Notificar commits concluídos pela API Dart
+
+Status: pronta
+MoSCoW: COULD
+Dependências: R-05, R-08c
+
+Áreas: contrato público de SyncEngine e integração do consumidor.
+Objetivo: facilitar atualização de consumidores após commit remoto sem polling.
+Lacuna de consumo, sem defeito de commit confirmado: errors informa falhas,
+mas não há evento público de alteração incorporada com sucesso.
+
+Critérios:
+
+- [ ] Justificar um contrato mínimo de notificação para mutações locais e remotas,
+  com emissão somente após commit e adoção bem-sucedidos.
+- [ ] Core/sync continuam Dart puro; sem dependência de Flutter, callbacks que
+  governem regras internas ou framework de plugins.
+- [ ] Erro/rollback não publica sucesso; listener não bloqueia nem invalida commit;
+  lifecycle e descarte do stream ficam definidos e testados.
+- [ ] Documentar consumo para atualizar UI e distinguir evento de estado de ACK;
+  exemplos e formato persistido permanecem compatíveis.
+
+Validação: regressões de local/remoto, rollback e dispose no sync/facade;
+analyze/test dos consumidores afetados. COULD: só selecionar com MUST resolvidos
+e margem antes do congelamento; não condiciona VAL-05 ou VAL-08.
+Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 Reconciliação comprovada no cenário declarado. Push de outbox e testes de

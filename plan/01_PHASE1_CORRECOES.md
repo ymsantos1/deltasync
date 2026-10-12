@@ -1,18 +1,21 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: concluída após R-10.
+Estado: reaberta em 2026-10-12; R-13/R-14/R-15/R-18 MUST pendentes.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
 diagnósticos em [TRACEABILITY.md](TRACEABILITY.md).
-Saída: R-01 a R-05, R-09a/R-09b e R-10 concluídas, com evidências dos critérios.
+Saída: R-01 a R-05, R-09a/R-09b, R-10, R-13/R-14/R-15/R-18 concluídas,
+com evidências dos critérios. R-16 é SHOULD, com adiamento justificado permitido.
 Áreas: core, storage, sync, transport e seus testes.
 Riscos: [RISK-01 a RISK-05, RISK-07, RISK-13 a RISK-16 e RISK-20](RISKS.md).
 Exclusões: novos frameworks de objetos, codegen e GC destrutivo.
 
 R-01 a R-05 e R-09a/R-09b conservam suas conclusões históricas. A revisão de
-2026-10-11 confirmou falha no uso público de LWW com coleções tipadas; R-10
-reabre esta fase. A ordem atual de execução está no índice do plano.
+2026-10-11 confirmou falha no uso público de LWW com coleções tipadas, corrigida
+em R-10. A [revisão geral de 2026-10-12](TRACEABILITY.md#revisao-geral-2026-10-12)
+acrescentou os novos defeitos e o pedido de organização estrutural.
+A ordem atual de execução está no índice do plano.
 
 <a id="r-01"></a>
 
@@ -311,9 +314,164 @@ formatos persistidos e uso público, sem ampliar para um framework de codecs.
 Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
 Evidência de conclusão: [execução R-10](TRACEABILITY.md#execucao-r-10-2026-10-12).
 
+<a id="r-13"></a>
+
+## R-13 — Corrigir igualdade e hash de VectorClock
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-02
+
+Áreas: VectorClock e testes de core/facade.
+Objetivo: preservar o contrato Dart entre igualdade e hash.
+Diagnóstico reproduzido: relógios vazio e `{a: 0}` comparam iguais, mas têm hashes
+diferentes; um Set mantém os dois. Gravidade média, com impacto em Set/Map.
+
+Critérios:
+
+- [ ] Relógios iguais têm hash igual, inclusive componente ausente versus zero,
+  entradas em ordens diferentes e múltiplas réplicas.
+- [ ] Regressões verificam inserção, deduplicação e consulta em Set/Map.
+- [ ] Preservar compare/tick/merge, JSON aceito e rejeição de valores inválidos;
+  qualquer normalização de zeros tem compatibilidade explícita.
+- [ ] Consumidores e metadados existentes permanecem compatíveis; sem novo relógio.
+
+Validação: reprodução anterior, regressões, format/analyze/test do core e facade;
+review após correções. Não confundir hash com mecanismo de convergência.
+Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
+<a id="r-14"></a>
+
+## R-14 — Rejeitar sequência inválida no snapshot MV-Register
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-06c, R-07a
+
+Áreas: MvRegister.fromJson, Replica.fromSnapshotJson e recuperação de engine.
+Objetivo: rejeitar snapshot cujo contador local permite reutilizar dot observado.
+Diagnóstico reproduzido: snapshot com dot local 1 e sequence 0 é aceito; a próxima
+escrita falha. É entrada inconsistente; não foi observada em banco gerado pelo app.
+
+Critérios:
+
+- [ ] Sequência restaurada é compatível com os dots da própria réplica no contexto,
+  incluindo dots sem versão ativa; inconsistente falha antes de publicar estado.
+- [ ] Entradas inválidas falham explicitamente, sem corrigir silenciosamente IDs
+  nem alterar JSON, política causal ou dados persistidos.
+- [ ] Regressões cobrem sequência atrasada, versão substituída, réplica distinta,
+  restauração válida e novas escritas sem colisão de dots.
+- [ ] Validar o caminho de Replica e start da engine com snapshot inválido;
+  falha não sobrescreve o banco nem estado válido, e retry continua possível.
+
+Validação: core/facade, integração sync e recuperação SQLite quando afetada;
+reproduzir antes, revisar correções e executar regressões após review.
+Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
+<a id="r-15"></a>
+
+## R-15 — Recuperar abertura falha no consumidor Flutter
+
+Status: pronta
+MoSCoW: MUST
+Dependências: VAL-07
+
+Áreas: inicialização, erro, UI e recursos do consumidor em example/flutter_mobile.
+Objetivo: permitir nova tentativa após falha de abertura sem exigir matar o app.
+Diagnóstico por inspeção: catch de _open mantém _busy verdadeiro, sem ação de retry.
+
+Critérios:
+
+- [ ] Erro de inicialização fica visível e oferece nova tentativa; ações que
+  exigem engine restaurada continuam indisponíveis até sucesso.
+- [ ] Tentativa falha libera recursos adquiridos; retry não duplica engines,
+  listeners ou commits e não apaga dados para contornar falha.
+- [ ] Regressão pertinente simula falha transitória e sucesso posterior,
+  verificando UI, restauração e ausência de mutação antes de start.
+- [ ] Build e percurso no Android continuam preservando estado/outbox entre
+  processos; modelo e UI permanecem no consumidor.
+
+Validação: format/analyze e teste Flutter significativo de falha/retry; build e
+runtime Android com plataforma registrada, após review das correções.
+Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
+<a id="r-16"></a>
+
+## R-16 — Refatorar organização e remover código sem uso comprovado
+
+Status: planejada
+MoSCoW: SHOULD
+Dependências: R-13, R-14, R-18
+
+Áreas: core, sync, storage, exports, testes e documentação de manutenção.
+Objetivo: localizar responsabilidades com menos duplicação, preservando comportamento.
+Pedido do autor: avaliar divisão de pastas/arquivos e possíveis remoções até 16/11.
+
+Critérios:
+
+- [ ] Inventariar responsabilidades e referências antes de mover/remover; distinguir
+  código sem uso, APIs exportadas, migração, fixtures e possibilidades sem prova.
+- [ ] Definir layout por responsabilidades concretas: no core, avaliar CRDTs,
+  metadados, réplica e serialização; reduzir concentração em Replica. Em sync e
+  storage, separar contratos/DTOs/políticas da execução onde facilitar manutenção.
+  Pastas/arquivos novos devem ter dono claro; evitar um arquivo por método.
+- [ ] Organizar testes por comportamento/tipo quando facilitar regressões, com
+  fixtures compartilhadas apenas quando houver duplicação real.
+- [ ] Fazer uma fronteira por vez e conservar estados intermediários verificáveis.
+  Registrar baseline e mesmas provas após cada extração relevante.
+- [ ] Preservar imports públicos, APIs, labels/versões JSON, schema SQLite,
+  causalidade, identidade, rollback, ordem de commit, ACK/retry e lifecycle.
+  Não misturar otimização, correção algorítmica ou funcionalidade nova à refatoração.
+- [ ] Remover apenas código sem uso demonstrado. Operation, PendingDeltaStore e
+  aliases depreciados têm referências de migração/testes e política de compatibilidade;
+  não removê-los como código morto. Remoção pública exige escopo/versão próprios.
+- [ ] Atualizar exports, exemplos e mapa de manutenção; explicar onde alterar
+  estado, mutação, delta, join, commit e restauração no layout resultante.
+
+Validação: safe-refactor e ciclo plan-executor; mesmos testes de unidade,
+integração e SQLite antes/depois, incluindo facade e consumidor Flutter quando
+afetados. Revalidar build/runtime se integração mobile mudar. Review do diff real
+e das remoções. Se prazo impedir conclusão, registrar adiamento SHOULD;
+reorganização cosmética não é requisito de fechamento nem prova de melhoria.
+Evidência de motivação: [revisão e inventário](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
+<a id="r-18"></a>
+
+## R-18 — Precisar contrato de retry e limites de consumo
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-08c, VAL-04
+
+Áreas: README, comentários públicos de sync e instruções dos consumidores.
+Objetivo: descrever o comportamento existente sem prometer agendamento automático.
+Diagnóstico: README chama retries de automáticos; a política só seleciona entradas
+quando push é chamado. O consumidor é responsável por iniciar novas tentativas.
+
+Critérios:
+
+- [ ] Explicitar quem chama ou agenda push, backoff, maxAttempts e force; não
+  introduzir scheduler para corrigir uma descrição incorreta.
+- [ ] Distinguir sucesso local, pendência, ACK e falha; documentar caminho de
+  atualização da UI sem anunciar stream de commits ainda não entregue.
+- [ ] Manter explícitos peer fixo, enlace sintético do exemplo, OR-Map com G-Set,
+  plataforma efetivamente validada e ausência de economia universal de deltas.
+- [ ] Conferir API/README/exemplos contra código atual, com links e referências
+  de manutenção válidos; escrita do TCC fica com o autor.
+
+Validação: revisão documental, links/anchors, consistência com API e diff limpo.
+Testes Dart só se houver mudança de código justificada dentro do escopo.
+Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
-afetados. Concluir fase somente com evidências de R-01 a R-05, R-09a/R-09b e R-10.
+afetados. Concluir fase somente com evidências de R-01 a R-05, R-09a/R-09b,
+R-10 e R-13/R-14/R-15/R-18. R-16 SHOULD não bloqueia fechamento com adiamento justificado.
 R-09b libera envelopes; R-08d libera expansão dos tipos e contrato durável.
 Limpeza documental não conclui correções de código.

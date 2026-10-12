@@ -34,6 +34,30 @@ não significa implementação concluída.
 
 | DEC-27 | adotada | R-10 guarda valor LWW em cópia JSON canônica; `LwwDelta.value` e `LwwRegister.value/winner` devolvem cópias. Coleções com `T` específico exigem `decodeValue` em delta, register e restauração; conversão deve preservar conteúdo JSON. `const LwwDelta` deixa de existir para isolar entrada, com migração de código documentada. `Replica`/`SyncEngine` seguem em `Object?`; HLC, tombstones, snapshots e wire JSON não mudam. |
 
+## Revisão geral, refatoração e prazo — 2026-10-12
+
+DEC-28 — Adotada em 2026-10-12: revisão geral posterior ao fechamento confirmou
+novos defeitos e imprecisão documental. R-13/R-14/R-15/R-18 são MUST; reabrir fase 1
+e VAL-05, preservar conclusões anteriores como evidência histórica e exigir
+regressões/review/revalidação. R-16 e VAL-08/09/10 são SHOULD; R-17 é COULD.
+Melhorias não se tornam requisitos acadêmicos por terem sido sugeridas.
+
+DEC-29 — Adotada para planejamento: refatoração por responsabilidades, sem
+reescrita geral dos algoritmos. Movimentos em core, sync/storage e testes ficam em
+R-16; divisão do consumidor acompanha VAL-08. Aplicar safe-refactor com baseline
+e mesma prova após cada extração, mantendo contratos/exports/JSON/schema/invariantes.
+Código morto exige ausência comprovada de uso, considerando APIs e migração.
+Operation e PendingDeltaStore têm referências e política de compatibilidade;
+nenhuma remoção pública foi autorizada por este pedido documental.
+
+DEC-30 — Adotada como orientação de prazo: entrega informada pelo autor em
+16/11/2026; congelamento estrutural proposto para 02/11, com margem de validação
+e correções. Janelas do índice são proposta, não estimativa nem promessa de
+capacidade. SHOULD pode ser adiada com evidência; MUST permanece obrigatório.
+Notificação de commits e execução entre dois aparelhos não condicionam fechamento.
+Economia de deltas depende da carga; medir cenários desfavoráveis sem introduzir
+compactação/GC ou alegar ganhos universais. Escrita do TCC continua com o autor.
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

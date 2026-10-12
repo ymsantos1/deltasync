@@ -46,3 +46,9 @@ FFI on Linux x64. Flutter applications pass the platform `sqflite` factory;
 Android/iOS plugin behavior is not exercised by these desktop tests. Other
 platforms can use any factory compatible with `sqflite_common` and supported by
 their runtime. `MemoryStorage` tests do not prove durability.
+
+The [Flutter Android consumer](../../example/flutter_mobile/README.md) was built
+and run with the platform `sqflite` factory on a Moto G52, Android 13/API 33.
+VAL-07 verified offline commits, pending outbox after process termination,
+retry/reconciliation, and persisted acknowledgements after another restart.
+This device evidence does not cover iOS or every Android version.

@@ -1,0 +1,35 @@
+name: deltasync_mobile_consumer
+description: Android consumer for DeltaSync mobile validation.
+publish_to: none
+version: 1.0.0+1
+workspace: []
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  deltasync:
+    path: ../..
+  deltasync_storage_sqflite:
+    path: ../../packages/deltasync_storage_sqflite
+  sqflite: ^2.4.2
+
+dependency_overrides:
+  deltasync_core:
+    path: ../../packages/deltasync_core
+  deltasync_storage:
+    path: ../../packages/deltasync_storage
+  deltasync_sync:
+    path: ../../packages/deltasync_sync
+  deltasync_transport:
+    path: ../../packages/deltasync_transport
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
