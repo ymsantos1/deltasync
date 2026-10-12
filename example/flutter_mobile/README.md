@@ -16,6 +16,16 @@ mesmos valores e pendências. Toque em **2. Reconectar**. A tela e o log devem
 mostrar `Ana/Beto; itens=5` nas duas réplicas e zero pendências. Force o fechamento
 e abra mais uma vez para verificar a confirmação durável.
 
+Se a abertura do banco falhar, a tela mostra o erro e libera **Tentar novamente**.
+Editar e reconectar permanecem desativados até a restauração terminar. O retry
+reabre os mesmos bancos sem limpar o estado ou as pendências. A regressão Flutter
+injeta uma falha de abertura, verifica o fechamento dos recursos e confirma a
+restauração das duas réplicas e da outbox:
+
+```sh
+flutter test test/open_retry_test.dart
+```
+
 O botão de reconexão conecta dois objetos no mesmo processo. Esse enlace é um
 peer fixo de demonstração, não um protocolo de rede ou backend. O caminho SQLite,
 a factory e os valores exibidos permitem verificar a integração do plugin mobile

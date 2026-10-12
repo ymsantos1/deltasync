@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: reaberta em 2026-10-12; R-15/R-18 MUST pendentes.
+Estado: reaberta em 2026-10-12; R-18 MUST pendente.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -374,7 +374,7 @@ Evidência de conclusão: [execução R-14 em 2026-10-12](TRACEABILITY.md#execuc
 
 ## R-15 — Recuperar abertura falha no consumidor Flutter
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: VAL-07
 
@@ -384,19 +384,19 @@ Diagnóstico por inspeção: catch de _open mantém _busy verdadeiro, sem ação
 
 Critérios:
 
-- [ ] Erro de inicialização fica visível e oferece nova tentativa; ações que
+- [x] Erro de inicialização fica visível e oferece nova tentativa; ações que
   exigem engine restaurada continuam indisponíveis até sucesso.
-- [ ] Tentativa falha libera recursos adquiridos; retry não duplica engines,
+- [x] Tentativa falha libera recursos adquiridos; retry não duplica engines,
   listeners ou commits e não apaga dados para contornar falha.
-- [ ] Regressão pertinente simula falha transitória e sucesso posterior,
+- [x] Regressão pertinente simula falha transitória e sucesso posterior,
   verificando UI, restauração e ausência de mutação antes de start.
-- [ ] Build e percurso no Android continuam preservando estado/outbox entre
+- [x] Build e percurso no Android continuam preservando estado/outbox entre
   processos; modelo e UI permanecem no consumidor.
 
 Validação: format/analyze e teste Flutter significativo de falha/retry; build e
 runtime Android com plataforma registrada, após review das correções.
 Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-15 em 2026-10-12](TRACEABILITY.md#execucao-r-15-2026-10-12).
 
 <a id="r-16"></a>
 

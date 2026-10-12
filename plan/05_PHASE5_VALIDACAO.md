@@ -1,6 +1,6 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: reaberta em 2026-10-12; VAL-05 aguarda R-15/R-18.
+Estado: reaberta em 2026-10-12; VAL-05 aguarda R-18.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -242,7 +242,7 @@ O [impedimento anterior](TRACEABILITY.md#execucao-val-07-2026-10-12) permanece n
 
 ## VAL-08 — Tornar a demonstração Flutter interativa e explicativa
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-15, VAL-07
 

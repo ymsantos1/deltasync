@@ -14,15 +14,35 @@ void main() {
 }
 
 class MobileConsumerApp extends StatelessWidget {
-  const MobileConsumerApp({super.key});
+  /// Uses the platform SQLite database by default; overrides support tests.
+  const MobileConsumerApp({
+    super.key,
+    this.databaseFactoryOverride,
+    this.databaseDirectory,
+  });
+
+  /// Optional SQLite factory for a host or integration test.
+  final DatabaseFactory? databaseFactoryOverride;
+
+  /// Optional database directory provider for a host or integration test.
+  final Future<String> Function()? databaseDirectory;
 
   @override
-  Widget build(BuildContext context) =>
-      MaterialApp(title: 'DeltaSync mobile', home: const _DemoPage());
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'DeltaSync mobile',
+    home: _DemoPage(
+      openSession: () async => _DemoSession.open(
+        factory: databaseFactoryOverride ?? databaseFactory,
+        directory: await (databaseDirectory ?? getDatabasesPath)(),
+      ),
+    ),
+  );
 }
 
 class _DemoPage extends StatefulWidget {
-  const _DemoPage();
+  const _DemoPage({required this.openSession});
+
+  final Future<_DemoSession> Function() openSession;
 
   @override
   State<_DemoPage> createState() => _DemoPageState();
@@ -31,7 +51,7 @@ class _DemoPage extends StatefulWidget {
 class _DemoPageState extends State<_DemoPage> {
   _DemoSession? _session;
   String _status = 'Abrindo SQLite...';
-  bool _busy = true;
+  bool _busy = false;
 
   @override
   void initState() {
@@ -40,21 +60,37 @@ class _DemoPageState extends State<_DemoPage> {
   }
 
   Future<void> _open() async {
+    if (_busy || _session != null) return;
+    setState(() {
+      _busy = true;
+      _status = 'Abrindo SQLite...';
+    });
+    _DemoSession? opened;
     try {
-      final session = await _DemoSession.open();
-      final restored = await session.describe();
+      opened = await widget.openSession();
+      final restored = await opened.describe();
       debugPrint('VAL07 restored $restored');
       if (!mounted) {
-        await session.close();
+        final closing = opened;
+        opened = null;
+        await closing.close();
         return;
       }
       setState(() {
-        _session = session;
+        _session = opened;
         _status = 'Restaurado: $restored';
         _busy = false;
       });
+      opened = null;
     } catch (error, stackTrace) {
-      _fail(error, stackTrace);
+      if (opened != null) {
+        try {
+          await opened.close();
+        } catch (closeError, closeStackTrace) {
+          debugPrint('VAL07 CLOSE ERROR $closeError\n$closeStackTrace');
+        }
+      }
+      _fail(error, stackTrace, releaseBusy: true);
     }
   }
 
@@ -73,9 +109,14 @@ class _DemoPageState extends State<_DemoPage> {
     }
   }
 
-  void _fail(Object error, StackTrace stackTrace) {
+  void _fail(Object error, StackTrace stackTrace, {bool releaseBusy = false}) {
     debugPrint('VAL07 ERROR $error\n$stackTrace');
-    if (mounted) setState(() => _status = 'Erro: $error');
+    if (mounted) {
+      setState(() {
+        _status = 'Erro: $error';
+        if (releaseBusy) _busy = false;
+      });
+    }
   }
 
   @override
@@ -96,13 +137,22 @@ class _DemoPageState extends State<_DemoPage> {
           const Text('Duas réplicas; LWW e G-Counter; peer fixo.'),
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: _busy ? null : () => _run((s) => s.editOffline()),
+            onPressed: _busy || _session == null
+                ? null
+                : () => _run((s) => s.editOffline()),
             child: const Text('1. Editar offline'),
           ),
           FilledButton(
-            onPressed: _busy ? null : () => _run((s) => s.reconnect()),
+            onPressed: _busy || _session == null
+                ? null
+                : () => _run((s) => s.reconnect()),
             child: const Text('2. Reconectar'),
           ),
+          if (_session == null)
+            FilledButton(
+              onPressed: _busy ? null : () => unawaited(_open()),
+              child: const Text('Tentar novamente'),
+            ),
           const SizedBox(height: 16),
           SelectableText(_status),
           const SizedBox(height: 16),
@@ -133,14 +183,16 @@ class _DemoSession {
   final _PeerLink _linkA;
   final _PeerLink _linkB;
 
-  static Future<_DemoSession> open() async {
-    final directory = await getDatabasesPath();
+  static Future<_DemoSession> open({
+    required DatabaseFactory factory,
+    required String directory,
+  }) async {
     final storageA = SqfliteReplicaStorage(
-      databaseFactory: databaseFactory,
+      databaseFactory: factory,
       databasePath: '$directory/$_replicaA.sqlite',
     );
     final storageB = SqfliteReplicaStorage(
-      databaseFactory: databaseFactory,
+      databaseFactory: factory,
       databasePath: '$directory/$_replicaB.sqlite',
     );
     final linkA = _PeerLink(_replicaB);
@@ -164,9 +216,13 @@ class _DemoSession {
     try {
       await Future.wait([session._a.start(), session._b.start()]);
       return session;
-    } catch (_) {
-      await session.close();
-      rethrow;
+    } catch (error, stackTrace) {
+      try {
+        await session.close();
+      } catch (closeError, closeStackTrace) {
+        debugPrint('VAL07 CLOSE ERROR $closeError\n$closeStackTrace');
+      }
+      Error.throwWithStackTrace(error, stackTrace);
     }
   }
 
@@ -241,9 +297,15 @@ class _DemoSession {
   }
 
   Future<void> close() async {
-    await Future.wait([_a.dispose(), _b.dispose()]);
-    await Future.wait([_storageA.close(), _storageB.close()]);
-    await Future.wait([_linkA.close(), _linkB.close()]);
+    try {
+      await Future.wait([_a.dispose(), _b.dispose()]);
+    } finally {
+      try {
+        await Future.wait([_storageA.close(), _storageB.close()]);
+      } finally {
+        await Future.wait([_linkA.close(), _linkB.close()]);
+      }
+    }
   }
 }
 
