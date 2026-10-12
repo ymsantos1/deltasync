@@ -22,27 +22,38 @@ class SqfliteReplicaStorage implements ReplicaStorage {
   final String databasePath;
   Future<Database>? _opening;
 
-  Future<Database> _database() => _opening ??= databaseFactory.openDatabase(
-    databasePath,
-    options: OpenDatabaseOptions(
-      version: schemaVersion,
-      onCreate: (database, version) async {
-        await _createSchema(database);
-      },
-      onUpgrade: (database, oldVersion, newVersion) async {
-        throw FormatException(
-          'Unsupported DeltaSync SQLite schema upgrade: '
-          '$oldVersion to $newVersion',
-        );
-      },
-      onDowngrade: (database, oldVersion, newVersion) async {
-        throw FormatException(
-          'Unsupported DeltaSync SQLite schema downgrade: '
-          '$oldVersion to $newVersion',
-        );
-      },
-    ),
-  );
+  Future<Database> _database() {
+    final cached = _opening;
+    if (cached != null) return cached;
+    late final Future<Database> attempt;
+    attempt = databaseFactory
+        .openDatabase(
+          databasePath,
+          options: OpenDatabaseOptions(
+            version: schemaVersion,
+            onCreate: (database, version) async {
+              await _createSchema(database);
+            },
+            onUpgrade: (database, oldVersion, newVersion) async {
+              throw FormatException(
+                'Unsupported DeltaSync SQLite schema upgrade: '
+                '$oldVersion to $newVersion',
+              );
+            },
+            onDowngrade: (database, oldVersion, newVersion) async {
+              throw FormatException(
+                'Unsupported DeltaSync SQLite schema downgrade: '
+                '$oldVersion to $newVersion',
+              );
+            },
+          ),
+        )
+        .catchError((Object error, StackTrace stack) {
+          if (identical(_opening, attempt)) _opening = null;
+          Error.throwWithStackTrace(error, stack);
+        });
+    return _opening = attempt;
+  }
 
   /// Close this database before copying it. With WAL enabled, copy the database
   /// together with its `-wal` and `-shm` files, or use SQLite's online backup
@@ -97,11 +108,7 @@ class SqfliteReplicaStorage implements ReplicaStorage {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       for (final entry in additions) {
-        await transaction.insert(
-          _outboxTable,
-          _outboxRow(entry),
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
+        await _insertOrCheckPending(transaction, entry);
       }
     });
   }
@@ -122,11 +129,28 @@ class SqfliteReplicaStorage implements ReplicaStorage {
   @override
   Future<void> enqueue(OutboxEntry entry) async {
     final database = await _database();
-    await database.insert(
-      _outboxTable,
-      _outboxRow(entry),
-      conflictAlgorithm: ConflictAlgorithm.ignore,
+    await database.transaction(
+      (transaction) => _insertOrCheckPending(transaction, entry),
     );
+  }
+
+  static Future<void> _insertOrCheckPending(
+    DatabaseExecutor transaction,
+    OutboxEntry entry,
+  ) async {
+    final rows = await transaction.query(
+      _outboxTable,
+      columns: const ['payload'],
+      where: 'replica_id = ? AND recipient_peer_id = ? AND entry_id = ?',
+      whereArgs: [entry.replicaId, entry.recipientPeerId, entry.entryId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) {
+      final existing = OutboxEntry.fromJson(_decodeMap(rows.single['payload']));
+      existing.delta.merge(entry.delta);
+      return;
+    }
+    await transaction.insert(_outboxTable, _outboxRow(entry));
   }
 
   @override

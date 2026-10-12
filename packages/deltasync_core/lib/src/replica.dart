@@ -701,7 +701,7 @@ class Replica {
       id: '$id:delta:${++_deltaSequence}',
       replicaId: id,
       timestamp: _hlc.tick(),
-      value: value,
+      value: deleted ? null : copyJsonValue(value, freeze: true),
       deleted: deleted,
       dot: dot,
     );

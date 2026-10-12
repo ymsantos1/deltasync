@@ -9,6 +9,39 @@ da [proposta acadêmica em PDF](<referencia/Proposta TCC.pdf>). A revisão de
 [fase 1](plan/01_PHASE1_CORRECOES.md); evidências em
 [TRACEABILITY.md](plan/TRACEABILITY.md).
 
+### Lista preparada para revisão do texto acadêmico
+
+A fonte editável não está neste checkout; o PDF de referência deve ser preservado.
+Ao receber o arquivo-fonte, aplicar e conferir estas alterações, sem reduzir o
+escopo já validado:
+
+1. **PDF §6.3 e diagrama:** atualizar três módulos para quatro subpacotes
+   (`deltasync_core`, `deltasync_storage`, `deltasync_sync`,
+   `deltasync_transport`) e facade `lib/deltasync.dart`. Explicar que transporte
+   define contratos/envelopes e que o core/sync/storage abstrato seguem Dart puro.
+2. **PDF §§6.3 e 6.6:** apresentar `ReplicaStorage` como contrato independente e
+   `SqfliteReplicaStorage` como adaptador persistente de referência previsto no TCC.
+   O consumidor fornece o backend/factory de plataforma; `MemoryStorage` é volátil,
+   não evidência de persistência durável.
+3. **PDF §§6.5 e 6.8:** substituir equivalência literal de `query()`,
+   `generateDelta()`, `merge()` e conversões JSON pela tabela
+   [conceito/API atual](README.md#percurso-de-integração-e-manutenção). Distinguir
+   codec de delta (`DeltaCodec`) de snapshot (`Replica.fromSnapshotJson`).
+4. **Diagrama e exemplo:** mostrar mutação local → delta → commit atômico de
+   snapshot/outbox → envio → aplicação/join remoto → commit remoto → restauração.
+   Registrar a semântica de falha antes da adoção local.
+5. **PDF §§6.7–6.9 e conclusão:** preservar os oito tipos priorizados e identificar
+   `ObjectCrdt`, codegen, política global add/update-wins e GC destrutivo como
+   extensões fora do recorte. Relatar evidências por unidade, integração,
+   recuperação SQLite e demonstração; limitar conclusões ao cenário medido, sem
+   alegar desempenho ou correção universal.
+6. **Compass:** só incluir se houver evidência de execução disponível; descrever
+   mapeamentos/adaptações no app separadamente dos resultados gerais da biblioteca.
+
+O guia de integração e manutenção implementado no README documenta os contratos,
+arquivos e testes atuais. A edição do texto final continua dependente de receber a
+fonte editável; esta lista e o PDF não a substituem.
+
 O PDF prevê SQLite/`sqflite` para persistência e três módulos internos. O contexto
 atual mantém SQLite como adaptador de referência previsto para o TCC, com contrato
 de storage independente de banco, quatro subpacotes e facade Dart. Essa evolução
@@ -120,7 +153,7 @@ O projeto não pretende resolver de forma completa:
 * transações distribuídas;
 * invariantes globais complexas;
 * colaboração em tempo real em escala industrial;
-* todos os tipos existentes de CRDT.
+* CRDTs além dos oito tipos priorizados neste recorte.
 
 Esses pontos podem ser tratados como responsabilidades externas ou possíveis extensões futuras.
 

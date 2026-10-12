@@ -1,6 +1,6 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-12. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
@@ -20,16 +20,29 @@ Revisão: 2026-10-04. Fonte principal de tarefas, escopo e andamento.
 ## Situação e referência acadêmica
 
 A proposta é coerente como biblioteca modular de CRDTs com sincronização
-incremental e persistência local. A implementação atual ainda não satisfaz esse
-escopo: há cinco dos oito CRDTs integrados em Replica/SyncEngine. Adaptador SQLite
-existe; evidência de recuperação real cobre três tipos, não todos os oito. A
-baseline de 2026-10-03 reproduziu bloqueio entre engines, mutação antes da
-restauração com perda de snapshot e valores compartilhados que alteram estado sem
-delta; tarefas posteriores trataram esses defeitos. Os 55 testes daquela baseline
-não cobrem garantias atuais nem tipos recém-integrados.
-A viabilidade no prazo não pode ser confirmada sem datas, esforço
-disponível e estimativas das tarefas restantes; OR-Set, OR-Map, recuperação durável
-e integração são os maiores riscos.
+incremental e persistência local. Oito tipos estão integrados em Replica/SyncEngine;
+R-07a valida recuperação SQLite dos oito, R-07d/R-08c validam falhas e reconciliação,
+e VAL-02 demonstra dois tipos em consumidor após reinício de processo. Essa cobertura
+foi ampliada por VAL-07 no plugin Flutter/sqflite em Android 13; topologias além
+do peer fixo continuam sem evidência. A baseline de
+2026-10-03 reproduziu bloqueio entre engines, mutação antes da restauração com perda
+de snapshot e valores compartilhados que alteram estado sem delta; tarefas posteriores
+trataram esses defeitos. Os 55 testes daquela baseline não cobrem garantias atuais.
+A viabilidade no prazo depende de esforço disponível e estimativas ainda não
+informados. O autor informou entrega em 16/11/2026;
+[janelas técnicas e congelamento](#prazo-e-sequência-até-16112026) orientam priorização,
+sem prometer esforço ainda desconhecido. Limites técnicos atuais: iOS e outros alvos mobile não
+executados, Compass e consumidores externos não inventariados e usabilidade não
+avaliada com participantes (RISK-09/17, OPEN-07). A revisão de 2026-10-11 registrou
+155 testes aprovados, mas reproduziu três defeitos não cobertos: coleções LWW tipadas,
+ID pendente divergente no SQLite e retry de abertura. R-10/R-11/R-12 são MUST;
+VAL-05 foi reaberta. R-10/R-11/R-12 foram corrigidas e validadas em 2026-10-12;
+VAL-05 concluiu o fechamento técnico na execução anterior de 2026-10-12.
+A [revisão geral posterior](TRACEABILITY.md#revisao-geral-2026-10-12) confirmou
+dois defeitos de metadados/restauração e identificou falha de retry da UI e
+descrição imprecisa de retry. R-13/R-14/R-15/R-18 são MUST e reabrem VAL-05. Os
+[diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11) e a
+[validação final](TRACEABILITY.md#execucao-val-05-2026-10-12) estão registrados.
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
 `ObjectCrdt`, política global add/update-wins para objetos, geração de código,
@@ -38,25 +51,26 @@ tratavam persistência/lifecycle parciais como concluídos. Esta revisão separa
 requisitos acadêmicos, decisões técnicas de execução e extensões.
 
 Autor decidiu manter oito CRDTs e SQLite/sqflite como adaptador persistente de
-referência, com contrato de storage extensível. Prioridade atual: consolidar
-caminho nativo, estado e storage; fechar fluxo real dos tipos existentes;
-entregar recuperação durável e integrar tipos restantes progressivamente.
+referência, com contrato de storage extensível. Oito tipos e recuperação durável
+já têm evidências. Os três defeitos confirmados foram corrigidos e o fechamento
+técnico foi revalidado. VAL-07 acrescentou build e runtime no Moto G52, Android 13,
+com reinício real de processo e reconciliação pelo plugin sqflite.
 Refatoração reduz sobreposição de classes e contratos, sem quota de classes nem
 framework genérico novo. Detalhes e diagnósticos estão na análise vinculada acima.
 
-### Divergências que precisam constar no texto final do TCC
+### Correspondência com a proposta de referência
 
 - PDF §§6.3 e 6.6 vincula storage a Flutter/`sqflite`; contexto atual pede contrato
   independente de banco. Compatibilização: contrato Dart puro mais adaptador
   SQLite/`sqflite` de referência. O adaptador é substituível, mas sua entrega
   continua prevista no TCC.
 - PDF §6.3 descreve três módulos internos (`crdt_core`, `crdt_storage`,
-  `crdt_sync`); repositório usa quatro subpacotes e facade. Atualizar nomes e
-  diagrama; transporte separado preserva a responsabilidade já prevista.
+  `crdt_sync`); repositório usa quatro subpacotes e facade. Documentação técnica
+  descreve nomes e diagrama atuais; transporte preserva a responsabilidade prevista.
 - PDF §§6.5 e 6.8 exemplifica `query()`, `generateDelta()` e conversões JSON.
   API atual usa `value`, `mergeState()`, `applyDelta()` e mutações que retornam
-  deltas. Documentar correspondência; não implementar assinaturas apenas para
-  copiar a tabela. Restauração de estado ainda precisa de contrato verificável.
+  deltas. Correspondência e restauração estão documentadas e testadas em
+  VAL-04/R-07a; R-10 corrige o caso público de coleções LWW tipadas.
 - PDF §6.9 exige testes de integração e recuperação; aplicação de exemplo é
   apresentada como possibilidade. O contexto atual em proposta.md inclui
   demonstração na validação: mantida como MUST por esse contexto, com cenário
@@ -100,18 +114,24 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase ativa: **4 — fluxo offline e reconciliação**. Tarefa ativa: **nenhuma**.
-Próxima tarefa pronta: **R-08c — Reconciliação offline integrada**.
+Fases 1 e 5: **reabertas**, com novos MUST pendentes. Fases 2, 3 e 4 mantêm
+conclusões históricas; VAL-06/VAL-07 continuam concluídas nos cenários executados.
+Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **R-14**.
+VAL-05 aguarda R-13/R-14/R-15/R-18 e nova validação final. Escrita e revisão do TCC
+ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-08a, R-08b e R-08d; depois contrato/SQLite e recuperação em
-R-07b/c/d. R-06a–R-06e integram os cinco tipos adicionais e R-07a valida os oito
-em SQLite; R-08c fecha reconciliação. Registrar fase ativa ao selecionar outra fase.
+recomendada: R-14 (snapshot MV inválido), R-13 (igualdade/hash), R-15 (retry da UI)
+e R-18 (contrato de retry). Depois, R-16, VAL-08/VAL-09/VAL-10 conforme margem;
+VAL-05 revalida o resultado efetivamente entregue. R-17 é COULD.
+A ordem expressa risco, sem inventar dependência entre defeitos independentes.
+VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
 
 R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
-correções obrigatórias em R-09a/R-09b/R-05; base inteira continua incompleta até
-sucessoras e integração aprovadas. Revisão documental não conclui essas tarefas.
+correções obrigatórias em tarefas sucessoras; R-09a/R-09b/R-05 já foram concluídas.
+R-10/R-11/R-12 registram os novos defeitos sem apagar evidências anteriores.
+Revisão documental não conclui correções de código.
 
 MoSCoW define escopo: MUST obrigatório, SHOULD importante e dispensável com
 justificativa, COULD opcional, WON'T-YET fora desta entrega. Sem RICE ou
@@ -150,6 +170,12 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | concluída | MUST | R-01, R-02 |
 | [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | concluída | MUST | R-09a, R-03, R-04 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | concluída | MUST | R-09b |
+| [R-10](01_PHASE1_CORRECOES.md#r-10) | LWW com coleções JSON tipadas | concluída | MUST | R-09a, R-09b |
+| [R-13](01_PHASE1_CORRECOES.md#r-13) | Corrigir igualdade e hash de VectorClock | pronta | MUST | R-02 |
+| [R-14](01_PHASE1_CORRECOES.md#r-14) | Rejeitar sequência inválida no snapshot MV-Register | pronta | MUST | R-06c, R-07a |
+| [R-15](01_PHASE1_CORRECOES.md#r-15) | Recuperar abertura falha no consumidor Flutter | pronta | MUST | VAL-07 |
+| [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | planejada | SHOULD | R-13, R-14, R-18 |
+| [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | pronta | MUST | R-08c, VAL-04 |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -159,16 +185,51 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-07b](03_PHASE3_PERSISTENCIA.md#r-07b) | Suíte de contrato de storage | concluída | MUST | R-08d |
 | [R-07c](03_PHASE3_PERSISTENCIA.md#r-07c) | Adaptador SQLite/sqflite | concluída | MUST | R-07b |
 | [R-07d](03_PHASE3_PERSISTENCIA.md#r-07d) | Recuperação durável e falhas | concluída | MUST | R-07c, R-08d |
+| [R-11](03_PHASE3_PERSISTENCIA.md#r-11) | Rejeitar payload divergente para ID pendente | concluída | MUST | R-07b, R-07c, R-07d |
+| [R-12](03_PHASE3_PERSISTENCIA.md#r-12) | Retry após falha de abertura SQLite | concluída | MUST | R-05, R-07c, R-07d |
 | [R-08a](04_PHASE4_SYNC.md#r-08a) | Integrar envelopes | concluída | MUST | R-09b |
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
-| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | pronta | MUST | R-07a, R-07d, R-08d |
-| [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | planejada | MUST | R-07a |
-| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | planejada | MUST | R-08c |
-| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Relatório e rastreabilidade finais | planejada | MUST | VAL-01, VAL-02, R-07d, R-08c |
-| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Alinhar texto acadêmico | planejada | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Gate final do TCC | planejada | MUST | VAL-03, VAL-04 |
-| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | planejada | SHOULD | VAL-02 |
+| [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | concluída | MUST | R-07a, R-07d, R-08d |
+| [R-17](04_PHASE4_SYNC.md#r-17) | Notificar commits concluídos pela API Dart | pronta | COULD | R-05, R-08c |
+| [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | concluída | MUST | R-07a |
+| [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
+| [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
+| [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | planejada | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
+| [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
+| [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
+| [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | planejada | SHOULD | R-15, VAL-07 |
+| [VAL-09](05_PHASE5_VALIDACAO.md#val-09) | Ampliar histórias e metadados nas propriedades dos CRDTs | planejada | SHOULD | R-13, R-14 |
+| [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | pronta | SHOULD | VAL-06 |
+
+## Prazo e sequência até 16/11/2026
+
+Data de entrega informada pelo autor: 16/11, interpretada como 2026 pelo contexto
+atual. Há 35 dias corridos desde 12/10. Janelas abaixo são proposta de sequência,
+não estimativas de esforço nem garantia de conclusão; disponibilidade do autor
+ainda não foi informada. Critérios técnicos permanecem exigidos para concluir.
+
+| Janela proposta | Foco técnico | Saída esperada |
+|---|---|---|
+| 12–18/10 | R-14, R-13, R-15, R-18 | Correções MUST e regressões pertinentes |
+| 19–25/10 | R-16, por fronteiras de responsabilidade | Layout e remoções comprovadas, com comportamento preservado |
+| 26/10–01/11 | VAL-08, VAL-09, VAL-10 conforme capacidade | Demonstração e experimentos mais explicativos |
+| 02–08/11 | Congelamento estrutural e VAL-05 | Revalidação de código entregue, SQLite e Android |
+| 09–15/11 | Margem para regressões encontradas e reprodução da entrega | Sem refatoração ampla ou expansão funcional |
+| 16/11 | Entrega | Estado e limitações finais registrados |
+
+A partir de 02/11, evitar iniciar movimentos estruturais e funcionalidades COULD.
+SHOULD sem margem recebe adiamento justificado, preservando trabalho parcial
+verificável e histórico. R-17 só entra se MUST estiverem resolvidos e não consumir
+a reserva de validação. R-16 deve reduzir concentração e duplicação; criar pastas
+sem melhorar propriedade/manutenção não justifica ocupar o prazo.
+
+Remoções exigem inventário de referências e contrato público. Não há código morto
+confirmado apenas por depreciação: Operation e PendingDeltaStore são usados por
+migração e testes. Arquivos Android padrão do app têm função concreta de build.
+Oito CRDTs, adaptador SQLite e limites públicos são preservados; mudança material
+de compatibilidade ou recorte exige direção própria. Escrita do TCC permanece com o autor.
 
 ## Escopo e prioridades
 
@@ -187,8 +248,14 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | Propriedades algébricas com permutações/testes gerativos reproduzíveis | MUST | PDF §6.9; método técnico |
 | Commits atômicos e formatos versionados | MUST | Decisões técnicas para durabilidade/evolução |
 | Core nativo, estado canônico, outbox por mudança e fila sem espera de rede | MUST | Correções e simplificação da base; revisão de 2026-10-03 |
+| Coleções LWW tipadas, rejeição de ID pendente divergente e retry de abertura SQLite | MUST | Defeitos confirmados na revisão de 2026-10-11 |
+| Igualdade/hash de clocks, snapshot MV válido, retry da UI e contrato de retry preciso | MUST | Revisão geral de 2026-10-12 |
 | Aplicação demonstrativa mínima | MUST | Contexto atual; PDF §6.9 a apresenta como possibilidade |
 | Medição de bytes de deltas versus estado completo | SHOULD | Evidência da motivação incremental |
+| Refatoração por responsabilidades com remoção comprovada | SHOULD | Pedido do autor em 2026-10-12; prazo de 16/11 |
+| Demonstração interativa, histórias variadas e medições sob cargas distintas | SHOULD | Revisão geral de 2026-10-12 |
+| Notificação Dart de commits para consumidores | COULD | Facilidade de integração; sem requisito novo no PDF |
+| Integração Flutter/sqflite e recuperação em plataforma mobile declarada | SHOULD | Lacuna de plataforma; evidência atual Linux/FFI |
 | ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Extensões dos planos antigos |
 | Anti-entropy genérico, ACK por participante e GC destrutivo de tombstones | WON'T-YET | Extensões além do cenário mínimo |
 | OR-Seq/ORSeg, backend próprio, autenticação, autorização, protocolo de rede obrigatório e transações distribuídas | WON'T-YET | Limitações da proposta |
@@ -215,7 +282,8 @@ compatível configura esse adaptador, sem substituir a extensão por `ReplicaSto
 
 Consumidores podem implementar `ReplicaStorage` diretamente para outros bancos ou
 mecanismos de persistência, usando os modelos públicos e a suíte compartilhada de
-contrato. O guia previsto em VAL-04 deve explicar esse caminho e suas garantias.
+contrato. O guia em [integração e manutenção](../README.md#percurso-de-integração-e-manutenção)
+explica esse caminho, o commit atômico e as garantias.
 Entrega/manutenção de outros adaptadores persistentes oficiais, ORM genérico e
 framework de plugins de banco ficam fora deste recorte.
 
@@ -226,15 +294,19 @@ integração e o adaptador SQLite; não exige um segundo backend persistente.
 
 ## Gates e critérios de conclusão
 
-Cada fase define entrada, saída e validações específicas. Concluir TCC requer
+Cada fase define entrada, saída e validações específicas. Concluir a entrega técnica da biblioteca requer
 VAL-05: R-09a/R-09b/R-05/R-08d validadas, oito CRDTs integrados,
 deltas/joins corretos, formatos restauráveis,
-SQLite real, commits atômicos, outbox/ACK sem perda, reconciliação na topologia
-declarada, testes, demonstração e texto acadêmico alinhado.
+SQLite real, commits atômicos, outbox/ACK sem perda, R-10/R-11/R-12 e
+R-13/R-14/R-15/R-18 validadas,
+reconciliação na topologia declarada, testes, demonstração e documentação do
+repositório alinhada. Escrita e
+revisão do TCC são responsabilidade do autor e não integram este plano técnico.
 
-VAL-06 é SHOULD e não bloqueia entrega. Codegen, ObjectCrdt, backend próprio,
+R-16 e VAL-06 a VAL-10 são SHOULD, com adiamento justificado permitido;
+R-17 é COULD. Não bloqueiam o fechamento técnico. Codegen, ObjectCrdt, backend próprio,
 GC destrutivo e anti-entropy genérico não são gates do TCC.
-Prazo, esforço disponível e cronograma ainda não foram fornecidos.
+Prazo e esforço acadêmicos não são gates técnicos desta biblioteca.
 
 ## Evidência e validação
 

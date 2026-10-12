@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: ativa. R-08a, R-08b e R-08d concluídas; R-08c pronta após R-07a/R-07d. Objetivo: fechar fluxo de duas réplicas com transporte abstrato.
+Estado: concluída. R-08a a R-08d concluídas; objetivo de fluxo de duas réplicas atendido no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
 Saída: R-08a a R-08d concluídas com cenário/topologia e limitações declarados.
@@ -106,7 +106,7 @@ Evidência de conclusão: execução R-08d em TRACEABILITY.md.
 
 ## R-08c — Reconciliação offline integrada
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08d
 
@@ -115,20 +115,50 @@ Objetivo: demonstrar reconciliação após períodos offline e reinicializaçõe
 
 Critérios:
 
-- [ ] Duas réplicas divergem offline e convergem após entrega relevante completa.
-- [ ] Duplicação, reordenação, falha/retry e reconexão não perdem alterações.
-- [ ] Reinício antes do envio e antes do ACK preserva pendências.
-- [ ] Peer ausente recupera informação conforme política R-08b.
-- [ ] Aplicação remota confirmada somente conforme semântica definida.
-- [ ] Envio simultâneo e edição durante indisponibilidade não bloquearem commits
+- [x] Duas réplicas divergem offline e convergem após entrega relevante completa.
+- [x] Duplicação, reordenação, falha/retry e reconexão não perdem alterações.
+- [x] Reinício antes do envio e antes do ACK preserva pendências.
+- [x] Peer ausente recupera informação conforme política R-08b.
+- [x] Aplicação remota confirmada somente conforme semântica definida.
+- [x] Envio simultâneo e edição durante indisponibilidade não bloquearem commits
   locais; regressões de R-08d permanecerem aprovadas com storage durável.
 
 Validação: fluxo com SQLite real e falhas controladas; testes de roteamento cobrem
 oito tipos via R-07a. Cenário principal pode usar dois tipos, sem substituir
 validação individual dos demais.
 
-Evidência de conclusão: ainda não registrada; critérios permanecem abertos.
+Evidência de conclusão: execução R-08c em TRACEABILITY.md.
 
+
+<a id="r-17"></a>
+
+## R-17 — Notificar commits concluídos pela API Dart
+
+Status: pronta
+MoSCoW: COULD
+Dependências: R-05, R-08c
+
+Áreas: contrato público de SyncEngine e integração do consumidor.
+Objetivo: facilitar atualização de consumidores após commit remoto sem polling.
+Lacuna de consumo, sem defeito de commit confirmado: errors informa falhas,
+mas não há evento público de alteração incorporada com sucesso.
+
+Critérios:
+
+- [ ] Justificar um contrato mínimo de notificação para mutações locais e remotas,
+  com emissão somente após commit e adoção bem-sucedidos.
+- [ ] Core/sync continuam Dart puro; sem dependência de Flutter, callbacks que
+  governem regras internas ou framework de plugins.
+- [ ] Erro/rollback não publica sucesso; listener não bloqueia nem invalida commit;
+  lifecycle e descarte do stream ficam definidos e testados.
+- [ ] Documentar consumo para atualizar UI e distinguir evento de estado de ACK;
+  exemplos e formato persistido permanecem compatíveis.
+
+Validação: regressões de local/remoto, rollback e dispose no sync/facade;
+analyze/test dos consumidores afetados. COULD: só selecionar com MUST resolvidos
+e margem antes do congelamento; não condiciona VAL-05 ou VAL-08.
+Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
+Evidência de conclusão: ainda não registrada.
 
 ## Gate da fase
 

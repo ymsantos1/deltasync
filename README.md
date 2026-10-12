@@ -4,7 +4,8 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Pacotes
 
-- `deltasync_core`: LWW, G-Counter, PN-Counter, G-Set, 2P-Set, MV-Register, estado de réplicas e deltas.
+- `deltasync_core`: LWW-Register, MV-Register, G-Counter, PN-Counter, G-Set,
+  2P-Set, OR-Set, OR-Map, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
@@ -78,8 +79,8 @@ sequenceDiagram
 ```
 
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
-G-Set, 2P-Set, MV-Register, OR-Set e OR-Map com valores G-Set. SQLite real para
-os oito tipos será consolidado em R-07a.
+G-Set, 2P-Set, MV-Register, OR-Set e OR-Map com valores G-Set. Testes de
+recuperação SQLite via FFI cobrem estado e outbox dos oito tipos.
 `setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
 `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
 podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
@@ -137,6 +138,40 @@ Snapshot v8 preserva tags e valores.
 
 ### Compatibilidade de API e formatos
 
+`LwwRegister<T>` e `LwwDelta<T>.fromJson` aceitam `decodeValue` para coleções
+JSON tipadas. A cópia JSON interna usa `List<Object?>` e `Map<String, Object?>`;
+por isso `T` como `List<int>` ou `Map<String, List<int>>` precisa de conversão
+explícita na consulta e na restauração. Exemplo:
+
+```dart
+List<int> readScores(Object? json) => List<int>.from(json as List);
+
+final register = LwwRegister<List<int>>(decodeValue: readScores);
+register.applyDelta(LwwDelta<List<int>>(
+  key: 'scores',
+  id: 'device:1',
+  replicaId: 'device',
+  timestamp: const HlcTimestamp(1, 0),
+  value: [1, 2],
+  decodeValue: readScores,
+));
+final restored = LwwDelta<List<int>>.fromJson(
+  register.winner!.toJson(),
+  decodeValue: readScores,
+);
+```
+
+Para mapas aninhados, a conversão deve reconstruir também as coleções internas e
+preservar exatamente o conteúdo JSON.
+`Replica` e `SyncEngine` continuam expondo LWW como `Object?`; seus valores e
+snapshots são copiados. Chamadas anteriores com tipos escalares ou `Object?`
+continuam válidas, exceto usos `const LwwDelta(...)`: o construtor agora copia
+o valor e deixa de ser `const`; troque a declaração por `final` ou criação comum.
+`LwwDelta.value` devolve cópia, inclusive de coleções aninhadas. Sem conversão,
+uma coleção incompatível com `T` gera
+`FormatException` em vez de falha de cast. O JSON, HLC e formato de snapshot não
+mudam; consumidores de coleções tipadas adicionam a conversão nos pontos acima.
+
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
 que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
@@ -173,8 +208,9 @@ quatro pacotes.
 `DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
 operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
 físico sintético; `replicaId` e ID preservam desempate antigo. Vetores cuja soma
-excede o intervalo suportado são rejeitados. Snapshots internos versões 1 e 2
-continuam legíveis, inclusive `legacyWinner`; gravação atual usa versão 3 e guarda
+excede o intervalo suportado são rejeitados. Snapshots internos versões 1 a 7
+continuam legíveis, inclusive `legacyWinner` nos formatos antigos. A gravação
+atual usa versão 8 e guarda
 sequências por origem para bootstrap compacto. Conversão fica no codec/snapshot
 restore, não no caminho normal de `Replica.apply`.
 
@@ -207,8 +243,8 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `packages/deltasync_core/lib/src/replica.dart`; `LwwRegister` mantém vencedor e
   tombstone; `ReplicaState` roteia pelo endereço. Join escolhe maior HLC, depois
   `replicaId` e ID. Snapshot passa por `Replica.toSnapshotJson/fromSnapshotJson`.
-  Regressões ficam em `crdt_interfaces_test.dart` nos testes de tombstone, ordem,
-  migração e snapshot.
+  Regressões ficam em `crdt_interfaces_test.dart` para tombstone, ordem, migração e
+  snapshot, e em `lww_typed_json_test.dart` para coleções tipadas e isolamento.
 - **G-Counter:** mutação, componente cumulativo e join por máximo vivem em
   `g_counter.dart`; `Replica` roteia pelo `crdtId` e snapshot restaura componentes
   e sequência. Testes cobrem máximos, lote misto, codec e sequência restaurada.
@@ -240,6 +276,57 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam
   nos pacotes core e transport.
 
+### Percurso de integração e manutenção
+
+O PDF usa nomes conceituais para operações que hoje pertencem a contratos
+distintos. Esta tabela orienta a leitura sem criar aliases na API:
+
+| Conceito no PDF | API atual | Responsabilidade |
+|---|---|---|
+| `query()` | `value` do CRDT ou consulta da aplicação sobre `Replica` | Leitura de valor; a regra de negócio e o mapeamento de modelos ficam no consumidor. |
+| `merge(other)` | `mergeState(other)` | Join de estado entre instâncias compatíveis do mesmo CRDT. |
+| `generateDelta()` | Métodos de mutação, como `setDelta()` ou `addOrSet()` | A mutação local produz deltas; `SyncEngine` com storage também os registra na outbox. |
+| `applyDelta(delta)` | `applyDelta()` no CRDT; `Replica.apply(Delta)` ou `SyncEngine.applyRemote(Delta)` | Aplicação de mudança; no engine, commit remoto antes de adoção. |
+| `toJson()` | `DeltaCodec.encode()` para delta; `Replica.toSnapshotJson()` para estado | Codificações diferentes para mudança e snapshot; não intercambiáveis. |
+| `fromJson(...)` | `DeltaCodec.decode()` ou `Replica.fromSnapshotJson()` | Decodificação validada de delta ou restauração de estado, conforme o formato. |
+
+Fluxo de uma edição offline com storage: a aplicação chama a API de mutação;
+`SyncEngine` prepara estado candidato e delta, `ReplicaStorage.commit` grava
+snapshot e outbox atomicamente, e só então o engine adota o estado. No recebimento,
+decodifica-se o envelope/delta, aplica-se o join e `commitRemote` grava o snapshot;
+na abertura seguinte, `start()` restaura o snapshot antes das operações.
+O delta contém mudanças tipadas; `DeltaEnvelope` acrescenta versão e endereços de
+sender/recipient para transporte, sem assumir protocolo de rede.
+
+```mermaid
+flowchart LR
+  A[App: mutação] --> B[Core: delta + estado candidato]
+  B --> C[Storage: commit atômico snapshot + outbox]
+  C --> D[Sync: envia delta em envelope]
+  D --> E[Peer: aplica delta e faz join]
+  E --> F[Storage remoto: commitRemote]
+  F --> G[Restore: snapshot antes do uso]
+```
+
+Um percurso real para contribuidores é a inclusão do OR-Set: comportamento e
+invariantes vivem em `packages/deltasync_core/lib/src/or_set.dart`; roteamento e
+snapshot em `replica.dart`; persistência da mutação em `packages/deltasync_sync/lib/src/sync_engine.dart`.
+Comece por `packages/deltasync_core/test/or_set_test.dart`, siga para
+`packages/deltasync_sync/test/sync_engine_test.dart` e para os testes do adaptador
+SQLite quando mudar persistência. Tags dot identificam adições; remoção só elimina
+tags observadas, e join une tags sem inferir entrega pelo contador máximo. Mudanças
+de formato devem preservar os codecs/versionamento e snapshots legados documentados
+em [compatibilidade](#compatibilidade-de-api-e-formatos).
+
+Para implementar outro storage, implemente diretamente o contrato público
+`ReplicaStorage` em `packages/deltasync_storage/lib/src/replica_storage.dart` e
+execute `replicaStorageContractTests` da fixture em
+`packages/deltasync_storage_testing`. `commit` deve tornar snapshot e novas entradas
+de outbox visíveis juntos, ou manter ambos anteriores quando falhar; `commitRemote`
+não apaga outbox local. O adaptador de referência e os testes de recuperação ficam
+em `packages/deltasync_storage_sqflite`. Core, sync e contrato não exigem banco ou
+Flutter; o consumidor escolhe e fornece o backend ao compor `SyncEngine.withStorage`.
+
 ### Storage
 
 `ReplicaStorage` é o contrato oficial para persistência. A aplicação deve fornecer
@@ -257,12 +344,20 @@ outbox contém uma mudança; `SyncEngine` combina entradas em lote só no envio.
 `markSent` grava status, tentativa e horário antes da transmissão para permitir
 retry com backoff; `acknowledge` remove apenas IDs confirmados do peer. Suíte
 compartilhada para validar adapters está em `deltasync_storage_testing`.
+Para a mesma réplica, peer e ID de mudança pendente, `commit` e `enqueue`
+aceitam conteúdo de delta equivalente sem substituir status, tentativas ou
+horários existentes. Conteúdo divergente lança `FormatException`; `commit`
+preserva snapshot e outbox anteriores. A suíte compartilhada exercita ambos os
+casos em MemoryStorage e SQLite. O schema e o JSON persistido não mudaram.
 `ReplicaSnapshot` v2 guarda payload `Replica.toSnapshotJson()` sem duplicar
 estado/clock em campos paralelos. O reader aceita snapshot v1 com
 `metadata['replicaState']` ou delta reexecutável; estado legado sem dados suficientes
 é rejeitado. Snapshots restaurados são regravados no formato atual ao iniciar.
 `saveReplica` serve a bootstrap/manutenção sem pendências; `enqueue` importa uma
 pendência fora de mutação local. Edições usam commit atômico.
+No adaptador SQLite, uma falha transitória ao abrir o banco permite repetir
+`SyncEngine.start()` com os mesmos objetos; a restauração termina antes de novas
+edições. Erros de schema continuam explícitos e não migram dados automaticamente.
 
 `ReplicaState` exposto por `Replica.state` é cópia isolada; consultas devolvem
 coleções aninhadas imutáveis. `SyncEngine` clona a `Replica` recebida e `engine.replica`
@@ -325,12 +420,12 @@ await errors.cancel();
 Cada dispositivo persiste somente sua própria réplica. O estado completo das
 outras réplicas não é armazenado localmente.
 
-O adaptador persistente ainda não existe. O modelo lógico planejado prevê três
-responsabilidades, cujas tabelas serão definidas na implementação:
-
-- `replicas`: identidade, `VectorClock`, contador local e metadados;
-- `state_entries` ou snapshots: estado dos CRDTs e tombstones;
-- `outbox`: deltas locais ainda não confirmados conforme o contrato de entrega.
+O adaptador [SQLite/sqflite](packages/deltasync_storage_sqflite/README.md)
+implementa `ReplicaStorage`. Cada dispositivo persiste seu snapshot canônico e
+outbox em tabelas próprias; estado, clocks, tombstones e sequências ficam no
+payload versionado do snapshot. Commit local grava snapshot e outbox na mesma
+transação. Commit remoto troca snapshot sem apagar pendências locais. Consumidor
+fornece factory SQLite compatível com sua plataforma.
 
 O `VectorClock` pode conter identificadores e contadores de outras réplicas.
 Isso registra conhecimento causal, não o estado completo delas. Operações
@@ -343,13 +438,63 @@ também podem ser persistidas futuramente para orientar compactação segura de
 operações e tombstones. Nenhuma dessas extensões armazena estados completos de
 outras réplicas.
 
+### Demonstração offline com SQLite
+
+Consumidor pequeno mapeia nomes de compradores para campos LWW e total de itens
+para G-Counter. Cada comando abaixo roda em processo separado; edições offline e
+outbox sobrevivem no banco entre execuções.
+
+```sh
+dart run example/offline_reconciliation.dart reset
+dart run example/offline_reconciliation.dart offline
+# Processo encerra aqui; iniciar novo processo para reconectar.
+dart run example/offline_reconciliation.dart reconnect
+```
+
+Resultado esperado: fase offline mostra commit local, duas pendências por réplica
+e falha de peer indisponível, sem perder edição. Reconexão restaura snapshots e
+outboxes, entrega e confirma deltas; ambas réplicas mostram os dois compradores e
+total cinco. Reabertura final confirma estado convergente e outboxes vazias.
+Exemplo foi executado em Linux x64 com SQLite real via `sqflite_common_ffi`;
+outros desktops e usabilidade com participantes não foram avaliados.
+
+O [consumidor Flutter Android](example/flutter_mobile/README.md) usa a factory do
+plugin `sqflite` e reproduz esse percurso pela UI. VAL-07 executou o app no
+Moto G52 com Android 13, incluindo dois reinícios reais de processo, restauração
+da outbox e confirmação durável. O exemplo resolve os pacotes locais em workspace
+próprio; core, sync e contrato de storage continuam Dart puro. iOS não foi avaliado.
+
+### Medição de tamanho
+
+`dart run example/measure_delta_size.dart` mede as quatro mutações offline acima
+antes da reconexão: cada réplica altera um nome LWW e seu componente G-Counter.
+Script fixa IDs, valores, quantidade e relógio HLC. Conta bytes UTF-8 de JSON
+compacto: `DeltaCodec` para mudanças, `DeltaEnvelope` v2 para mensagem completa e
+`Replica.toSnapshotJson()` para snapshot de cada réplica. Delta inclui metadados das
+mudanças; envelope acrescenta versão, remetente e destinatário; snapshot inclui
+estado materializado, clocks e metadados de réplica. Não inclui whitespace, gzip,
+headers, protocolo ou armazenamento SQLite.
+
+Resultado reproduzido duas vezes em Dart/Linux x64:
+
+| Réplica | Mutações | Delta | Envelope | Snapshot |
+|---|---:|---:|---:|---:|
+| `shopper-a` | 2 | 454 B | 539 B | 627 B |
+| `shopper-b` | 2 | 455 B | 540 B | 628 B |
+| Total | 4 | 909 B | 1.079 B | 1.255 B |
+
+Neste cenário, envelopes somam 86,0% dos snapshots separados (14,0% menos bytes).
+Isso compara a soma das duas mensagens destinadas ao peer fixo com os dois estados
+locais antes da reconexão. Resultado descreve apenas esse JSON, payload, valores e
+implementação; não demonstra ganho geral nem estima tráfego comprimido ou de rede.
+
 ## Validação
 
 Testes da raiz cobrem somente a facade. Validar também cada subpacote:
 
 ```shell
 dart pub get
-for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_transport; do
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_transport; do
   (cd "$package" && dart analyze && dart test) || exit 1
 done
 ```

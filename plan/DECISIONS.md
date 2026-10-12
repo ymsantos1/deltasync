@@ -1,6 +1,6 @@
 # Decisões — DeltaSync
 
-Revisão: 2026-10-04. “Adotada” é escolha de planejamento/arquitetura;
+Revisão: 2026-10-12. “Adotada” é escolha de planejamento/arquitetura;
 não significa implementação concluída.
 
 | ID | Estado | Decisão e fundamento |
@@ -9,7 +9,7 @@ não significa implementação concluída.
 | DEC-02 | adotada | Core/sync/storage abstrato/transport em Dart puro; SQLite/sqflite em adaptador de referência previsto no TCC e opcional ao consumidor. `ReplicaStorage` é o ponto de extensão para outros backends. `DatabaseFactory` de `sqflite_common` configura somente o adaptador SQLite de R-07c. |
 | DEC-03 | adotada | DeltaCrdt como contrato central; HLC para LWW nativo, dots/contexto causal para tipos observados. Legado exige correção ou migração explícita. |
 | DEC-04 | adotada | Roteamento e identidade únicos por CRDT; endereço estável acompanha mudança e dot local é namespaceado por `crdtId`. |
-| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; R-07c valida transação SQLite real. Recuperação do ciclo sync entre sessões e falhas segue pendente em R-07d. |
+| DEC-05 | adotada | Estado, clocks e outbox têm contrato de commit atômico; snapshots versionados restauram estado sem replay ilimitado. R-04 implementou contrato/MemoryStorage; R-07c valida transação SQLite real; R-07d valida recuperação do ciclo sync entre sessões e falhas, e R-08c valida reconciliação offline integrada após reinício. |
 | DEC-06 | adotada | Preservar tombstones/contexto necessário; nenhum GC destrutivo por idade ou ACK de envio. |
 | DEC-07 | adotada | Demonstração mínima mantida como MUST pelo contexto atual; PDF a apresenta como possibilidade. Sem framework de objetos obrigatório. |
 | DEC-08 | adotada | build_runner, codegen, ObjectCrdt, migração genérica de modelos, sequências e anti-entropy arbitrário ficam WON'T-YET. |
@@ -28,6 +28,35 @@ não significa implementação concluída.
 | DEC-21 | adotada | Topologia R-08b é enlace ponto a ponto para peer fixo por `DeltaTransport`. Cada entrada outbox grava destinatário; envio, ACK parcial e remoção ficam limitados a esse peer. Ausência/falha mantém dados para retry; troca de adapter para outro peer não herda nem confirma pendência antiga. Destinatários adicionais exigem cópia por peer e ACK independente. Deltas G/PN atuais carregam componentes cumulativos; dot máximo de origem não é tratado como prova de que eventos individuais sem payload cumulativo foram recebidos. Tipos futuros com eventos individuais exigem contexto causal com lacunas ou entrega causal. |
 | DEC-22 | adotada | R-07c mantém um payload `ReplicaSnapshot` versionado e outbox por mudança no schema SQLite v1. Versões de schema desconhecidas falham sem apagar dados; migrações futuras devem ser explícitas. `replicaId` restaura sem clonagem automática. Backup exige banco fechado e arquivos WAL/SHM juntos quando presentes, ou API SQLite de backup. |
 | DEC-23 | adotada | Autor confirmou em 2026-10-04 o recorte de storage extensível com um único adaptador persistente oficial de referência. Outros backends são integrados pelo consumidor via `ReplicaStorage`; limites e evidências estão no [escopo de storage](README.md#storage-e-adaptadores). Não exigir outro backend persistente, ORM ou framework de plugins para concluir o TCC. |
+| DEC-24 | adotada | Revisão de 2026-10-11 confirmou três defeitos de contratos existentes: R-10/R-11/R-12 são MUST e reabrem VAL-05. Priorizar R-11, R-12 e R-10 por integridade/recuperação/uso público, sem dependências artificiais entre correções. VAL-07 é SHOULD para evidência Flutter/mobile, adiável com justificativa; Linux/FFI não comprova plugin mobile. Preservar histórico e exigir regressões, review após correções e revalidação final. Escrita/revisão do TCC permanecem com o autor e fora do plano técnico. |
+| DEC-25 | adotada | R-11 fixa equivalência da outbox por `(replicaId, recipientPeerId, entryId)` pendente: conteúdo do delta é comparado pela regra `Delta.merge`, inclusive JSON aninhado; metadados de envio da primeira entrada ficam preservados em retransmissão equivalente. Divergência lança `FormatException` e cancela o commit inteiro. SQLite executa consulta e inserção dentro de transação; schema e JSON persistido permanecem v1/v2. Não manter histórico ilimitado de IDs já confirmados. |
+| DEC-26 | adotada | R-12 mantém em cache apenas abertura SQLite em curso ou bem-sucedida. Erro limpa o cache somente quando ele ainda aponta para a tentativa falha, preservando abertura posterior; o erro e stack seguem ao chamador. Chamadas concorrentes compartilham a tentativa. `SyncEngine.start()` reaproveita o mesmo adaptador após erro transitório; schema incompatível continua rejeitado sem migração ou apagamento automático. |
+
+| DEC-27 | adotada | R-10 guarda valor LWW em cópia JSON canônica; `LwwDelta.value` e `LwwRegister.value/winner` devolvem cópias. Coleções com `T` específico exigem `decodeValue` em delta, register e restauração; conversão deve preservar conteúdo JSON. `const LwwDelta` deixa de existir para isolar entrada, com migração de código documentada. `Replica`/`SyncEngine` seguem em `Object?`; HLC, tombstones, snapshots e wire JSON não mudam. |
+
+## Revisão geral, refatoração e prazo — 2026-10-12
+
+DEC-28 — Adotada em 2026-10-12: revisão geral posterior ao fechamento confirmou
+novos defeitos e imprecisão documental. R-13/R-14/R-15/R-18 são MUST; reabrir fase 1
+e VAL-05, preservar conclusões anteriores como evidência histórica e exigir
+regressões/review/revalidação. R-16 e VAL-08/09/10 são SHOULD; R-17 é COULD.
+Melhorias não se tornam requisitos acadêmicos por terem sido sugeridas.
+
+DEC-29 — Adotada para planejamento: refatoração por responsabilidades, sem
+reescrita geral dos algoritmos. Movimentos em core, sync/storage e testes ficam em
+R-16; divisão do consumidor acompanha VAL-08. Aplicar safe-refactor com baseline
+e mesma prova após cada extração, mantendo contratos/exports/JSON/schema/invariantes.
+Código morto exige ausência comprovada de uso, considerando APIs e migração.
+Operation e PendingDeltaStore têm referências e política de compatibilidade;
+nenhuma remoção pública foi autorizada por este pedido documental.
+
+DEC-30 — Adotada como orientação de prazo: entrega informada pelo autor em
+16/11/2026; congelamento estrutural proposto para 02/11, com margem de validação
+e correções. Janelas do índice são proposta, não estimativa nem promessa de
+capacidade. SHOULD pode ser adiada com evidência; MUST permanece obrigatório.
+Notificação de commits e execução entre dois aparelhos não condicionam fechamento.
+Economia de deltas depende da carga; medir cenários desfavoráveis sem introduzir
+compactação/GC ou alegar ganhos universais. Escrita do TCC continua com o autor.
 
 ## Decisões abertas
 
@@ -35,8 +64,6 @@ não significa implementação concluída.
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-05 | VAL-04 | Fonte editável e atualização do texto acadêmico; PDF de referência permanece preservado. |
-| OPEN-06 | VAL-05 | Prazo, esforço disponível e cronograma. Viabilidade no prazo ainda não confirmada. |
 | OPEN-07 | R-09a, R-09b | Consumidores externos não foram localizados/inventariados. R-09a/R-09b registram quebras 2.0.0, aliases temporários e migração de formatos; confirmar consumidores conhecidos antes de fechar documentação de integração. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
@@ -124,3 +151,8 @@ Em 2026-10-03, R-05 definiu inicialização antes de qualquer operação, retry 
 falha, descarte terminal com drenagem das operações aceitas e envio de rede fora
 da fila de commits. Resultado de push informa ACK remoto; pendência local permanece
 observável, inclusive no adaptador legado sem operação de remoção.
+
+Em 2026-10-11, autor autorizou incorporar os achados da revisão ao planejamento
+com MoSCoW. R-10/R-11/R-12 e VAL-07 registram correções e lacuna de plataforma;
+VAL-05 volta a planejada até os MUST concluídos. A manutenção preserva evidências
+anteriores, corrige descrições desatualizadas e não implementa mudanças de produto.
