@@ -2358,3 +2358,69 @@ R-10 concluída. A escrita do TCC permanece com o autor.
 
 Limitações: validação SQLite FFI/Linux x64; plugin Flutter mobile não foi
 executado e VAL-07 segue SHOULD. R-10 permanece pendente. Review não independente.
+
+<a id="execucao-r-10-2026-10-12"></a>
+
+## Execução R-10 — 2026-10-12
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-10 era a próxima MUST pronta após R-09a/R-09b e R-11/R-12.
+Diagnóstico prévio de 2026-10-11 reproduziu cast de `List<Object?>` para
+`List<int>` em `LwwRegister.applyDelta`. Leitura de core, Replica, SyncEngine,
+README, DEC-16/18 e critério da fase confirmou perda de tipos também em
+`fromJson`/consultas. Worktree inicial estava limpa. SDK: Dart 3.13.5.
+
+Implementação: `LwwDelta` agora copia JSON na construção e devolve cópia em
+`value`; `LwwRegister` guarda vencedor JSON canônico e converte na borda pública.
+`decodeValue` explicita reconstrução de listas/mapas tipados e preserva conteúdo
+JSON; ausência de conversão compatível gera `FormatException`. `Replica.setDelta`
+entrega delta isolado da entrada mutável. HLC, desempate, tombstone, wire JSON e
+snapshots ficaram com formato anterior. `const LwwDelta` foi removido por exigir
+cópia na construção; README documenta a troca por `final`/construção comum e o
+uso da conversão em delta, register e restauração. Não houve framework de codecs.
+
+Review: aprovado
+
+Achados: primeira revisão achou conversão capaz de alterar conteúdo JSON; correção passou
+a exigir equivalência estrutural. Segunda revisão achou `LwwDelta` direto ligado
+à coleção fornecida; construtor foi alterado para capturar cópia e getter para
+devolver cópia. Revisão final conferiu tipos, nulidade, join, ordem LWW, JSON,
+compatibilidade pública, testes novos e diff, sem achado impeditivo remanescente.
+Review pelo próprio implementador em etapa distinta, não independente.
+
+Validação: aprovada
+
+Ambiente Linux x64, Dart 3.13.5. Regressões novas em
+`packages/deltasync_core/test/lww_typed_json_test.dart` cobrem lista, mapa
+aninhado, isolamento de entrada/delta/consulta, JSON/restauração, conversão
+inválida, nulidade, HLC/desempate e tombstone. Teste em
+`packages/deltasync_sync/test/sync_engine_test.dart` cobre `Object?`, outbox e
+restauração por MemoryStorage; core cobre Replica/snapshot. Na raiz e nos seis
+subpacotes, `dart analyze` ficou sem issues e `dart test --reporter expanded`
+passou. Formatação de `lib test` da raiz, core e sync passou após ajuste no teste
+novo; teste focado core foi repetido após esse ajuste. Suíte SQLite FFI real
+permaneceu verde, mas não foi adicionada prova mobile nesta tarefa.
+
+Comandos: `/opt/flutter/bin/dart format` nos arquivos Dart editados;
+`/opt/flutter/bin/dart format --output=none --set-exit-if-changed lib test`
+na raiz, core e sync; `/opt/flutter/bin/dart analyze` e
+`/opt/flutter/bin/dart test --reporter expanded` na raiz e nos seis subpacotes;
+`/opt/flutter/bin/dart test test/lww_typed_json_test.dart` no core após ajuste;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: 1) contrato tipado via `decodeValue` e rejeição de JSON inválido;
+2) apply, value/winner, join, JSON e restauração exercitados; 3) entrada e saída
+isoladas, HLC/desempate/tombstones preservados; 4) regressões core, Replica e
+SyncEngine permanentes; 5) consumo, formato e migração de `const` documentados.
+
+Manutenção: R-10 e fase 1 concluídas; DEC-27 registra contrato, RISK-20 mitigado.
+VAL-05 e VAL-07 liberadas por dependências; VAL-05 é próxima MUST recomendada.
+Escrita e revisão do TCC permanecem com o autor.
+
+Limitações: review não independente; VAL-07 ainda precisa de evidência
+Flutter/mobile. A validação de restore nesta tarefa usa MemoryStorage; recuperação
+durável SQLite permanece coberta nas tarefas anteriores e será reavaliada em
+VAL-05.

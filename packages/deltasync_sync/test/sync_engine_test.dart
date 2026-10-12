@@ -10,6 +10,42 @@ import 'package:test/test.dart';
 
 void main() {
   test(
+    'SyncEngine Object? LWW path isolates nested JSON through restore',
+    () async {
+      final storage = MemoryStorage();
+      final transport = TestDeltaTransport(peerReplicaId: 'peer-b');
+      final engine = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: transport,
+      );
+      final input = <String, Object?>{
+        'scores': [1, 2],
+      };
+      await engine.setDelta('settings', input);
+      input['scores'] = [99];
+      expect(engine.replica.state.values['settings'], {
+        'scores': [1, 2],
+      });
+      expect((await engine.pendingDelta()).changes.single.toJson()['value'], {
+        'scores': [1, 2],
+      });
+      await engine.dispose();
+
+      final restored = SyncEngine.withStorage(
+        replica: Replica('device-a'),
+        storage: storage,
+        transport: TestDeltaTransport(peerReplicaId: 'peer-b'),
+      );
+      await restored.start();
+      expect(restored.replica.state.values['settings'], {
+        'scores': [1, 2],
+      });
+      await restored.dispose();
+    },
+  );
+
+  test(
     'offline peer recovery stays bound to that peer and durable ACK stage',
     () async {
       final storage = MemoryStorage();

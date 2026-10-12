@@ -32,6 +32,8 @@ não significa implementação concluída.
 | DEC-25 | adotada | R-11 fixa equivalência da outbox por `(replicaId, recipientPeerId, entryId)` pendente: conteúdo do delta é comparado pela regra `Delta.merge`, inclusive JSON aninhado; metadados de envio da primeira entrada ficam preservados em retransmissão equivalente. Divergência lança `FormatException` e cancela o commit inteiro. SQLite executa consulta e inserção dentro de transação; schema e JSON persistido permanecem v1/v2. Não manter histórico ilimitado de IDs já confirmados. |
 | DEC-26 | adotada | R-12 mantém em cache apenas abertura SQLite em curso ou bem-sucedida. Erro limpa o cache somente quando ele ainda aponta para a tentativa falha, preservando abertura posterior; o erro e stack seguem ao chamador. Chamadas concorrentes compartilham a tentativa. `SyncEngine.start()` reaproveita o mesmo adaptador após erro transitório; schema incompatível continua rejeitado sem migração ou apagamento automático. |
 
+| DEC-27 | adotada | R-10 guarda valor LWW em cópia JSON canônica; `LwwDelta.value` e `LwwRegister.value/winner` devolvem cópias. Coleções com `T` específico exigem `decodeValue` em delta, register e restauração; conversão deve preservar conteúdo JSON. `const LwwDelta` deixa de existir para isolar entrada, com migração de código documentada. `Replica`/`SyncEngine` seguem em `Object?`; HLC, tombstones, snapshots e wire JSON não mudam. |
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

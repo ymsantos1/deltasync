@@ -100,7 +100,7 @@ void main() {
     );
     expect(
       () => LwwRegister<String>().applyDelta(
-        const LwwDelta<String>(
+        LwwDelta<String>(
           key: 'title',
           id: 'device-a:1',
           replicaId: 'device-a',
@@ -486,7 +486,7 @@ void main() {
     );
     final target = Replica('target');
     final batch = Delta([
-      const LwwDelta<Object?>(
+      LwwDelta<Object?>(
         key: 'title',
         id: 'remote:delta:1',
         replicaId: 'remote',
@@ -706,14 +706,14 @@ void main() {
   });
 
   test('LWW Delta-CRDT is idempotent and order independent', () {
-    const first = LwwDelta<String>(
+    final first = LwwDelta<String>(
       key: 'title',
       id: 'first:1',
       replicaId: 'first',
       timestamp: HlcTimestamp(10, 0),
       value: 'first',
     );
-    const second = LwwDelta<String>(
+    final second = LwwDelta<String>(
       key: 'title',
       id: 'second:1',
       replicaId: 'second',
@@ -734,21 +734,21 @@ void main() {
   });
 
   test('LWW state join is associative, commutative, and idempotent', () {
-    const firstDelta = LwwDelta<String>(
+    final firstDelta = LwwDelta<String>(
       key: 'title',
       id: 'first:1',
       replicaId: 'first',
       timestamp: HlcTimestamp(10, 0),
       value: 'first',
     );
-    const secondDelta = LwwDelta<String>(
+    final secondDelta = LwwDelta<String>(
       key: 'title',
       id: 'second:1',
       replicaId: 'second',
       timestamp: HlcTimestamp(10, 0),
       value: 'second',
     );
-    const thirdDelta = LwwDelta<String>(
+    final thirdDelta = LwwDelta<String>(
       key: 'title',
       id: 'third:1',
       replicaId: 'third',
@@ -778,7 +778,7 @@ void main() {
   });
 
   test('DeltaCrdt contract merges complete LWW state', () {
-    const delta = LwwDelta<String>(
+    final delta = LwwDelta<String>(
       key: 'title',
       id: 'device:1',
       replicaId: 'device',
@@ -834,7 +834,7 @@ void main() {
   );
 
   test('Delta carries native changes and merges them by delta ID', () {
-    const first = LwwDelta<String>(
+    final first = LwwDelta<String>(
       key: 'title',
       id: 'device:1',
       replicaId: 'device',
@@ -849,7 +849,7 @@ void main() {
   });
 
   test('LWW Delta-CRDT retains delete tombstone', () {
-    const delta = LwwDelta<String>(
+    final delta = LwwDelta<String>(
       key: 'title',
       id: 'device:2',
       replicaId: 'device',
@@ -865,7 +865,7 @@ void main() {
   });
 
   test('Replica applies and exports native CRDT deltas', () {
-    const delta = LwwDelta<String>(
+    final delta = LwwDelta<String>(
       key: 'title',
       id: 'device:3',
       replicaId: 'device',
@@ -879,7 +879,7 @@ void main() {
   });
 
   test('legacy operations require explicit migration into native LWW', () {
-    const delta = LwwDelta<Object?>(
+    final delta = LwwDelta<Object?>(
       key: 'title',
       id: 'device:4',
       replicaId: 'device',
@@ -968,7 +968,7 @@ void main() {
 
     final detached = replica.state;
     detached.applyDelta(
-      const LwwDelta<Object?>(
+      LwwDelta<Object?>(
         key: 'document',
         id: 'elsewhere:delta:1',
         replicaId: 'elsewhere',

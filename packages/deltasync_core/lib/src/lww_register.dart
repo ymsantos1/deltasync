@@ -1,17 +1,23 @@
 import 'crdt.dart';
 import 'lww_delta.dart';
 import 'json_value.dart';
+import 'json_set_value.dart';
 
 /// Last-write-wins register with one native HLC winner and retained tombstone.
 class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
-  LwwDelta<T>? _winner;
+  /// [decodeValue] converts a JSON copy to [T] when [T] is a typed collection.
+  /// It must accept valid persisted JSON and return a JSON-compatible value.
+  LwwRegister({this.decodeValue});
+
+  final T? Function(Object?)? decodeValue;
+  LwwDelta<Object?>? _winner;
 
   bool get hasValue => _winner != null && !_winner!.deleted;
 
   bool get isDeleted => _winner?.deleted ?? false;
 
   @override
-  T? get value => hasValue ? copyJsonValue(_winner!.value) as T? : null;
+  T? get value => hasValue ? _decode(_winner!.value) : null;
 
   LwwDelta<T>? get winner {
     final winner = _winner;
@@ -21,7 +27,8 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
       id: winner.id,
       replicaId: winner.replicaId,
       timestamp: winner.timestamp,
-      value: winner.deleted ? null : copyJsonValue(winner.value) as T?,
+      value: winner.deleted ? null : _decode(winner.value),
+      decodeValue: decodeValue,
       deleted: winner.deleted,
       dot: winner.dot,
     );
@@ -45,23 +52,49 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
             dot.crdtId != null)) {
       throw FormatException('Delta dot identity does not match LWW change');
     }
-    final current = _winner;
-    if (current != null && _compare(delta, current) <= 0) return;
-    _winner = LwwDelta<T>(
-      key: delta.key,
-      id: delta.id,
-      replicaId: delta.replicaId,
-      timestamp: delta.timestamp,
-      value: delta.deleted ? null : copyJsonValue(delta.value) as T?,
-      deleted: delta.deleted,
-      dot: delta.dot,
+    final copiedValue = delta.deleted ? null : copyJsonValue(delta.value);
+    // Check the configured typed conversion before accepting a new winner.
+    if (!delta.deleted) _decode(copiedValue);
+    _applyCanonical(
+      LwwDelta<Object?>(
+        key: delta.key,
+        id: delta.id,
+        replicaId: delta.replicaId,
+        timestamp: delta.timestamp,
+        value: copiedValue,
+        deleted: delta.deleted,
+        dot: delta.dot,
+      ),
     );
   }
 
   @override
   void mergeState(covariant LwwRegister<T> other) {
     final winner = other._winner;
-    if (winner != null) applyDelta(winner);
+    if (winner != null) {
+      if (!winner.deleted) _decode(winner.value);
+      _applyCanonical(winner);
+    }
+  }
+
+  T? _decode(Object? value) {
+    if (value == null) return null;
+    final copy = copyJsonValue(value);
+    final decoded = decodeValue == null ? copy : decodeValue!(copy);
+    if (decoded is! T?) {
+      throw FormatException('LWW value does not match $T; provide decodeValue');
+    }
+    if (canonicalJsonSetKey(copyJsonValue(decoded)) !=
+        canonicalJsonSetKey(copy)) {
+      throw FormatException('LWW value conversion changed JSON content');
+    }
+    return decoded;
+  }
+
+  void _applyCanonical(LwwDelta<Object?> delta) {
+    final current = _winner;
+    if (current != null && _compare(delta, current) <= 0) return;
+    _winner = delta;
   }
 
   @override
@@ -69,7 +102,7 @@ class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>> {
     if (winner case final winner?) 'winner': winner.toJson(),
   };
 
-  int _compare(LwwDelta<T> first, LwwDelta<T> second) {
+  int _compare(LwwDelta<Object?> first, LwwDelta<Object?> second) {
     final timestamp = first.timestamp.compareTo(second.timestamp);
     if (timestamp != 0) return timestamp;
     final replica = first.replicaId.compareTo(second.replicaId);

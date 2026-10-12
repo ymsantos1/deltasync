@@ -33,8 +33,8 @@ executados, Compass e consumidores externos não inventariados e usabilidade nã
 avaliada com participantes (RISK-09/17, OPEN-07). A revisão de 2026-10-11 registrou
 155 testes aprovados, mas reproduziu três defeitos não cobertos: coleções LWW tipadas,
 ID pendente divergente no SQLite e retry de abertura. R-10/R-11/R-12 são MUST;
-VAL-05 foi reaberta. R-11/R-12 foram corrigidas e validadas em 2026-10-12;
-R-10 continua pendente. Diagnósticos e comandos estão na
+VAL-05 foi reaberta. R-10/R-11/R-12 foram corrigidas e validadas em 2026-10-12;
+VAL-05 permanece pendente. Diagnósticos e comandos estão na
 [rastreabilidade](TRACEABILITY.md#revisao-tecnica-2026-10-11).
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
@@ -106,18 +106,18 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fases 1 e 5: **reabertas por correções**; fases 2, 3 e 4 concluídas.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **R-10**, pronta.
-VAL-05 está planejada até R-10 concluída. Escrita e revisão do TCC
+Fase 5: **pendente de revalidação**; fases 1, 2, 3 e 4 concluídas.
+Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-05**, pronta.
+VAL-05 está pronta após R-10/R-11/R-12. Escrita e revisão do TCC
 ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-11 (integridade snapshot/outbox) e R-12 (retry de abertura)
-concluídas; R-10 (coleções tipadas) pronta, depois VAL-05 (novo fechamento).
+recomendada: R-11 (integridade snapshot/outbox), R-12 (retry de abertura)
+e R-10 (coleções tipadas) concluídas; VAL-05 é o próximo fechamento técnico.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 Depois, VAL-07 pode ampliar evidência mobile como SHOULD. Registrar fase ativa
-ao selecionar tarefa; a conclusão de R-12 não iniciou a próxima.
+ao selecionar tarefa; a conclusão de R-10 não iniciou a próxima.
 
 R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
 correções obrigatórias em tarefas sucessoras; R-09a/R-09b/R-05 já foram concluídas.
@@ -161,7 +161,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-09a](01_PHASE1_CORRECOES.md#r-09a) | Core nativo e compatibilidade | concluída | MUST | R-01, R-02 |
 | [R-09b](01_PHASE1_CORRECOES.md#r-09b) | Estado, snapshots e outbox consolidados | concluída | MUST | R-09a, R-03, R-04 |
 | [R-05](01_PHASE1_CORRECOES.md#r-05) | Lifecycle e processamento remoto | concluída | MUST | R-09b |
-| [R-10](01_PHASE1_CORRECOES.md#r-10) | LWW com coleções JSON tipadas | pronta | MUST | R-09a, R-09b |
+| [R-10](01_PHASE1_CORRECOES.md#r-10) | LWW com coleções JSON tipadas | concluída | MUST | R-09a, R-09b |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -181,9 +181,9 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | planejada | MUST | VAL-03, VAL-04, R-10, R-11, R-12 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
-| [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | planejada | SHOULD | VAL-02, R-10, R-11, R-12 |
+| [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | pronta | SHOULD | VAL-02, R-10, R-11, R-12 |
 
 ## Escopo e prioridades
 

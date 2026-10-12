@@ -135,7 +135,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12
 
@@ -203,7 +203,7 @@ Evidência de conclusão: [execução VAL-06](TRACEABILITY.md#execucao-val-06-20
 
 ## VAL-07 — Validar consumo Flutter e SQLite mobile
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: VAL-02, R-10, R-11, R-12
 

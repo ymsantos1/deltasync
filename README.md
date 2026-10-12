@@ -138,6 +138,40 @@ Snapshot v8 preserva tags e valores.
 
 ### Compatibilidade de API e formatos
 
+`LwwRegister<T>` e `LwwDelta<T>.fromJson` aceitam `decodeValue` para coleções
+JSON tipadas. A cópia JSON interna usa `List<Object?>` e `Map<String, Object?>`;
+por isso `T` como `List<int>` ou `Map<String, List<int>>` precisa de conversão
+explícita na consulta e na restauração. Exemplo:
+
+```dart
+List<int> readScores(Object? json) => List<int>.from(json as List);
+
+final register = LwwRegister<List<int>>(decodeValue: readScores);
+register.applyDelta(LwwDelta<List<int>>(
+  key: 'scores',
+  id: 'device:1',
+  replicaId: 'device',
+  timestamp: const HlcTimestamp(1, 0),
+  value: [1, 2],
+  decodeValue: readScores,
+));
+final restored = LwwDelta<List<int>>.fromJson(
+  register.winner!.toJson(),
+  decodeValue: readScores,
+);
+```
+
+Para mapas aninhados, a conversão deve reconstruir também as coleções internas e
+preservar exatamente o conteúdo JSON.
+`Replica` e `SyncEngine` continuam expondo LWW como `Object?`; seus valores e
+snapshots são copiados. Chamadas anteriores com tipos escalares ou `Object?`
+continuam válidas, exceto usos `const LwwDelta(...)`: o construtor agora copia
+o valor e deixa de ser `const`; troque a declaração por `final` ou criação comum.
+`LwwDelta.value` devolve cópia, inclusive de coleções aninhadas. Sem conversão,
+uma coleção incompatível com `T` gera
+`FormatException` em vez de falha de cast. O JSON, HLC e formato de snapshot não
+mudam; consumidores de coleções tipadas adicionam a conversão nos pontos acima.
+
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
 que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.

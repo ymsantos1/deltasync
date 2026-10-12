@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: pendente de R-10.
+Estado: concluída após R-10.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -281,7 +281,7 @@ Evidência de conclusão: [Execução R-05 — 2026-10-03](TRACEABILITY.md#execu
 
 ## R-10 — LWW com coleções JSON tipadas
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-09a, R-09b
 
@@ -293,15 +293,15 @@ lança erro ao converter a cópia List<Object?> para List<int>.
 
 Critérios:
 
-- [ ] Contrato genérico e cópia JSON compatíveis para listas e mapas tipados,
+- [x] Contrato genérico e cópia JSON compatíveis para listas e mapas tipados,
   incluindo valores aninhados; entradas inválidas continuam rejeitadas.
-- [ ] Aplicação de delta, consulta de value/winner, join, JSON e restauração
+- [x] Aplicação de delta, consulta de value/winner, join, JSON e restauração
   seguem o contrato definido sem casts que falhem em valores válidos.
-- [ ] Alterações em valores fornecidos ou consultados não modificam estado/delta;
+- [x] Alterações em valores fornecidos ou consultados não modificam estado/delta;
   preservar HLC, desempate e tombstones.
-- [ ] Regressões permanentes cobrem listas/mapas tipados, nulidade, isolamento e
+- [x] Regressões permanentes cobrem listas/mapas tipados, nulidade, isolamento e
   integração pelo caminho Object? de Replica/SyncEngine.
-- [ ] Documentar consumo tipado e compatibilidade de APIs/formatos; qualquer
+- [x] Documentar consumo tipado e compatibilidade de APIs/formatos; qualquer
   restrição ou mudança pública exige justificativa e caminho de migração.
 
 Validação: reproduzir falha antes da correção e executar regressões após o review
@@ -309,7 +309,7 @@ das correções. Format/analyze/test no core e consumidores afetados; conferir S
 formatos persistidos e uso público, sem ampliar para um framework de codecs.
 
 Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-10](TRACEABILITY.md#execucao-r-10-2026-10-12).
 
 ## Gate da fase
 
