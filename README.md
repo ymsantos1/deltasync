@@ -220,8 +220,9 @@ pode diferir das origens CRDT em mudanças encaminhadas. A API não escolhe prot
 adapters serializam `toJson()` e validam `fromJson()`. `DeltaTransport.send`
 concluído significa transmissão local; ACK `received` confirma só recebimento;
 somente `appliedAndPersisted` do destinatário configurado remove IDs daquela
-outbox. Outbox mantém cópia por peer; peer offline recebe retry quando volta, e
-trocar adapter para outro peer não transfere pendências nem amplia confirmação.
+outbox. Outbox mantém cópia por peer; o consumidor deve chamar `push()` novamente
+após reconexão para tentar enviar ao peer que voltou. Trocar adapter para outro
+peer não transfere pendências nem amplia confirmação.
 Decoder aceita envelope v1 só com `legacyRecipientReplicaId` explícito; adapters
 antigos também precisam migrar a assinatura pública.
 
@@ -275,6 +276,17 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `delta.dart` agrupa/mescla mudanças e `delta_codec.dart` versiona serialização.
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam
   nos pacotes core e transport.
+
+Na réplica, `replica.dart` mantém estado, mutações, roteamento, aplicação e
+snapshot/restauração; `replica_delta_validation.dart` concentra a validação do
+lote antes de qualquer aplicação. Cada CRDT mantém sua regra de join no próprio
+arquivo. No sync, `sync_engine.dart` mantém lifecycle, preparação/commit,
+recebimento, envio e ACK; `sync_types.dart` reúne resultados, falhas e política
+de retry. No storage, `replica_storage.dart` define contrato, snapshot e entradas
+da outbox; `memory_storage.dart` implementa o adaptador volátil. O adaptador
+durável fica em `packages/deltasync_storage_sqflite/`. Os arquivos extraídos são
+`part` das libraries originais: imports públicos, APIs e formatos persistidos
+continuam nos mesmos contratos.
 
 ### Percurso de integração e manutenção
 
@@ -341,8 +353,9 @@ Adaptadores de `ReplicaStorage` devem implementar `commit` para gravar snapshot
 canônico e entradas novas da outbox atomicamente, e `commitRemote` para substituir
 snapshot após merge remoto. Falha deve preservar estado anterior. Cada entrada
 outbox contém uma mudança; `SyncEngine` combina entradas em lote só no envio.
-`markSent` grava status, tentativa e horário antes da transmissão para permitir
-retry com backoff; `acknowledge` remove apenas IDs confirmados do peer. Suíte
+`markSent` grava status, tentativa e horário antes da transmissão para selecionar
+retries com backoff na próxima chamada a `push()`; `acknowledge` remove apenas IDs
+confirmados do peer. Suíte
 compartilhada para validar adapters está em `deltasync_storage_testing`.
 Para a mesma réplica, peer e ID de mudança pendente, `commit` e `enqueue`
 aceitam conteúdo de delta equivalente sem substituir status, tentativas ou
@@ -371,8 +384,17 @@ preservam fonte de tempo HLC injetada.
 `AcknowledgingDeltaTransport.sendAndAwaitAck` retorna peer e estágio explícitos;
 `received` não confirma mudança, `appliedAndPersisted` confirma aplicação e commit
 remoto durável. ACK parcial remove apenas IDs confirmados para aquele peer. Sem ACK,
-`ReplicaStorage` conserva mudanças para retry. `SyncRetryPolicy.maxAttempts` limita retries automáticos; `push(force: true)`
-ignora atraso e limite para retransmissão manual. `SyncEngine` aceita ACK somente
+`ReplicaStorage` conserva mudanças para retry. A aplicação decide quando chamar ou
+agendar `push()` (por exemplo, após detectar reconexão); `SyncEngine` não cria
+timer, worker ou tentativa automática. Com `ReplicaStorage`, toda entrada nova
+`pending` do peer configurado participa da próxima chamada. Para entradas já
+`sent`, `push()` sem `force` só seleciona as que cumpriram o atraso exponencial
+desde `sentAt`. Por padrão, `SyncRetryPolicy.baseDelay` é 1 s e `maxDelay`
+limita o atraso a 1 min;
+`maxAttempts` opcional impede nova seleção após esse número de tentativas marcadas.
+`maxAttempts: null` não impõe limite, mas ainda exige nova chamada do consumidor.
+`push(force: true)` ignora atraso e limite para retransmissão manual.
+`SyncEngine` aceita ACK somente
 para IDs do lote enviado, peer configurado e outbox da réplica local. O legado `PendingDeltaStore`
 não armazena tentativas nem ACKs: mudanças enviadas ficam pendentes e cada `push`
 pode reenviá-las sem limite; `force` não altera esse comportamento. ACK confirma
@@ -387,10 +409,25 @@ remoto não puder provar commit durável, não deve reportar `appliedAndPersiste
 `created/starting/started/disposed`; falha de início retorna a `created` e permite
 retry. `replica` só fica consultável após restauração. Mutação concluída significa
 commit local, não confirmação remota.
+
+Para atualizar a UI, aguarde a mutação pública e consulte `pendingDelta()` após o
+commit local; exiba o valor pela réplica restaurada e a pendência separadamente.
+Ao reconectar, chame `push()`, trate erro pela `Future`, consulte o resultado e
+`pendingDelta()` de novo antes de mostrar confirmação remota. Chamadas diretas de
+`applyRemote()` também são aguardáveis; quando o adapter usa o stream de entrada,
+a aplicação precisa coordenar a atualização da tela. `errors` informa falhas de
+callbacks/stream remoto, não sucessos de commit ou falhas de chamadas aguardadas.
+Não há stream público de commits concluídos. O
+[consumidor Flutter](example/flutter_mobile/README.md) atualiza o status após
+cada ação; o [exemplo CLI](example/offline_reconciliation.dart) chama
+`push(force: true)` explicitamente ao reconectar.
+
 `pendingDelta()` consulta alterações ainda retidas localmente; `push()` retorna
 `SyncPushResult` com delta enviado, estágio do ACK (quando existe) e IDs
-incorporados/persistidos. `fullyAcknowledged` é falso quando transporte não fornece
-ACK ou confirma só parte do lote. Falhas chamadas
+incorporados/persistidos. `fullyAcknowledged` é falso quando um lote enviado não
+recebe ACK durável para todos os IDs. Em um `push()` sem mudanças elegíveis, o
+delta é vazio e esse getter é verdadeiro por vacuidade, sem comprovar entrega de
+pendências filtradas. Falhas chamadas
 diretamente são lançadas ao chamador; `errors` expõe falhas de processamento do
 stream remoto e erros emitidos pelo stream de transporte. `dispose()` é terminal,
 cancela recepção, aguarda operações já iniciadas e rejeita novas operações.
@@ -411,6 +448,7 @@ await engine.setDelta('title', 'edited offline'); // commit local concluído
 final pending = await engine.pendingDelta();
 final result = await engine.push(); // estágio em result.acknowledgement?.stage
 final confirmed = result.acknowledgedIds; // só aplicado e persistido
+final remaining = await engine.pendingDelta(); // ainda retido para envio
 await engine.dispose();
 await errors.cancel();
 ```
@@ -461,7 +499,9 @@ outros desktops e usabilidade com participantes não foram avaliados.
 O [consumidor Flutter Android](example/flutter_mobile/README.md) usa a factory do
 plugin `sqflite` e reproduz esse percurso pela UI. VAL-07 executou o app no
 Moto G52 com Android 13, incluindo dois reinícios reais de processo, restauração
-da outbox e confirmação durável. O exemplo resolve os pacotes locais em workspace
+da outbox e confirmação durável; R-15 repetiu o percurso. Falha transitória de
+abertura e retry da UI foram injetados no teste Flutter com SQLite FFI em Linux,
+não no aparelho. O exemplo resolve os pacotes locais em workspace
 próprio; core, sync e contrato de storage continuam Dart puro. iOS não foi avaliado.
 
 ### Medição de tamanho

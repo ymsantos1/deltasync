@@ -43,7 +43,8 @@ dois defeitos de metadados/restauração e identificou falha de retry da UI e
 descrição imprecisa de retry. R-13/R-14/R-15/R-18 são MUST e reabrem VAL-05. Os
 [diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11) e a
 [validação final](TRACEABILITY.md#execucao-val-05-2026-10-12) estão registrados.
-R-13/R-14/R-15 foram corrigidas e validadas em 2026-10-12; R-18 segue pendente.
+R-13/R-14/R-15/R-18 foram concluídas em 2026-10-12; VAL-05 ainda exige nova
+validação final.
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
 `ObjectCrdt`, política global add/update-wins para objetos, geração de código,
@@ -115,16 +116,17 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fases 1 e 5: **reabertas**, com novos MUST pendentes. Fases 2, 3 e 4 mantêm
+Fase 1: **MUST e R-16 SHOULD concluídos**. Fase 5: **reaberta** para
+VAL-05. Fases 2, 3 e 4 mantêm
 conclusões históricas; VAL-06/VAL-07 continuam concluídas nos cenários executados.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **R-18**.
-VAL-05 aguarda R-18 e nova validação final. Escrita e revisão do TCC
+Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-08**.
+VAL-05 está pronta; revalidará a entrega após o trabalho SHOULD executado ou
+adiado. Escrita e revisão do TCC
 ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-18 (contrato de retry). Depois, R-16,
-VAL-08/VAL-09/VAL-10 conforme margem;
+recomendada: R-16, depois VAL-08/VAL-09/VAL-10 conforme margem;
 VAL-05 revalida o resultado efetivamente entregue. R-17 é COULD.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
@@ -175,8 +177,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-13](01_PHASE1_CORRECOES.md#r-13) | Corrigir igualdade e hash de VectorClock | concluída | MUST | R-02 |
 | [R-14](01_PHASE1_CORRECOES.md#r-14) | Rejeitar sequência inválida no snapshot MV-Register | concluída | MUST | R-06c, R-07a |
 | [R-15](01_PHASE1_CORRECOES.md#r-15) | Recuperar abertura falha no consumidor Flutter | concluída | MUST | VAL-07 |
-| [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | planejada | SHOULD | R-13, R-14, R-18 |
-| [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | pronta | MUST | R-08c, VAL-04 |
+| [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | concluída | SHOULD | R-13, R-14, R-18 |
+| [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | concluída | MUST | R-08c, VAL-04 |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -197,7 +199,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | planejada | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
 | [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | pronta | SHOULD | R-15, VAL-07 |

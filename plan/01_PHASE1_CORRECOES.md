@@ -1,6 +1,6 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: reaberta em 2026-10-12; R-18 MUST pendente.
+Estado: MUST e R-16 SHOULD concluídos em 2026-10-12.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -402,7 +402,7 @@ Evidência de conclusão: [execução R-15 em 2026-10-12](TRACEABILITY.md#execuc
 
 ## R-16 — Refatorar organização e remover código sem uso comprovado
 
-Status: planejada
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-13, R-14, R-18
 
@@ -412,23 +412,23 @@ Pedido do autor: avaliar divisão de pastas/arquivos e possíveis remoções at�
 
 Critérios:
 
-- [ ] Inventariar responsabilidades e referências antes de mover/remover; distinguir
+- [x] Inventariar responsabilidades e referências antes de mover/remover; distinguir
   código sem uso, APIs exportadas, migração, fixtures e possibilidades sem prova.
-- [ ] Definir layout por responsabilidades concretas: no core, avaliar CRDTs,
+- [x] Definir layout por responsabilidades concretas: no core, avaliar CRDTs,
   metadados, réplica e serialização; reduzir concentração em Replica. Em sync e
   storage, separar contratos/DTOs/políticas da execução onde facilitar manutenção.
   Pastas/arquivos novos devem ter dono claro; evitar um arquivo por método.
-- [ ] Organizar testes por comportamento/tipo quando facilitar regressões, com
+- [x] Organizar testes por comportamento/tipo quando facilitar regressões, com
   fixtures compartilhadas apenas quando houver duplicação real.
-- [ ] Fazer uma fronteira por vez e conservar estados intermediários verificáveis.
+- [x] Fazer uma fronteira por vez e conservar estados intermediários verificáveis.
   Registrar baseline e mesmas provas após cada extração relevante.
-- [ ] Preservar imports públicos, APIs, labels/versões JSON, schema SQLite,
+- [x] Preservar imports públicos, APIs, labels/versões JSON, schema SQLite,
   causalidade, identidade, rollback, ordem de commit, ACK/retry e lifecycle.
   Não misturar otimização, correção algorítmica ou funcionalidade nova à refatoração.
-- [ ] Remover apenas código sem uso demonstrado. Operation, PendingDeltaStore e
+- [x] Remover apenas código sem uso demonstrado. Operation, PendingDeltaStore e
   aliases depreciados têm referências de migração/testes e política de compatibilidade;
   não removê-los como código morto. Remoção pública exige escopo/versão próprios.
-- [ ] Atualizar exports, exemplos e mapa de manutenção; explicar onde alterar
+- [x] Atualizar exports, exemplos e mapa de manutenção; explicar onde alterar
   estado, mutação, delta, join, commit e restauração no layout resultante.
 
 Validação: safe-refactor e ciclo plan-executor; mesmos testes de unidade,
@@ -437,13 +437,13 @@ afetados. Revalidar build/runtime se integração mobile mudar. Review do diff r
 e das remoções. Se prazo impedir conclusão, registrar adiamento SHOULD;
 reorganização cosmética não é requisito de fechamento nem prova de melhoria.
 Evidência de motivação: [revisão e inventário](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-16 em 2026-10-12](TRACEABILITY.md#execucao-r-16-2026-10-12).
 
 <a id="r-18"></a>
 
 ## R-18 — Precisar contrato de retry e limites de consumo
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08c, VAL-04
 
@@ -454,19 +454,19 @@ quando push é chamado. O consumidor é responsável por iniciar novas tentativa
 
 Critérios:
 
-- [ ] Explicitar quem chama ou agenda push, backoff, maxAttempts e force; não
+- [x] Explicitar quem chama ou agenda push, backoff, maxAttempts e force; não
   introduzir scheduler para corrigir uma descrição incorreta.
-- [ ] Distinguir sucesso local, pendência, ACK e falha; documentar caminho de
+- [x] Distinguir sucesso local, pendência, ACK e falha; documentar caminho de
   atualização da UI sem anunciar stream de commits ainda não entregue.
-- [ ] Manter explícitos peer fixo, enlace sintético do exemplo, OR-Map com G-Set,
+- [x] Manter explícitos peer fixo, enlace sintético do exemplo, OR-Map com G-Set,
   plataforma efetivamente validada e ausência de economia universal de deltas.
-- [ ] Conferir API/README/exemplos contra código atual, com links e referências
+- [x] Conferir API/README/exemplos contra código atual, com links e referências
   de manutenção válidos; escrita do TCC fica com o autor.
 
 Validação: revisão documental, links/anchors, consistência com API e diff limpo.
 Testes Dart só se houver mudança de código justificada dentro do escopo.
 Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-18 em 2026-10-12](TRACEABILITY.md#execucao-r-18-2026-10-12).
 
 ## Gate da fase
 

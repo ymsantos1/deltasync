@@ -14,9 +14,10 @@ confirmou três defeitos apesar de 155 testes aprovados.
 no Moto G52 Android 13, com plugin sqflite e reinícios reais de processo.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
 A [revisão geral posterior](#revisao-geral-2026-10-12) confirmou novos defeitos;
-[R-13](#execucao-r-13-2026-10-12), [R-14](#execucao-r-14-2026-10-12) e
-[R-15](#execucao-r-15-2026-10-12) foram concluídas; R-18 continua MUST pendente
-e VAL-05 foi reaberta. O autor informou
+[R-13](#execucao-r-13-2026-10-12), [R-14](#execucao-r-14-2026-10-12),
+[R-15](#execucao-r-15-2026-10-12) e [R-18](#execucao-r-18-2026-10-12) foram
+concluídas; [R-16](#execucao-r-16-2026-10-12) concluiu a reorganização SHOULD.
+VAL-05 permanece reaberta para validação final. O autor informou
 entrega em 16/11 e pediu [planejamento das correções/refatoração](#manutencao-revisao-refatoracao-2026-10-12).
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
@@ -121,8 +122,8 @@ máximo por réplica sem representação explícita de lacunas.
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
 | Integração Flutter/sqflite mobile, SHOULD | VAL-07 | build/runtime, reinício de processo e reconciliação executados no Moto G52 Android 13/API 33 |
 | Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | R-13 concluída com regressões Set/Map; R-14 concluída com regressões core/SQLite |
-| Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | R-15 concluída com regressão Flutter FFI e percurso Android; R-18 pendente |
-| Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | inventário, preservação de comportamento e app interativo; SHOULD pendentes |
+| Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | R-15 concluída com regressão Flutter FFI e percurso Android; R-18 documentou agendamento pelo consumidor, backoff e limites |
+| Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | R-16 concluiu inventário e extrações com comportamento preservado; app interativo permanece em VAL-08 |
 | Validação ampliada e limites de custo | VAL-09, VAL-10 | histórias/metadados e cargas contrastantes; SHOULD pendentes |
 | Notificação pública de commits, COULD | R-17 | facilidade de consumo; contrato ainda não implementado |
 
@@ -132,7 +133,7 @@ Esta matriz resume implementação e execuções até 2026-10-12; a seção de b
 os registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
 reabriram o fechamento; R-10/R-11/R-12 corrigiram os três defeitos confirmados.
 Os novos achados de 2026-10-12 reabriram VAL-05; a matriz preserva execuções
-anteriores, registra R-13/R-14/R-15 e identifica R-18 pendente.
+anteriores e registra R-13/R-14/R-15/R-18. VAL-05 ainda aguarda a nova validação final.
 Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
@@ -164,7 +165,7 @@ consumidora entre processos. Uma categoria não substitui outra.
 | Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02/VAL-05, com duas réplicas SQLite e processos separados | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
 | Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10/R-11/R-12 acrescentam regressões; VAL-05 repete sete suítes e consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
 | Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`, `example/flutter_mobile/`; configuração nos READMEs | VAL-02/VAL-05 e VAL-07: edição offline, falha visível, restart, reconexão, ACK e convergência; R-15 acrescenta recuperação da abertura e repete o percurso Android | Transporte sintético e peer fixo; sem participantes, rede real ou avaliação geral de usabilidade |
-| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-13 validou Set/Map/JSON; R-14 validou rejeição e retry com banco preservado; R-15 validou retry da UI com SQLite FFI | R-18 pendente; falha injetada de abertura não executada no Android |
+| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-13 validou Set/Map/JSON; R-14 validou rejeição e retry com banco preservado; R-15 validou retry da UI com SQLite FFI; R-18 alinhou README/comentários ao contrato de push existente | Falha injetada de abertura não executada no Android; VAL-05 ainda pendente |
 | Core nativo, snapshot canônico, fila sem espera de rede | `Replica`, `ReplicaState`, `SyncEngine`, `OutboxEntry` | Regressões R-09a/R-09b/R-05; envio lento com commits locais em `sync_engine_test.dart` | Histórico e deduplicação limitados conforme R-09b; sem benchmark de escala |
 | Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a/R-10; R-10 documenta migração de `const LwwDelta` sem alterar wire JSON | Não há inventário de todos consumidores externos (OPEN-07) |
 
@@ -2922,3 +2923,122 @@ tarefa recomendada. Sem nova decisão arquitetural.
 Limitações: falha de abertura foi injetada no Flutter test/Linux, não no Android.
 O cenário Android usa duas réplicas no mesmo app e peer sintético; iOS, rede real
 e participantes não foram avaliados. Restauração pode avançar HLC sem edição.
+
+<a id="execucao-r-18-2026-10-12"></a>
+
+## Execução R-18 — 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-08c e VAL-04 concluídas; R-18 pronta e MUST. Conferidos README,
+comentários públicos de `SyncEngine`/`SyncRetryPolicy`, seleção em `_prepareOutbound`,
+`markSent`, testes de backoff/limite, exemplos CLI/Flutter, guia Dart, decisões e
+riscos. `push()` só tenta enviar quando chamado; o consumidor é dono do agendamento.
+Implementação: README e comentários públicos esclarecem `push()` explícito,
+backoff desde `sentAt`, `maxAttempts`, `force`, ACK durável e caso de lote vazio.
+README descreve atualização da UI após mutação e envio sem prometer stream de
+commits. README Flutter distingue retry de abertura do envio por reconexão.
+Limites de peer fixo, enlace sintético, OR-Map com G-Set, Android validado,
+falha injetada só no teste Linux e ausência de economia universal permanecem
+explícitos. Não houve alteração de lógica, API, schema ou formato persistido.
+Review: aprovado
+Achados: primeiro review identificou duas imprecisões: seleção apenas para o peer
+configurado e valores de atraso como padrões configuráveis. Texto corrigido.
+Também foi ajustada a descrição do status Flutter em erro de envio; segundo
+review não encontrou achado impeditivo. Review pelo implementador, não independente.
+Validação: aprovada
+Comandos: em `packages/deltasync_sync`, Dart 3.13.5/Linux x64,
+`dart format --output=none --set-exit-if-changed lib` passou com 0 alterações e
+`dart analyze` passou sem issues. O diff documental foi comparado com
+`SyncEngine._prepareOutbound`, `SyncRetryPolicy.delayFor`, `ReplicaStorage.markSent`
+e os exemplos; links e status foram conferidos no checker do plano após manutenção.
+Não foram executados testes Dart: só README e comentários mudaram, sem semântica.
+Critérios: (1) contrato público e README dizem quem chama `push()`, elegibilidade,
+atraso exponencial, teto de tentativas e bypass por `force`; (2) commit local,
+pendência, ACK, falhas aguardadas/stream e atualização da UI foram distinguidos,
+sem stream de sucesso inventado; (3) limites da topologia, composição OR-Map,
+plataforma e medição permanecem delimitados; (4) APIs e exemplos foram conferidos
+contra código atual e links locais preservados. Escrita do TCC permaneceu com o
+autor.
+Manutenção: R-18 concluída na fase e índice; R-16 e VAL-05 tornaram-se prontas.
+Fase 1 mantém R-16 SHOULD na sequência proposta; VAL-05 fica para revalidar a
+entrega após opcionais executados ou adiados. Matriz e RISK-22/25 atualizados.
+Próxima tarefa recomendada: R-16. Sem nova decisão arquitetural.
+Limitações: documentação descreve contrato existente; não há scheduler interno,
+stream de commits ou nova execução de runtime nesta tarefa. Evidência Android
+continua limitada a Moto G52/Android 13 de VAL-07/R-15.
+
+<a id="execucao-r-16-2026-10-12"></a>
+
+## Execução R-16 — 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Procedimento adicional: safe-refactor, com baseline e prova após cada extração.
+Leitura: R-13/R-14/R-18 concluídas; R-16 pronta e SHOULD. Inventário identificou
+`Replica` com estado, mutação, snapshot e validação dos oito deltas; `SyncEngine`
+com execução e tipos de resultado/política; `replica_storage.dart` com contrato,
+DTOs e `MemoryStorage`. Core já separava os oito CRDTs, metadados, identidade,
+clocks e codec. Testes core já estavam por tipo/comportamento; sync, storage,
+SQLite e facade tinham suítes por contrato/fluxo, sem fixture duplicada que
+justificasse movimentação. Guia Dart, DEC-29, RISK-26 e imports públicos conferidos.
+`Operation` serve migração/fixture; `PendingDeltaStore` e aliases depreciados
+continuam em contratos e regressões. Nenhuma remoção ficou comprovada.
+
+Baseline anterior às extrações: Dart 3.13.5/Linux x64; `dart analyze` sem issues
+nos sete pacotes/fachada; `dart test --reporter expanded` passou com 83 core, 39
+sync, 12 storage, 8 storage_testing, 22 storage_sqflite, 6 transport e 7 raiz
+(177). `flutter analyze` sem issues e `flutter test --reporter expanded` passou
+1 teste em `example/flutter_mobile`.
+
+Implementação: (1) `MemoryStorage` e auxiliares saíram de `replica_storage.dart`
+para `memory_storage.dart`; análise e testes passaram em storage (12),
+storage_testing (8), storage_sqflite (22), sync (39) e facade (7). (2)
+`SyncFailureSource`, `SyncFailure`, `SyncPushResult` e `SyncRetryPolicy` saíram
+de `sync_engine.dart` para `sync_types.dart`; testes passaram em sync (39),
+SQLite (22) e facade (7). O analyzer apontou somente o uso depreciado no link
+`PendingDeltaStore` do novo arquivo; a diretiva de lint local corrigiu isso,
+e sync/facade foram analisados novamente sem issues. (3) Validação de lote,
+identidade e vínculo endereço/tipo saiu de `Replica` para a extensão privada
+em `replica_delta_validation.dart`; core analisou sem issues e passou 83 testes.
+Cada extração usa `part` da library anterior, mantendo imports/exports públicos,
+acesso privado, corpos de algoritmo e formatos. Estado, mutação, snapshot e
+restauração continuam em `replica.dart`; join em cada CRDT; delta/codec nos
+arquivos existentes; commit, envio/ACK e lifecycle em `sync_engine.dart`;
+contrato/outbox em `replica_storage.dart`; SQLite no adaptador próprio.
+README registra esse mapa. Exports e exemplos foram conferidos; usam os mesmos
+imports e contratos, portanto não exigiram edição. O consumidor Flutter será
+dividido em VAL-08, fora de R-16. Nenhum teste ou fixture foi movido sem ganho
+concreto, e nenhum código foi removido.
+
+Review: aprovado
+Achados: inspeção do diff real, inclusive arquivos novos fora de `git diff`,
+confirmou que os corpos movidos, assinaturas públicas, `part` e exports seguem
+coerentes; não houve alteração de JSON/schema, ordem de commit, causalidade,
+ACK/retry ou lifecycle. A diretiva de lint foi corrigida antes desta revisão.
+Sem achado impeditivo restante. Review pelo implementador, não independente.
+
+Validação: aprovada
+Comandos: `dart format --output=none --set-exit-if-changed lib test` passou com
+zero alterações nos sete pacotes/fachada e no consumidor Flutter. `dart analyze`
+passou sem issues nos sete pacotes/fachada; `flutter analyze` passou sem issues.
+`dart test --reporter expanded` repetiu os mesmos 177 testes (83/39/12/8/22/6/7)
+com sucesso; `flutter test --reporter expanded` passou 1 teste de recuperação
+SQLite FFI. `git diff --check` passou antes da manutenção. As suítes incluem
+regressões de lote inválido sem efeito parcial, snapshots, integração de engines,
+ACK, retry, rollback e reabertura SQLite. Como a integração Android não mudou,
+build/runtime mobile não foram repetidos; VAL-07/R-15 continuam sendo a evidência
+do Moto G52, não prova de novos alvos.
+
+Critérios: (1) inventário e referências acima distinguem API/migração/fixtures
+de código morto não demonstrado; (2) três fronteiras têm dono concreto sem
+hierarquias/pastas artificiais; (3) disposição atual dos testes foi mantida após
+avaliação; (4) baseline e checks por fronteira/finais preservam estados
+verificáveis; (5) nenhuma API, label/versão JSON ou schema mudou e testes cobrem
+invariantes relevantes; (6) nenhuma remoção sem prova ocorreu; (7) README mapeia
+estado, mutação, delta, join, commit e restauração, com exports/exemplos estáveis.
+Manutenção: R-16 concluída na fase e índice; RISK-26 atualizado; nenhuma nova
+decisão arquitetural além de DEC-29. Próxima tarefa recomendada: VAL-08; VAL-05
+segue pronta para revalidar a entrega após os SHOULD executados ou adiados.
+Limitações: review não independente; testes são cenários finitos. Esta tarefa
+não mede custo, não reexecuta dispositivo e não altera o consumidor Flutter.

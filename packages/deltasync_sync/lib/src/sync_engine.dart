@@ -6,6 +6,8 @@ import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 import 'package:deltasync_transport/deltasync_transport.dart';
 
+part 'sync_types.dart';
+
 /// Coordinates local CRDT changes, pending persistence, and remote deltas.
 class SyncEngine {
   SyncEngine({
@@ -50,8 +52,8 @@ class SyncEngine {
   /// Current initialization, running or terminal lifecycle state.
   SyncEngineLifecycle get lifecycle => _lifecycle;
 
-  /// Failures from transport stream callbacks; awaited methods still throw
-  /// their own errors to the caller.
+  /// Failures from transport stream callbacks; awaited methods throw to callers.
+  /// This stream does not report successful commits or push progress.
   Stream<SyncFailure> get errors => _errors.stream;
 
   @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
@@ -240,7 +242,11 @@ class SyncEngine {
     (candidate) => candidate.addOrMapValue(crdtId, key, value),
   );
 
-  /// Sends current pending changes without holding the commit queue during I/O.
+  /// Sends eligible pending changes without holding the commit queue during I/O.
+  /// The caller schedules each push; this engine has no background retry timer.
+  /// With [ReplicaStorage], normal calls select new entries and sent entries
+  /// whose delay has elapsed and attempts remain below the cap. [force] bypasses
+  /// those filters.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {
     if (_lifecycle == SyncEngineLifecycle.disposed) {
@@ -545,67 +551,3 @@ class SyncEngine {
 /// Public lifecycle of a [SyncEngine]. A failed start returns to [created] and
 /// may be retried; [disposed] is terminal.
 enum SyncEngineLifecycle { created, starting, started, disposed }
-
-enum SyncFailureSource { incomingDelta, incomingStream }
-
-/// Failure delivered by [SyncEngine.errors] from an incoming transport callback.
-class SyncFailure {
-  const SyncFailure({
-    required this.source,
-    required this.error,
-    required this.stackTrace,
-  });
-
-  final SyncFailureSource source;
-  final Object error;
-  final StackTrace stackTrace;
-}
-
-/// Result of one push attempt. A null [acknowledgement] means only local send
-/// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
-/// retains changes even when remote ACK is received.
-class SyncPushResult {
-  SyncPushResult({
-    required this.sent,
-    required Iterable<String> acknowledgedIds,
-    this.acknowledgement,
-  }) : acknowledgedIds = Set.unmodifiable(acknowledgedIds);
-
-  static SyncPushResult get empty =>
-      SyncPushResult(sent: const Delta.empty(), acknowledgedIds: const []);
-
-  final Delta sent;
-  final Set<String> acknowledgedIds;
-  final DeltaAcknowledgement? acknowledgement;
-
-  bool get fullyAcknowledged =>
-      sent.changes.every((change) => acknowledgedIds.contains(change.id));
-}
-
-/// Exponential retry policy for ReplicaStorage entries without confirmation.
-///
-/// Automatic retries stop after [maxAttempts] when configured. `push(force:
-/// true)` deliberately bypasses both the retry delay and attempt cap for manual
-/// retransmission. The legacy [PendingDeltaStore] path has no attempt metadata;
-/// every push retries its retained delta and this policy does not apply there.
-class SyncRetryPolicy {
-  const SyncRetryPolicy({
-    this.baseDelay = const Duration(seconds: 1),
-    this.maxDelay = const Duration(minutes: 1),
-    this.maxAttempts,
-  });
-
-  final Duration baseDelay;
-  final Duration maxDelay;
-  final int? maxAttempts;
-
-  Duration delayFor(int attempts) {
-    if (attempts <= 0) return Duration.zero;
-    var delay = baseDelay > maxDelay ? maxDelay : baseDelay;
-    for (var index = 1; index < attempts; index++) {
-      final doubled = delay * 2;
-      delay = doubled > maxDelay ? maxDelay : doubled;
-    }
-    return delay;
-  }
-}

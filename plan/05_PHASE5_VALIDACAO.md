@@ -1,6 +1,7 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: reaberta em 2026-10-12; VAL-05 aguarda R-18.
+Estado: reaberta em 2026-10-12; VAL-05 pronta para validação final após o
+trabalho SHOULD que for executado ou adiado.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -137,7 +138,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18
 

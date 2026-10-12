@@ -26,6 +26,11 @@ restauração das duas réplicas e da outbox:
 flutter test test/open_retry_test.dart
 ```
 
+O retry de abertura é distinto do envio. **2. Reconectar** configura o enlace
+sintético e chama `push(force: true)` em cada réplica; não há envio agendado pela
+biblioteca. Após sucesso, a tela exibe valores e pendências consultados; em falha,
+exibe o erro. Uma falha de envio mantém o commit local e a outbox para nova tentativa.
+
 O botão de reconexão conecta dois objetos no mesmo processo. Esse enlace é um
 peer fixo de demonstração, não um protocolo de rede ou backend. O caminho SQLite,
 a factory e os valores exibidos permitem verificar a integração do plugin mobile
