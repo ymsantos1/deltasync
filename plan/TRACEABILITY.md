@@ -4,11 +4,13 @@ Baseline histórica: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>)
 [contexto](../proposta.md) e inspeção/testes da revisão anterior.
 A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
-Estado atual — 2026-10-11: [revisão técnica](#revisao-tecnica-2026-10-11)
-confirmou três defeitos apesar de 155 testes aprovados. R-11 foi
-[concluída em 2026-10-12](#execucao-r-11-2026-10-12); R-12 também foi
-[concluída em 2026-10-12](#execucao-r-12-2026-10-12). R-10 é MUST pronta;
-VAL-05 segue planejada; VAL-07 é SHOULD para evidência mobile.
+Estado atual — 2026-10-12: a [revisão técnica](#revisao-tecnica-2026-10-11)
+confirmou três defeitos apesar de 155 testes aprovados.
+[R-10](#execucao-r-10-2026-10-12),
+[R-11](#execucao-r-11-2026-10-12) e
+[R-12](#execucao-r-12-2026-10-12) foram concluídas.
+[VAL-05](#execucao-val-05-2026-10-12) fechou o gate técnico;
+VAL-07 é SHOULD para evidência mobile.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
@@ -113,40 +115,41 @@ máximo por réplica sem representação explícita de lacunas.
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
 | Integração Flutter/sqflite mobile, SHOULD | VAL-07 | build/runtime, reinício de processo e reconciliação no alvo declarado |
 
-### Matriz final de evidências MUST — 2026-10-06
+### Matriz final de evidências MUST — atualizada em 2026-10-12
 
-Esta matriz resume implementação e execução de 2026-10-06; a seção de baseline e os
-registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
-reabrem o fechamento: coleções LWW tipadas, conflito de ID pendente e retry de
-abertura ainda exigem correção. Evidências distinguem unidade,
+Esta matriz resume implementação e execuções até 2026-10-12; a seção de baseline e
+os registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
+reabriram o fechamento; R-10/R-11/R-12 corrigiram os três defeitos confirmados.
+Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
 
 - **Unidade/propriedades:** VAL-01 e testes de `packages/deltasync_core/test/`
-  e `test/`; resultados de core e facade registrados em sua execução.
+  e `test/`; R-10 acrescenta coleções LWW tipadas e isolamento de deltas.
 - **Integração:** R-08d exercita duas `SyncEngine` ligadas via API pública;
   R-08c combina divergência offline, reordenação, retry e ACK.
 - **Recuperação durável:** R-07d, R-07a e R-08c fecham engines/bancos SQLite
-  reais, reabrem e verificam snapshot, outbox, tombstones e entrega. Execução Linux
+  reais, reabrem e verificam snapshot, outbox, tombstones e entrega. R-11 cobre ID
+  divergente e rollback; R-12 cobre retry de abertura. Execução Linux
   x64 via FFI; MemoryStorage não conta como recuperação de processo.
 - **Demonstração consumidora:** VAL-02 roda `offline` e `reconnect` em processos
-  Dart separados; registra integração, mensagens de pendência/erro/ACK e estado.
+  Dart separados; VAL-05 repetiu as duas fases após as correções.
 
 | Requisito MUST | Implementação | Evidência executada | Limite declarado |
 |---|---|---|---|
-| Oito CRDTs, mutações, deltas e joins | `packages/deltasync_core/lib/src/`; OR-Map compõe G-Set; fachada `lib/deltasync.dart` | Testes por tipo em `packages/deltasync_core/test/`; propriedades VAL-01; lote SQLite de oito tipos R-07a | Fixtures algébricas finitas; não constituem prova matemática universal |
+| Oito CRDTs, mutações, deltas e joins | `packages/deltasync_core/lib/src/`; OR-Map compõe G-Set; fachada `lib/deltasync.dart` | Testes por tipo em `packages/deltasync_core/test/`; propriedades VAL-01; lote SQLite de oito tipos R-07a; coleções LWW tipadas e isolamento R-10 | Fixtures algébricas finitas; não constituem prova matemática universal; coleções tipadas exigem `decodeValue` |
 | Identidade, dots e roteamento por endereço | `identity.dart`, `replica.dart`, `delta_change.dart` | Testes `ReplicaId and Dot round trip and validate identity`, roteamento misto, conflito de endereço/tipo; R-02/R-09a/R-09b/R-07a | G/PN usam componentes cumulativos; tipos com eventos individuais mantêm contexto explícito |
-| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a | Formatos antigos aceitos ou rejeitados conforme migração documentada; consumidores externos desconhecidos em OPEN-07 |
+| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10 | Formatos antigos aceitos ou rejeitados conforme migração documentada; consumidores externos desconhecidos em OPEN-07 |
 | Core independente e contratos modulares | `deltasync_core`, `deltasync_storage`, `deltasync_sync`, `deltasync_transport`, facade | Analyze/test por pacote; integração pública R-08d e VAL-02 | SQLite fica no adaptador; nenhuma dependência de Flutter no core |
 | Storage substituível e `MemoryStorage` | `ReplicaStorage`, `MemoryStorage`, suíte `deltasync_storage_testing` | R-07b e contrato testado; `memory_storage_contract_test.dart` | Memória é volátil e não prova restart |
-| SQLite, outbox durável e recuperação | `packages/deltasync_storage_sqflite/lib/` | R-07c/R-07d, R-07a (oito tipos), R-08c, VAL-02; SQLite FFI real com fechamento/reabertura | Execução em Linux x64 via FFI; plugin Flutter mobile não testado |
+| SQLite, outbox durável e recuperação | `packages/deltasync_storage_sqflite/lib/` | R-07c/R-07d, R-07a (oito tipos), R-08c, R-11 (ID divergente e rollback), R-12 (retry de abertura), VAL-02/VAL-05; SQLite FFI real com fechamento/reabertura | Execução em Linux x64 via FFI; plugin Flutter mobile não testado |
 | Transporte abstrato, roteamento e envelopes | `deltasync_transport`; `SyncEngine` e destino por peer | `delta_envelope_test.dart`, R-08a/R-08b/R-08d | Transporte dos cenários é em processo; protocolo de rede não faz parte do recorte |
-| ACK explícito, retry sem perda e commit atômico | `SyncEngine`, `ReplicaStorage.commit/commitRemote`, outbox por mudança | Testes de ACK parcial, retry, falhas e transação em sync/storage/SQLite; R-03/R-04/R-05/R-07d/R-08b/R-08c | Só `appliedAndPersisted` do peer destinatário confirma; legado `PendingDeltaStore` conserva itens após ACK |
-| Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02, com duas réplicas SQLite | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
-| Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; VAL-02 percorre consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
-| Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`; configuração em `README.md` | VAL-02: edição offline, falha visível, restart, reconexão, ACK e convergência | CLI/transport sintético; sem participantes, plugin mobile ou avaliação geral de usabilidade |
+| ACK explícito, retry sem perda e commit atômico | `SyncEngine`, `ReplicaStorage.commit/commitRemote`, outbox por mudança | Testes de ACK parcial, retry, falhas e transação em sync/storage/SQLite; R-03/R-04/R-05/R-07d/R-08b/R-08c/R-11/R-12 | Só `appliedAndPersisted` do peer destinatário confirma; legado `PendingDeltaStore` conserva itens após ACK |
+| Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02/VAL-05, com duas réplicas SQLite e processos separados | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
+| Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10/R-11/R-12 acrescentam regressões; VAL-05 repete sete suítes e consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
+| Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`; configuração em `README.md` | VAL-02/VAL-05: edição offline, falha visível, restart, reconexão, ACK e convergência | CLI/transport sintético; sem participantes, plugin mobile ou avaliação geral de usabilidade |
 | Core nativo, snapshot canônico, fila sem espera de rede | `Replica`, `ReplicaState`, `SyncEngine`, `OutboxEntry` | Regressões R-09a/R-09b/R-05; envio lento com commits locais em `sync_engine_test.dart` | Histórico e deduplicação limitados conforme R-09b; sem benchmark de escala |
-| Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a | Não há inventário de todos consumidores externos (OPEN-07) |
+| Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a/R-10; R-10 documenta migração de `const LwwDelta` sem alterar wire JSON | Não há inventário de todos consumidores externos (OPEN-07) |
 
 ### Topologia, confirmação e retenção
 
@@ -2424,3 +2427,70 @@ Limitações: review não independente; VAL-07 ainda precisa de evidência
 Flutter/mobile. A validação de restore nesta tarefa usa MemoryStorage; recuperação
 durável SQLite permanece coberta nas tarefas anteriores e será reavaliada em
 VAL-05.
+
+<a id="execucao-val-05-2026-10-12"></a>
+
+## Execução VAL-05 — 2026-10-12
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: VAL-05 era a próxima MUST pronta, com VAL-03/VAL-04/R-10/R-11/R-12
+concluídas e worktree limpa. Critérios, matriz, decisões e riscos foram
+confrontados com os testes e com os registros das correções. O recorte é o
+fechamento técnico da biblioteca; texto acadêmico pertence ao autor.
+
+Implementação: `plan/TRACEABILITY.md` atualiza a matriz MUST com R-10/R-11/R-12 e
+separa unidade, integração, recuperação SQLite e demo entre processos. `README.md`
+corrige versão atual do snapshot de `Replica` para 8 e aponta regressões LWW
+tipadas; `plan/README.md` atualiza prioridade técnica. Nenhum código, wire JSON,
+schema ou API foi alterado nesta tarefa.
+
+Review: aprovado
+
+Achados: revisão do diff documental encontrou versão de snapshot desatualizada,
+estado de VAL-05 inconsistente no índice durante o ciclo e matriz sem referência
+explícita às correções. Ajustados e revistos novamente. Links, IDs, limites de
+plataforma, contrato público e correspondência com testes conferidos. Sem achado
+impeditivo restante. Review pelo próprio agente, não independente.
+
+Validação: aprovada
+
+Ambiente: Dart 3.13.5, Linux x64, SQLite real via `sqflite_common_ffi`.
+`dart analyze` sem issues e `dart test --reporter expanded` aprovado na raiz e
+nos seis subpacotes. A suíte SQLite incluiu recuperação dos oito CRDTs,
+rollback de ID pendente divergente e retry após falha de abertura. A regressão
+core incluiu listas/mapas LWW tipados, nulidade e isolamento; sync incluiu outbox,
+ACK parcial e reordenação. A execução do exemplo usou dois processos separados:
+`offline` registrou Ana/2 itens e Beto/3 itens, falha visível de peer e duas
+pendências por réplica. `reconnect` restaurou ambas antes do envio, convergiu
+para Ana/Beto e cinco itens, confirmou ACK, zerou pendências e reabriu os dois
+bancos mantendo esse estado. Os arquivos SQLite finais tinham 24.576 bytes cada.
+`python3 scripts/check_plan.py` verificou links, IDs, dependências e status;
+`git diff --check` passou após a revisão.
+
+Comandos: `/opt/flutter/bin/dart --version`; na raiz e nos seis subpacotes,
+`/opt/flutter/bin/dart analyze` e `/opt/flutter/bin/dart test --reporter expanded`;
+na raiz, `/opt/flutter/bin/dart run example/offline_reconciliation.dart offline /tmp/deltasync-val05.DsEW2I`
+e, em outro processo,
+`/opt/flutter/bin/dart run example/offline_reconciliation.dart reconnect /tmp/deltasync-val05.DsEW2I`;
+`stat -c '%n %s bytes'` nos dois bancos;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: 1) oito tipos e LWW tipado por testes core e SQLite; 2) commit,
+clocks/outbox e restauração por SQLite real, R-11/R-12 e demo; 3) ACK/retry,
+transporte e formatos por suítes sync/storage/transport; 4) documentação e
+matriz alinhadas; 5) R-10/R-11/R-12 com review/regressões, suíte final e demo
+executadas após as correções; 6) todos os MUST técnicos concluídos no escopo
+declarado. A evidência é de cenários executados, não prova universal.
+
+Manutenção: VAL-05 e fase 5 concluídas; índice e matriz atualizados. VAL-07 é
+próxima tarefa pronta e SHOULD. Ela permanece separada do gate porque a execução
+atual usa CLI/FFI Linux, e nenhum alvo mobile foi validado. DEC-24/27 e RISK-18/19/20
+mantêm as correções; RISK-21 mantém a lacuna mobile. Escrita do TCC segue com o autor.
+
+Limitações: review não independente; integração Flutter mobile e plugin sqflite
+em dispositivo não executados. Demo usa transporte sintético em processo e peer
+fixo; não demonstra protocolo de rede, topologia geral, usabilidade com
+participantes nem desempenho universal. Adaptadores externos não inventariados.

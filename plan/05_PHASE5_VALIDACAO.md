@@ -1,6 +1,7 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: pendente de revalidação de VAL-05. Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
+Estado: concluída após revalidação de VAL-05; VAL-07 segue SHOULD pronta.
+Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
 Saída: VAL-05 concluída. Escrita e revisão do TCC ficam fora do escopo desta fase.
 Riscos: relatório extrapolar evidências; omissão de tipos; validação de memória
@@ -135,7 +136,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12
 
@@ -147,23 +148,23 @@ o fechamento requer correção e nova validação dos casos ausentes.
 
 Critérios:
 
-- [ ] Oito tipos integrados e propriedades/deltas validados, incluindo o contrato
+- [x] Oito tipos integrados e propriedades/deltas validados, incluindo o contrato
   público de coleções LWW tipadas após R-10.
-- [ ] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados,
+- [x] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados,
   incluindo ID pendente divergente e retry após falha de abertura.
 - [x] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
 - [x] Transporte abstrato e formatos compatíveis/versionados verificados.
 - [x] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
   públicos terem responsabilidade demonstrável, sem quota de classes removidas.
-- [ ] Demonstração executada; matriz de evidências e documentação do repositório
+- [x] Demonstração executada; matriz de evidências e documentação do repositório
   alinhadas à implementação após R-10/R-11/R-12.
 - [x] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
   geral de integração/manutenção. Uso do Compass é exemplo adicional e não requisito
   da biblioteca; execução isolada não comprova funcionalidade ou usabilidade geral.
-- [ ] R-10/R-11/R-12 concluídas com regressões permanentes, review após correções
+- [x] R-10/R-11/R-12 concluídas com regressões permanentes, review após correções
   e evidências de validação; suíte final da raiz e seis subpacotes e demonstração
   offline/reconnect executadas após as correções.
-- [ ] Requisitos técnicos MUST concluídos; limitações explícitas.
+- [x] Requisitos técnicos MUST concluídos; limitações explícitas.
 
 Validação: revisar evidências de todas as tarefas técnicas MUST e executar conjunto
 final de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
@@ -174,7 +175,7 @@ em processos separados, checker do plano e diff limpo. Atualizar matriz e limite
 Evidência: [revisão técnica VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-11),
 com histórico das execuções anteriores preservado. Conclusão anterior superada
 pelos [novos diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11).
-Evidência de nova conclusão: ainda não registrada.
+Evidência de nova conclusão: [execução VAL-05 em 2026-10-12](TRACEABILITY.md#execucao-val-05-2026-10-12).
 
 <a id="val-06"></a>
 

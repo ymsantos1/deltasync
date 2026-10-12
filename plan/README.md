@@ -34,8 +34,9 @@ avaliada com participantes (RISK-09/17, OPEN-07). A revisão de 2026-10-11 regis
 155 testes aprovados, mas reproduziu três defeitos não cobertos: coleções LWW tipadas,
 ID pendente divergente no SQLite e retry de abertura. R-10/R-11/R-12 são MUST;
 VAL-05 foi reaberta. R-10/R-11/R-12 foram corrigidas e validadas em 2026-10-12;
-VAL-05 permanece pendente. Diagnósticos e comandos estão na
-[rastreabilidade](TRACEABILITY.md#revisao-tecnica-2026-10-11).
+VAL-05 concluiu o fechamento técnico em 2026-10-12. Os
+[diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11) e a
+[validação final](TRACEABILITY.md#execucao-val-05-2026-10-12) estão registrados.
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
 `ObjectCrdt`, política global add/update-wins para objetos, geração de código,
@@ -45,8 +46,8 @@ requisitos acadêmicos, decisões técnicas de execução e extensões.
 
 Autor decidiu manter oito CRDTs e SQLite/sqflite como adaptador persistente de
 referência, com contrato de storage extensível. Oito tipos e recuperação durável
-já têm evidências. Prioridade atual: corrigir os três defeitos confirmados e
-revalidar o fechamento técnico antes de ampliar evidência de plataforma.
+já têm evidências. Os três defeitos confirmados foram corrigidos e o fechamento
+técnico foi revalidado. VAL-07 pode ampliar evidência de plataforma.
 Refatoração reduz sobreposição de classes e contratos, sem quota de classes nem
 framework genérico novo. Detalhes e diagnósticos estão na análise vinculada acima.
 
@@ -106,18 +107,18 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase 5: **pendente de revalidação**; fases 1, 2, 3 e 4 concluídas.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-05**, pronta.
-VAL-05 está pronta após R-10/R-11/R-12. Escrita e revisão do TCC
+Fases 1 a 5: **concluídas nos critérios técnicos MUST**; VAL-07 segue SHOULD pronta.
+Tarefa ativa: **nenhuma**. Próxima tarefa selecionável: **VAL-07**.
+VAL-05 foi concluída após R-10/R-11/R-12. Escrita e revisão do TCC
 ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
 recomendada: R-11 (integridade snapshot/outbox), R-12 (retry de abertura)
-e R-10 (coleções tipadas) concluídas; VAL-05 é o próximo fechamento técnico.
+e R-10 (coleções tipadas) concluídas; VAL-05 fechou o gate técnico.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 Depois, VAL-07 pode ampliar evidência mobile como SHOULD. Registrar fase ativa
-ao selecionar tarefa; a conclusão de R-10 não iniciou a próxima.
+ao selecionar tarefa; a conclusão de VAL-05 não iniciou VAL-07.
 
 R-01 a R-04 conservam registros históricos de conclusão. Achados novos são
 correções obrigatórias em tarefas sucessoras; R-09a/R-09b/R-05 já foram concluídas.
@@ -181,7 +182,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | pronta | SHOULD | VAL-02, R-10, R-11, R-12 |
 

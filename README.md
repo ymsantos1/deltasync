@@ -208,8 +208,9 @@ quatro pacotes.
 `DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
 operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
 físico sintético; `replicaId` e ID preservam desempate antigo. Vetores cuja soma
-excede o intervalo suportado são rejeitados. Snapshots internos versões 1 e 2
-continuam legíveis, inclusive `legacyWinner`; gravação atual usa versão 3 e guarda
+excede o intervalo suportado são rejeitados. Snapshots internos versões 1 a 7
+continuam legíveis, inclusive `legacyWinner` nos formatos antigos. A gravação
+atual usa versão 8 e guarda
 sequências por origem para bootstrap compacto. Conversão fica no codec/snapshot
 restore, não no caminho normal de `Replica.apply`.
 
@@ -242,8 +243,8 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `packages/deltasync_core/lib/src/replica.dart`; `LwwRegister` mantém vencedor e
   tombstone; `ReplicaState` roteia pelo endereço. Join escolhe maior HLC, depois
   `replicaId` e ID. Snapshot passa por `Replica.toSnapshotJson/fromSnapshotJson`.
-  Regressões ficam em `crdt_interfaces_test.dart` nos testes de tombstone, ordem,
-  migração e snapshot.
+  Regressões ficam em `crdt_interfaces_test.dart` para tombstone, ordem, migração e
+  snapshot, e em `lww_typed_json_test.dart` para coleções tipadas e isolamento.
 - **G-Counter:** mutação, componente cumulativo e join por máximo vivem em
   `g_counter.dart`; `Replica` roteia pelo `crdtId` e snapshot restaura componentes
   e sequência. Testes cobrem máximos, lote misto, codec e sequência restaurada.
