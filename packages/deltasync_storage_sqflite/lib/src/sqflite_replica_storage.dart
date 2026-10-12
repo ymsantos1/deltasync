@@ -97,11 +97,7 @@ class SqfliteReplicaStorage implements ReplicaStorage {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       for (final entry in additions) {
-        await transaction.insert(
-          _outboxTable,
-          _outboxRow(entry),
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
+        await _insertOrCheckPending(transaction, entry);
       }
     });
   }
@@ -122,11 +118,28 @@ class SqfliteReplicaStorage implements ReplicaStorage {
   @override
   Future<void> enqueue(OutboxEntry entry) async {
     final database = await _database();
-    await database.insert(
-      _outboxTable,
-      _outboxRow(entry),
-      conflictAlgorithm: ConflictAlgorithm.ignore,
+    await database.transaction(
+      (transaction) => _insertOrCheckPending(transaction, entry),
     );
+  }
+
+  static Future<void> _insertOrCheckPending(
+    DatabaseExecutor transaction,
+    OutboxEntry entry,
+  ) async {
+    final rows = await transaction.query(
+      _outboxTable,
+      columns: const ['payload'],
+      where: 'replica_id = ? AND recipient_peer_id = ? AND entry_id = ?',
+      whereArgs: [entry.replicaId, entry.recipientPeerId, entry.entryId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) {
+      final existing = OutboxEntry.fromJson(_decodeMap(rows.single['payload']));
+      existing.delta.merge(entry.delta);
+      return;
+    }
+    await transaction.insert(_outboxTable, _outboxRow(entry));
   }
 
   @override

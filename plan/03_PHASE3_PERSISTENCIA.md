@@ -1,11 +1,12 @@
 # Fase 3 — Persistência durável de referência
 
-Estado: concluída. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
+Estado: pendente de R-12. Objetivo: comprovar durabilidade mantendo contrato Dart puro.
 Entrada: R-08d concluída; contrato consolidado e três tipos com fluxo em memória.
 Não depende de finalizar cinco tipos restantes.
 Saída: contrato validado, adaptador persistente de referência SQLite/sqflite e
-recuperação real com falhas testadas.
-Riscos: commit parcial, regressão de identidade/clocks, backup com ID duplicado.
+recuperação real com falhas testadas, incluindo as regressões de R-11/R-12.
+Riscos: commit parcial, regressão de identidade/clocks, backup com ID duplicado,
+payload divergente ignorado e abertura falha sem retry (RISK-18/19).
 Exclusões: entrega/manutenção de adaptadores persistentes oficiais adicionais e
 persistência de réplicas remotas inteiras. Adaptadores do consumidor permanecem
 permitidos pelo contrato público. Tabelas e `DatabaseFactory` são detalhes do
@@ -91,7 +92,79 @@ registrar evidências específicas, separadas dos testes de MemoryStorage.
 Evidência de conclusão: execução R-07d em TRACEABILITY.md.
 
 
+<a id="r-11"></a>
+
+## R-11 — Rejeitar payload divergente para ID pendente
+
+Status: concluída
+MoSCoW: MUST
+Dependências: R-07b, R-07c, R-07d
+
+Áreas: contrato/suíte de storage, MemoryStorage e SqfliteReplicaStorage.
+Objetivo: alinhar SQLite à rejeição de ID pendente reutilizado com conteúdo
+divergente. MUST por permitir snapshot novo com outbox antiga sem erro.
+Diagnóstico: dois commits com mesmo ID e valores old/new preservam snapshot=new
+e outbox=old no SQLite; MemoryStorage rejeita o segundo commit.
+
+Critérios:
+
+- [x] Commit e enqueue rejeitam payload divergente para o mesmo ID pendente;
+  definir equivalência conforme o contrato público de delta e destinatário.
+- [x] Retransmissão equivalente continua idempotente e preserva metadados de
+  envio/tentativas existentes; não substituir silenciosamente a entrada.
+- [x] Verificação ocorre na transação; falha mantém snapshot, clocks e toda a
+  outbox anteriores, inclusive em lote com entradas novas antes do conflito.
+- [x] Suíte compartilhada cobre duplicata equivalente e divergente em commit
+  e enqueue, executada em MemoryStorage e SQLite real.
+- [x] Fechar/reabrir SQLite comprova preservação de snapshot, payload e metadados
+  após rejeição; erros são observáveis ao consumidor sem confirmação de sucesso.
+- [x] Documentar comportamento e compatibilidade; não criar histórico ilimitado
+  de IDs confirmados nem migração destrutiva para corrigir pendência conflitante.
+
+Validação: regressão do diagnóstico, rollback de lote e comparação dos dois
+adaptadores. Format/analyze/test nos pacotes afetados; integração de engine/facade
+quando contrato afetado. Review após correções e evidência SQLite após reabertura.
+
+Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
+Evidência de conclusão: [execução R-11 — 2026-10-12](TRACEABILITY.md#execucao-r-11-2026-10-12).
+
+<a id="r-12"></a>
+
+## R-12 — Retry após falha de abertura SQLite
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-05, R-07c, R-07d
+
+Áreas: abertura/fechamento de SqfliteReplicaStorage e integração de SyncEngine.
+Objetivo: permitir nova tentativa após falha transitória de abertura no mesmo
+adaptador. MUST por inviabilizar o retry de start já previsto no lifecycle.
+Diagnóstico: _opening retém Future falho; duas chamadas de loadReplica falham
+com apenas uma abertura na factory. Recuperação exige close explícito atualmente.
+
+Critérios:
+
+- [ ] Falha de abertura não mantém Future falho como resultado permanente;
+  nova chamada pode abrir o banco sem exigir close ou recriar o adaptador.
+- [ ] Chamadas concorrentes compartilham a tentativa em curso; tratamento de
+  falha antiga não invalida abertura posterior bem-sucedida.
+- [ ] SyncEngine.start falha de forma observável, permite retry no mesmo
+  adaptador e restaura estado/outbox antes de aceitar mutações.
+- [ ] Regressões cobrem primeira abertura falha seguida de sucesso, concorrência
+  e close conforme contrato; SQLite real verifica estado recuperado.
+- [ ] Schema incompatível continua rejeitado sem apagar dados; retry não mascara
+  erro persistente nem altera formatos/identidade para forçar recuperação.
+- [ ] Documentar retry e limites para consumidor/manutenção; core e sync não
+  adquirem dependência de SQLite ou política de reconexão do backend.
+
+Validação: factory com falha injetada na primeira abertura e SQLite real na segunda;
+integração de start/retry com dados persistidos. Format/analyze/test nos pacotes
+afetados e review após correções, incluindo lifecycle e concorrência.
+
+Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
-R-07b, R-07c e R-07d concluídas. Recuperação começa com três tipos existentes;
-suporte durável aos oito tipos é consolidado em R-07a antes do gate final.
+R-07b, R-07c, R-07d e R-11 concluídas. A fase exige R-12 antes de fechar;
+suporte durável aos oito tipos foi consolidado em R-07a.

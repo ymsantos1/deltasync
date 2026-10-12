@@ -20,6 +20,12 @@ replica/peer/change in the outbox. Snapshot payload remains the versioned
 `ReplicaSnapshot` JSON contract; clocks and CRDT state stay inside that payload.
 Local commit writes snapshot and outbox in one SQLite transaction. Remote commit
 replaces snapshot in one transaction and leaves outbox rows intact.
+`commit` and `enqueue` key pending entries by replica, recipient peer, and change
+ID. Repeating equivalent delta content keeps the existing entry and its send
+metadata. Reusing that key with divergent content throws `FormatException`.
+In `commit`, the snapshot and all new outbox rows roll back together on conflict.
+The comparison uses the public `Delta.merge` rule, including nested JSON values.
+This behavior does not change the SQLite schema or persisted JSON format.
 
 Schema version starts at 1. Unknown upgrades or downgrades fail explicitly and
 preserve the database; add a versioned migration before changing the schema.

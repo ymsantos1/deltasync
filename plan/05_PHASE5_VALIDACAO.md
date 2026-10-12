@@ -1,8 +1,8 @@
-# Fase 5 — Validação acadêmica e entrega
+# Fase 5 — Validação técnica e entrega
 
-Estado: ativa. Objetivo: consolidar evidências e demonstração do TCC.
+Estado: pendente de revalidação de VAL-05. Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
-Saída: VAL-05 concluída. Prazo e esforço disponíveis ainda não informados.
+Saída: VAL-05 concluída. Escrita e revisão do TCC ficam fora do escopo desta fase.
 Riscos: relatório extrapolar evidências; omissão de tipos; validação de memória
 apresentada como persistência real.
 Exclusões: codegen, ObjectCrdt obrigatório e otimização sem medida.
@@ -73,13 +73,13 @@ Evidência de conclusão: [execução VAL-02](TRACEABILITY.md#execucao-val-02-20
 
 <a id="val-03"></a>
 
-## VAL-03 — Relatório e rastreabilidade finais
+## VAL-03 — Matriz de evidências e rastreabilidade
 
 Status: concluída
 MoSCoW: MUST
 Dependências: VAL-01, VAL-02, R-07d, R-08c
 
-Áreas: TRACEABILITY.md e relatório acadêmico.
+Áreas: TRACEABILITY.md e documentação do repositório.
 Objetivo: ligar requisitos a código, testes, comandos e resultados finais.
 
 Critérios:
@@ -96,15 +96,14 @@ Evidência de conclusão: [execução VAL-03](TRACEABILITY.md#execucao-val-03-20
 
 <a id="val-04"></a>
 
-## VAL-04 — Alinhar texto acadêmico
+## VAL-04 — Documentação de arquitetura e integração
 
 Status: concluída
 MoSCoW: MUST
 Dependências: R-07a, R-07d, R-08c, VAL-02
 
-Áreas: fonte editável do TCC quando fornecida; documentação de integração/manutenção,
-proposta.md e registro de decisões.
-Objetivo: alinhar texto/diagrama acadêmicos com entrega efetiva.
+Áreas: documentação de integração/manutenção, proposta.md e registro de decisões.
+Objetivo: documentar arquitetura, API e fluxo efetivamente entregues.
 
 Critérios:
 
@@ -127,44 +126,55 @@ Critérios:
 - [x] Oito tipos e distinção de extensões futuras preservados.
 - [x] Demonstração e limitações refletem resultados obtidos.
 
-Validação: revisão textual e correspondência com implementação final.
-Somente PDF de referência disponível hoje: preparação da lista de alterações é
-possível; edição final depende da fonte editável, sem sobrescrever o PDF.
+Validação: revisar documentação e correspondência com implementação final.
+Escrita e revisão do TCC não pertencem ao escopo desta tarefa.
 
 Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-2026-10-06).
 
 <a id="val-05"></a>
 
-## VAL-05 — Gate final do TCC
+## VAL-05 — Fechamento técnico da biblioteca
 
-Status: bloqueada
+Status: planejada
 MoSCoW: MUST
-Dependências: VAL-03, VAL-04
+Dependências: VAL-03, VAL-04, R-10, R-11, R-12
 
-Áreas: plano, código, testes, demonstração e relatório.
-Objetivo: verificar conclusão do recorte acadêmico, sem ampliar escopo.
+Áreas: plano, código, testes, demonstração e documentação do repositório.
+Objetivo: verificar conclusão dos requisitos técnicos MUST da biblioteca, sem ampliar escopo.
+Reaberta pela revisão de 2026-10-11: R-10/R-11/R-12 são defeitos confirmados,
+não extensões. Evidências anteriores permanecem válidas para os cenários executados;
+o fechamento requer correção e nova validação dos casos ausentes.
 
 Critérios:
 
-- [x] Oito tipos integrados e propriedades/deltas validados.
-- [x] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados.
+- [ ] Oito tipos integrados e propriedades/deltas validados, incluindo o contrato
+  público de coleções LWW tipadas após R-10.
+- [ ] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados,
+  incluindo ID pendente divergente e retry após falha de abertura.
 - [x] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
 - [x] Transporte abstrato e formatos compatíveis/versionados verificados.
 - [x] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
   públicos terem responsabilidade demonstrável, sem quota de classes removidas.
-- [ ] Demonstração executada; matriz e texto acadêmico alinhados.
+- [ ] Demonstração executada; matriz de evidências e documentação do repositório
+  alinhadas à implementação após R-10/R-11/R-12.
 - [x] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
   geral de integração/manutenção. Uso do Compass é exemplo adicional e não requisito
   da biblioteca; execução isolada não comprova funcionalidade ou usabilidade geral.
-- [ ] Requisitos MUST concluídos; limitações explícitas.
+- [ ] R-10/R-11/R-12 concluídas com regressões permanentes, review após correções
+  e evidências de validação; suíte final da raiz e seis subpacotes e demonstração
+  offline/reconnect executadas após as correções.
+- [ ] Requisitos técnicos MUST concluídos; limitações explícitas.
 
-Validação: revisar evidências de todas as tarefas MUST e executar conjunto final
-de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
-da baseline ou da revisão de 2026-10-03, isoladamente, não conclui TCC.
+Validação: revisar evidências de todas as tarefas técnicas MUST e executar conjunto
+final de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
+da baseline ou da revisão de 2026-10-03, isoladamente, não conclui a entrega técnica.
+Na reabertura atual, executar analyze/test da raiz e dos seis subpacotes, demo
+em processos separados, checker do plano e diff limpo. Atualizar matriz e limites.
 
-Evidência da revisão: [execução VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-06).
-Bloqueio externo: falta fonte editável para alinhar o relatório acadêmico final;
-OPEN-05 registra dependência. Critérios 6 e 8 permanecem abertos.
+Evidência: [revisão técnica VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-11),
+com histórico das execuções anteriores preservado. Conclusão anterior superada
+pelos [novos diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11).
+Evidência de nova conclusão: ainda não registrada.
 
 <a id="val-06"></a>
 
@@ -189,6 +199,38 @@ VAL-05. Não introduzir suíte de benchmark obrigatória.
 Evidência de conclusão: [execução VAL-06](TRACEABILITY.md#execucao-val-06-2026-10-07).
 
 
+<a id="val-07"></a>
+
+## VAL-07 — Validar consumo Flutter e SQLite mobile
+
+Status: planejada
+MoSCoW: SHOULD
+Dependências: VAL-02, R-10, R-11, R-12
+
+Áreas: consumidor Flutter mínimo, adaptador SQLite/sqflite e documentação técnica.
+Objetivo: reduzir a lacuna entre evidência Linux/FFI e integração mobile indicada
+no PDF. SHOULD por ampliar evidência de plataforma; não há defeito mobile confirmado.
+
+Critérios:
+
+- [ ] Consumidor usa APIs públicas e factory do plugin sqflite em pelo menos
+  uma plataforma mobile suportada; registrar SO, dispositivo/emulador e SDKs.
+- [ ] Dois tipos e duas réplicas demonstram edição offline, pendência/erro e
+  convergência após reconexão no cenário de peer fixo.
+- [ ] Encerrar/reabrir o processo preserva estado/outbox SQLite e permite retry;
+  reuso de objeto em memória ou FFI/Linux não substitui essa evidência.
+- [ ] Registrar configuração, build/runtime, resultados e limitações; regras
+  de modelo/UI ficam no consumidor. Não exigir Compass ou backend/protocolo novo.
+- [ ] Se plataforma/ambiente indisponível, registrar impedimento concreto e
+  justificativa de adiamento; nunca declarar mobile validado por testes desktop.
+
+Validação: build e execução no alvo mobile escolhido, percurso offline/reinício/
+reconexão reproduzível e review das adaptações/documentação. Ausência justificada
+pode adiar SHOULD; não bloqueia VAL-05 nem exige validar Android e iOS conjuntamente.
+
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 Verificar VAL-05; documentação migrada não marca tarefas de produto concluídas.
+VAL-06/VAL-07 são SHOULD; registrar adiamento justificado quando aplicável.

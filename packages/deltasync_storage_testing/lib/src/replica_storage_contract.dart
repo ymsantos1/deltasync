@@ -196,6 +196,97 @@ void replicaStorageContractTests({
     });
 
     test(
+      'equivalent pending IDs retain send metadata in enqueue and commit',
+      () async {
+        final storage = fixture.createStorage();
+        final replica = Replica(
+          'contract-device',
+          hlc: HlcClock(nowMilliseconds: () => 100),
+        );
+        final change = replica.setDelta('name', {
+          'first': 1,
+          'nested': [2, 3],
+        });
+        final snapshot = ReplicaSnapshot.fromReplica(replica);
+        final first = OutboxEntry(
+          delta: Delta([change]),
+          recipientPeerId: 'peer-a',
+          createdAt: DateTime.utc(2026, 1, 1),
+        );
+        await storage.commit(snapshot, [first]);
+        await storage.markSent(replica.id, 'peer-a', [change.id]);
+        final sent = (await storage.pending(replica.id)).single.toJson();
+        final equivalent =
+            Replica(
+              'contract-device',
+              hlc: HlcClock(nowMilliseconds: () => 100),
+            ).setDelta('name', {
+              'nested': [2, 3],
+              'first': 1,
+            });
+        expect(equivalent.id, change.id);
+        final repeated = OutboxEntry(
+          delta: Delta([equivalent]),
+          recipientPeerId: 'peer-a',
+          createdAt: DateTime.utc(2026, 2, 1),
+        );
+
+        await storage.enqueue(repeated);
+        await storage.commit(snapshot, [repeated]);
+
+        expect((await storage.pending(replica.id)).single.toJson(), sent);
+        await storage.enqueue(
+          OutboxEntry(delta: Delta([change]), recipientPeerId: 'peer-b'),
+        );
+        expect(await storage.pending(replica.id), hasLength(2));
+      },
+    );
+
+    test(
+      'divergent pending IDs reject enqueue and roll back full commit',
+      () async {
+        final storage = fixture.createStorage();
+        final original = Replica(
+          'contract-device',
+          hlc: HlcClock(nowMilliseconds: () => 100),
+        );
+        final oldChange = original.setDelta('name', 'old');
+        await storage.commit(ReplicaSnapshot.fromReplica(original), [
+          OutboxEntry(delta: Delta([oldChange]), recipientPeerId: 'peer-a'),
+        ]);
+        await storage.markSent(original.id, 'peer-a', [oldChange.id]);
+        final oldSnapshot = (await storage.loadReplica(original.id))!.toJson();
+        final oldEntry = (await storage.pending(original.id)).single.toJson();
+
+        final divergent = Replica(
+          'contract-device',
+          hlc: HlcClock(nowMilliseconds: () => 100),
+        );
+        final newChange = divergent.setDelta('name', 'new');
+        final extraChange = divergent.setDelta('extra', 'staged');
+        expect(newChange.id, oldChange.id);
+        final conflict = OutboxEntry(
+          delta: Delta([newChange]),
+          recipientPeerId: 'peer-a',
+        );
+
+        await expectLater(storage.enqueue(conflict), throwsFormatException);
+        await expectLater(
+          storage.commit(ReplicaSnapshot.fromReplica(divergent), [
+            OutboxEntry(delta: Delta([extraChange]), recipientPeerId: 'peer-a'),
+            conflict,
+          ]),
+          throwsFormatException,
+        );
+
+        expect((await storage.loadReplica(original.id))!.toJson(), oldSnapshot);
+        final pending = await storage.pending(original.id);
+        expect(pending, hasLength(1));
+        expect(pending.single.toJson(), oldEntry);
+      },
+    );
+
+    test(
       'failed commit leaves previous snapshot and outbox unchanged',
       () async {
         final storage = fixture.createStorageWithCommitFailure();

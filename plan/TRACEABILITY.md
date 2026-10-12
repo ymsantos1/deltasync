@@ -4,6 +4,12 @@ Baseline histórica: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>)
 [contexto](../proposta.md) e inspeção/testes da revisão anterior.
 A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
+Estado atual — 2026-10-11: [revisão técnica](#revisao-tecnica-2026-10-11)
+confirmou três defeitos apesar de 155 testes aprovados. R-11 foi
+[concluída em 2026-10-12](#execucao-r-11-2026-10-12); R-10/R-12 são MUST prontas.
+VAL-05 segue planejada; VAL-07 é SHOULD para evidência mobile.
+Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
+
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
 Este panorama registra o estado inspecionado antes de R-09a/R-09b/R-05 e da
@@ -92,23 +98,26 @@ máximo por réplica sem representação explícita de lacunas.
 
 | Requisito/origem | Tarefas | Componentes e validação necessária |
 |---|---|---|
-| DeltaCrdt e LWW, PDF §§6.2/6.5 | R-01, R-09a | contrato nativo, LwwRegister, Replica; compatibilidade explícita e join |
+| DeltaCrdt e LWW, PDF §§6.2/6.5 | R-01, R-09a, R-10 | contrato nativo, LwwRegister, Replica; coleções tipadas, compatibilidade explícita e join |
 | Identidade/dots e roteamento, PDF §§6.4/6.5 | R-02, R-09a, R-09b | metadados comuns, vínculo por endereço/tipo e contexto adequado |
 | Confirmação/outbox, PDF §6.6 | R-03, R-09b, R-08b, R-08d | outbox por mudança, ACK parcial, retry e destino definido |
-| Persistência consistente, PDF §6.6 | R-04, R-09b, R-07b, R-07c, R-07d | snapshot canônico, isolamento, contrato, SQLite real e falhas |
-| Continuidade do sync, PDF §§6.5/6.9 | R-05, R-08d, R-08c | lifecycle/fila; duas engines, edição durante envio, falhas e reconexão |
+| Persistência consistente, PDF §6.6 | R-04, R-09b, R-07b, R-07c, R-07d, R-11 | snapshot canônico, isolamento, contrato, SQLite real, conflito de ID e falhas |
+| Continuidade do sync, PDF §§6.5/6.9 | R-05, R-08d, R-08c, R-12 | lifecycle/fila; duas engines, edição durante envio, retry de abertura e reconexão |
 | G-Set, 2P-Set, MV-Register, OR-Set, OR-Map, PDF §6.2 | R-06a, R-06b, R-06c, R-06d, R-06e | novos tipos no core; operações, deltas, join e restauração |
 | Integração/JSON, PDF §§6.5/6.8 | R-06a, R-06b, R-06c, R-06d, R-06e, R-07a, R-08a | integração individual e conjunto de oito tipos com SQLite |
 | Testes, PDF §6.9 | VAL-01, R-07d, R-08c | propriedades, regressão, integração e recuperação real |
 | Demonstração, contexto atual | VAL-02 | consumidor real, dois tipos, SQLite, duas réplicas, integração e experiência offline; Compass é exemplo opcional |
 | Simplicidade, manutenção e forks, orientação do autor | R-09a, R-09b, R-05, R-08d, VAL-04 | responsabilidades localizáveis, API pública, percurso de alteração e compatibilidade |
-| Relatório/texto e fechamento | VAL-03, VAL-04, VAL-05 | evidência por requisito, arquitetura/API e gate final |
+| Matriz e fechamento técnico | VAL-03, VAL-04, VAL-05 | evidência por requisito, arquitetura/API e gate técnico da biblioteca |
 | Motivação incremental, SHOULD | VAL-06 | comparação reproduzível de bytes de delta/estado |
+| Integração Flutter/sqflite mobile, SHOULD | VAL-07 | build/runtime, reinício de processo e reconciliação no alvo declarado |
 
 ### Matriz final de evidências MUST — 2026-10-06
 
-Esta matriz resume implementação e execução atual; a seção de baseline e os
-registros por tarefa abaixo preservam história. Evidências distinguem unidade,
+Esta matriz resume implementação e execução de 2026-10-06; a seção de baseline e os
+registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
+reabrem o fechamento: coleções LWW tipadas, conflito de ID pendente e retry de
+abertura ainda exigem correção. Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
 
@@ -153,8 +162,9 @@ consumidora entre processos. Uma categoria não substitui outra.
   ilimitado (DEC-06/DEC-18).
 - SQLite foi executado com FFI em Linux x64; integração Flutter mobile e backup em dispositivo
   não foram avaliados. VAL-02 usa transporte sintético e CLI, sem participantes.
-  VAL-06 é SHOULD pronta, ainda sem medição; nenhuma afirmação de desempenho ou
-  redução universal de bytes é feita.
+  VAL-06 é SHOULD concluída, com medição em 2026-10-07; envelopes somam 1.079 B
+  contra 1.255 B de snapshots nesse cenário. VAL-07 registra a lacuna mobile.
+  Nenhuma afirmação de desempenho ou redução universal de bytes é feita.
 
 <a id="execucao-val-03-2026-10-06"></a>
 
@@ -2031,3 +2041,250 @@ executados após manutenção.
 Limitações: medição sintética, dois CRDTs, quatro mutações, JSON sem whitespace,
 SQLite e transporte não medidos. Review não independente. VAL-05 continua bloqueada;
 esta medição SHOULD não conclui o TCC.
+
+<a id="execucao-val-05-2026-10-11"></a>
+
+## Execução VAL-05 — 2026-10-11
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Escopo: revisão do plano técnico, sem editar código, `proposta.md` ou texto do TCC.
+Escrita e revisão acadêmicas ficam com o autor e fora do plano DeltaSync.
+
+Leitura: VAL-05 estava bloqueada por exigir fonte editável e alinhamento do
+relatório acadêmico. VAL-06 e demais tarefas técnicas MUST estavam concluídas.
+Critérios e evidências de VAL-01/02/03/04, R-07a/b/c/d e R-08a/b/c/d foram
+conferidos; limites de plataforma, topologia e usabilidade seguem documentados.
+
+Implementação: plano ajustado para separar fechamento técnico da escrita do TCC.
+VAL-03/04 foram renomeadas conforme suas entregas no repositório; VAL-05 foi
+redefinida como gate técnico. `DECISIONS.md` e `RISKS.md` não tratam mais fonte,
+relatório ou prazo acadêmico como pendências do plano técnico. `proposta.md` e o
+TCC não foram alterados.
+
+Review: aprovado
+
+Review documental em etapa distinta; não independente. A matriz e a documentação
+do repositório cobrem o cenário e a arquitetura entregues. Nenhum critério técnico
+MUST depende de edição do relatório acadêmico.
+
+Achados: o bloqueio de VAL-05 era uma dependência acadêmica fora do foco DeltaSync.
+Evidências técnicas já cobrem todos os requisitos MUST; nenhum achado técnico
+impeditivo permanece.
+
+Validação: aprovada
+
+Mudança documental. O checker confirma tarefas e links; `git diff --check` confirma
+o diff. Testes Dart não foram repetidos: código não mudou e evidências de runtime
+permanecem nos registros das tarefas correspondentes.
+
+Comandos: `python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: demonstração, matriz e documentação técnica correspondem aos resultados
+registrados em VAL-01/02/03/04; tarefas técnicas MUST concluídas; limitações de
+plataforma, topologia e usabilidade explicitadas. Escrita e revisão acadêmicas
+foram excluídas do gate, sem declarar conclusão do TCC.
+
+Manutenção: VAL-03 passou a “Matriz de evidências e rastreabilidade”; VAL-04,
+“Documentação de arquitetura e integração”; VAL-05, “Fechamento técnico da
+biblioteca”. VAL-05 concluída, fase 5 concluída, tarefa ativa limpa. OPEN-05/06 e
+RISK-10 removidos como pendências acadêmicas externas ao escopo técnico. Histórico
+anterior permanece preservado nesta rastreabilidade. Não há próxima tarefa técnica
+selecionável.
+
+Limitações: esta conclusão fecha somente o escopo técnico da biblioteca. Não
+declara conclusão, revisão ou alinhamento do TCC.
+
+<a id="revisao-tecnica-2026-10-11"></a>
+
+## Revisão técnica — 2026-10-11
+
+Escopo: implementação, plano e PDF de referência, antes do pedido de manutenção
+MoSCoW. Revisão sem correção de código ou escrita do TCC. Ambiente: Dart 3.13.5,
+Linux x64, SQLite real via sqflite_common_ffi.
+
+Validação executada na revisão: analyze sem issues e 155 testes aprovados:
+raiz 7, core 72, sync 38, storage 12, storage_sqflite 14, storage_testing 6,
+transport 6. Aprovação da suíte existente não cobriu os três casos abaixo.
+
+Comando da suíte:
+
+```bash
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && /opt/flutter/bin/dart analyze && /opt/flutter/bin/dart test --reporter expanded) || exit 1
+done
+```
+
+Diagnósticos adicionais, reproduzidos em script temporário pela API pública:
+
+1. **R-11 — conflito de ID pendente.** Criar duas Replica('a') separadas, cada
+   uma com HlcClock(nowMilliseconds: () => 100). setDelta('name', 'old') e
+   setDelta('name', 'new') produzem mesmo ID a:delta:1 com conteúdo diferente.
+   Commit do snapshot/entrada old e depois new, ambos destinados ao peer b:
+   MemoryStorage rejeita o segundo com FormatException; SQLite retorna sucesso,
+   loadReplica recupera name=new e pending conserva name=old. Causa localizada
+   em ConflictAlgorithm.ignore de commit; enqueue usa a mesma política, mas esse
+   caminho não foi reproduzido separadamente. Não indica colisão em geração
+   normal de IDs únicos; comprova divergência do contrato diante de ID reutilizado.
+2. **R-12 — retry de abertura.** Factory injetada lança StateError na primeira
+   openDatabase e usaria SQLite real na segunda. Duas loadReplica consecutivas
+   falham, com apenas uma chamada à factory. Após close explícito, capturando
+   seu erro, nova loadReplica funciona e total de aberturas passa a dois.
+   _opening guarda Future falho; integração de start/retry precisa regressão
+   permanente, além do caso direto do adaptador já reproduzido.
+3. **R-10 — LWW tipado.** LwwRegister<List<int>> recebe LwwDelta<List<int>>
+   com value=[1, 2], timestamp=HlcTimestamp(100, 0), origem a e ID a:delta:1.
+   applyDelta lança `type 'List<Object?>' is not a subtype of type 'List<int>?'`.
+   A cópia JSON muda o tipo runtime; value/winner e factory JSON contêm casts
+   semelhantes que precisam ser avaliados pela tarefa, sem alegar reprodução
+   individual de todos eles.
+
+Localização: `packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart`
+(_database, commit, enqueue), `packages/deltasync_core/lib/src/lww_register.dart`
+(applyDelta, value, winner) e `lww_delta.dart` (fromJson). Script diagnóstico
+temporário não constitui suíte permanente; R-10/R-11/R-12 exigem essas regressões.
+
+Comando do diagnóstico:
+`/opt/flutter/bin/dart --packages=/projetos/tcc/deltasync/.dart_tool/package_config.json /tmp/deltasync-review-probes.dart`.
+Resultados essenciais e entradas foram preservados acima, sem depender da retenção
+do arquivo temporário como evidência de conclusão.
+
+Demonstração reexecutada em processos separados: modo offline preservou duas
+pendências por réplica e erro de peer indisponível; reconnect restaurou estado,
+convergiu para Ana/Beto com contador 5, esvaziou outboxes e confirmou reabertura.
+Comandos: `/opt/flutter/bin/dart run example/offline_reconciliation.dart offline /tmp/deltasync-review-demo.eUncZH`
+e `/opt/flutter/bin/dart run example/offline_reconciliation.dart reconnect /tmp/deltasync-review-demo.eUncZH`.
+Medição repetida com `/opt/flutter/bin/dart run example/measure_delta_size.dart`:
+909 B de deltas, 1.079 B de envelopes e 1.255 B de snapshots; resultado restrito
+ao cenário, sem promessa geral de desempenho.
+
+Conclusão da revisão: arquitetura e oito tipos preservados; três defeitos
+confirmados impedem manter fechamento técnico. Mobile não foi executado.
+Correções e regressões ainda pendentes; escrita do TCC fica com o autor.
+
+<a id="manutencao-moscow-2026-10-11"></a>
+
+## Manutenção MoSCoW — 2026-10-11
+
+Pedido: incorporar correções da revisão ao planejamento segundo MoSCoW.
+Skill aplicada: plan-maintainer; validação documental com plan-validator.
+
+Leitura: diagnósticos da revisão, índice, fases 1/3/5, decisões, riscos e checker.
+Worktree já continha alterações autorizadas em cinco documentos do plano;
+essas alterações foram preservadas.
+
+Alteração: R-10/R-11/R-12 são MUST prontas, com critérios e evidências futuras
+definidos nas fases. Prioridade recomendada R-11, R-12, R-10, VAL-05; dependências
+entre correções independentes não foram inventadas. VAL-07 é SHOULD planejada,
+dependente das correções; adiamento exige justificativa e não bloqueia VAL-05.
+Não foram adicionadas funcionalidades COULD ou ampliadas extensões WON'T-YET.
+
+Manutenção: fases 1/3/5 reabertas; VAL-05 planejada com dependências novas e
+critérios de revalidação. Índice, matriz, DEC-24 e RISK-18 a RISK-21 atualizados.
+Histórico de fechamento anterior preservado, com diagnóstico posterior explícito.
+Descrições antigas de integração/restauração e VAL-06 foram atualizadas.
+Nenhuma tarefa de produto iniciada; próxima recomendada R-11.
+
+Review: aprovado
+
+Revisão documental em etapa distinta, pelo mesmo agente; não independente.
+Critérios de VAL-05 reabertos para coleções tipadas, atomicidade/recuperação,
+documentação e regressões finais. Conferidos escopo técnico, correspondência
+índice/fases, dependências, prioridade e limites dos diagnósticos. Review ajustou
+contagem do workspace e evitou declarar reproduzidos todos os casts/caminhos.
+
+Validação: aprovada
+
+Checks documentais: `python3 scripts/check_plan.py` aprovou 30 tarefas e 127 links
+locais, sem ciclos ou divergência de status/dependências; prontas R-10/R-11/R-12.
+`git diff --check` passou. Conferidos diff, anchors e frontmatter das skills.
+Não foram repetidos testes Dart nesta manutenção: código não mudou; os resultados
+de runtime acima pertencem à revisão anterior, sem validar futuras correções.
+
+Comandos: `python3 scripts/check_plan.py`; `git diff --check`; `git diff --stat`;
+`git diff -- plan/01_PHASE1_CORRECOES.md plan/03_PHASE3_PERSISTENCIA.md`;
+`git diff -- plan/README.md plan/05_PHASE5_VALIDACAO.md`;
+`git diff -- plan/DECISIONS.md plan/RISKS.md`; `git diff -- plan/TRACEABILITY.md`.
+
+Limitações: manutenção documental não corrige bugs, não comprova mobile e não
+conclui novamente VAL-05. TCC e proposta de referência não foram editados.
+
+<a id="execucao-r-11-2026-10-12"></a>
+
+## Execução R-11 — 2026-10-12
+
+Status final: concluída
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+
+Leitura: R-11 era a próxima tarefa recomendada e estava pronta; R-07b/R-07c/R-07d
+concluídas. Diagnóstico de 2026-10-11 demonstrou snapshot novo e outbox antiga
+para mesmo ID pendente divergente no SQLite. Contrato MemoryStorage já rejeitava
+pela regra `Delta.merge`. Worktree tinha sete documentos do plano modificados;
+foram preservados. Fluxo de consumo usa `ReplicaStorage.commit` em edição local,
+`enqueue` em importação e `pending`/`markSent` para envio; regra vive no contrato
+e nos adaptadores, sem mudança em core ou sync.
+
+Implementação: `SqfliteReplicaStorage.commit` e `enqueue` chamam uma verificação
+compartilhada dentro da transação SQLite. Chave é réplica, peer e ID. Entrada já
+existente é decodificada; `Delta.merge` compara conteúdo estrutural do delta.
+Equivalência preserva status, tentativas, criação e envio; divergência lança
+`FormatException` antes de confirmar transação. Snapshot e entradas já inseridas
+no lote voltam ao estado anterior. Contrato público documentado em
+`packages/deltasync_storage/lib/src/replica_storage.dart`; caminho de consumo em
+`README.md` e limite do adaptador em
+`packages/deltasync_storage_sqflite/README.md`. Nenhum schema, formato JSON ou
+assinatura pública mudou.
+
+Review: aprovado
+
+Achados: primeira revisão detectou que a regressão de duplicata reutilizava o
+mesmo objeto e não demonstrava equivalência estrutural. Teste ajustado para
+duas réplicas com o mesmo ID/HLC e mapas JSON equivalentes em ordens distintas.
+Diff corrigido revisado novamente, inclusive rollback, isolamento por peer,
+compatibilidade persistida e custo de consulta por entrada. Sem achado impeditivo
+restante. Review feito pelo implementador em etapa distinta; não independente.
+
+Validação: aprovada
+
+Ambiente: Dart 3.13.5, Linux x64, SQLite real via sqflite_common_ffi.
+Format de `lib test` nos três pacotes afetados: zero mudanças. Analyze sem issues
+e 160 testes aprovados no workspace: raiz 7, core 72, sync 38, storage 12,
+storage_sqflite 17, storage_testing 8, transport 6. A suíte compartilhada roda
+em MemoryStorage e SQLite real. Testes novos cobrem duplicatas equivalentes com
+JSON aninhado e metadados enviados, conflito em enqueue e commit com entrada
+inserida antes do conflito, e rollback após fechar/reabrir banco. Erro
+`FormatException` é observado pelo consumidor da Future pública. Teste existente
+de schema incompatível passou sem alteração destrutiva.
+Após manutenção, `python3 scripts/check_plan.py` passou: 30 tarefas, 129 links
+locais e próximas prontas R-10/R-12. `git diff --check` passou.
+
+Comandos: `/opt/flutter/bin/dart format` nos quatro arquivos Dart editados;
+`/opt/flutter/bin/dart format --output=none --set-exit-if-changed` nos mesmos
+arquivos; para `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite` e `packages/deltasync_storage_testing`,
+`/opt/flutter/bin/dart format --output=none --set-exit-if-changed lib test`;
+`/opt/flutter/bin/dart --version`; em `.`, `packages/deltasync_core`,
+`packages/deltasync_sync`, `packages/deltasync_storage`,
+`packages/deltasync_storage_sqflite`, `packages/deltasync_storage_testing` e
+`packages/deltasync_transport`: `/opt/flutter/bin/dart analyze` e
+`/opt/flutter/bin/dart test --reporter expanded`;
+`python3 scripts/check_plan.py`; `git diff --check`.
+
+Critérios: 1) commit/enqueue rejeitam divergência na mesma chave por `Delta.merge`;
+2) equivalência idempotente preserva metadados, inclusive com mapas em ordens
+distintas; 3) transação desfaz snapshot, clocks e outbox após conflito tardio;
+4) suíte compartilhada passou em memória e SQLite; 5) SQLite real recuperou
+snapshot, valor e metadados originais após reabertura; 6) contrato/documentação
+explicam comportamento e compatibilidade sem histórico ilimitado ou migração.
+
+Manutenção: R-11 concluída na fase e índice; fase 3 ainda pendente de R-12.
+DEC-25 fixa equivalência por chave/Delta.merge; RISK-18 foi mitigado para SQLite
+FFI/Linux x64. R-10/R-12 permanecem prontas; R-12 é próxima recomendada.
+VAL-05 continua planejada até os MUST restantes, sem conclusão do TCC.
+
+Limitações: plugin Flutter mobile não foi executado; VAL-07 continua SHOULD.
+Teste de persistência usa SQLite FFI/Linux x64. R-10 e R-12 permanecem sem
+correção. O checker verifica estrutura do plano, não semântica do código.

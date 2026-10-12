@@ -309,6 +309,11 @@ outbox contém uma mudança; `SyncEngine` combina entradas em lote só no envio.
 `markSent` grava status, tentativa e horário antes da transmissão para permitir
 retry com backoff; `acknowledge` remove apenas IDs confirmados do peer. Suíte
 compartilhada para validar adapters está em `deltasync_storage_testing`.
+Para a mesma réplica, peer e ID de mudança pendente, `commit` e `enqueue`
+aceitam conteúdo de delta equivalente sem substituir status, tentativas ou
+horários existentes. Conteúdo divergente lança `FormatException`; `commit`
+preserva snapshot e outbox anteriores. A suíte compartilhada exercita ambos os
+casos em MemoryStorage e SQLite. O schema e o JSON persistido não mudaram.
 `ReplicaSnapshot` v2 guarda payload `Replica.toSnapshotJson()` sem duplicar
 estado/clock em campos paralelos. O reader aceita snapshot v1 com
 `metadata['replicaState']` ou delta reexecutável; estado legado sem dados suficientes

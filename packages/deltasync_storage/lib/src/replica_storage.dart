@@ -243,6 +243,9 @@ abstract interface class ReplicaStorage {
 
   /// Atomically persists materialized replica state and its new outbox entries.
   /// Implementations must expose either all changes or none after failure.
+  /// A repeated ID for the same peer is accepted only with equivalent delta
+  /// content; divergent content fails atomically. Equivalent repeats retain
+  /// the existing entry and its send metadata.
   Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries);
 
   /// Atomically replaces materialized state after a remote merge.
@@ -254,6 +257,8 @@ abstract interface class ReplicaStorage {
 
   /// Imports one pending change outside a local mutation transaction.
   /// Normal edits must use atomic [commit].
+  /// For an existing peer/ID, equivalent content keeps the original entry;
+  /// divergent content fails without changing the outbox.
   Future<void> enqueue(OutboxEntry entry);
 
   /// Lists all peers' entries, or only entries addressed to [recipientPeerId].

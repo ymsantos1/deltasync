@@ -1,18 +1,18 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: concluída.
+Estado: pendente de R-10.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
 diagnósticos em [TRACEABILITY.md](TRACEABILITY.md).
-Saída: R-01 a R-05 e R-09a/R-09b concluídas, com evidências dos critérios.
+Saída: R-01 a R-05, R-09a/R-09b e R-10 concluídas, com evidências dos critérios.
 Áreas: core, storage, sync, transport e seus testes.
-Riscos: [RISK-01 a RISK-05, RISK-07 e RISK-13 a RISK-16](RISKS.md).
+Riscos: [RISK-01 a RISK-05, RISK-07, RISK-13 a RISK-16 e RISK-20](RISKS.md).
 Exclusões: novos frameworks de objetos, codegen e GC destrutivo.
 
-R-01 a R-05 e R-09a/R-09b estão concluídas. Fase seguinte usa os contratos
-consolidados; R-08a é próxima tarefa pronta para integrar envelopes antes do fluxo
-de duas réplicas de R-08d.
+R-01 a R-05 e R-09a/R-09b conservam suas conclusões históricas. A revisão de
+2026-10-11 confirmou falha no uso público de LWW com coleções tipadas; R-10
+reabre esta fase. A ordem atual de execução está no índice do plano.
 
 <a id="r-01"></a>
 
@@ -277,9 +277,43 @@ Resultados de commit/pendência/confirmação e erros devem ser verificáveis pe
 
 Evidência de conclusão: [Execução R-05 — 2026-10-03](TRACEABILITY.md#execucao-r-05-2026-10-03).
 
+<a id="r-10"></a>
+
+## R-10 — LWW com coleções JSON tipadas
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-09a, R-09b
+
+Áreas: LwwRegister, LwwDelta, cópia de valores JSON e testes de core/facade.
+Objetivo: corrigir casts que falham em coleções tipadas na API pública, mantendo
+isolamento dos valores. MUST por impedir uso válido de um CRDT previsto.
+Diagnóstico: aplicar LwwDelta<List<int>> com [1, 2] a LwwRegister<List<int>>
+lança erro ao converter a cópia List<Object?> para List<int>.
+
+Critérios:
+
+- [ ] Contrato genérico e cópia JSON compatíveis para listas e mapas tipados,
+  incluindo valores aninhados; entradas inválidas continuam rejeitadas.
+- [ ] Aplicação de delta, consulta de value/winner, join, JSON e restauração
+  seguem o contrato definido sem casts que falhem em valores válidos.
+- [ ] Alterações em valores fornecidos ou consultados não modificam estado/delta;
+  preservar HLC, desempate e tombstones.
+- [ ] Regressões permanentes cobrem listas/mapas tipados, nulidade, isolamento e
+  integração pelo caminho Object? de Replica/SyncEngine.
+- [ ] Documentar consumo tipado e compatibilidade de APIs/formatos; qualquer
+  restrição ou mudança pública exige justificativa e caminho de migração.
+
+Validação: reproduzir falha antes da correção e executar regressões após o review
+das correções. Format/analyze/test no core e consumidores afetados; conferir SDK,
+formatos persistidos e uso público, sem ampliar para um framework de codecs.
+
+Evidência de diagnóstico: [revisão de 2026-10-11](TRACEABILITY.md#revisao-tecnica-2026-10-11).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
-afetados. Concluir fase somente com evidências de R-01 a R-05 e R-09a/R-09b.
+afetados. Concluir fase somente com evidências de R-01 a R-05, R-09a/R-09b e R-10.
 R-09b libera envelopes; R-08d libera expansão dos tipos e contrato durável.
 Limpeza documental não conclui correções de código.
