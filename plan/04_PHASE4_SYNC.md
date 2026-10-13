@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: ampliação planejada em 2026-10-13; R-24 MUST pronta e R-26/R-27 SHOULD planejadas.
+Estado: R-24 MUST concluída em 2026-10-13; R-26 SHOULD pronta e R-27 planejada.
 R-08a a R-08d mantêm conclusão histórica no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
@@ -165,7 +165,7 @@ Evidência de conclusão: [execução R-17 em 2026-10-12](TRACEABILITY.md#execuc
 
 ## R-24 — Centralizar codec público de confirmação remota
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-08b, VAL-13
 
@@ -174,21 +174,21 @@ Origem: análise da integração Compass e autorização do autor em 2026-10-13.
 
 Critérios:
 
-- [ ] Definir codec JSON público para ACK e validar peer, estágio e IDs na fronteira, reutilizando rótulos estáveis existentes. Descrever regras para entrada inválida.
-- [ ] Preservar formato usado no Compass e semântica received versus appliedAndPersisted; não alterar envelopes, outbox ou snapshots nem aceitar confirmação de peer divergente.
-- [ ] Cobrir round-trip, ACK vazio/parcial/duplicado e entradas inválidas; comprovar que erro ou ACK insuficiente não remove pendências indevidas.
-- [ ] Substituir montagem/decodificação duplicada no percurso consumidor autorizado e demonstrar uso por outro adaptador de teste. Revisar após correções e validar transport/sync/facade e consumidores afetados.
+- [x] Definir codec JSON público para ACK e validar peer, estágio e IDs na fronteira, reutilizando rótulos estáveis existentes. Descrever regras para entrada inválida.
+- [x] Preservar formato usado no Compass e semântica received versus appliedAndPersisted; não alterar envelopes, outbox ou snapshots nem aceitar confirmação de peer divergente.
+- [x] Cobrir round-trip, ACK vazio/parcial/duplicado e entradas inválidas; comprovar que erro ou ACK insuficiente não remove pendências indevidas.
+- [x] Substituir montagem/decodificação duplicada no percurso consumidor autorizado e demonstrar uso por outro adaptador de teste. Revisar após correções e validar transport/sync/facade e consumidores afetados.
 
 Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
 regressões e compatibilidade são obrigatórias na própria tarefa.
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-24](TRACEABILITY.md#execucao-r-24-2026-10-13).
 
 <a id="r-26"></a>
 
 ## R-26 — Simplificar recepção e confirmação durável no consumidor
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-24, VAL-13
 

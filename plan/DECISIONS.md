@@ -177,6 +177,16 @@ Novos MUST são critérios de engenharia autorizados, não exigências atribuíd
 PDF. VAL-05 retorna a planejada; resultados históricos continuam válidos para seus
 cenários. Detalhes em [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
 
+DEC-41 — Aplicada em R-24, 2026-10-13: DeltaAcknowledgement oferece toJson/fromJson
+sem wrapper, versão nova ou dependência de rede. Formato mantém peerReplicaId,
+stage com rótulo estável e changeIds como lista. Lista vazia é válida, duplicatas
+viram Set isolado e campos extras são ignorados; conhecidos inválidos geram
+FormatException. Constructor anterior permanece. Codec não valida autorização:
+sync/adaptador vincula destinatário e exige appliedAndPersisted após commit.
+Compass reutiliza codec nas duas direções; ACK de pull mantém checagem de peer,
+estágio e interseção com pendências. Envelopes/snapshots/SQLite não mudam.
+Ver [execução R-24](TRACEABILITY.md#execucao-r-24-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

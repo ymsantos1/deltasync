@@ -7,3 +7,6 @@
 pubspec.lock
 
 referencia/
+
+*.patch
+*-runtime.json

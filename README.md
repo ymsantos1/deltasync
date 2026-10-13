@@ -228,6 +228,15 @@ somente `appliedAndPersisted` do destinatário configurado remove IDs daquela
 outbox. Outbox mantém cópia por peer; o consumidor deve chamar `push()` novamente
 após reconexão para tentar enviar ao peer que voltou. Trocar adapter para outro
 peer não transfere pendências nem amplia confirmação.
+`DeltaAcknowledgement.toJson()/fromJson()` centralizam o ACK com
+`peerReplicaId`, `stage` e `changeIds`, mantendo o formato já usado pelo
+consumidor HTTP. Use `jsonEncode(ack.toJson())` no envio e
+`DeltaAcknowledgement.fromJson(json)` após decodificar um objeto JSON.
+O decoder rejeita peer/IDs vazios ou com espaços nas extremidades, tipos inválidos
+e estágio desconhecido com `FormatException`; aceita lista vazia, deduplica IDs
+e ignora campos adicionais. O codec não confirma entrega: vincular peer/lote e
+exigir commit remoto durável continuam responsabilidades do fluxo de sync.
+Construtores e formatos persistidos anteriores permanecem compatíveis.
 Decoder aceita envelope v1 só com `legacyRecipientReplicaId` explícito; adapters
 antigos também precisam migrar a assinatura pública.
 

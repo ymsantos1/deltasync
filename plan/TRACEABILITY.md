@@ -4168,3 +4168,60 @@ nenhuma implementação ativa. Critérios de conclusão da reabertura permanecem
 Resultado: python3 scripts/check_plan.py aprovado, 53 tarefas e 278 links locais;
 prontas R-22 COULD, R-24 MUST e R-25 MUST. git diff --check aprovado.
 Próxima seleção recomendada R-24; execução não autorizada por este pedido documental.
+
+<a id="execucao-r-24-2026-10-13"></a>
+
+## Execução R-24 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-08b/VAL-13 concluídas; R-24 próxima MUST recomendada e autorizada. Lidos executor, cinco skills, AGENTS, RUNBOOK, índice, critérios da fase, DEC-40/RISK-33, baseline Compass e guia Dart §§enums/nulabilidade. Alterações existentes preservadas; base observada dde18a2, sem commit automático.
+Implementação: DeltaAcknowledgement.toJson/fromJson, teste de codec no transport e adaptador JSON independente via facade. README documenta formato/validação/limites. Compass app/server usam codec público nos dois sentidos; removido decodeNotesAck local. Teste HTTP ampliado e guia consumidor atualizado. Sem mudança de core, envelopes, snapshots, outbox ou schema.
+Review: aprovado
+Achados: nenhum impeditivo restante. Revisados código e testes novos, consumo app/server, aliases/cópias e manutenção. Ampliada regressão HTTP para peer com espaço, received e IDs inválidos: resposta 400 preserva outbox. Revisão posterior dessa alteração aprovada e check pertinente repetido. Review pelo implementador não é independente.
+Validação: aprovada
+Comandos: dart/flutter do PATH; Dart 3.13.5, Flutter 3.47.7, Linux x64. Format/analyze/test na raiz, transport, sync e storage_sqflite aprovados: 10/10/42/26 testes (88). Compass flutter analyze/flutter test aprovados (72); servidor dart analyze/dart test aprovados (13). Após ampliação, flutter analyze e quatro testes de trip_notes_integration_test passaram novamente. Format dos três Dart externos limpo; build APK main_deltasync --debug --no-pub aprovado. git diff --check nos dois repositórios e git apply --check do patch incremental aprovados.
+Critérios: (1) testes de codec verificam dois estágios, rótulos, campos ausentes/inválidos, lista vazia, duplicatas e isolamento; (2) formato Compass preservado, destinatário validado no sync/server e persistência não alterada; (3) teste facade sequencia erro de codec, peer errado, received, vazio, parcial/duplicado/ID externo e retry final, preservando pendências; (4) app/server removem JSON manual, segundo adaptador usa facade e HTTP/SQLite real cobre falha, perda de ACK após commit, replay e reabertura de ambos os bancos.
+Manutenção: quatro critérios marcados, fase/índice atualizados, DEC-41 e RISK-33 registrados; R-26 liberada, próxima recomendada R-25 MUST. VAL-14 e VAL-05 continuam planejadas. Patch incremental externo preservado; checker e diff finais abaixo.
+Limitações: codec não autentica peer nem comprova commit remoto sozinho. Prova HTTP/SQLite executada no Linux; APK compilado, sem nova instalação/runtime Android nesta tarefa. Formato/fluxo/lifecycle não mudaram; não reutilizar VAL-13 como prova de execução do APK novo. Warnings Gradle/Kotlin de compatibilidade futura permanecem no consumidor; build atual passou. MemoryStorage no teste facade não comprova durabilidade, complementada por SQLite/HTTP. Sem codegen, publicação ou escrita acadêmica.
+
+### Comandos e reprodução
+
+Na raiz DeltaSync:
+
+```sh
+dart format packages/deltasync_transport/lib/src/delta_acknowledgement.dart packages/deltasync_transport/test/delta_acknowledgement_test.dart test/ack_codec_integration_test.dart
+for package in . packages/deltasync_transport packages/deltasync_sync packages/deltasync_storage_sqflite; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done
+python3 scripts/check_plan.py
+git diff --check
+```
+
+No Compass app: flutter analyze; flutter test --reporter expanded; após ampliar
+regressão, flutter test test/trip_notes_integration_test.dart --reporter expanded.
+Build: flutter build apk --debug --target lib/main_deltasync.dart --no-pub.
+No servidor: dart analyze e dart test --reporter expanded. Na raiz Compass:
+dart format --output=none --set-exit-if-changed app/lib/data/services/notes/http_notes_transport.dart
+app/test/trip_notes_integration_test.dart server/bin/notes_server.dart, executado
+do diretório compass_app; git diff --check executado da raiz samples.
+
+Primeira tentativa format/versões falhou por escrita do launcher no cache SDK
+fora do sandbox. Reexecutada com permissão de ferramenta, mantendo comandos do
+PATH; todos os checks acima realmente executados. Escrita no consumidor externo
+também usou permissão de ferramenta, dentro do escopo R-24 autorizado.
+
+[Patch incremental Compass](evidence/r24-compass.patch) modifica quatro arquivos.
+Aplicar após [patch VAL-13](evidence/val13-compass.patch), sobre base samples
+5541c59; patch incremental usa contexto normal. git apply --check passou contra
+a cópia reproduzida de VAL-13 em /tmp/compass-val13-patch-check. Não modificar
+patch histórico para substituir evidência já registrada.
+
+Ganho de manutenção observado: transporte 83 para 72 linhas; servidor 141 para
+137. Menos 15 linhas de produção no consumidor; codec adiciona 33 na biblioteca
+com validação reutilizável. Quantidade de linhas não é meta: regras de parsing
+passam a ter um dono comum. Identidade/domínio/UI continuam no consumidor.
+
+Checks finais após manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas
+e 283 links locais; prontas R-22 COULD, R-25 MUST e R-26 SHOULD. git diff --check
+aprovado no DeltaSync e no samples. Tarefa ativa nenhuma; próxima R-25.
