@@ -116,17 +116,15 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase 1: **MUST e R-16 SHOULD concluídos**. Fase 5: **MUST concluído**;
+Fase 1: **MUST e R-16 SHOULD concluídos; R-19 COULD concluída**. Fase 5: **MUST concluído**;
 SHOULD VAL-06 a VAL-10 concluídas. Fases 2, 3 e 4 mantêm conclusões históricas.
-Tarefa ativa: **nenhuma**. R-19 COULD permanece adiada por falta de margem
-comprovada; escrita e revisão do TCC ficam sob responsabilidade do autor e fora
-deste plano.
+Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
+do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: nenhuma tarefa está pronta. R-17 COULD concluiu; R-19 foi adiada,
-pois faltam estimativa de esforço e margem comprovada antes do congelamento
-estrutural. Nenhuma delas condiciona o gate MUST concluído.
+recomendada: nenhuma; R-17 e R-19 COULD concluíram. R-19 preservou o gate MUST
+e recebeu revalidação técnica; nenhum trabalho COULD pendente consta do plano.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
 
@@ -178,7 +176,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-15](01_PHASE1_CORRECOES.md#r-15) | Recuperar abertura falha no consumidor Flutter | concluída | MUST | VAL-07 |
 | [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | concluída | SHOULD | R-13, R-14, R-18 |
 | [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | concluída | MUST | R-08c, VAL-04 |
-| [R-19](01_PHASE1_CORRECOES.md#r-19) | Compactar contexto causal do MV-Register com compatibilidade | planejada | COULD | VAL-09, VAL-10 |
+| [R-19](01_PHASE1_CORRECOES.md#r-19) | Compactar contexto causal do MV-Register com compatibilidade | concluída | COULD | VAL-09, VAL-10 |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -210,23 +208,24 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 
 Data de entrega informada pelo autor: 16/11, interpretada como 2026 pelo contexto
 atual. Há 35 dias corridos desde 12/10. Janelas abaixo são proposta de sequência,
-não estimativas de esforço nem garantia de conclusão; disponibilidade do autor
-ainda não foi informada. Critérios técnicos permanecem exigidos para concluir.
+não estimativas de esforço nem garantia de conclusão. Em 12/10, autor confirmou
+margem; R-19 foi implementada e validada nessa data. Os critérios técnicos
+continuam registrados como evidência da entrega, não como promessa de prazo.
 
 | Janela proposta | Foco técnico | Saída esperada |
 |---|---|---|
-| 12–18/10 | R-14, R-13, R-15, R-18 | Correções MUST e regressões pertinentes |
-| 19–25/10 | R-16, por fronteiras de responsabilidade | Layout e remoções comprovadas, com comportamento preservado |
-| 26/10–01/11 | VAL-05 gate MUST; R-19 adiada | Revalidação da entrega; compactação exige novo plano com margem explícita |
+| 12–18/10 | R-19 concluída após entrada autorizada | Compactação, compatibilidade, review e revalidação VAL-05 |
+| 19–25/10 | Reserva para regressões ou lacunas novas | Corrigir achados confirmados e repetir checks afetados |
+| 26/10–01/11 | Revisão de prontidão antes do congelamento | Sem expansão se reduzir margem da entrega |
 | 02–08/11 | Congelamento estrutural e correções de VAL-05 | Revalidação de código entregue, SQLite e Android |
 | 09–15/11 | Margem para regressões encontradas e reprodução da entrega | Sem refatoração ampla ou expansão funcional |
 | 16/11 | Entrega | Estado e limitações finais registrados |
 
 A partir de 02/11, evitar iniciar movimentos estruturais e funcionalidades COULD.
 SHOULD sem margem recebe adiamento justificado, preservando trabalho parcial
-verificável e histórico. R-17/R-19 só entram se correções MUST estiverem concluídas
-e não consumirem a reserva de validação. A entrada específica de R-19 depende das
-provas/medições de VAL-09/VAL-10; não há promessa de executá-la até 16/11.
+verificável e histórico. R-17/R-19 entraram após as correções MUST e com a margem
+de R-19 confirmada pelo autor. Escopo e critérios técnicos estão na fase 1; a
+janela não substituiu evidência de ganho, compatibilidade e recuperação.
 R-16 deve reduzir concentração e duplicação; criar pastas
 sem melhorar propriedade/manutenção não justifica ocupar o prazo.
 

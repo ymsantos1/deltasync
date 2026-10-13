@@ -359,5 +359,7 @@ Evidência de conclusão: [execução VAL-10 em 2026-10-12](TRACEABILITY.md#exec
 ## Gate da fase
 
 VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;
-R-19 COULD foi adiada com justificativa registrada. Escrita e revisão do TCC
-permanecem fora desta fase.
+R-19 COULD concluiu; VAL-05 foi revalidada após compactação, recuperação SQLite
+e validação do consumidor Flutter/Android. Evidências anteriores permanecem no
+histórico.
+Escrita e revisão do TCC permanecem fora desta fase.

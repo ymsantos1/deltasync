@@ -135,6 +135,100 @@ void main() {
       },
     );
 
+    test(
+      'migrates explicit MV snapshot and outbox contexts after reopen',
+      () async {
+        const replicaId = 'compact-device';
+        const peerId = 'compact-peer';
+        final path = '${directory.path}/compact-context.sqlite';
+        final source = Replica(replicaId)..writeMvRegister('field', 'one');
+        final first = source.export().changes.single as MvRegisterDelta;
+        final second = source.writeMvRegister('field', 'two');
+        final oldSnapshot = _legacySnapshotWithExplicitMvContext(source);
+        final storage = _storage(path);
+        await storage.saveReplica(
+          ReplicaSnapshot(replicaId: replicaId, snapshot: oldSnapshot),
+        );
+
+        final oldChange = second.toJson()
+          ..['context'] = [for (final dot in second.context) dot.toJson()];
+        final oldEntryJson =
+            OutboxEntry(
+                delta: Delta([second]),
+                recipientPeerId: peerId,
+                status: OutboxStatus.sent,
+                attempts: 1,
+                createdAt: DateTime.utc(2026, 10, 12),
+                sentAt: DateTime.utc(2026, 10, 12, 0, 1),
+              ).toJson()
+              ..['delta'] = {
+                'version': 3,
+                'delta': {
+                  'changes': [oldChange],
+                },
+              };
+        await storage.enqueue(OutboxEntry.fromJson(oldEntryJson));
+        await storage.enqueue(
+          OutboxEntry(
+            delta: Delta([second]),
+            recipientPeerId: peerId,
+            createdAt: DateTime.utc(2026, 10, 12, 0, 2),
+          ),
+        );
+        await storage.close();
+
+        final reopenedStorage = _storage(path);
+        final transport = _PeerTransport(peerId);
+        final engine = _engine(replicaId, reopenedStorage, transport);
+        await engine.start();
+        expect(engine.replica.mvRegisterValue('field'), {'two'});
+        final oldPending = (await reopenedStorage.pending(replicaId)).single;
+        expect(oldPending.entryId, second.id);
+        expect(oldPending.recipientPeerId, peerId);
+        expect(oldPending.status, OutboxStatus.sent);
+        expect(oldPending.attempts, 1);
+        expect(oldPending.sentAt, DateTime.utc(2026, 10, 12, 0, 1));
+        expect(oldPending.delta.changes.single, isA<MvRegisterDelta>());
+
+        final next = await engine.writeMvRegister('field', 'three');
+        expect(next.dot.counter, 3);
+        expect(next.context, [first.dot, second.dot]);
+        expect(next.toJson()['context'], {
+          'crdtId': 'field',
+          'replicas': {
+            replicaId: {'prefix': 2, 'sparse': <int>[]},
+          },
+        });
+        final savedSnapshot = await reopenedStorage.loadReplica(replicaId);
+        expect(savedSnapshot!.snapshot!['version'], 9);
+        expect(
+          (await reopenedStorage.pending(
+            replicaId,
+          )).map((entry) => entry.entryId).toSet(),
+          {second.id, next.id},
+        );
+
+        await engine.dispose();
+        await reopenedStorage.close();
+        await transport.close();
+
+        final finalStorage = _storage(path);
+        final finalTransport = _PeerTransport(peerId);
+        final restored = _engine(replicaId, finalStorage, finalTransport);
+        await restored.start();
+        expect(restored.replica.mvRegisterValue('field'), {'three'});
+        expect(
+          (await finalStorage.pending(
+            replicaId,
+          )).map((entry) => entry.entryId).toSet(),
+          {second.id, next.id},
+        );
+        await restored.dispose();
+        await finalStorage.close();
+        await finalTransport.close();
+      },
+    );
+
     test('concurrent callers share a failed open and later retry', () async {
       final gate = Completer<void>();
       final factory = _ControlledOpenFactory(failFirst: true, firstGate: gate);
@@ -559,7 +653,7 @@ void main() {
     );
 
     test(
-      'keeps local state and outbox atomic when SQLite commit fails',
+      'rolls back compact MV context and outbox when SQLite commit fails',
       () async {
         final path = '${directory.path}/replica.sqlite';
         final storage = _storage(path);
@@ -573,19 +667,29 @@ void main() {
       ''');
 
         await expectLater(
-          engine.setDelta('item', 'value'),
+          engine.writeMvRegister('field', 'value'),
           throwsA(isA<DatabaseException>()),
         );
-        expect(engine.replica.state.values, isEmpty);
+        expect(engine.replica.mvRegisterValue('field'), isEmpty);
         expect(await storage.pending('sender'), isEmpty);
         final snapshot = await storage.loadReplica('sender');
         expect(
-          Replica.fromSnapshotJson(snapshot!.snapshot!).state.values,
+          Replica.fromSnapshotJson(
+            snapshot!.snapshot!,
+          ).mvRegisterValue('field'),
           isEmpty,
         );
 
+        await database.execute('DROP TRIGGER reject_outbox');
+        final recovered = await engine.writeMvRegister('field', 'value');
+        expect(recovered.dot.counter, 1);
+        expect(engine.replica.mvRegisterValue('field'), {'value'});
+        expect(await storage.pending('sender'), hasLength(1));
+        expect((await storage.loadReplica('sender'))!.snapshot!['version'], 9);
+
         await engine.dispose();
         await storage.close();
+        await database.close();
         await transport.close();
       },
     );
@@ -659,6 +763,43 @@ void main() {
       },
     );
   });
+}
+
+Map<String, Object?> _legacySnapshotWithExplicitMvContext(Replica replica) {
+  final snapshot = Map<String, Object?>.from(replica.toSnapshotJson())
+    ..['version'] = 8;
+  final registers = Map<String, Object?>.from(snapshot['mvRegisters'] as Map);
+  for (final entry in registers.entries) {
+    final state = Map<String, Object?>.from(entry.value as Map);
+    state['context'] = _expandCompactContext(state['context'] as Map);
+    state['versions'] = (state['versions'] as List).map((raw) {
+      final version = Map<String, Object?>.from(raw as Map)
+        ..['context'] = _expandCompactContext(raw['context'] as Map);
+      return version;
+    }).toList();
+    registers[entry.key] = state;
+  }
+  snapshot['mvRegisters'] = registers;
+  return snapshot;
+}
+
+List<Map<String, Object?>> _expandCompactContext(Map context) {
+  final crdtId = context['crdtId'] as String;
+  final replicas = context['replicas'] as Map;
+  final dots = <Dot>[];
+  for (final entry in replicas.entries) {
+    final replicaId = entry.key as String;
+    final encoded = entry.value as Map;
+    final prefix = encoded['prefix'] as int;
+    final sparse = (encoded['sparse'] as List).cast<int>();
+    dots.addAll([
+      for (var counter = 1; counter <= prefix; counter++)
+        Dot(replicaId: replicaId, counter: counter, crdtId: crdtId),
+      for (final counter in sparse)
+        Dot(replicaId: replicaId, counter: counter, crdtId: crdtId),
+    ]);
+  }
+  return [for (final dot in dots) dot.toJson()];
 }
 
 void _expectAllCrdts(Replica replica) {

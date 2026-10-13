@@ -105,6 +105,10 @@ Future<void> _measureMvRegister(Directory root, int count) async {
     0,
     (total, change) => total + change.context.length,
   );
+  final compactContextUnits = mvChanges.fold<int>(
+    0,
+    (total, change) => total + _compactContextUnits(change),
+  );
   final snapshotBefore = local.replica.toSnapshotJson();
   final envelope = DeltaEnvelope(
     senderReplicaId: replicaId,
@@ -128,7 +132,9 @@ Future<void> _measureMvRegister(Directory root, int count) async {
   final dbBytesAfterAck = await _databaseBytes(root, '$replicaId-local');
   print(
     'mv-register: N=$count, expected-context-refs=${count * (count - 1) ~/ 2}, '
-    'actual-context-refs=$contextReferences, active-versions=$activeVersions, '
+    'actual-context-refs=$contextReferences, '
+    'compact-context-units=$compactContextUnits, '
+    'active-versions=$activeVersions, '
     'context-dots=$contextDots, delta=$bytesBeforeAck B, '
     'envelope=$envelopeBytes B, outbox-with-metadata=$outboxBytes B, '
     'snapshot-before-ack=${_jsonBytes(snapshotBefore)} B, snapshot-after-ack=$stateBytes B, '
@@ -233,7 +239,30 @@ Future<int> _outboxBytes(ReplicaStorage storage, String replicaId) async {
 int _mvContextCount(Map<String, Object?> snapshot, String crdtId) {
   final registers = snapshot['mvRegisters']! as Map<String, Object?>;
   final register = registers[crdtId]! as Map<String, Object?>;
-  return (register['context']! as List).length;
+  return _compactContextLogicalDots(register['context']! as Map);
+}
+
+int _compactContextUnits(MvRegisterDelta change) =>
+    _compactContextUnitsFromJson(change.toJson()['context']! as Map);
+
+int _compactContextUnitsFromJson(Map context) {
+  final replicas = context['replicas']! as Map;
+  return replicas.values.fold<int>(0, (total, raw) {
+    final entry = raw as Map;
+    return total +
+        ((entry['prefix']! as int) > 0 ? 1 : 0) +
+        (entry['sparse']! as List).length;
+  });
+}
+
+int _compactContextLogicalDots(Map context) {
+  final replicas = context['replicas']! as Map;
+  return replicas.values.fold<int>(0, (total, raw) {
+    final entry = raw as Map;
+    return total +
+        (entry['prefix']! as int) +
+        (entry['sparse']! as List).length;
+  });
 }
 
 Future<int> _databaseBytes(Directory root, String name) async {

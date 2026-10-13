@@ -188,12 +188,15 @@ void main() {
 
     expect(register.value, {'first', 'third'});
     final beforeNextWrite = register.toJson();
-    expect(
-      (beforeNextWrite['context'] as List).map(
-        (dot) => (dot as Map)['counter'],
-      ),
-      [1, 3],
-    );
+    expect(beforeNextWrite['context'], {
+      'crdtId': 'field',
+      'replicas': {
+        'origin': {
+          'prefix': 1,
+          'sparse': [3],
+        },
+      },
+    });
     final fourth = register.write('after gap');
     expect(fourth.dot.counter, 4);
     expect(fourth.context, containsAll([first.dot, third.dot]));

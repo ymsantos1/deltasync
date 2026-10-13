@@ -106,7 +106,7 @@ void main() {
       'roles': <Object?>{'reader'},
     });
     final restored = Replica.fromSnapshotJson(source.toSnapshotJson());
-    expect(restored.toSnapshotJson()['version'], 8);
+    expect(restored.toSnapshotJson()['version'], 9);
     expect(restored.orMapValue('profile'), receiver.orMapValue('profile'));
     final fromSnapshot = Replica('snapshot-join')
       ..mergeSnapshotJson(source.toSnapshotJson());

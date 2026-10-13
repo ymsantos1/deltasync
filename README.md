@@ -104,9 +104,9 @@ G-Set usa `Replica.addGSet/addAllGSet` ou métodos correspondentes de
 `SyncEngine`. Endereço estável identifica o campo; cada delta traz adições JSON
 com dot namespaced, e o join une eventos enquanto a consulta deduplica valores
 JSON estruturalmente iguais. Não há remoção. G-Set entrou no snapshot interno v4;
-leitores atuais aceitam snapshots v1–v7, e o formato atual é v8. Consumidores
-antigos não leem snapshot v8. O envelope externo `ReplicaSnapshot` continua v2.
-`DeltaCodec` mantém v3; leitores antigos rejeitam labels desconhecidos `g-set`,
+leitores atuais aceitam snapshots v1–v8, e o formato atual é v9. Consumidores
+antigos não leem snapshot v9. O envelope externo `ReplicaSnapshot` continua v2.
+`DeltaCodec` grava v4 e lê v1–v3; leitores antigos rejeitam labels desconhecidos `g-set`,
 `2p-set`, `mv-register`, `or-set` e `or-map`.
 
 2P-Set usa `Replica.addTwoPSet/addAllTwoPSet` e
@@ -116,10 +116,13 @@ visível é adições menos remoções. Readição e delta antigo não ressuscit
 removido. Não há operação para desfazer tombstone.
 
 MV-Register usa `Replica.writeMvRegister` e `SyncEngine.writeMvRegister`. Cada
-delta guarda dot da escrita e conjunto exato de dots observados. Join une versões
-e remove somente dots cobertos pelo contexto de outra versão; assim, escritas
-concorrentes permanecem visíveis e delta atrasado não desfaz escrita causal. O
-contexto completo sobrevive no snapshot; sem GC causal, cresce com histórico.
+delta guarda dot da escrita e contexto causal exato: prefixo contíguo por réplica
+mais dots esparsos acima dele. Lacunas continuam explícitas; dot 3 sozinho não
+prova que dots 1 e 2 chegaram. Join une contextos sem expandir prefixos. A API
+`MvRegisterDelta.context` mantém leitura como `List<Dot>` e expande o prefixo ao
+ser consultada. JSON v3 de delta e snapshot interno v8 continuam legíveis; novas
+gravações usam DeltaCodec v4 e snapshot interno v9. Sem GC causal, conhecimento
+continua preservado após ACK.
 
 OR-Set usa `Replica.addOrSet/removeOrSet` e equivalentes de `SyncEngine`. Cada
 adição recebe tag dot exclusivo; remoção carrega exatamente tags já observadas.
@@ -205,14 +208,16 @@ exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
 `DeltaAcknowledgement` e `DeltaAckStage`. A facade `deltasync` reexporta esses
 quatro pacotes.
 
-`DeltaCodec` grava versão 3 (`delta.changes`). Lê versões 1 e 2 antigas, convertendo
-operações LWW em `LwwDelta`: soma dos componentes de `VectorClock` vira timestamp
-físico sintético; `replicaId` e ID preservam desempate antigo. Vetores cuja soma
-excede o intervalo suportado são rejeitados. Snapshots internos versões 1 a 7
-continuam legíveis, inclusive `legacyWinner` nos formatos antigos. A gravação
-atual usa versão 8 e guarda
-sequências por origem para bootstrap compacto. Conversão fica no codec/snapshot
-restore, não no caminho normal de `Replica.apply`.
+`DeltaCodec` grava versão 4 com contexto MV compacto. Lê v3 com listas explícitas
+e versões 1 e 2 antigas, convertendo operações LWW em `LwwDelta`: soma dos
+componentes de `VectorClock` vira timestamp físico sintético; `replicaId` e ID
+preservam desempate antigo. Vetores cuja soma excede o intervalo suportado são
+rejeitados. Snapshots internos versões 1 a 8 continuam legíveis, inclusive
+`legacyWinner` nos formatos antigos. A gravação atual usa versão 9, guarda
+sequências por origem e compacta contextos MV. O envelope externo `ReplicaSnapshot`
+continua v2 e o schema SQLite continua v1. Leitores antigos rejeitam v4/v9 sem
+apagar dados; novas gravações preservam IDs e metadados de outbox. Conversão fica
+no codec/snapshot restore, não no caminho normal de `Replica.apply`.
 
 `DeltaTransport` fica vinculado a um `peerReplicaId` e envia/recebe
 `DeltaEnvelope` v2, com remetente, destinatário e payload `DeltaCodec`. Remetente
@@ -259,9 +264,11 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
 - **2P-Set:** `two_p_set.dart` mantém adições e tombstones monotônicos; valor é a
   diferença dos conjuntos. `Replica` roteia e versiona snapshot; `SyncEngine`
   comita operações na outbox. A semântica não permite readição após remoção.
-- **MV-Register:** `mv_register.dart` mantém dots observados, versões ativas e
-  contexto causal exato; contexto registra lacunas sem inferir entrega por contador
-  máximo. Join une versões e elimina as que foram observadas por outra versão.
+- **MV-Register:** `mv_register.dart` mantém versões e contextos compactos por
+  prefixo e lacunas esparsas. Pertencimento e join ficam nesse auxiliar privado;
+  codificação compacta e leitura do formato explícito anterior também ficam aqui.
+  Join elimina versões observadas sem inferir entrega pelo máximo nem descartar
+  contexto causal.
   `Replica` roteia, exporta e restaura; `SyncEngine` persiste cada escrita na
   outbox. Testes cobrem concorrência, entrega atrasada, join, JSON e duas engines.
 - **OR-Set:** `or_set.dart` mantém adições por tag dot e remoções por conjunto de
@@ -573,13 +580,26 @@ repetições estatísticas; não são benchmark universal.
 | MV, N=32 | 1 versão; 32 context dots; 496 refs | 32 pendentes; outbox 40.930 B | 35.877 B | 35.956 B | 4.109 B | 86.016 B antes; 90.112 B depois do ACK |
 | OR-Set: 8 ciclos add/remove + add final | 1 valor | 9 tags; 17 eventos; 8 refs observadas; outbox 7.305 B | 4.569 B | 4.661 B | 4.851 B | — |
 
-Refs MV confirmam `N(N−1)/2`: 6, 28, 120 e 496. O delta pendente cresce mais
-rápido que o snapshot neste fluxo sequencial. ACK durável limpa 100% das linhas
+Baseline anterior à R-19: refs MV confirmam `N(N−1)/2`: 6, 28, 120 e 496. O delta
+pendente cresce mais rápido que o snapshot neste fluxo sequencial. ACK durável limpa 100% das linhas
 da outbox; snapshot e contexto do MV permanecem iguais, pois ACK não apaga
 conhecimento causal. OR-Set retém 17 eventos para um valor visível. No caso
 favorável, três deltas/envelope custam 809 B diante de snapshot de 56.664 B;
 outbox com metadados custa 1.176 B. Custos observados para outros casos seguem
-carga e histórico.
+carga e histórico. Esses valores preservam a medição anterior à compactação.
+
+Após R-19, o mesmo comando, entradas, ambiente e SQLite FFI mediram:
+
+| Carga | Dots lógicos/ref. | Unidades compactas | Delta | Outbox | Snapshot | SQLite antes/depois ACK |
+|---|---:|---:|---:|---:|---:|---:|
+| MV, N=4 | 6 | 3 | 1.112 B | 1.709 B | 542 B | 24.576/24.576 B |
+| MV, N=8 | 28 | 7 | 2.220 B | 3.449 B | 542 B | 32.768/32.768 B |
+| MV, N=16 | 120 | 15 | 4.525 B | 7.034 B | 552 B | 36.864/36.864 B |
+| MV, N=32 | 496 | 31 | 9.085 B | 14.138 B | 552 B | 45.056/45.056 B |
+
+Em N=32, delta caiu 74,7%, outbox 65,5% e snapshot 86,6% contra baseline;
+os mesmos 496 dots lógicos continuam representados. Em N=16, delta caiu 56,5%
+e outbox 45,6%. Tamanho SQLite inclui páginas e não mede espaço recuperável.
 
 Faixa de `write-us` entre execuções: N=4 1.127–5.005; N=8 1.020–1.402; N=16
 998–2.354; N=32 861–1.755. ACK: 16, 11, 18–19 e 29–30 ms, respectivamente.
@@ -589,12 +609,10 @@ após apagar linhas; não equivale a bytes de payload ou espaço imediatamente
 recuperável. A execução não mede Android, compressão, rede, concorrência ou
 cargas multi-peer.
 
-Conclusão técnica: custo de contexto MV foi confirmado e localiza a oportunidade
-em contexto repetido nos deltas pendentes. Isso justifica manter R-19 como COULD
-para investigar compactação de representação, sem autorizar descarte causal ou
-mudança de join. R-19 fica adiada para esta entrega: faltam estimativa de esforço
-e margem comprovada para implementação, migração, review e validação SQLite antes
-do congelamento estrutural de 02/11. VAL-05 segue como próximo gate MUST.
+Conclusão técnica: R-19 reduziu bytes MV nas cargas medidas, mantendo lacunas,
+IDs da outbox e recuperação SQLite após fechamento/reabertura. R-19 segue COULD;
+não muda o gate MUST. Medição limitada a Linux x86_64, Dart 3.13.5, SQLite FFI e
+cargas fixas. VAL-05 foi revalidada após a mudança.
 
 ## Validação
 

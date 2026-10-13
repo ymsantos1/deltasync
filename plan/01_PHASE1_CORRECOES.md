@@ -1,8 +1,7 @@
 # Fase 1 — Simplificação e correções da base existente
 
-Estado: MUST e R-16 SHOULD concluídos em 2026-10-12.
-R-19 COULD planejada; VAL-09/VAL-10 concluídas, mas adiada para esta entrega por
-falta de estimativa de esforço e margem comprovada antes de 02/11.
+Estado: MUST e R-16 SHOULD concluídos em 2026-10-12; R-19 COULD concluída
+em 2026-10-12 após validação, review e registro de evidências.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -474,7 +473,7 @@ Evidência de conclusão: [execução R-18 em 2026-10-12](TRACEABILITY.md#execuc
 
 ## R-19 — Compactar contexto causal do MV-Register com compatibilidade
 
-Status: planejada
+Status: concluída
 MoSCoW: COULD
 Dependências: VAL-09, VAL-10
 
@@ -482,41 +481,107 @@ Dependências: VAL-09, VAL-10
 SQLite afetada; documentação de consumo e manutenção.
 Objetivo: reduzir o custo demonstrado de contexto mantendo o mesmo conhecimento
 causal, valores e comportamento após entrega atrasada/restauração.
-Entrada: VAL-09 aprovada, VAL-10 com custo e ganho esperado identificados, e margem
-para implementação, review, migração e validação antes de 02/11. Se ganho ou margem
-não forem demonstrados, registrar adiamento COULD e continuar o fechamento MUST.
+Entrada: VAL-09 aprovada, VAL-10 com custo e ganho esperado identificados e margem
+para implementação, review, migração e validação confirmada pelo autor em
+2026-10-12: “questão de prazo está ok. Pode ser feito agora”. O adiamento anterior
+foi superado por essa direção explícita; estimativa numérica de capacidade não é
+um bloqueio adicional. Se a implementação não demonstrar ganho ou encontrar
+impedimento concreto, registrar resultado e reavaliar a entrega COULD.
 Defeito de correção encontrado na investigação exige tarefa de correção própria;
 não classificar perda de informação como otimização opcional.
 
+### Sequência de execução e pontos de alteração
+
+1. **Baseline e inventário.** Reexecutar as cargas fixas de VAL-10 antes de editar
+   código e guardar resultados em TRACEABILITY. Localizar contexto do estado,
+   de cada versão e de cada delta em
+   [mv_register.dart](../packages/deltasync_core/lib/src/mv_register.dart);
+   listar consumidores de `MvRegisterDelta.context`, codecs, export/bootstrap,
+   cópia de Replica, snapshots e outbox. Baseline reexecutada em Linux x86_64,
+   Dart 3.13.5 e SQLite FFI. DeltaCodec passou de v3 para v4 e snapshot interno
+   de Replica v8 para v9. Envelope `ReplicaSnapshot` v2, outbox v2 e schema
+   SQLite v1 não mudam; formatos antigos são lidos e regravados no próximo
+   commit atômico, sem migração de schema.
+2. **Representação causal mínima.** Introduzir um auxiliar de contexto no core,
+   usado pelo MV-Register, com prefixo contíguo por `(replicaId, crdtId)` e dots
+   esparsos acima desse prefixo. Definir pertencimento, inclusão, união, cópia
+   isolada e codificação determinística. Comparar essas operações com `Set<Dot>`
+   explícito em testes; dots 1 e 3 não incluem 2. Contexto de delta deve permanecer
+   imutável, sem compartilhar mutações com estado ou versões. Uma representação
+   canônica é a fonte de verdade; views de compatibilidade não são estado paralelo.
+3. **Integração no MV-Register e compatibilidade.** Aplicar o auxiliar ao estado,
+   às versões e aos deltas, mantendo escrita, applyDelta, mergeState, export e
+   sequência local. Preservar construtor com `Iterable<Dot>` e leitura pública
+   de `context` quando viável, como conversão na fronteira; operações internas e
+   serialização compacta não devem expandir todos os dots a cada escrita.
+   Definir formato compacto versionado, leitura do contexto explícito anterior,
+   validação de lacunas/endereço e rejeição por leitores incompatíveis. Evitar
+   gravar lista explícita junto do formato compacto, pois repetiria o custo alvo.
+   Não fixar novos números de versão antes do inventário; alterar apenas as
+   versões cujos formatos mudarem e documentar qualquer incompatibilidade pública.
+4. **Persistência e recuperação.** Exercitar snapshot e outbox anteriores em
+   banco SQLite real, fechar/reabrir e continuar escrevendo. A conversão preserva
+   IDs, destinatários e metadados de tentativas; falha cancela o commit inteiro.
+   Comparação de payload pendente deve reconhecer contextos semanticamente iguais
+   nos dois formatos e continuar rejeitando divergências. Registrar rollback por
+   conversão validada ou backup consistente anterior à migração. Backup só cobre
+   rollback antes de aceitar novos commits; após novas escritas, a reversão deve
+   preservar também essas mudanças e pendências. Não pressupor que binário antigo
+   lê dados compactos novos, nem apagar banco ou pendências.
+5. **Review, medição e validação.** Revisar diff com atenção a lacunas, namespaces,
+   replay, aliasing, migração e ACK. Corrigir achados e repetir review/checks
+   afetados. Reexecutar VAL-09 e cargas VAL-10 com mesmas entradas; registrar
+   bytes, unidades compactas e dots logicamente representados separadamente.
+   Revalidar o gate técnico VAL-05 após a mudança, com registro adicional que
+   preserve as evidências históricas e as limitações das plataformas executadas.
+6. **Consumo e manutenção.** Atualizar documentação e mapa de responsabilidades
+   para localizar estado, mutação, delta, join, commit e restauração; mostrar
+   leitura de dados anteriores e caminho público de integração. Registrar
+   escolhas, riscos, comandos e resultado por etapa; só então marcar critérios
+   e concluir R-19 no índice e na fase.
+
+### Ganho esperado e limite da comparação
+
+VAL-10 mediu 496 referências causais nos deltas pendentes de 32 escritas MV
+sequenciais, 35.877 B de delta e 4.109 B de snapshot. Esses números são baseline
+histórica, não validação da mudança. Nessa carga de um namespace sem lacunas,
+cada contexto não vazio pode ser representado por um prefixo, preservando os
+mesmos 496 pertencimentos lógicos no lote. Demonstrar redução dos bytes de delta
+e outbox nas cargas N=16 e N=32 frente à baseline reexecutada; medir snapshot e
+custo de conversão/commit, sem exigir melhoria universal de tempo ou arquivo
+SQLite. Incluir carga com lacunas e concorrência para explicitar os limites.
+Não prometer remoção da necessidade de contexto causal nem agregação de IDs.
+
 Critérios:
 
-- [ ] Delimitar primeiro MV-Register e a representação responsável pelo custo
+- [x] Delimitar primeiro MV-Register e a representação responsável pelo custo
   medido: estado, contexto do delta ou snapshot. Registrar baseline, ganho
   esperado e limite da mudança. OR-Set/OR-Map só entram em tarefa posterior se
   medições e semântica justificarem; não reescrever os oito CRDTs nesta tarefa.
-- [ ] Representar prefixos contíguos observados e dots esparsos com lacunas,
+- [x] Representar prefixos contíguos observados e dots esparsos com lacunas,
   preservando namespaces `(replicaId, crdtId)`. Comparar pertencimento e join do
   contexto compacto contra a representação explícita usada como referência;
   receber dot 3 nunca inventa observação dos dots 1/2.
-- [ ] Preservar substituição causal, versões concorrentes, identidade e
+- [x] Preservar substituição causal, versões concorrentes, identidade e
   sequência local, sem ressuscitar versão eliminada após replay/merge/restore.
   Compactação deve preservar informação causal; nenhum descarte por idade,
   envio ou ACK, e nenhuma alteração silenciosa de semântica.
-- [ ] Inventariar APIs, JSON, snapshots e outboxes existentes antes da mudança.
+- [x] Inventariar APIs, JSON, snapshots e outboxes existentes antes da mudança.
   Manter formatos quando possível; mudança necessária exige versão explícita,
   leitura/migração de dados anteriores, rejeição segura por leitor incompatível
   e percurso de rollback documentado. Não apagar bancos ou pendências para migrar.
-- [ ] Preservar commit atômico, recuperação durável, IDs da outbox e confirmação
+- [x] Preservar commit atômico, recuperação durável, IDs da outbox e confirmação
   por mudança/peer. Não eliminar IDs pendentes por dominância como consequência
   da compactação do estado; agregação de envio exige escopo próprio.
-- [ ] Repetir propriedades e cenários pertinentes de VAL-09 nas duas
+- [x] Repetir propriedades e cenários pertinentes de VAL-09 nas duas
   representações, incluindo lacunas, origens/endereço distintos, snapshots
   antigos, falhas de migração, nova escrita após restore e replay atrasado.
   Validar integração SQLite com fechamento/reabertura e rollback real.
-- [ ] Repetir as cargas de VAL-10 com parâmetros e contabilidade iguais;
-  demonstrar redução na representação escolhida, registrar custo adicional e
-  limites. Atualizar APIs/exemplos/mapa de manutenção afetados e revisar após
-  correções antes de concluir.
+- [x] Repetir as cargas de VAL-10 com parâmetros e contabilidade iguais;
+  demonstrar redução dos bytes de delta e outbox MV em N=16/N=32, distinguindo
+  unidades compactas de dots lógicos, registrar custo adicional e limites de
+  lacunas/concorrência. Atualizar APIs/exemplos/mapa de manutenção afetados,
+  revisar após correções e revalidar VAL-05 antes de concluir.
 
 Um auxiliar de contexto deve ter operações e dono claros. Um DotKernel comum
 só se justifica por regras comprovadamente comuns nos tipos alterados, sem criar
@@ -527,9 +592,10 @@ Validação: baseline e provas antes/depois; format/analyze/test do core, facade
 pacotes/consumidores afetados; equivalência causal e de deltas, compatibilidade de
 formatos, recuperação SQLite e medição reproduzível. Mudança que atingir o
 consumidor mobile exige checks/build/runtime proporcionais. VAL-05 revalida o
-resultado se R-19 for executada; R-19 não é dependência MUST do gate.
+resultado após R-19; R-19 não é dependência MUST do gate.
 Evidência de motivação: [referência delta-crdts C++](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de entrada e planejamento: [planejamento R-19 em 2026-10-12](TRACEABILITY.md#planejamento-r-19-2026-10-12).
+Evidência de conclusão: [execução R-19 em 2026-10-12](TRACEABILITY.md#execucao-r-19-2026-10-12).
 
 ## Gate da fase
 

@@ -22,7 +22,10 @@ e [VAL-08](#execucao-val-08-2026-10-12) executou a demo interativa no Android.
 VAL-05 revalidou o gate técnico após correções e refatoração. O autor informou
 entrega em 16/11 e pediu [planejamento das correções/refatoração](#manutencao-revisao-refatoracao-2026-10-12).
 A [referência C++](#referencia-delta-cpp-2026-10-12) orientou VAL-09/VAL-10 e
-R-19 COULD; VAL-09/VAL-10 concluíram, e R-19 foi adiada para esta entrega.
+R-19 COULD; VAL-09/VAL-10 concluíram. O adiamento anterior foi superado pela
+[confirmação de prazo e planejamento R-19](#planejamento-r-19-2026-10-12).
+[R-19 concluiu](#execucao-r-19-2026-10-12) compactação causal, compatibilidade,
+recuperação SQLite, medição, revalidação VAL-05 e consumidor Android.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -129,7 +132,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | R-15 concluída com regressão Flutter FFI e percurso Android; R-18 documentou agendamento pelo consumidor, backoff e limites |
 | Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | R-16 concluiu inventário/extrações; VAL-08 executou UI interativa, conflito, retry e dois reinícios no Moto G52 |
 | Validação ampliada e limites de custo | VAL-09, VAL-10 | Ambas concluídas; VAL-10 mede cargas contrastantes e documenta custo/contexto e limites |
-| Compactação causal após evidência de custo, referência C++ | R-19 | COULD planejada; VAL-09/VAL-10 passaram e ganho possível foi localizado, mas R-19 foi adiada sem margem comprovada antes do congelamento |
+| Compactação causal após evidência de custo, referência C++ | R-19 | COULD concluída; VAL-09/VAL-10 passaram, margem confirmada em DEC-33 e compactação/compatibilidade/recuperação/ganho medidos em [execução R-19](#execucao-r-19-2026-10-12) |
 | Notificação pública de commits, COULD | R-17 | `SyncEngine.commits` emite origem local/remota após adoção; sem replay ou semântica de ACK; testes sync/facade e documentação |
 
 ### Matriz final de evidências MUST — revalidada em 2026-10-12
@@ -3271,3 +3274,126 @@ Comandos: em Linux x64/Dart 3.13.5, raiz e `packages/deltasync_sync`: `dart form
 Critérios: evento local/remoto só após commit e adoção, incluindo delta de transporte e snapshot; testes cobrem rollback de commit local/remoto, listener assíncrono demorado e erro no listener, fechamento por dispose e export pela facade. Dependências puras Dart preservadas. README mostra atualização por leitura da réplica e distingue evento de ACK; formatos persistidos permanecem iguais.
 Manutenção: critérios marcados; fase 4 e índice sincronizados como concluídos; tarefa ativa limpa; matriz atualizada. DECISIONS/RISKS não mudaram. Checker final indicou nenhuma tarefa pronta; R-19 segue adiada, sem iniciar tarefa adicional.
 Limitações: stream broadcast perde eventos sem assinantes e não reenvia eventos passados; consumidores leem a visão mais recente, que pode incluir commits posteriores ao evento. App Flutter não passou a assinar o stream; cobertura pública veio da facade Dart e dos testes sync. Review pelo próprio executor não é independente.
+
+<a id="planejamento-r-19-2026-10-12"></a>
+
+## Planejamento R-19 — 2026-10-12
+
+Escopo autorizado: planejar R-19; autor confirmou que prazo está adequado e que
+a tarefa pode ser feita agora. Essa direção supera o adiamento registrado em
+VAL-10/DEC-32. Estado inicial do worktree: limpo. Implementação não iniciada.
+Skills: plan-reader, plan-maintainer, code-reviewer, plan-validator.
+
+Leitura: VAL-09/VAL-10 e gate MUST concluídos; custo histórico MV de 496
+referências/35.877 B de delta para N=32. Inspecionados contexto do estado, versões
+e deltas em `mv_register.dart`, DeltaCodec v3, snapshot Replica v8, wrappers
+storage v2, medição existente e diretrizes de Dart sobre responsabilidade local
+e compatibilidade. Esses resultados sustentam planejamento, sem validar código
+compacto ainda inexistente.
+
+Manutenção: fase 1 detalha seis passos, do inventário à documentação/manutenção,
+com redução verificável de bytes de delta/outbox em N=16/N=32. R-19 passa de
+planejada/adiada a pronta no índice e na fase; nenhuma tarefa ativa. DEC-33
+registra confirmação de prazo, RISK-25/27 refletem estado e riscos causais/de
+migração; fase 5 exige revalidação após implementação. Critérios permanecem
+abertos, prioridade COULD e dependências VAL-09/VAL-10 preservadas.
+
+Review: aprovado após correções, pelo mesmo agente em etapa distinta; não independente.
+Achados e correções: explicitar que unidades compactas não reduzem dots lógicos;
+equivalência de payload pendente deve sobreviver à conversão de formato; rollback
+por backup anterior não cobre commits novos. Esses limites foram incorporados ao
+plano e o diff foi revisto após as correções. Registros históricos de adiamento
+e fechamento técnico preservados.
+
+Validação: aprovada para planejamento em Linux; checker confirmou 40 tarefas,
+203 links locais e R-19 pronta; `git diff --check` passou. Primeira passagem do
+checker apontou links para a âncora deste registro ainda não adicionada; registro
+criado e nova checagem aprovada. Sem execução Dart: mudança restrita ao planejamento.
+Comandos: `python3 scripts/check_plan.py`; `git diff --check`; revisão de
+`git diff -- plan/` e busca de referências R-19 para consistência documental.
+
+Limitações: nenhum ganho implementado ou medido nesta manutenção. Números de
+versão novos serão definidos pelo inventário; compatibilidade, migração, provas
+causais e recuperação SQLite seguem exigidas para conclusão. Próxima tarefa
+pronta: R-19; primeiro passo executável é reproduzir baseline e inventariar
+consumidores/formatos antes de alterar código.
+
+<a id="execucao-r-19-2026-10-12"></a>
+
+## Execução R-19 — 2026-10-12
+
+Status final: concluída
+Review: aprovado
+Validação: aprovada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Autorização: pedido para executar a próxima tarefa pronta. Escrita/revisão do
+TCC não foi alterada. Também aplicado o procedimento plan-executor.
+
+Leitura: R-19 COULD estava pronta, com VAL-09/VAL-10 concluídas. Inspecionados
+contratos e implementações de MV-Register, DeltaCodec, snapshots, outbox, SQLite,
+facade, consumidor Flutter, benchmark, decisões, riscos e guia Dart. Baseline
+reproduzida antes da edição: Linux x86_64, Dart 3.13.5, SQLite FFI; N=4/8/16/32
+produziram 6/28/120/496 referências MV, deltas de 1.210/3.296/10.413/35.877 B,
+outboxes de 1.807/4.525/12.922/40.930 B e snapshots de 803/1.259/2.221/4.109 B.
+
+Implementação: `mv_register.dart` agora guarda prefixo contíguo e dots esparsos
+por réplica e `crdtId`, usado no estado, versões e deltas. Join mantém lacunas;
+contexto público `MvRegisterDelta.context` continua `List<Dot>` e expande sob
+consulta. DeltaCodec v4 e snapshot interno Replica v9 gravam contexto compacto e
+leem formatos explícitos anteriores; `ReplicaSnapshot` v2, outbox v2 e schema
+SQLite v1 permanecem. Próximo commit atômico regrava formato legado. Medidor e
+README explicam contagem lógica, bytes, fluxo e limites. Regressões incluem
+equivalência de join contra união explícita em 64×64 pares de contextos, lacunas,
+namespace, leitura de snapshot v8/outbox v3, reabertura, escrita seguinte,
+preservação de IDs/peer/tentativas/horário e rollback em falha de inserção.
+
+Achados: diff revisto em etapa separada pelo mesmo implementador, não independente.
+Nenhum achado bloqueante restou. A revisão
+conferiu causação, lacunas, namespace, replay, aliasing, versões, compatibilidade,
+migração atômica, outbox/ACK e rollback. Correções foram aplicadas antes da
+validação abrangente; testes direcionados e suíte completa passaram depois delas.
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test` nos pacotes
+core, sync e SQLite; formatter do exemplo; `dart analyze` e `dart test --reporter
+expanded` na raiz, core, sync, storage, SQLite, storage-testing e transport;
+Flutter analyze/test/build no consumidor; medidor executado duas vezes; instalação
+e abertura via adb; `python3 scripts/check_plan.py`; `git diff --check`.
+
+Validação e evidências:
+
+- Formatação sem alterações pendentes, análise estática e testes passaram em
+  raiz, core, sync, storage, SQLite, storage-testing e transport. Comando:
+  `for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do (cd "$package" && /opt/flutter/bin/dart analyze && /opt/flutter/bin/dart test --reporter expanded) || exit 1; done`.
+- Flutter mobile: `flutter analyze`, quatro testes Flutter e
+  `flutter build apk --debug` passaram em `example/flutter_mobile`. APK instalado
+  no Moto G52, Android 13/API 33; app iniciou com PID e sem erro de Flutter ou
+  AndroidRuntime no logcat.
+- Medição pós-mudança executada duas vezes com os mesmos parâmetros e bytes.
+  N=4/8/16/32: referências lógicas 6/28/120/496; unidades compactas 3/7/15/31;
+  delta 1.112/2.220/4.525/9.085 B; outbox 1.709/3.449/7.034/14.138 B;
+  snapshot 542/542/552/552 B. SQLite mediu 24.576/32.768/36.864/45.056 B antes
+  do ACK. Em N=32, delta caiu 74,7%, outbox 65,5%, snapshot 86,6% ante baseline;
+  as 496 referências lógicas foram preservadas. SQLite inclui páginas e não prova
+  melhoria de latência.
+- VAL-05 foi revalidada pela suíte completa, integração SQLite durável e build,
+  instalação e abertura Android. A evidência anterior de gate foi preservada;
+  esta execução não afirma cobertura de iOS ou de outros dispositivos.
+
+Critérios: todos os sete marcados na fase 1 e demonstrados acima. A representação
+compacta não elimina causalidade; não há GC nem agregação de IDs/ACK. Formatos
+anteriores são legíveis e conversão ocorre em commit atômico. Leitor antigo pode
+rejeitar v4/v9; banco e pendências não são apagados. O ganho foi demonstrado para
+cargas sequenciais medidas, não para toda carga ou plataforma. Consulta da API
+legada de contexto expande dots e custa proporcional ao tamanho lógico.
+
+Manutenção: R-19 marcada concluída na fase e índice; tarefa ativa limpa;
+VAL-05 registra revalidação. DEC-34 documenta representação e versões; RISK-25/27
+registram mitigação e limites; README atualiza algoritmo, consumo, mapa de
+manutenção e baseline/resultados. `python3 scripts/check_plan.py` e
+`git diff --check` passaram após manutenção.
+
+Limitações: evidência de execução cobre Linux x86_64/Dart 3.13.5/SQLite FFI e
+Moto G52 Android 13/API 33. iOS e outros dispositivos não foram medidos. Os bytes
+e tamanhos SQLite não provam latência universal; formatos antigos podem ser
+rejeitados por leitores anteriores a v4/v9. A API pública expande dots ao ler
+context, com custo proporcional às referências lógicas.

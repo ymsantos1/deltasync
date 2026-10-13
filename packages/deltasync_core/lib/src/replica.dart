@@ -156,7 +156,7 @@ class Replica {
   /// Compact, versioned materialized state for durable snapshots.
   Map<String, Object?> toSnapshotJson() =>
       copyJsonValue({
-            'version': 8,
+            'version': 9,
             'replicaId': id,
             'clock': _clock.toJson(),
             'hlc': _hlc.current.toJson(),
@@ -203,7 +203,8 @@ class Replica {
         version != 5 &&
         version != 6 &&
         version != 7 &&
-        version != 8) {
+        version != 8 &&
+        version != 9) {
       throw FormatException('Unsupported replica snapshot version');
     }
     final replicaId = json['replicaId'];
@@ -227,16 +228,19 @@ class Replica {
     final encodedMvRegisters = json['mvRegisters'];
     final mvRegisters =
         encodedMvRegisters ??
-        (version == 6 || version == 7 || version == 8
+        (version == 6 || version == 7 || version == 8 || version == 9
             ? null
             : const <String, Object?>{});
     final encodedOrSets = json['orSets'];
     final orSets =
         encodedOrSets ??
-        (version == 7 || version == 8 ? null : const <String, Object?>{});
+        (version == 7 || version == 8 || version == 9
+            ? null
+            : const <String, Object?>{});
     final encodedOrMaps = json['orMaps'];
     final orMaps =
-        encodedOrMaps ?? (version == 8 ? null : const <String, Object?>{});
+        encodedOrMaps ??
+        (version == 8 || version == 9 ? null : const <String, Object?>{});
     if (replicaId is! String ||
         replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -336,6 +340,7 @@ class Replica {
       }
       final register = MvRegister.fromJson(
         Map<String, Object?>.from(entry.value as Map),
+        allowCompactContext: version == 9,
       );
       if (register.replicaId != replicaId || register.crdtId != entry.key) {
         throw FormatException('MV-Register snapshot identity mismatch');

@@ -346,7 +346,7 @@ void main() {
       expect(repeated.elements, ['one']);
       expect(remote.gSetValue('labels').length, 2);
       expect(remote.gSetValue('labels'), containsAll(['one', 'two']));
-      expect(source.toSnapshotJson()['version'], 8);
+      expect(source.toSnapshotJson()['version'], 9);
       final setSnapshot =
           ((source.toSnapshotJson()['gSets'] as Map)['labels'] as Map);
       expect(setSnapshot['changes'], hasLength(1));
@@ -918,7 +918,7 @@ void main() {
     });
 
     expect(replica.state.values, {'title': 'value'});
-    expect(replica.toSnapshotJson()['version'], 8);
+    expect(replica.toSnapshotJson()['version'], 9);
     final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
     expect(
       replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),

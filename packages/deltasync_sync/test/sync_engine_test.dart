@@ -885,7 +885,7 @@ void main() {
 
       expect(engine.replica.state.values, {'title': 'legacy'});
       expect((await storage.loadReplica('device-a'))!.version, 2);
-      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 8);
+      expect((await storage.loadReplica('device-a'))!.snapshot!['version'], 9);
       await engine.dispose();
     },
   );

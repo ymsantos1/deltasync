@@ -80,6 +80,24 @@ migração, review e validação durável SQLite. VAL-05 MUST segue prioritária
 reabrir R-19 exige novo plano com margem explícita. Medições e limites em
 [TRACEABILITY](TRACEABILITY.md#execucao-val-10-2026-10-12).
 
+DEC-33 — Adotada para planejamento em 2026-10-12: autor confirmou margem e pediu
+planejar R-19 para execução agora. Essa direção supera o adiamento de DEC-32;
+R-19 passa a pronta com VAL-09/VAL-10 concluídas. A fase 1 detalha baseline,
+contexto compacto limitado ao MV-Register, compatibilidade de APIs/formatos,
+recuperação SQLite, ganho medido e revalidação de VAL-05. Cronograma é janela de
+trabalho, sem estimativa inventada de capacidade; prazo confirmado não dispensa
+review, recuperação durável nem demonstração de ganho. Implementação ainda não
+iniciada. Registro em [planejamento R-19](TRACEABILITY.md#planejamento-r-19-2026-10-12).
+
+DEC-34 — Aplicada em R-19 em 2026-10-12: contexto MV usa prefixo contíguo e dots
+esparsos por réplica dentro do endereço `crdtId`. Estado, contexto de cada versão
+e deltas compartilham a representação privada no `mv_register.dart`; a API
+`MvRegisterDelta.context` mantém `List<Dot>` e expande sob consulta. DeltaCodec v4
+e snapshot interno v9 identificam o formato; leitores migram dados explícitos
+anteriores ao carregar e só os regravam em commit atômico. Wrapper `ReplicaSnapshot`
+v2, outbox v2 e schema SQLite v1 permanecem. Sem GC ou agregação de ACK. Evidência:
+[execução R-19](TRACEABILITY.md#execucao-r-19-2026-10-12).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

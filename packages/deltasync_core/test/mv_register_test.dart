@@ -3,6 +3,26 @@ import 'dart:convert';
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
+List<Map<String, Object?>> _expandCompactContext(Map context) {
+  final crdtId = context['crdtId'] as String;
+  final replicas = context['replicas'] as Map;
+  final dots = <Dot>[];
+  for (final entry in replicas.entries) {
+    final replicaId = entry.key as String;
+    final encoded = entry.value as Map;
+    final prefix = encoded['prefix'] as int;
+    final sparse = (encoded['sparse'] as List).cast<int>();
+    dots.addAll([
+      for (var counter = 1; counter <= prefix; counter++)
+        Dot(replicaId: replicaId, counter: counter, crdtId: crdtId),
+      for (final counter in sparse)
+        Dot(replicaId: replicaId, counter: counter, crdtId: crdtId),
+    ]);
+  }
+  dots.sort((a, b) => a.counter.compareTo(b.counter));
+  return [for (final dot in dots) dot.toJson()];
+}
+
 void main() {
   test('concurrent writes remain visible and observed write dominates', () {
     final first = MvRegister('a', crdtId: 'field');
@@ -43,6 +63,176 @@ void main() {
       expect(restored.toJson(), receiver.toJson());
     },
   );
+
+  test('compact contexts preserve prefixes, gaps and namespace', () {
+    final author = MvRegister('author', crdtId: 'field');
+    final first = author.write('one');
+    final second = author.write('two');
+    final third = author.write('three');
+    final isolatedThird = MvRegisterDelta(
+      id: crdtDeltaId('mv-register', 'field', 'author', 3),
+      replicaId: 'author',
+      crdtId: 'field',
+      dot: third.dot,
+      value: third.value,
+      context: const [],
+    );
+
+    final gapObserver = MvRegister('gap-observer', crdtId: 'field')
+      ..applyDelta(isolatedThird);
+    final gapWrite = gapObserver.write('after-gap');
+    expect(gapWrite.context, [third.dot]);
+    expect(gapWrite.toJson()['context'], {
+      'crdtId': 'field',
+      'replicas': {
+        'author': {
+          'prefix': 0,
+          'sparse': [3],
+        },
+      },
+    });
+
+    final prefixObserver = MvRegister('prefix-observer', crdtId: 'field')
+      ..applyDelta(first)
+      ..applyDelta(second)
+      ..applyDelta(third);
+    final prefixWrite = MvRegisterDelta(
+      id: crdtDeltaId('mv-register', 'field', 'prefix-writer', 1),
+      replicaId: 'prefix-writer',
+      crdtId: 'field',
+      dot: Dot(replicaId: 'prefix-writer', counter: 1, crdtId: 'field'),
+      value: 'after-prefix',
+      context: [first.dot, second.dot, third.dot],
+    );
+    expect(prefixWrite.context, [first.dot, second.dot, third.dot]);
+    expect(prefixWrite.toJson()['context'], {
+      'crdtId': 'field',
+      'replicas': {
+        'author': {'prefix': 3, 'sparse': <int>[]},
+      },
+    });
+
+    final joinedObserver = MvRegister('join-observer', crdtId: 'field')
+      ..applyDelta(isolatedThird)
+      ..mergeState(prefixObserver);
+    final joined = joinedObserver.write('after-join');
+    expect(joined.context.toSet(), {first.dot, second.dot, third.dot});
+    expect(joined.toJson()['context'], prefixWrite.toJson()['context']);
+    expect(
+      () => MvRegisterDelta(
+        id: crdtDeltaId('mv-register', 'other', 'replica', 1),
+        replicaId: 'replica',
+        crdtId: 'other',
+        dot: Dot(replicaId: 'replica', counter: 1, crdtId: 'other'),
+        value: 'value',
+        context: [third.dot],
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('compact context join matches explicit-dot union across gaps', () {
+    final universe = [
+      for (final replicaId in ['a', 'b'])
+        for (final counter in [1, 2, 4])
+          Dot(replicaId: replicaId, counter: counter, crdtId: 'field'),
+    ];
+
+    MvRegister state(String writer, List<Dot> context) {
+      final dot = Dot(replicaId: writer, counter: 1, crdtId: 'field');
+      return MvRegister('observer-$writer', crdtId: 'field')..applyDelta(
+        MvRegisterDelta(
+          id: crdtDeltaId('mv-register', 'field', writer, 1),
+          replicaId: writer,
+          crdtId: 'field',
+          dot: dot,
+          value: writer,
+          context: context,
+        ),
+      );
+    }
+
+    for (var leftMask = 0; leftMask < 1 << universe.length; leftMask++) {
+      for (var rightMask = 0; rightMask < 1 << universe.length; rightMask++) {
+        final leftContext = [
+          for (var index = 0; index < universe.length; index++)
+            if (leftMask & (1 << index) != 0) universe[index],
+        ];
+        final rightContext = [
+          for (var index = 0; index < universe.length; index++)
+            if (rightMask & (1 << index) != 0) universe[index],
+        ];
+        final joined = state('writer-a', leftContext)
+          ..mergeState(state('writer-b', rightContext));
+        final expected = {
+          ...leftContext,
+          ...rightContext,
+          Dot(replicaId: 'writer-a', counter: 1, crdtId: 'field'),
+          Dot(replicaId: 'writer-b', counter: 1, crdtId: 'field'),
+        };
+        final observed = _expandCompactContext(
+          joined.toJson()['context'] as Map,
+        ).map((dot) => Dot.fromJson(dot)).toSet();
+        expect(observed, expected, reason: 'left=$leftMask right=$rightMask');
+        for (final dot in universe) {
+          expect(
+            observed.contains(dot),
+            expected.contains(dot),
+            reason: 'left=$leftMask right=$rightMask dot=$dot',
+          );
+        }
+      }
+    }
+  });
+
+  test('DeltaCodec v4 reads compact and v3 reads explicit contexts only', () {
+    final register = MvRegister('author', crdtId: 'field')
+      ..write('one')
+      ..write('two');
+    final change = register.write('three');
+    final compact = DeltaCodec.encode(Delta([change]));
+    expect(compact['version'], 4);
+    expect(DeltaCodec.decode(compact).changes.single, isA<MvRegisterDelta>());
+
+    final legacyChange = change.toJson()
+      ..['context'] = [for (final dot in change.context) dot.toJson()];
+    final version3 = {
+      'version': 3,
+      'delta': {
+        'changes': [legacyChange],
+      },
+    };
+    expect(DeltaCodec.decode(version3).changes.single, isA<MvRegisterDelta>());
+    expect(
+      () => DeltaCodec.decode({'version': 3, 'delta': compact['delta']}),
+      throwsFormatException,
+    );
+  });
+
+  test('Replica snapshot v9 reads old explicit MV contexts', () {
+    final replica = Replica('author')
+      ..writeMvRegister('field', 'one')
+      ..writeMvRegister('field', 'two');
+    final current = replica.toSnapshotJson();
+    expect(current['version'], 9);
+
+    final legacy = Map<String, Object?>.from(current)..['version'] = 8;
+    final registers = Map<String, Object?>.from(legacy['mvRegisters'] as Map);
+    final state = Map<String, Object?>.from(registers['field'] as Map);
+    state['context'] = _expandCompactContext(state['context'] as Map);
+    final versions = (state['versions'] as List).map((raw) {
+      final version = Map<String, Object?>.from(raw as Map);
+      version['context'] = _expandCompactContext(version['context'] as Map);
+      return version;
+    }).toList();
+    state['versions'] = versions;
+    registers['field'] = state;
+    legacy['mvRegisters'] = registers;
+
+    final restored = Replica.fromSnapshotJson(legacy);
+    expect(restored.mvRegisterValue('field'), {'two'});
+    expect(restored.writeMvRegister('field', 'three').context, hasLength(2));
+  });
 
   test(
     'join is idempotent, commutative, associative and Replica routes snapshot',
@@ -115,6 +305,24 @@ void main() {
       }),
       throwsFormatException,
     );
+    expect(
+      () => MvRegister.fromJson({
+        'replicaId': 'local',
+        'crdtId': 'field',
+        'sequence': 0,
+        'context': {
+          'crdtId': 'field',
+          'replicas': {
+            'peer': {
+              'prefix': 0,
+              'sparse': [1],
+            },
+          },
+        },
+        'versions': [],
+      }),
+      throwsFormatException,
+    );
 
     final replica = Replica('local');
     expect(
@@ -130,9 +338,9 @@ void main() {
     final second = original.write('current');
     final encoded = original.toJson();
     expect(
-      (encoded['context'] as List).any(
-        (item) => (item as Map)['counter'] == first.dot.counter,
-      ),
+      _expandCompactContext(
+        encoded['context'] as Map,
+      ).any((item) => item['counter'] == first.dot.counter),
       isTrue,
     );
     expect(encoded['versions'], hasLength(1));
