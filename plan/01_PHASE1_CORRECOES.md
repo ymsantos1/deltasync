@@ -5,6 +5,7 @@ em 2026-10-12 após validação, review e registro de evidências. R-20 SHOULD c
 em 2026-10-13 com consolidação de responsabilidades e regressões de ownership.
 R-21 SHOULD concluída em 2026-10-13; R-22 COULD permanece pronta.
 R-23 MUST concluída em 2026-10-13 após achado nas histórias VAL-11.
+Ampliação de ergonomia: R-25 MUST pronta, sem apagar conclusões anteriores.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -748,6 +749,29 @@ analyze/test. Sem mudança de API, formato ou integração de plataforma.
 Evidência de motivação: [execução VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13).
 Evidência de conclusão: [execução R-23](TRACEABILITY.md#execucao-r-23-2026-10-13).
 
+<a id="r-25"></a>
+
+## R-25 — Consultar valores pela engine sem copiar todo o estado
+
+Status: pronta
+MoSCoW: MUST
+Dependências: R-21, VAL-13
+
+Áreas: API pública de consulta em sync/core e consumidores.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [ ] Definir consulta pública por endereço, com lifecycle explícito, preservando absent/null/tombstone e sem expor Replica, registros ou coleções mutáveis.
+- [ ] Consultar somente o campo solicitado, sem fork da réplica nem cópia integral do estado; preservar cópias necessárias ao isolamento e aos commits.
+- [ ] Cobrir os oito tipos, valores aninhados, tentativa de mutação do resultado, restauração e consulta durante falha de rede. Comparar percursos com entrada fixa; sem promessa universal de desempenho.
+- [ ] Atualizar consumo/documentação e testar core/sync/facade e SQLite quando afetados. Revisar após correções; manter API e formatos anteriores compatíveis.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
@@ -755,4 +779,5 @@ afetados. Concluir fase somente com evidências de R-01 a R-05, R-09a/R-09b,
 R-10 e R-13/R-14/R-15/R-18. R-16 SHOULD não bloqueia fechamento com adiamento justificado.
 R-09b libera envelopes; R-08d libera expansão dos tipos e contrato durável.
 R-23 MUST, descoberta em VAL-11, também exige fechamento antes de reutilizar o gate.
+R-25 exige consulta isolada e validação antes de novo fechamento em VAL-05.
 Limpeza documental não conclui correções de código.

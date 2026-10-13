@@ -151,13 +151,39 @@ transporte em processo não substituem VAL-12/13. Ver
 [VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13) e
 [R-23](TRACEABILITY.md#execucao-r-23-2026-10-13).
 
+DEC-39 — Aplicada em VAL-13, 2026-10-13: Compass fornecido pelo autor recebe um
+recorte de notas por viagem, composto sobre Booking/destino/datas, sem alterar
+core ou IDs locais do modelo. Datas de calendário e referência do destino formam
+chave estável no cenário de usuário único; cada nota é valor LWW {text}.
+main_deltasync compõe providers locais com SQLite/SyncEngine; entrypoints antigos
+permanecem. HTTP/TCP entre Android e backend Dart separado usa par fixo, push/pull
+manual, ACK somente depois de commit em cada receptor e remoção por peer/IDs.
+Backend loopback e adb reverse são canal real de desenvolvimento, sem alegação
+de Wi-Fi/produção/multiusuário. Dependências path/overrides vivem no workspace
+externo de samples; não houve publicação nem import de internos da biblioteca.
+Reprodução por patch contra 5541c59 e roteiro do consumidor; estado/formatos da
+biblioteca permanecem. Review corrigiu chave com fuso, mensagem da sessão e harness
+UI; problemas de Gradle/Java e fotos HTTP 403 pertencem ao consumidor/ambiente.
+Ver [execução VAL-13](TRACEABILITY.md#execucao-val-13-2026-10-13).
+
+DEC-40 — Planejada por autorização do autor em 2026-10-13: melhorar ergonomia
+com codec ACK, consulta pontual e guia revalidado (R-24/R-25/VAL-14 MUST);
+coordenação remota, acompanhamento e dois dispositivos são SHOULD.
+Codegen/build_runner, anotações e gerador próprio permanecem WON'T-YET, sem tarefa
+executável, dependência ou remoção de ferramentas que o consumidor já usa.
+HTTP separado e conveniências de mapeamento ficam COULD para avaliação posterior
+com repetição comprovada; não criar framework nem customizar core ao Compass.
+Novos MUST são critérios de engenharia autorizados, não exigências atribuídas ao
+PDF. VAL-05 retorna a planejada; resultados históricos continuam válidos para seus
+cenários. Detalhes em [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13 | Consumidores externos ainda não foram localizados/inventariados. R-09a/R-09b registram quebras 2.0.0, aliases temporários e migração de formatos; VAL-13 planeja acesso e integração fora do workspace. Resolução de publicação não é comprovada pela configuração local. |
+| OPEN-07 | R-09a, R-09b, VAL-13 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Resolução local não comprova distribuição publicada; publicação permanece com o autor. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

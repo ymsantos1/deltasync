@@ -1,6 +1,6 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-10-12. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-13. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
@@ -116,17 +116,21 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase 1: **MUST, R-16/R-20 SHOULD e R-19 COULD concluídos**. Fase 5: **MUST concluído**;
-SHOULD VAL-06 a VAL-12 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
-R-22 COULD e VAL-13 SHOULD prontas.
+Fechamento histórico: Fase 1 MUST, R-16/R-20 SHOULD e R-19 COULD concluídos;
+Fase 5 MUST validado antes da nova ampliação de ergonomia.
+SHOULD VAL-06 a VAL-13 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
+R-22 COULD permanece pronta e opcional. Ampliação de ergonomia autorizada em
+13/10: R-24/R-25 MUST prontas; VAL-14 MUST e R-26/R-27/VAL-15 SHOULD planejadas.
+VAL-05 retorna a planejada para revalidar os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
-Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: **VAL-13**, conforme dependências e
-entradas. R-22 é COULD independente e não condiciona essa sequência. R-20 concluiu
+Fases organizam entregas; dependências específicas orientam execução. Próxima
+selecionável: **R-24 MUST**, codec público de ACK; R-25 MUST também está pronta.
+R-22 COULD permanece opcional após os MUST.
+VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
 concluíram. Publicação no pub.dev fica com o autor; este plano não autoriza upload.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
@@ -205,7 +209,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | planejada | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
 | [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | concluída | SHOULD | R-15, VAL-07 |
@@ -213,7 +217,13 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | concluída | SHOULD | VAL-06 |
 | [VAL-11](05_PHASE5_VALIDACAO.md#val-11) | Exercitar histórias geradas e múltiplas ordens de entrega | concluída | SHOULD | R-21, VAL-09, R-23 |
 | [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | concluída | SHOULD | R-21, VAL-11 |
-| [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | pronta | SHOULD | R-21, VAL-11, VAL-12 |
+| [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | concluída | SHOULD | R-21, VAL-11, VAL-12 |
+| [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | pronta | MUST | R-21, VAL-13 |
+| [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | pronta | MUST | R-08b, VAL-13 |
+| [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | planejada | SHOULD | R-24, VAL-13 |
+| [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | planejada | SHOULD | R-26, R-17 |
+| [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | planejada | MUST | R-24, R-25, VAL-13 |
+| [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | planejada | SHOULD | R-26, R-27, VAL-13 |
 
 ## Prazo e sequência até 16/11/2026
 
@@ -245,9 +255,15 @@ confirmado apenas por depreciação: Operation e PendingDeltaStore são usados p
 migração e testes. Arquivos Android padrão do app têm função concreta de build.
 Oito CRDTs, adaptador SQLite e limites públicos são preservados; mudança material
 de compatibilidade ou recorte exige direção própria. Escrita do TCC permanece com o autor.
-As ampliações de 13/10 são SHOULD/COULD, não novas obrigações acadêmicas. Acesso
+As ampliações anteriores de R-21/R-22/VAL-11/12/13 são SHOULD/COULD,
+não novas obrigações acadêmicas. Acesso
 ao app/dispositivo pode exigir ajuste das janelas e adiamento justificado; não
 inferir execução ou ganho a partir do planejamento. Publicação é conduzida pelo autor.
+
+Ampliação autorizada em 13/10 após análise do Compass: executar R-24/R-25 e
+VAL-14 antes de revalidar VAL-05. R-26/R-27 e VAL-15 entram conforme margem e
+dispositivos disponíveis, antes do congelamento. Esses MUST são critérios de
+engenharia desta ampliação, não novos requisitos atribuídos à proposta acadêmica.
 
 ## Escopo e prioridades
 
@@ -275,7 +291,10 @@ inferir execução ou ganho a partir do planejamento. Publicação é conduzida 
 | Notificação Dart de commits para consumidores | COULD | Facilidade de integração; sem requisito novo no PDF |
 | Compactação causal de MV-Register após propriedades e medições | COULD | Referência C++ e análise estrutural; ganho e compatibilidade exigem evidência em R-19 |
 | Integração Flutter/sqflite e recuperação em plataforma mobile declarada | SHOULD | Lacuna de plataforma; evidência atual Linux/FFI |
-| ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Extensões dos planos antigos |
+| Codec público de ACK, consulta pontual pela engine e guia revalidado | MUST | Análise Compass e autorização do autor em 13/10; R-24/R-25/VAL-14 |
+| Apoio ao fluxo remoto, acompanhamento e duas instalações físicas | SHOULD | Ergonomia e evidência de consumo; R-26/R-27/VAL-15 |
+| Adaptador HTTP separado e conveniências de mapeamento com repetição comprovada | COULD | Avaliar depois; sem tarefa executável nem dependência do gate atual |
+| ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Autor retirou codegen do escopo atual em 13/10; não criar tarefa de gerador |
 | Anti-entropy genérico, ACK por participante e GC destrutivo de tombstones | WON'T-YET | Extensões além do cenário mínimo |
 | OR-Map genérico com novos tipos internos e port integral de DotKernel | WON'T-YET | Referência C++ não amplia o recorte; auxiliar compartilhado exige uso concreto nos tipos alterados |
 | OR-Seq/ORSeg, backend próprio, autenticação, autorização, protocolo de rede obrigatório e transações distribuídas | WON'T-YET | Limitações da proposta |
@@ -318,7 +337,7 @@ Cada fase define entrada, saída e validações específicas. Concluir a entrega
 VAL-05: R-09a/R-09b/R-05/R-08d validadas, oito CRDTs integrados,
 deltas/joins corretos, formatos restauráveis,
 SQLite real, commits atômicos, outbox/ACK sem perda, R-10/R-11/R-12 e
-R-13/R-14/R-15/R-18 validadas,
+R-13/R-14/R-15/R-18 e R-24/R-25/VAL-14 validadas,
 reconciliação na topologia declarada, testes, demonstração e documentação do
 repositório alinhada. Escrita e
 revisão do TCC são responsabilidade do autor e não integram este plano técnico.

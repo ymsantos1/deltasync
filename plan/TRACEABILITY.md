@@ -42,8 +42,11 @@ VAL-11 [concluiu](#execucao-val-11-2026-10-13) oito histórias e 32 permutaçõe
 com três sementes duráveis SQLite. Encontrou divergência G-Set, corrigida como
 [R-23 MUST](#execucao-r-23-2026-10-13). Gate revalidado: 224 testes Dart e quatro
 Flutter. VAL-12 [concluiu](#execucao-val-12-2026-10-13) o runtime atualizado no
-Moto G52/API 33, com plugin sqflite e dois reinícios reais. Próxima: VAL-13 pronta;
-consumidor externo e rede real continuam pendentes.
+Moto G52/API 33, com plugin sqflite e dois reinícios reais. Após a
+[tentativa VAL-13](#tentativa-val-13-2026-10-13), autor forneceu Compass;
+[VAL-13 concluiu](#execucao-val-13-2026-10-13) notas de viagem no app externo,
+SQLite e HTTP/TCP entre Android e servidor Dart, com 72 testes app/13 servidor.
+R-22 COULD permanece pronta e opcional. Publicação permanece com o autor.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -154,7 +157,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Notificação pública de commits, COULD | R-17 | `SyncEngine.commits` emite origem local/remota após adoção; sem replay ou semântica de ACK; testes sync/facade e documentação |
 | Refatoração geral além das extrações de R-16 | R-20 | SHOULD concluída; estado/cópia/restauração e commits consolidados, componentes independentes, fixture anterior e regressões de ownership; [execução R-20](#execucao-r-20-2026-10-13) |
 | Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD pronta, sem implementação |
-| Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluída com oito sementes/32 permutações e três sementes SQLite; VAL-12 concluiu runtime atualizado no Moto G52. VAL-13 pronta: app externo/rede real pendentes |
+| Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluiu sementes/permutação/SQLite; VAL-12 concluiu runtime da demo; VAL-13 concluiu notas no Compass externo, HTTP/TCP, SQLite e Android. Limites: par fixo, LWW e ambiente de desenvolvimento |
 | Equivalência de mutação/delta G-Set, achado em VAL-11 | R-23 | MUST concluída: adição repetida aplica seleção canônica, com regressão mínima e revalidação completa |
 
 ### Matriz final de evidências MUST — revalidada em 2026-10-12
@@ -3903,3 +3906,265 @@ Logs/capturas/cópias locais em /tmp/deltasync-val12-* são temporários; esta t
 IDs/hash/fontes e comandos preservam a evidência textual no repositório.
 App ficou instalado e aberto com os dados finais da demo. Escrita do TCC e
 publicação seguem sob responsabilidade do autor.
+
+<a id="tentativa-val-13-2026-10-13"></a>
+
+## Tentativa VAL-13 — 2026-10-13
+
+Status final: bloqueada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Procedimento: plan-executor, um agente; cinco skills lidas integralmente.
+
+Leitura: VAL-13 era SHOULD pronta/recomendada, com R-21/VAL-11/VAL-12 concluídas.
+AGENTS/RUNBOOK, critérios completos, DEC-36/OPEN-07/RISK-31 e referência Dart de
+contratos externos consultados. HEAD ebf88aa9db89325567977f87c9706410bfa5b9d3,
+worktree inicial limpa. Critérios exigem app existente fora do workspace,
+SQLite e canal real; exemplo sintético interno não satisfaz essa entrada.
+
+Inventário: rg --files em /projetos/tcc e depois /projetos e /home/yago,
+buscando pubspec.yaml com exclusões de caches/build/dependências. Rechecagem
+--hidden --no-ignore em /home/yago/Projetos, /home/yago/TCC e /projetos para não
+confundir arquivos ignorados com ausência de app. Somente raiz/pacotes/exemplo
+da própria DeltaSync encontrados. /home/yago/Projetos vazio; /home/yago/TCC contém
+referências acadêmicas, sem consumidor Dart localizado. Não se afirma inexistência
+de app em outros caminhos ou remotos. Pergunta assíncrona pediu caminho de Compass
+ou outro app e canal de rede existente, se disponível. Entrada ainda não recebida.
+
+Implementação: não realizada; consumidor/revisão/caso de uso ainda não identificados.
+Procedimento plan-implementer aplicado para preservar limites: nenhum app substituto
+criado, nenhuma alteração no core, nenhuma escrita em TCC ou publicação. Alterações
+limitadas ao registro de impedimento e sincronização dos quatro arquivos do plano.
+
+Review: não realizado para integração: não há diff de consumidor.
+Achados: falta concreta de entrada impede critérios 1–7; dependências concluídas
+não fornecem repositório/app. Revisão documental em etapa própria conferiu status,
+preservação histórica e ausência de alegação de integração validada. Sem correções
+de código ou achados gerais da biblioteca; review documental não é review do app
+nem revisão independente.
+
+Validação: não realizada para integração: sem consumidor, instalação/build/runtime
+ou rede real. Plan-validator manteve os sete critérios desmarcados. Nenhuma suíte
+Dart/Flutter executada nesta tentativa exclusivamente documental; evidências de
+VAL-11/12 continuam históricas, sem reapresentá-las como validação externa.
+Comandos: `git status --short`, `git log -1 --format='%H %s'`,
+`rg --files /projetos/tcc | rg '(AGENTS.md|pubspec.yaml)$'`,
+`ls -ld /home/yago/Projetos /home/yago/TCC /projetos/tcc`,
+`ls /home/yago/Projetos /home/yago/TCC`, buscas rg acima, leituras pertinentes e
+`python3 scripts/check_plan.py`/`git diff --check` após manutenção. Checks finais
+conferidos antes da entrega; controlam documentos, não satisfazem VAL-13.
+
+Critérios: nenhum concluído; retomada exige informar caminho/repositório de app
+existente, inspecionar suas instruções/estado, escolher recorte pequeno e canal
+real, então implementar/revisar/validar instalação, SQLite, reinícios e rede.
+Path/Git/overrides explícitos continuam permitidos; upload não é pré-requisito.
+
+Manutenção: índice/fase/sinopse/matriz/RISK-31 registram VAL-13 bloqueada;
+dependências/escopo preservados, tarefa ativa nenhuma. R-22 COULD permanece pronta,
+sem execução automática nesta tentativa. OPEN-07 permanece aberto; nenhuma nova
+decisão arquitetural. Nenhuma conclusão ou adiamento foi atribuído ao autor.
+
+Limitações: busca limitada aos diretórios indicados; falta de consumidor impede
+execução, não evidencia defeito da biblioteca. Plan-executor exige evidência real
+e proíbe concluir com etapa ausente. Aguardando informação solicitada ao autor;
+TCC e publicação continuam fora deste trabalho.
+
+<a id="execucao-val-13-2026-10-13"></a>
+
+## Execução VAL-13 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Procedimentos: plan-executor e lean-build, em um agente; review não independente.
+
+Leitura: autor forneceu /projetos/tcc/samples_test_lib/compass_app após tentativa
+bloqueada acima. R-21/VAL-11/VAL-12 concluídas; cinco skills, AGENTS/RUNBOOK,
+critérios, DEC-15/36/38, OPEN-07/RISK-31 e guia Dart consultados. Compass é sample
+existente, com modelos/repositories/providers/rotas e servidor próprios. Nenhum
+AGENTS adicional encontrado em seus diretórios ancestrais. Revisão base externa:
+5541c59ab8e9d7e74c1a35ef22bd43a487fc596c, worktree externa inicialmente limpa;
+biblioteca ebf88aa9db89325567977f87c9706410bfa5b9d3. Quatro documentos do plano
+já continham tentativa bloqueada; preservada como histórico. Baseline nova externa:
+flutter pub get/analyze e 67 testes existentes do app aprovados.
+
+Implementação: recorte de notas em uma reserva existente, não substituição do
+Compass por outro exemplo. main_deltasync compõe providers locais com repositório
+de notas e SQLite. Booking/destino/datas mapeiam endereço, sem alterar IDs locais
+ou classes geradas; valor LWW {text}. A chave usa datas de calendário para manter
+identidade independente de fuso; viagens iguais compartilham nota no usuário único.
+Card de notas mostra valor salvo, pendências globais de notas, erro e confirmação
+da sessão; edição permanece disponível enquanto sincroniza ou após falha.
+Entrada antiga/local/staging segue disponível, com provider opcional no BookingBody.
+
+Consumidor usa somente facade/adapter públicos, com path e quatro overrides no
+workspace de flutter/samples; configuração independente do workspace DeltaSync.
+Todos os pacotes DeltaSync resolvidos em 2.0.0; Compass app0.1.0/server1.0.0,
+sqflite2.4.4+2, sqflite_common_ffi2.4.4/sqlite3 3.7.1. Sem upload ou dry-run pub.dev.
+Versões efetivas: Flutter3.47.7/Dart3.13.5/Linux x64; mínimo da biblioteca Dart3.12.
+
+HTTP/TCP: compass-device (Android, sqflite no diretório privado) e compass-peer
+(Dart separado no host, SQLite FFI). adb reverse tcp:8091 encaminha conexão USB;
+nenhum callback de objetos substitui rede. HttpNotesTransport implementa contrato
+público e decodifica ACK; repository faz push/pull manual. /sync/push retorna
+applied-and-persisted após commit remoto; /sync/pull mantém outbox até /sync/ack,
+que cliente envia após seu próprio commit e servidor filtra por peer/IDs pendentes.
+Backend bin/notes_server.dart usa loopback; /notes permite edição independente
+do peer, /state permite inspecionar estado. Bancos/identidades permanecem distintos.
+
+Build precisou alinhar Gradle9.3.1/AGP9.1.0/Kotlin2.4.0 com Java25 do Android Studio
+do host. Flutter adicionou flags de compatibilidade de DSL/Kotlin; manifest debug
+permite HTTP de desenvolvimento. Nenhum arquivo Kotlin novo, API/formato/algoritmo
+de DeltaSync ou requisito acadêmico foi alterado. SDK Platform34 foi instalado
+pelo build dos plugins; avisos de Java8/share_plus não impediram o resultado.
+
+Review: aprovado
+Achados: review do diff real, incluindo todos os arquivos externos novos e etapas
+de runtime. Corrigidos no consumidor: chave inicialmente convertia datas para UTC,
+podendo separar mesma viagem; regressão calendário/ID protege mapeamento. Card
+passou a usar key da viagem para separar rascunhos e explicitar pendência de notas.
+Depois do runtime, texto que sugeria falta de ACK histórico com outbox vazia foi
+trocado por Nenhum envio nesta sessão/Aguardando confirmação remota. Teste UI
+protege ambos os estados; APK final reinstalado/restauração reconferida.
+Lint do servidor corrigido com inferência de map tipado. Harness inicial executado
+da raiz não carregou assets nativos FFI/caminho do backend; corrigido para cwd app.
+Widget test precisou criar engine/SQLite e fazer IO em tester.runAsync, fora do
+FakeAsync; runners próprios travados foram interrompidos e checks repetidos.
+Essas falhas não foram contadas como sucesso. Deltas de todas as correções revistos;
+nenhum achado impeditivo restante ou defeito geral da biblioteca identificado.
+
+Validação: aprovada
+Comandos: em compass_app/app, flutter pub get, flutter analyze,
+flutter test --reporter expanded e flutter build apk --debug --target lib/main_deltasync.dart.
+Baseline67, suíte intermediária71 e final72 testes aprovados (cinco novos).
+Direcionados: flutter test test/trip_notes_integration_test.dart --reporter expanded
+(quatro casos finais) e flutter test test/trip_notes_card_test.dart --reporter expanded
+(um caso após correção de harness). Em server, dart analyze e dart test --reporter expanded:
+análise sem issues/13 testes aprovados; HTTP das notas também exercitado pelos
+novos testes do app contra processo Dart real. Checks de formato nos oito arquivos
+Dart afetados passaram com zero alterações. Não foram repetidos 224 testes da
+biblioteca: nenhuma API/código da biblioteca mudou; evidência anterior é histórica.
+
+Teste HTTP/SQLite novo reusa Booking de testing/models: encerra servidor real,
+mantém edição/outbox após conexão perdida, reabre cliente e peer com mesmas IDs,
+gera nota concorrente e a atrasa durante reinício. Proxy HTTP entrega ao servidor
+e descarta resposta do primeiro push após commit (502 controlado); cliente retém
+duas IDs e reenvia por HTTP duplicado. Depois de pull/commit/ACK, valores/metadados
+LWW iguais, outboxes vazias, nova escrita sem colisão e novos restarts aprovados.
+ACK com peer errado não limpa cliente ou servidor; estágio/IDs inválidos rejeitados.
+Perda de ACK injetada em teste não é alegada como falha física de pacote no Android.
+
+Runtime: Moto G52 Android13/API33, com autorização anterior. adb devices -l,
+install -r, reverse tcp:8091 tcp:8091, shell am start/force-stop, shell pidof,
+input tap/text/keyevent/swipe e exec-out screencap -p operaram o Compass existente.
+Sem pm clear, emulador, hot reload ou alteração de bancos alheios. SDK/build pelo
+PATH; backend dart run bin/notes_server.dart --db /tmp/compass-val13-runtime/peer.sqlite
+--port 8091. API local /notes foi chamada via HTTP, não por acesso ao objeto Replica.
+
+| Etapa | PID Android | Nota local | Pendências device/peer |
+|---|---:|---|---|
+| Reserva Alaska existente; backend encerrado | 10237 | vazia | 0/0 |
+| Commit offline e falha HTTP | 10237 | Mobile_offline | 1/0 |
+| Edição após falha | 10237 | Mobile_after_failure | 2/0 |
+| Primeiro force-stop/reabertura; peer edita independentemente | 11946 | Mobile_after_failure | 2/1 |
+| Push/pull/ACK por HTTP | 11946 | Peer_concurrent | 0/0 |
+| Nova escrita e novo envio confirmado | 11946 | Mobile_final | 1/0 e depois 0/0 |
+| Segundo force-stop/reabertura | 13626 | Mobile_final | 0/0 |
+| APK final com correção de texto; abertura e UI reconferidas | 15128 | Mobile_final | 0/0 |
+
+Nos dois force-stops, pidof retornou vazio antes do novo processo. No primeiro
+envio offline, UI mostrou HttpException: Connection closed before full header
+was received e preservou edição. Cliente confirmou duas mudanças ao reconciliar,
+e uma na escrita posterior. Banco device lido por exec-out run-as
+com.example.compass_app cat databases/compass-notes.sqlite depois de force-stop;
+Python sqlite3 mode=ro conferiu snapshot/outbox. Antes: compass-device:delta:1
+sent/attempts1 e :delta:2 pending/attempts0, destinatário compass-peer. Depois:
+:delta:3, valor Mobile_final, HLC1791920033606:0, clocks device3/peer1, outboxes
+vazias em ambos. Peer concorrente era compass-peer:delta:1/HLC1791919933334:0.
+LWW do Android igual ao do servidor, sem remover sequências/dots da comparação.
+Backend final foi fechado e banco conferido; túnel criado foi removido. Autor
+reconectou celular durante fechamento; mesmo aparelho/PID15128 confirmado.
+
+APK final SHA-256: 01e09127e9280b2ae02734c3b0b9700b053c48be26e875f475f396a597560bfc.
+Percurso de dados acima foi executado antes da correção final exclusivamente
+textual; APK final manteve notas/outbox e sua UI corrigida foi validada de novo.
+
+Critérios: (1) Compass/revisão/SDKs/versões/resolução externa e install/build/runtime;
+(2) composição e chave do modelo local, sem internos; (3) duas réplicas/bancos/
+processos, HTTP e ACK durável; (4) offline/conflito/atraso/restart/conexão perdida,
+duplicação/ACK perdido em teste e retry/convergência no aparelho; (5) observação
+de configuração/consulta/notificação/erro/estado de UI e pontos de manutenção;
+(6) achados locais corrigidos/revistos/retestados, nenhum defeito geral ocultado;
+(7) roteiro, patch, estado, limites e plano mantidos, sem publicação.
+
+Avaliação: integração exigiu adapter HTTP/ACK próprio e overrides explícitos;
+contratos públicos permitiram commit/restore sem adaptar core ao Compass. Queries
+ficam no repository e UI acompanha ChangeNotifier; falhas aguardáveis e contagem
+de pendências distinguem editar de enviar. Datas e nomes/status se alteram no app,
+protocolo no adapter/backend, join/commit/restore continuam na biblioteca. Há cinco
+arquivos de produção novos para essas responsabilidades, sem framework de plugins.
+Fotos originais do sample retornaram HTTP403 no aparelho, prejudicando apresentação;
+classificado como recurso do consumidor, sem impedir o recorte de notas. Reservas
+originais em memória continuam voláteis. Nenhum estudo com participantes foi feito.
+
+Manutenção: critérios/índice/fase/sinopse/matriz atualizados; DEC-39, OPEN-07 e
+RISK-17/31 mantidos; README_DELTASYNC.md no Compass explica comandos, ownership e
+limites. Tarefa ativa limpa; única pronta restante R-22 COULD opcional. Snapshot
+reproduzível em [patch Compass](evidence/val13-compass.patch), 17 arquivos, e
+[estados de runtime](evidence/val13-runtime.json). Patch sem contexto aplica com
+git apply --unidiff-zero na raiz de samples no commit5541c59; --check passou e
+aplicação em cópia temporária reproduziu os 17 arquivos byte a byte. Fonte externa
+continua em seu repositório; não houve commit automático em nenhum repositório.
+Checker do plano passou depois da manutenção: 47 tarefas, 265 links locais,
+somente R-22 pronta. diff --check passou nos dois repositórios.
+
+Limitações: um par fixo/usuário único/notas LWW, HTTP local via USB e ambiente de
+desenvolvimento. Não é Wi-Fi, serviço público autenticado, bootstrap após perda
+de banco, sincronização de todos os modelos do Compass, prova dos oito tipos no
+Android, iOS ou benchmark. Provas gerais dos oito tipos permanecem nas suites da
+biblioteca. Logs/capturas/bancos /tmp são temporários; patch/JSON/registro preservam
+reprodução no repositório. Review pelo implementador não é independente. App ficou
+instalado com Mobile_final; backend/túnel de teste encerrados. TCC/pub.dev com autor.
+
+<a id="manutencao-ergonomia-2026-10-13"></a>
+
+## Manutenção — Ergonomia após integração Compass — 2026-10-13
+
+Pedido: autor autorizou acrescentar melhorias da análise ao planejamento e retirar
+codegen do escopo atual. Aplicada skill plan-maintainer; manutenção documental,
+sem execução de implementação, sem alteração no consumidor e sem escrita do TCC.
+
+Leitura: índice, fases 1/4/5, decisões/riscos e evidências VAL-13; worktree já
+continha mudanças de VAL-13, preservadas. Contagem da análise: 503 linhas de
+produção (362 app, 141 servidor) e 410 de testes; inclui imports/comentários/vazios,
+não é mínimo obrigatório de integração. Caso cobre somente notas de viagens.
+Fontes: main_deltasync.dart, TripNotesRepository, HttpNotesTransport,
+TripNotesCard, BookingBody e notes_server.dart no consumidor externo.
+
+Achados: ACK exige codec manual; consulta engine.replica.state copia visões
+intermediárias; push/pull e confirmação após persistência são coordenados no app;
+status reúne APIs separadas. Isso motiva ergonomia geral, sem defeito impeditivo
+novo comprovado nem estudo de usabilidade com participantes.
+
+Mudanças: R-24/R-25 MUST prontas; VAL-14 MUST planejada. R-26/R-27/VAL-15 SHOULD
+planejadas pelas dependências. Testes/compatibilidade são critérios das tarefas,
+sem tarefa genérica paralela. R-22 COULD continua opcional. Adaptador HTTP e
+conveniências de mapeamento ficam para avaliação COULD posterior; codegen permanece
+WON'T-YET e não exige remoção do build_runner já usado pelo Compass.
+VAL-05 reaberta para os novos MUST, preservando histórico. DEC-40 e RISK-33/34
+registram limites. Nenhuma tarefa de implementação foi iniciada ou concluída.
+
+Review documental: conferir IDs/dependências/status e critérios nas fases,
+prioridade antes de R-22, compatibilidade dos formatos/isolamento, separação de
+protocolo e domínio, e topologia explícita antes de usar dois aparelhos.
+Reviewer é o próprio mantenedor; não é revisão independente.
+
+Validação: checker do plano e diff --check após manutenção; resultados registrados
+abaixo. Testes Dart/Flutter não executados nesta alteração somente documental.
+
+Correções após review: sinopse distingue fechamento histórico do atual; tabela do
+índice mantida contínua; texto de prazo distingue ampliações anteriores SHOULD/COULD
+dos MUST novos. Dependências sem ciclos, tarefas prontas com entradas satisfeitas,
+nenhuma implementação ativa. Critérios de conclusão da reabertura permanecem abertos.
+
+Resultado: python3 scripts/check_plan.py aprovado, 53 tarefas e 278 links locais;
+prontas R-22 COULD, R-24 MUST e R-25 MUST. git diff --check aprovado.
+Próxima seleção recomendada R-24; execução não autorizada por este pedido documental.

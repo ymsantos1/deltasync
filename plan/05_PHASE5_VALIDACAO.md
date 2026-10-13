@@ -1,8 +1,10 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: concluída em 2026-10-12 após revalidação do gate MUST.
-Extensão de confiança SHOULD: VAL-11/VAL-12 concluídas; VAL-13 pronta em 2026-10-13;
-não apagam o fechamento técnico histórico nem criam novos requisitos MUST.
+Estado: ampliação planejada em 2026-10-13; VAL-05 reaberta para R-24/R-25/VAL-14.
+Conclusão de 2026-10-12 e revalidações posteriores permanecem no histórico.
+Extensão de confiança SHOULD: VAL-11/VAL-12/VAL-13 concluídas em 2026-10-13;
+não apagam o fechamento técnico histórico. VAL-14 MUST e VAL-15 SHOULD
+registram a nova ampliação de ergonomia autorizada pelo autor.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -139,12 +141,14 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: concluída
+Status: planejada
 MoSCoW: MUST
-Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23
+Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14
 
 Áreas: plano, código, testes, demonstração e documentação do repositório.
-Objetivo: verificar conclusão dos requisitos técnicos MUST da biblioteca, sem ampliar escopo.
+Objetivo: verificar conclusão dos requisitos técnicos MUST do escopo autorizado.
+Reaberta em 13/10 para ergonomia: R-24/R-25/VAL-14. Não invalida os resultados
+históricos nem atribui as melhorias como requisitos novos do PDF acadêmico.
 Reaberta pela revisão de 2026-10-11: R-10/R-11/R-12 são defeitos confirmados,
 não extensões. Evidências anteriores permanecem válidas para os cenários executados;
 o fechamento requer correção e nova validação dos casos ausentes. Reaberta
@@ -174,7 +178,10 @@ Critérios:
 - [x] R-10/R-11/R-12/R-13/R-14/R-15/R-18 concluídas com regressões pertinentes,
   review após correções e evidências; suíte final da raiz e seis subpacotes,
   consumidor Flutter e demonstração offline/reconnect executados após mudanças.
-- [x] Requisitos técnicos MUST concluídos; limitações e adiamentos explícitos.
+- [x] Requisitos técnicos MUST do fechamento histórico concluídos; limitações e adiamentos explícitos.
+- [ ] Revalidar novo fechamento após R-24/R-25/VAL-14, com regressões,
+  compatibilidade, consumo e manutenção demonstrados. Atualizar matriz e limites;
+  preservar evidências anteriores sem usá-las para aprovar APIs ainda não entregues.
 
 Validação: revisar evidências de todas as tarefas técnicas MUST e executar conjunto
 final de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
@@ -438,7 +445,7 @@ Evidência de conclusão: [execução VAL-12](TRACEABILITY.md#execucao-val-12-20
 
 ## VAL-13 — Validar integração de consumidor externo com SQLite e rede real
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-21, VAL-11, VAL-12
 
@@ -448,32 +455,38 @@ Objetivo: testar integração fora do workspace da biblioteca antes da publicaç
 pretendida pelo autor. Preferir uma funcionalidade pequena de app existente, como
 Compass, quando houver acesso; não criar outro exemplo sintético como substituto.
 Entrada: identificar repositório/app, acesso autorizado, revisão da biblioteca e
-canal de rede. O pedido atual planeja essa integração; não autoriza publicação.
+canal de rede. Esta tarefa não autoriza publicação.
+Impedimento inicial em 2026-10-13: consumidor externo não localizado. Superado
+quando autor informou o caminho abaixo. Registro histórico:
+[tentativa VAL-13](TRACEABILITY.md#tentativa-val-13-2026-10-13).
+Retomada: autor informou `/projetos/tcc/samples_test_lib/compass_app`.
+App/server do sample Flutter acessíveis; recorte escolhido: notas de viagem por
+reserva, SQLite e HTTP entre Android e servidor Dart em processo separado.
 
 Critérios:
 
-- [ ] Registrar app/revisão, caso de uso pequeno, SDKs/plataformas, versões dos
+- [x] Registrar app/revisão, caso de uso pequeno, SDKs/plataformas, versões dos
   pacotes e instalação fora do workspace. Verificar resolução/imports/API pública
   sem depender da configuração compartilhada de testes da biblioteca.
   Pacotes ainda não publicados podem ser consumidos por path/Git e overrides
   explícitos no app; registrar essa configuração e seu limite, sem exigir upload
   ao pub.dev para começar a validação externa.
-- [ ] Adaptar modelos e regras no consumidor por composição/mapeamento; configurar
+- [x] Adaptar modelos e regras no consumidor por composição/mapeamento; configurar
   IDs/endereço, storage e transporte pelas APIs públicas. Não sobrescrever internos
   nem ampliar core apenas por necessidade específica do Compass.
-- [ ] Usar SQLite durável e duas réplicas comunicando por canal real escolhido pelo
+- [x] Usar SQLite durável e duas réplicas comunicando por canal real escolhido pelo
   consumidor. Registrar topologia e contrato de ACK após aplicação/persistência;
   callback entre objetos no mesmo processo não satisfaz este critério.
-- [ ] Demonstrar edição offline, conflito, atraso/duplicação pertinente, reinício
+- [x] Demonstrar edição offline, conflito, atraso/duplicação pertinente, reinício
   com pendências, perda de conexão e retry, reconciliação e outbox confirmada.
   Distinguir commit local, envio pendente e confirmação remota no fluxo do app.
-- [ ] Avaliar integração por quem desenvolve e uso no cenário executado: configuração,
+- [x] Avaliar integração por quem desenvolve e uso no cenário executado: configuração,
   consultas, notificações/falhas e manutenção. Registrar dificuldades e evidências;
   não alegar estudo de usabilidade com participantes que não foram avaliados.
-- [ ] Classificar achados: adaptações do app ficam no app; defeitos/contratos gerais
+- [x] Classificar achados: adaptações do app ficam no app; defeitos/contratos gerais
   da biblioteca exigem tarefas próprias, regressão e novo review/check. Só concluir
   com os problemas impeditivos do caso de uso resolvidos ou recorte reavaliado pelo autor.
-- [ ] Registrar resultado reproduzível, limites, versões e roteiro para o autor;
+- [x] Registrar resultado reproduzível, limites, versões e roteiro para o autor;
   atualizar matriz/decisões/riscos. Publicação, conta e upload ao pub.dev permanecem
   com o autor e não são ações desta tarefa nem requisito acadêmico acrescentado.
 
@@ -481,9 +494,60 @@ Validação: instalação/build/runtime do consumidor, testes próprios pertinen
 SQLite com reinício e comunicação real. APIs gerais alteradas exigem regressões
 core/sync/storage/facade; integração externa complementa as propriedades dos oito tipos.
 Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: [execução VAL-13](TRACEABILITY.md#execucao-val-13-2026-10-13).
+
+<a id="val-14"></a>
+
+## VAL-14 — Documentar e revalidar integração com APIs simplificadas
+
+Status: planejada
+MoSCoW: MUST
+Dependências: R-24, R-25, VAL-13
+
+Áreas: Guia técnico, exemplos, regressões e evidências de integração.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [ ] Documentar percurso completo: configuração, identidade persistente, endereço/modelo, consulta, edição, falhas, pendências, confirmação e encerramento. Manter escrita acadêmica com o autor.
+- [ ] Mostrar as APIs de R-24/R-25, contratos de extensão e responsáveis por estado, mutação, delta, join, commit e restauração. Preservar instruções de integração sem gerador.
+- [ ] Revalidar workspace e consumidores afetados; repetir SQLite/rede/runtime quando o percurso mudar. Registrar comandos do PATH, versões, resultados e revisão após correções.
+- [ ] Comparar código manual antes/depois com a mesma funcionalidade, separando UI, configuração, transporte, servidor e testes. Não tratar linhas como meta nem alegar estudo de usabilidade com participantes.
+- [ ] Registrar compatibilidade e limitações, atualizar mapa/evidências e liberar revalidação de VAL-05 somente com os novos MUST satisfeitos. SHOULD pendentes não impedem este fechamento.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+Evidência de conclusão: ainda não registrada.
+
+<a id="val-15"></a>
+
+## VAL-15 — Validar duas instalações em dispositivos físicos distintos
+
+Status: planejada
+MoSCoW: SHOULD
+Dependências: R-26, R-27, VAL-13
+
+Áreas: Identidade/configuração do exemplo consumidor e runtime em rede real.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [ ] Definir antes da execução a topologia suportada e canal real. Configurar identidades distintas e persistentes sem editar fonte; não clonar banco nem ampliar implicitamente o par fixo para múltiplos peers.
+- [ ] Se houver servidor intermediário, comprovar roteamento e outbox/ACK por destinatário em escopo explícito antes do runtime. Registrar tarefa própria para alteração geral necessária; não confirmar para dois clientes com o vínculo fixo atual.
+- [ ] Usar dois dispositivos disponíveis/autorizados; executar edições offline/concorrentes, desconexão, reinício com pendências, retry e reconciliação, incluindo disponibilidade da edição durante falha.
+- [ ] Comprovar convergência e confirmações duráveis pelos bancos/IDs; registrar dispositivos, versões, canal e limites. Sem segundo aparelho, manter pendência ou adiamento SHOULD justificado.
+- [ ] Revisar após correções e validar app/backend e runtime afetado; não extrapolar dois dispositivos para topologia arbitrária, produção ou outras plataformas.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
 Evidência de conclusão: ainda não registrada.
 
 ## Gate da fase
+
+Novo fechamento aguarda R-24/R-25/VAL-14 e revalidação de VAL-05.
+R-26/R-27/VAL-15 SHOULD podem ser adiadas com justificativa; codegen fica fora.
 
 VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;
 R-19 COULD concluiu; VAL-05 foi revalidada após compactação, recuperação SQLite
@@ -495,7 +559,9 @@ anteriores permanecem no histórico.
 R-21 revalidou o gate com suíte completa, SQLite/CLI e Flutter analyze/test em 2026-10-13.
 VAL-11/R-23 revalidaram o gate em 2026-10-13: 224 testes Dart e quatro Flutter,
 com histórias geradas e reabertura SQLite. VAL-12 concluiu Android final no Moto G52/API 33, com dois reinícios reais,
-SQLite e reconciliação; VAL-13 pronta mantém consumidor externo/rede real pendentes. São ampliações SHOULD;
+SQLite e reconciliação; VAL-13 concluiu notas no Compass externo, com SQLite
+e HTTP/TCP entre Android e processo Dart, 72 testes do app e 13 do servidor.
+São ampliações SHOULD;
 complementam as quatro categorias de testes já demonstradas;
 não invalidam resultados históricos nem certificam prontidão para publicação.
 Escrita e revisão do TCC permanecem fora desta fase.
