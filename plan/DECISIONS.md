@@ -98,13 +98,66 @@ anteriores ao carregar e só os regravam em commit atômico. Wrapper `ReplicaSna
 v2, outbox v2 e schema SQLite v1 permanecem. Sem GC ou agregação de ACK. Evidência:
 [execução R-19](TRACEABILITY.md#execucao-r-19-2026-10-12).
 
+DEC-35 — Aplicada em R-20, 2026-10-13: após pedido explícito de refatoração geral,
+Replica delega instâncias e percursos comuns a `ReplicaContents`/`CrdtTable`;
+codec de snapshot e validação de lote são libraries internas com entradas explícitas.
+As sete tabelas não-LWW compartilham cópia/restauração/export/merge tipados; LWW
+continua em `ReplicaState`, e joins ficam nos oito CRDTs. Não há registro público
+de plugins nem novo formato. Contexto MV tem dono independente e leitor único.
+SyncEngine coordena lifecycle/adoção/eventos, com fila, persistência e envio/ACK
+separados; local simples/em lote e remoto delta/snapshot compartilham seus percursos.
+Contratos e adaptadores storage não dependem reciprocamente: entrypoints anteriores
+reexportam tipos, evitando quebra de import. Operações públicas, v4/v9/v2/schema v1,
+aliases e migração permanecem. Adoção copia antes de substituir, corrigindo perda
+LWW na autoadoção reproduzida no código anterior. Evidência:
+[execução R-20](TRACEABILITY.md#execucao-r-20-2026-10-13).
+
+DEC-36 — Adotada para planejamento em 2026-10-13: autor autorizou incorporar os
+ajustes pontuais e validação de consumidor externo apontados na revisão geral.
+R-21 SHOULD reduz travessias/alocações sem mudar contratos; R-22 COULD compartilha
+apenas enlace repetido dos exemplos. VAL-11 SHOULD amplia histórias reproduzíveis;
+VAL-12 SHOULD revalida Android após os ajustes; VAL-13 SHOULD integra caso pequeno
+de app externo, preferencialmente Compass acessível, com SQLite e rede real.
+Evidências das quatro categorias do PDF §6.9 e gate MUST histórico permanecem;
+novas tarefas estão pendentes e não são novas obrigações acadêmicas. Falha de
+correção encontrada exige tarefa MUST, sem ser tratada como custo opcional.
+Modelos/regras/transporte próprios ficam no consumidor; publicação no pub.dev
+permanece com o autor. Novos comandos usam `dart`/`flutter` do PATH e registram
+versões; caminhos absolutos de evidências anteriores são históricos. Registro:
+[manutenção de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+
+DEC-37 — Aplicada em R-21, 2026-10-13: validação e cópia JSON compartilham um
+percurso com modos privados copy/freeze/validate em `json/value.dart`. O modo de
+validação percorre entradas sem construir cópias JSON/string; o entrypoint público
+`json_value.dart` continua exportando somente `copyJsonValue`. Falhas de leitura
+UnsupportedError/JsonUnsupportedObjectError continuam convertidas em ArgumentError
+no validador de entrada. Contexto MV privado/isolado é validado pelo construtor;
+o lote verifica metadados sem expandir sua view pública. Consulta pontual lê/congela
+somente um campo. Cópias transacionais e visões destacadas permanecem; APIs e
+formatos v4/v9/v2/schema v1 não mudaram. Medidor conta dots materializados/leituras,
+não heap total nem desempenho universal. Ver [execução R-21](TRACEABILITY.md#execucao-r-21-2026-10-13).
+
+DEC-38 — Aplicada em VAL-11/R-23, 2026-10-13: histórias limitadas usam Random com
+sementes fixas e HLC injetado, sem dependências novas. Comparação compartilha
+suporte de VAL-09: normaliza metadados locais somente entre peers, preserva-os
+na equivalência/replay, mantém causalidade e listas do usuário. PN zero/ausente
+é equivalente; ordenação de versões MV não apaga dots/contextos. SQLite compara
+snapshots/outbox completos, exceto HLC local que pode avançar no start/replay;
+seu avanço não pode regredir. Seleção canônica G-Set também se aplica em adições
+locais repetidas: R-23 corrige diferença entre mutação e delta sem mudar APIs ou
+formatos. Banco antigo permanece legível; evento representativo pode mudar para
+o mesmo representante que aplicação do delta já selecionava. Histórico finito e
+transporte em processo não substituem VAL-12/13. Ver
+[VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13) e
+[R-23](TRACEABILITY.md#execucao-r-23-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b | Consumidores externos não foram localizados/inventariados. R-09a/R-09b registram quebras 2.0.0, aliases temporários e migração de formatos; confirmar consumidores conhecidos antes de fechar documentação de integração. |
+| OPEN-07 | R-09a, R-09b, VAL-13 | Consumidores externos ainda não foram localizados/inventariados. R-09a/R-09b registram quebras 2.0.0, aliases temporários e migração de formatos; VAL-13 planeja acesso e integração fora do workspace. Resolução de publicação não é comprovada pela configuração local. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
@@ -21,6 +22,149 @@ void main() {
     });
 
     tearDown(() => directory.delete(recursive: true));
+
+    for (final seed in [7, 42, 2026]) {
+      test('generated durable history seed=$seed', () async {
+        final random = Random(seed);
+        final trace = <String>[];
+        final paths = [
+          '${directory.path}/a.sqlite',
+          '${directory.path}/b.sqlite',
+        ];
+        final ids = ['a', 'b'];
+        final stores = paths.map(_storage).toList();
+        final transports = [_PeerTransport('b'), _PeerTransport('a')];
+        SyncEngine openEngine(int writer) => SyncEngine.withStorage(
+          replica: Replica(
+            ids[writer],
+            hlc: HlcClock(nowMilliseconds: () => 1000),
+          ),
+          storage: stores[writer],
+          transport: transports[writer],
+        );
+        final engines = [for (var i = 0; i < 2; i++) openEngine(i)];
+        // start/replay observes LWW timestamps and advances only the local HLC.
+        Map<String, Object?> state(Replica replica) =>
+            Map<String, Object?>.of(replica.toSnapshotJson())..remove('hlc');
+        try {
+          await Future.wait(engines.map((engine) => engine.start()));
+          for (var writer = 0; writer < 2; writer++) {
+            // Three rounds of all eight kinds, with seeded payloads/amounts.
+            await _generatedDurableWrites(engines[writer], random, trace);
+          }
+          final original = [
+            for (var writer = 0; writer < 2; writer++)
+              (await stores[writer].pending(
+                ids[writer],
+              )).expand((entry) => entry.delta.changes).toList(),
+          ];
+          final deliveries = [
+            for (final events in original)
+              List<DeltaChange>.of(events)..shuffle(random),
+          ];
+          for (var writer = 0; writer < 2; writer++) {
+            trace.add(
+              'writer=$writer order=${deliveries[writer].map((change) => change.id).join(",")}',
+            );
+          }
+          for (var half = 0; half < 2; half++) {
+            for (var writer = 0; writer < 2; writer++) {
+              final events = deliveries[writer];
+              final midpoint = events.length ~/ 2;
+              for (final event in events.sublist(
+                half == 0 ? 0 : midpoint,
+                half == 0 ? midpoint : events.length,
+              )) {
+                final delta = DeltaCodec.decode(
+                  DeltaCodec.encode(Delta([event])),
+                );
+                await engines[1 - writer].applyRemote(delta);
+                await engines[1 - writer].applyRemote(delta);
+              }
+            }
+            // Keep full snapshots and outbox metadata through a physical reopen.
+            for (var writer = 0; writer < 2; writer++) {
+              final snapshot = state(engines[writer].replica);
+              final previousHlc = engines[writer].replica.hlcTimestamp;
+              final outbox = [
+                for (final entry in await stores[writer].pending(ids[writer]))
+                  entry.toJson(),
+              ];
+              await engines[writer].dispose();
+              await stores[writer].close();
+              stores[writer] = _storage(paths[writer]);
+              engines[writer] = openEngine(writer);
+              await engines[writer].start();
+              expect(state(engines[writer].replica), snapshot);
+              expect(
+                engines[writer].replica.hlcTimestamp.compareTo(previousHlc),
+                greaterThanOrEqualTo(0),
+              );
+              expect([
+                for (final entry in await stores[writer].pending(ids[writer]))
+                  entry.toJson(),
+              ], outbox);
+              trace.add('writer=$writer reopened half=$half');
+            }
+          }
+          for (var writer = 0; writer < 2; writer++) {
+            final oldIds = original[writer].map((change) => change.id).toSet();
+            final next = await _generatedDurableWrites(
+              engines[writer],
+              random,
+              trace,
+            );
+            final pendingIds = (await stores[writer].pending(
+              ids[writer],
+            )).expand((entry) => entry.changeIds).toSet();
+            final nextIds = next.map((change) => change.id).toSet();
+            expect(nextIds, hasLength(next.length));
+            expect(nextIds.intersection(oldIds), isEmpty);
+            expect(pendingIds, {...oldIds, ...nextIds});
+            final before = state(engines[writer].replica);
+            await engines[writer].applyRemote(
+              Delta(original.expand((events) => events)),
+            );
+            expect(state(engines[writer].replica), before);
+          }
+          transports[0].receiver = engines[1];
+          transports[1].receiver = engines[0];
+          for (var writer = 0; writer < 2; writer++) {
+            final pendingIds = (await stores[writer].pending(
+              ids[writer],
+            )).expand((entry) => entry.changeIds).toSet();
+            final result = await engines[writer].push(force: true);
+            expect(result.acknowledgedIds, pendingIds);
+            expect(await stores[writer].pending(ids[writer]), isEmpty);
+          }
+          // Compare full exported events (values, dots, contexts, tombstones).
+          Map<String, Object?> exported(Replica replica) => {
+            for (final change in replica.export().changes)
+              change.id: change.toJson(),
+          };
+          expect(exported(engines[0].replica), exported(engines[1].replica));
+          for (var writer = 0; writer < 2; writer++) {
+            final snapshot = state(engines[writer].replica);
+            final previousHlc = engines[writer].replica.hlcTimestamp;
+            await engines[writer].dispose();
+            await stores[writer].close();
+            stores[writer] = _storage(paths[writer]);
+            engines[writer] = openEngine(writer);
+            await engines[writer].start();
+            expect(state(engines[writer].replica), snapshot);
+            expect(
+              engines[writer].replica.hlcTimestamp.compareTo(previousHlc),
+              greaterThanOrEqualTo(0),
+            );
+            expect(await stores[writer].pending(ids[writer]), isEmpty);
+          }
+        } catch (error, stack) {
+          fail('seed=$seed\ntrace=${trace.join("\n")}\n$error\n$stack');
+        } finally {
+          await _dispose(engines, stores, transports);
+        }
+      });
+    }
 
     test('start retries transient open and restores before editing', () async {
       const replicaId = 'durable-device';
@@ -781,6 +925,44 @@ Map<String, Object?> _legacySnapshotWithExplicitMvContext(Replica replica) {
   }
   snapshot['mvRegisters'] = registers;
   return snapshot;
+}
+
+Future<List<DeltaChange>> _generatedDurableWrites(
+  SyncEngine engine,
+  Random random,
+  List<String> trace,
+) async {
+  final changes = <DeltaChange>[];
+  for (var round = 0; round < 3; round++) {
+    final value = {
+      'items': [random.nextInt(10), true],
+      'owner': engine.replica.id,
+    };
+    trace.add('${engine.replica.id} round=$round payload=${jsonEncode(value)}');
+    changes.add(await engine.setDelta('lww', value));
+    if (round == 1) {
+      changes.add(await engine.removeDelta('lww'));
+    }
+    changes.add(await engine.incrementGCounter('g', random.nextInt(4) + 1));
+    changes.add(await engine.decrementPnCounter('pn', random.nextInt(4) + 1));
+    changes.add(await engine.addGSet('g-set', value));
+    changes.add(await engine.addTwoPSet('two', value));
+    if (round == 1) {
+      changes.add(await engine.removeTwoPSet('two', value));
+    }
+    changes.add(await engine.writeMvRegister('mv', value));
+    changes.add(await engine.addOrSet('or', 'shared'));
+    if (round == 1) {
+      changes.add(await engine.removeOrSet('or', 'shared'));
+    }
+    changes.add(await engine.addOrMapKey('map', 'roles'));
+    changes.addAll(await engine.addOrMapValue('map', 'roles', value));
+    if (round == 1) {
+      changes.add(await engine.removeOrMapKey('map', 'roles'));
+    }
+  }
+  trace.add('emitted=${jsonEncode(DeltaCodec.encode(Delta(changes)))}');
+  return changes;
 }
 
 List<Map<String, Object?>> _expandCompactContext(Map context) {

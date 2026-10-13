@@ -264,9 +264,10 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
 - **2P-Set:** `two_p_set.dart` mantém adições e tombstones monotônicos; valor é a
   diferença dos conjuntos. `Replica` roteia e versiona snapshot; `SyncEngine`
   comita operações na outbox. A semântica não permite readição após remoção.
-- **MV-Register:** `mv_register.dart` mantém versões e contextos compactos por
-  prefixo e lacunas esparsas. Pertencimento e join ficam nesse auxiliar privado;
-  codificação compacta e leitura do formato explícito anterior também ficam aqui.
+- **MV-Register:** `mv_register.dart` mantém versões; `causal/dot_context.dart`
+  mantém contexto compacto por prefixo e lacunas esparsas. Pertencimento, união,
+  codificação compacta e leitura do formato explícito anterior pertencem a esse
+  componente interno, sem acesso à Replica ou ao storage.
   Join elimina versões observadas sem inferir entrega pelo máximo nem descartar
   contexto causal.
   `Replica` roteia, exporta e restaura; `SyncEngine` persiste cada escrita na
@@ -284,16 +285,30 @@ dots ausentes. Use transferência direta do snapshot para bootstrap desse estado
   `delta_envelope.dart` acrescenta envelope de transporte. Testes pertinentes ficam
   nos pacotes core e transport.
 
-Na réplica, `replica.dart` mantém estado, mutações, roteamento, aplicação e
-snapshot/restauração; `replica_delta_validation.dart` concentra a validação do
-lote antes de qualquer aplicação. Cada CRDT mantém sua regra de join no próprio
-arquivo. No sync, `sync_engine.dart` mantém lifecycle, preparação/commit,
-recebimento, envio e ACK; `sync_types.dart` reúne resultados, falhas e política
-de retry. No storage, `replica_storage.dart` define contrato, snapshot e entradas
-da outbox; `memory_storage.dart` implementa o adaptador volátil. O adaptador
-durável fica em `packages/deltasync_storage_sqflite/`. Os arquivos extraídos são
-`part` das libraries originais: imports públicos, APIs e formatos persistidos
-continuam nos mesmos contratos.
+`Replica` coordena identidade, clocks e mutações públicas. Os componentes abaixo
+são libraries internas com dependências explícitas; não exigem acesso aos campos
+privados do coordenador. Os imports públicos e formatos persistidos permanecem
+compatíveis. Cada CRDT continua responsável pela sua própria regra de join.
+
+| Responsabilidade | Dono e ponto de manutenção |
+|---|---|
+| Instâncias por endereço; cópia, export, restauração e merge comuns | [replica/contents.dart](packages/deltasync_core/lib/src/replica/contents.dart). `ReplicaContents` guarda LWW em `ReplicaState` e as sete coleções tipadas. `CrdtTable` implementa o percurso comum; callbacks explícitos preservam particularidades dos tipos. |
+| Versão e envelope de snapshot, validação de entrada e metadados restaurados | [replica/snapshot_codec.dart](packages/deltasync_core/lib/src/replica/snapshot_codec.dart). O codec usa as coleções para restaurar instâncias; não replica seus mapas. |
+| Identidades e endereço/tipo de um lote antes da aplicação | [replica/delta_validation.dart](packages/deltasync_core/lib/src/replica/delta_validation.dart). Recebe conteúdo e delta, sem acesso à Replica privada. |
+| Contexto observado do MV, incluindo lacunas e formatos antigos | [causal/dot_context.dart](packages/deltasync_core/lib/src/causal/dot_context.dart). Um leitor atende contexto de delta, estado e versão. |
+| Regras JSON, cópia mutável/congelada e validação sem copiar | [json/value.dart](packages/deltasync_core/lib/src/json/value.dart). Um percurso define tipos aceitos e ciclos; `json_value.dart` mantém somente o export público de `copyJsonValue`. |
+| Lifecycle, admissão de operações, adoção e eventos após commit | [sync_engine.dart](packages/deltasync_sync/lib/src/sync_engine.dart). Commit local simples/em lote compartilha um percurso; delta e snapshot remotos compartilham outro. |
+| Restauração e persistência canônica/legada | [sync/replica_persistence.dart](packages/deltasync_sync/lib/src/sync/replica_persistence.dart). Constrói snapshot/outbox e só retorna após o storage concluir; não adota estado nem emite eventos. |
+| Seleção de pendências, retry, envio e validação de ACK | [sync/outbound_sync.dart](packages/deltasync_sync/lib/src/sync/outbound_sync.dart). Preparação e confirmação são serializadas; espera de rede fica fora da fila. |
+| Ordem dos commits e drenagem, inclusive após falha | [sync/serial_commit_queue.dart](packages/deltasync_sync/lib/src/sync/serial_commit_queue.dart). Não conhece CRDT, banco nem transporte. |
+
+`sync_types.dart` reúne resultados, falhas, lifecycle e política de retry.
+`replica_storage_contract.dart` mantém o contrato, snapshot e entradas de outbox;
+`memory_storage.dart` implementa o adaptador volátil dependendo apenas desse
+contrato. `replica_storage.dart` reexporta ambos, preservando caminhos de importação
+sem dependência circular entre implementação e contrato. `sync_engine.dart`
+também reexporta seus tipos públicos separados.
+SQLite permanece no adaptador `packages/deltasync_storage_sqflite/`.
 
 ### Percurso de integração e manutenção
 
@@ -328,14 +343,22 @@ flowchart LR
 ```
 
 Um percurso real para contribuidores é a inclusão do OR-Set: comportamento e
-invariantes vivem em `packages/deltasync_core/lib/src/or_set.dart`; roteamento e
-snapshot em `replica.dart`; persistência da mutação em `packages/deltasync_sync/lib/src/sync_engine.dart`.
+invariantes vivem em `packages/deltasync_core/lib/src/or_set.dart`; a API de mutação
+fica em `replica.dart`, e armazenamento/cópia/restauração comuns em
+`replica/contents.dart`. Commit vive em `sync/replica_persistence.dart`, com
+adoção/eventos coordenados por `sync_engine.dart`.
 Comece por `packages/deltasync_core/test/or_set_test.dart`, siga para
 `packages/deltasync_sync/test/sync_engine_test.dart` e para os testes do adaptador
 SQLite quando mudar persistência. Tags dot identificam adições; remoção só elimina
 tags observadas, e join une tags sem inferir entrega pelo contador máximo. Mudanças
 de formato devem preservar os codecs/versionamento e snapshots legados documentados
 em [compatibilidade](#compatibilidade-de-api-e-formatos).
+
+Para alterar ownership, cópia ou restauração, execute também
+`replica_ownership_test.dart`: uma fixture v9 capturada antes da refatoração R-20
+cobre os oito tipos, formatos e identidades. Os testes verificam isolamento entre
+original/candidata, adoção, continuação das sequências e versões anteriores.
+Essa fixture complementa histórias causais e testes de reabertura/rollback SQLite.
 
 Para implementar outro storage, implemente diretamente o contrato público
 `ReplicaStorage` em `packages/deltasync_storage/lib/src/replica_storage.dart` e
@@ -614,16 +637,65 @@ IDs da outbox e recuperação SQLite após fechamento/reabertura. R-19 segue COU
 não muda o gate MUST. Medição limitada a Linux x86_64, Dart 3.13.5, SQLite FFI e
 cargas fixas. VAL-05 foi revalidada após a mudança.
 
+### Custos dos percursos locais
+
+`dart run example/measure_core_paths.dart` executa cargas fixas e limitadas para
+validação MV, validação JSON e consulta pontual em `ReplicaState`. O instrumento
+conta expansão da view pública de contexto e leituras dos elementos JSON, não
+alocações totais do heap. Os imports internos desse medidor servem à manutenção;
+consumidores usam os contratos públicos documentados acima.
+
+Em R-21, 20 validações de contexto com prefixo 5.000 e dois dots esparsos deixaram
+de materializar 100.040 dots: o construtor de `MvRegisterDelta` já valida e guarda
+o contexto isolado. A consulta pública `context` continua expandindo sob solicitação.
+Validar 20 vezes um JSON com lista de 5.000 elementos passou de 200.000 para
+100.000 leituras; o percurso de validação não constrói cópias JSON nem string
+serializada. Cópia e validação compartilham regras de ciclos, chaves e números.
+
+`ReplicaState[key]` agora lê e congela somente o campo solicitado; `values` mantém
+a visão completa. Isso não elimina as cópias isoladas de candidata, adoção ou das
+visões públicas de `SyncEngine.replica`/`Replica.state`. Tempos e ambiente antes/
+depois estão em [execução R-21](plan/TRACEABILITY.md#execucao-r-21-2026-10-13);
+as cargas pequenas não sustentam promessa universal de desempenho.
+
 ## Validação
 
 Testes da raiz cobrem somente a facade. Validar também cada subpacote:
 
 ```shell
 dart pub get
-for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_transport; do
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
   (cd "$package" && dart analyze && dart test) || exit 1
 done
 ```
+
+Histórias geradas ficam em `packages/deltasync_core/test/generated_history_test.dart`:
+oito sementes fixas (0, 1, 7, 42, 99, 2026, 10000, 65535), três escritores,
+dois endereços por tipo, 48 passos locais aleatórios e casos causais explícitos.
+Cada história compara quatro permutações com duplicação, perda temporária/reenvio,
+lotes e join de snapshots. Falhas incluem semente e traço de operações/deltas.
+Para reproduzir uma história, no pacote core:
+
+```shell
+dart test test/generated_history_test.dart --name 'seed=42' --reporter expanded
+```
+
+`test/support/snapshot_comparison.dart` concentra a comparação: HLC e sequências
+locais podem variar entre peers; contextos, dots, tombstones, timestamps vencedores
+e ordem de listas do usuário permanecem. Na equivalência de mutação/delta e no
+replay, sequências/identidade locais também são verificadas. Componentes PN ausentes
+e zero são equivalentes; versões MV são ordenadas por dot somente para comparação.
+A regressão mínima do G-Set garante que repetir valor já observado também aplica
+a seleção canônica do evento, sem ampliar estado nem mudar formato persistido.
+
+No pacote SQLite, `test/sync_recovery_test.dart` acrescenta sementes 7, 42 e 2026:
+dois engines, oito tipos, payloads/quantidades variados, entrega fora de ordem e
+duplicada, banco real fechado/reaberto, outbox preservada, novas escritas sem
+colisão de IDs, replay antigo e ACK após commit remoto. Esses testes usam SQLite
+FFI/Linux e transporte em processo. Complementam falhas/rollback existentes;
+não comprovam rede real ou runtime Android atualizado. Evidências e limites em
+[VAL-11](plan/TRACEABILITY.md#execucao-val-11-2026-10-13).
+Histórias finitas não são prova universal de convergência.
 
 ## Planejamento
 

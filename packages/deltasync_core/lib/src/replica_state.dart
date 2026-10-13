@@ -29,7 +29,11 @@ class ReplicaState {
         entry.key: copyJsonValue(entry.value.value, freeze: true),
   };
 
-  Object? operator [](String key) => values[key];
+  Object? operator [](String key) {
+    final register = _entries[key];
+    if (register == null || !register.hasValue) return null;
+    return copyJsonValue(register.value, freeze: true);
+  }
 
   void applyDelta(LwwDelta<Object?> delta) {
     final kind = _addressKinds[delta.key];

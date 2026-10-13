@@ -1,4 +1,7 @@
-part of 'replica_storage.dart';
+// ignore_for_file: deprecated_member_use
+
+import 'package:deltasync_core/deltasync_core.dart';
+import 'replica_storage_contract.dart';
 
 /// Volatile in-memory implementation for tests, examples and prototypes.
 ///

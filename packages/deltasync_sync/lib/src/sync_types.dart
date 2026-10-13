@@ -1,6 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
-part of 'sync_engine.dart';
+import 'package:deltasync_core/deltasync_core.dart';
+import 'package:deltasync_storage/deltasync_storage.dart';
+import 'package:deltasync_transport/deltasync_transport.dart';
 
 enum SyncFailureSource { incomingDelta, incomingStream }
 
@@ -14,7 +16,7 @@ class SyncCommitEvent {
   final SyncCommitOrigin origin;
 }
 
-/// Failure delivered by [SyncEngine.errors] from an incoming transport callback.
+/// Failure delivered by `SyncEngine.errors` from an incoming transport callback.
 class SyncFailure {
   const SyncFailure({
     required this.source,
@@ -82,3 +84,7 @@ class SyncRetryPolicy {
     return delay;
   }
 }
+
+/// Public lifecycle of a `SyncEngine`. A failed start returns to [created] and
+/// may be retried; [disposed] is terminal.
+enum SyncEngineLifecycle { created, starting, started, disposed }

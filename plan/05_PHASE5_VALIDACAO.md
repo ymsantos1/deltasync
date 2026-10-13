@@ -1,6 +1,8 @@
 # Fase 5 — Validação técnica e entrega
 
 Estado: concluída em 2026-10-12 após revalidação do gate MUST.
+Extensão de confiança SHOULD: VAL-11 concluída; VAL-12 pronta e VAL-13 planejada em 2026-10-13;
+não apagam o fechamento técnico histórico nem criam novos requisitos MUST.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -139,7 +141,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 Status: concluída
 MoSCoW: MUST
-Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18
+Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23
 
 Áreas: plano, código, testes, demonstração e documentação do repositório.
 Objetivo: verificar conclusão dos requisitos técnicos MUST da biblioteca, sem ampliar escopo.
@@ -148,7 +150,11 @@ não extensões. Evidências anteriores permanecem válidas para os cenários ex
 o fechamento requer correção e nova validação dos casos ausentes. Reaberta
 novamente pela [revisão geral de 2026-10-12](TRACEABILITY.md#revisao-geral-2026-10-12):
 R-13/R-14/R-15/R-18 são MUST. Preservar histórico; revalidar após correções e
-eventuais refatorações executadas. R-16, VAL-08/09/10 e R-17/R-19 não viram dependências MUST.
+eventuais refatorações executadas. R-16/R-20, VAL-08/09/10 e R-17/R-19 não viram dependências MUST.
+Em 2026-10-13, R-23 MUST corrigiu divergência G-Set descoberta em VAL-11;
+gate revalidado após correção com 224 testes Dart/quatro Flutter, SQLite real
+e review das correções. Evidências em [R-23](TRACEABILITY.md#execucao-r-23-2026-10-13)
+e [VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13); Android final permanece em VAL-12.
 
 Critérios:
 
@@ -356,10 +362,140 @@ Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-1
 Referência complementar: [comparação com delta-crdts C++](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
 Evidência de conclusão: [execução VAL-10 em 2026-10-12](TRACEABILITY.md#execucao-val-10-2026-10-12).
 
+<a id="val-11"></a>
+
+## VAL-11 — Exercitar histórias geradas e múltiplas ordens de entrega
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-21, VAL-09, R-23
+
+Áreas: propriedades dos oito CRDTs, metadados, codecs/snapshots e integração relevante.
+Objetivo: ampliar cobertura finita de VAL-09 com histórias e ordens variadas
+reproduzíveis. O cenário atual chamado shuffled usa uma ordem invertida fixa.
+
+Critérios:
+
+- [x] Definir sementes, quantidade de histórias, tamanho, réplicas e catálogo de
+  operações para os oito tipos; limitar custo da suíte e registrar semente/traço
+  em qualquer falha. Reusar suporte existente antes de adicionar dependências.
+- [x] Gerar operações válidas em múltiplas réplicas, incluindo valores JSON
+  aninhados, concorrência, tombstones, remoção/readição quando permitida, contexto
+  com lacunas e endereços distintos. Evitar histórias que ignoram pré-condições do tipo.
+- [x] Comparar entrega individual, lotes agregados e join de estado sob várias
+  permutações, duplicação, atraso e perda temporária seguida de reenvio. Só exigir
+  convergência após todos receberem o mesmo conjunto de informação causal relevante.
+- [x] Verificar equivalência de mutação/delta, associatividade, comutatividade e
+  idempotência aplicáveis. Comparar valores e metadados; normalizar somente campos
+  locais justificados, sem descartar causalidade para fazer o teste passar.
+- [x] Incluir roundtrip e restauração no meio das histórias, nova escrita e replay
+  antigo; preservar sequências/IDs. Casos duráveis afetados exigem SQLite real,
+  além do snapshot em memória. Falha descoberta recebe regressão mínima reproduzível.
+- [x] Revisar após correções, executar format/analyze/test dos pacotes afetados e
+  registrar sementes/cobertura/limites. Histórias finitas não são prova universal.
+
+Validação: `dart format`, `dart analyze`, `dart test`; integração/SQLite quando
+afetados. Esta ampliação complementa as quatro categorias do PDF §6.9 já entregues.
+Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: [execução VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13).
+
+<a id="val-12"></a>
+
+## VAL-12 — Revalidar runtime Android após os ajustes estruturais
+
+Status: pronta
+MoSCoW: SHOULD
+Dependências: R-21, VAL-11
+
+Áreas: consumidor Flutter de exemplo, sqflite Android, recuperação e reconciliação.
+Objetivo: obter evidência do código final após R-20/R-21; o runtime de R-19
+permanece histórico, e build/test Flutter de R-20 não o substituem.
+Entrada: Android disponível com SDK e depuração; priorizar celular indicado pelo
+autor, sem tornar emulador ou segundo aparelho uma exigência automática.
+
+Critérios:
+
+- [ ] Registrar revisão/diff executado, Flutter/Dart, dispositivo, Android/API,
+  backend sqflite e preparação; gerar e instalar o APK correspondente.
+- [ ] Executar edição offline, versões concorrentes e falha/retry de envio;
+  confirmar disponibilidade da edição e preservação de pendências antes do ACK.
+- [ ] Encerrar e reiniciar o processo, verificando estado e outbox em banco
+  persistente. Reconciliar réplicas e confirmar remoção apenas de IDs reconhecidos
+  por ACK durável; verificar nova abertura após confirmação.
+- [ ] Registrar ações/resultados/logs e limitações. Distinguir duas réplicas no
+  mesmo app, enlace em processo e comunicação real entre dispositivos; não
+  extrapolar execução em um Android para iOS, outros modelos ou rede real.
+- [ ] Revisar evidências e corrigir/retestar achados relevantes antes da conclusão;
+  atualizar matriz e gate técnico. Sem alvo disponível, registrar pendência ou
+  adiamento SHOULD; nunca declarar runtime aprovado apenas pelo build.
+
+Validação: `flutter analyze`, `flutter test`, `flutter build apk --debug` e runtime
+no alvo registrado. Uso de dispositivo continua respeitando autorização do autor.
+Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: ainda não registrada.
+
+<a id="val-13"></a>
+
+## VAL-13 — Validar integração de consumidor externo com SQLite e rede real
+
+Status: planejada
+MoSCoW: SHOULD
+Dependências: R-21, VAL-11, VAL-12
+
+Áreas: app consumidor externo, mapeamento de modelos, APIs públicas, transporte e
+experiência offline; correções gerais comprovadas da biblioteca em tarefas próprias.
+Objetivo: testar integração fora do workspace da biblioteca antes da publicação
+pretendida pelo autor. Preferir uma funcionalidade pequena de app existente, como
+Compass, quando houver acesso; não criar outro exemplo sintético como substituto.
+Entrada: identificar repositório/app, acesso autorizado, revisão da biblioteca e
+canal de rede. O pedido atual planeja essa integração; não autoriza publicação.
+
+Critérios:
+
+- [ ] Registrar app/revisão, caso de uso pequeno, SDKs/plataformas, versões dos
+  pacotes e instalação fora do workspace. Verificar resolução/imports/API pública
+  sem depender da configuração compartilhada de testes da biblioteca.
+  Pacotes ainda não publicados podem ser consumidos por path/Git e overrides
+  explícitos no app; registrar essa configuração e seu limite, sem exigir upload
+  ao pub.dev para começar a validação externa.
+- [ ] Adaptar modelos e regras no consumidor por composição/mapeamento; configurar
+  IDs/endereço, storage e transporte pelas APIs públicas. Não sobrescrever internos
+  nem ampliar core apenas por necessidade específica do Compass.
+- [ ] Usar SQLite durável e duas réplicas comunicando por canal real escolhido pelo
+  consumidor. Registrar topologia e contrato de ACK após aplicação/persistência;
+  callback entre objetos no mesmo processo não satisfaz este critério.
+- [ ] Demonstrar edição offline, conflito, atraso/duplicação pertinente, reinício
+  com pendências, perda de conexão e retry, reconciliação e outbox confirmada.
+  Distinguir commit local, envio pendente e confirmação remota no fluxo do app.
+- [ ] Avaliar integração por quem desenvolve e uso no cenário executado: configuração,
+  consultas, notificações/falhas e manutenção. Registrar dificuldades e evidências;
+  não alegar estudo de usabilidade com participantes que não foram avaliados.
+- [ ] Classificar achados: adaptações do app ficam no app; defeitos/contratos gerais
+  da biblioteca exigem tarefas próprias, regressão e novo review/check. Só concluir
+  com os problemas impeditivos do caso de uso resolvidos ou recorte reavaliado pelo autor.
+- [ ] Registrar resultado reproduzível, limites, versões e roteiro para o autor;
+  atualizar matriz/decisões/riscos. Publicação, conta e upload ao pub.dev permanecem
+  com o autor e não são ações desta tarefa nem requisito acadêmico acrescentado.
+
+Validação: instalação/build/runtime do consumidor, testes próprios pertinentes,
+SQLite com reinício e comunicação real. APIs gerais alteradas exigem regressões
+core/sync/storage/facade; integração externa complementa as propriedades dos oito tipos.
+Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: ainda não registrada.
+
 ## Gate da fase
 
 VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;
 R-19 COULD concluiu; VAL-05 foi revalidada após compactação, recuperação SQLite
-e validação do consumidor Flutter/Android. Evidências anteriores permanecem no
-histórico.
+e validação do consumidor Flutter/Android. R-20 SHOULD concluiu em 2026-10-13;
+a suíte completa, demonstração offline/reconnect, SQLite e Flutter analyze/test/build
+revalidaram o gate após refatoração. Runtime Android não foi repetido em R-20,
+sem dispositivo conectado e sem mudança na integração de plataforma. Evidências
+anteriores permanecem no histórico.
+R-21 revalidou o gate com suíte completa, SQLite/CLI e Flutter analyze/test em 2026-10-13.
+VAL-11/R-23 revalidaram o gate em 2026-10-13: 224 testes Dart e quatro Flutter,
+com histórias geradas e reabertura SQLite. VAL-12 pronta e VAL-13 planejada mantêm
+evidências Android final/consumidor externo pendentes. São ampliações SHOULD;
+complementam as quatro categorias de testes já demonstradas;
+não invalidam resultados históricos nem certificam prontidão para publicação.
 Escrita e revisão do TCC permanecem fora desta fase.

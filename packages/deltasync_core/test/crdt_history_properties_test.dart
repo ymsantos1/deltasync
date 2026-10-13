@@ -1,6 +1,8 @@
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:test/test.dart';
 
+import 'support/snapshot_comparison.dart';
+
 void main() {
   group('local mutation and returned delta', () {
     test('G-Counter mutation equals applying its delta', () {
@@ -146,8 +148,8 @@ void main() {
       snapshotted.mergeSnapshotJson(source.toSnapshotJson());
     }
 
-    expect(_normalizedSnapshot(shuffled), _normalizedSnapshot(batched));
-    expect(_normalizedSnapshot(snapshotted), _normalizedSnapshot(batched));
+    expect(normalizedSnapshot(shuffled), normalizedSnapshot(batched));
+    expect(normalizedSnapshot(snapshotted), normalizedSnapshot(batched));
     expect(batched.gCounterValue('g-count'), 9);
     expect(batched.pnCounterValue('pn-count'), 2);
     expect(batched.state.values['title'], 'from-z');
@@ -237,66 +239,7 @@ void _expectMutationLaw(
 
   final reconstructed = before.fork()..apply(Delta(changes));
   expect(
-    _withoutLocalHlc(reconstructed.toSnapshotJson()),
-    _withoutLocalHlc(state.toSnapshotJson()),
+    snapshotWithoutLocalHlc(reconstructed.toSnapshotJson()),
+    snapshotWithoutLocalHlc(state.toSnapshotJson()),
   );
-}
-
-Map<String, Object?> _withoutLocalHlc(Map<String, Object?> snapshot) =>
-    Map<String, Object?>.of(snapshot)..remove('hlc');
-
-// Replay advances the receiving node's local HLC; compare persisted CRDT state.
-Map<String, Object?> _normalizedSnapshot(Replica replica) {
-  // Local owner/sequence fields vary by merge path; causal events remain intact.
-  final snapshot = Map<String, Object?>.of(replica.toSnapshotJson())
-    ..remove('replicaId')
-    ..remove('deltaSequence')
-    ..remove('hlc');
-  for (final key in [
-    'gCounters',
-    'pnCounters',
-    'gSets',
-    'twoPSets',
-    'mvRegisters',
-    'orSets',
-    'orMaps',
-  ]) {
-    final states = snapshot[key] as Map<String, Object?>;
-    snapshot[key] = {
-      for (final entry in states.entries)
-        entry.key: Map<String, Object?>.from(entry.value as Map)
-          ..remove('replicaId')
-          ..remove('sequence'),
-    };
-    if (key == 'pnCounters') {
-      // Missing and zero PN components have the same materialized meaning.
-      for (final state in (snapshot[key] as Map<String, Object?>).values) {
-        final counter = state as Map<String, Object?>;
-        for (final component in ['positive', 'negative']) {
-          final values = Map<String, Object?>.from(counter[component] as Map)
-            ..removeWhere((_, value) => value == 0);
-          counter[component] = values;
-        }
-      }
-    }
-  }
-  final mvRegisters = snapshot['mvRegisters'] as Map<String, Object?>;
-  for (final state in mvRegisters.values) {
-    final mv = state as Map<String, Object?>;
-    final versions = List<Map<String, Object?>>.from(mv['versions'] as List)
-      ..sort((first, second) {
-        final firstDot = first['dot'] as Map;
-        final secondDot = second['dot'] as Map;
-        final origin = (firstDot['replicaId'] as String).compareTo(
-          secondDot['replicaId'] as String,
-        );
-        return origin != 0
-            ? origin
-            : (firstDot['counter'] as int).compareTo(
-                secondDot['counter'] as int,
-              );
-      });
-    mv['versions'] = versions;
-  }
-  return snapshot;
 }

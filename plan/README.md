@@ -116,15 +116,19 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase 1: **MUST e R-16 SHOULD concluídos; R-19 COULD concluída**. Fase 5: **MUST concluído**;
-SHOULD VAL-06 a VAL-10 concluídas. Fases 2, 3 e 4 mantêm conclusões históricas.
+Fase 1: **MUST, R-16/R-20 SHOULD e R-19 COULD concluídos**. Fase 5: **MUST concluído**;
+SHOULD VAL-06 a VAL-11 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
+R-22 COULD e VAL-12 SHOULD prontas; VAL-13 SHOULD planejada.
+Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: nenhuma; R-17 e R-19 COULD concluíram. R-19 preservou o gate MUST
-e recebeu revalidação técnica; nenhum trabalho COULD pendente consta do plano.
+recomendada: **VAL-12**, depois VAL-13 conforme dependências e
+entradas. R-22 é COULD independente e não condiciona essa sequência. R-20 concluiu
+a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
+concluíram. Publicação no pub.dev fica com o autor; este plano não autoriza upload.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
 
@@ -177,6 +181,10 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | concluída | SHOULD | R-13, R-14, R-18 |
 | [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | concluída | MUST | R-08c, VAL-04 |
 | [R-19](01_PHASE1_CORRECOES.md#r-19) | Compactar contexto causal do MV-Register com compatibilidade | concluída | COULD | VAL-09, VAL-10 |
+| [R-20](01_PHASE1_CORRECOES.md#r-20) | Refatorar responsabilidades e eliminar duplicação estrutural | concluída | SHOULD | R-16, R-19 |
+| [R-21](01_PHASE1_CORRECOES.md#r-21) | Reduzir travessias e alocações redundantes no core | concluída | SHOULD | R-20 |
+| [R-22](01_PHASE1_CORRECOES.md#r-22) | Reutilizar enlace comum dos exemplos sem generalizar infraestrutura | pronta | COULD | R-20 |
+| [R-23](01_PHASE1_CORRECOES.md#r-23) | Preservar equivalência da adição repetida no G-Set | concluída | MUST | R-06a |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -197,26 +205,29 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
 | [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | concluída | SHOULD | R-15, VAL-07 |
 | [VAL-09](05_PHASE5_VALIDACAO.md#val-09) | Ampliar histórias e metadados nas propriedades dos CRDTs | concluída | SHOULD | R-13, R-14 |
 | [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | concluída | SHOULD | VAL-06 |
+| [VAL-11](05_PHASE5_VALIDACAO.md#val-11) | Exercitar histórias geradas e múltiplas ordens de entrega | concluída | SHOULD | R-21, VAL-09, R-23 |
+| [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | pronta | SHOULD | R-21, VAL-11 |
+| [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | planejada | SHOULD | R-21, VAL-11, VAL-12 |
 
 ## Prazo e sequência até 16/11/2026
 
 Data de entrega informada pelo autor: 16/11, interpretada como 2026 pelo contexto
-atual. Há 35 dias corridos desde 12/10. Janelas abaixo são proposta de sequência,
+atual. Em 13/10 restam 34 dias corridos. Janelas abaixo são proposta de sequência,
 não estimativas de esforço nem garantia de conclusão. Em 12/10, autor confirmou
 margem; R-19 foi implementada e validada nessa data. Os critérios técnicos
 continuam registrados como evidência da entrega, não como promessa de prazo.
 
 | Janela proposta | Foco técnico | Saída esperada |
 |---|---|---|
-| 12–18/10 | R-19 concluída após entrada autorizada | Compactação, compatibilidade, review e revalidação VAL-05 |
-| 19–25/10 | Reserva para regressões ou lacunas novas | Corrigir achados confirmados e repetir checks afetados |
-| 26/10–01/11 | Revisão de prontidão antes do congelamento | Sem expansão se reduzir margem da entrega |
+| 12–18/10 | R-19/R-20/R-21 concluídas | Ajustes de custo com preservação dos contratos e provas |
+| 19–25/10 | VAL-11 e VAL-12 após R-21; R-22 se houver margem | Histórias variadas e runtime Android do código final |
+| 26/10–01/11 | VAL-13 conforme acesso ao app e margem | Consumidor externo, SQLite e rede real; registrar limites |
 | 02–08/11 | Congelamento estrutural e correções de VAL-05 | Revalidação de código entregue, SQLite e Android |
 | 09–15/11 | Margem para regressões encontradas e reprodução da entrega | Sem refatoração ampla ou expansão funcional |
 | 16/11 | Entrega | Estado e limitações finais registrados |
@@ -234,6 +245,9 @@ confirmado apenas por depreciação: Operation e PendingDeltaStore são usados p
 migração e testes. Arquivos Android padrão do app têm função concreta de build.
 Oito CRDTs, adaptador SQLite e limites públicos são preservados; mudança material
 de compatibilidade ou recorte exige direção própria. Escrita do TCC permanece com o autor.
+As ampliações de 13/10 são SHOULD/COULD, não novas obrigações acadêmicas. Acesso
+ao app/dispositivo pode exigir ajuste das janelas e adiamento justificado; não
+inferir execução ou ganho a partir do planejamento. Publicação é conduzida pelo autor.
 
 ## Escopo e prioridades
 

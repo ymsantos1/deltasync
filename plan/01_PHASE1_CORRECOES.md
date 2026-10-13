@@ -1,7 +1,10 @@
 # Fase 1 — Simplificação e correções da base existente
 
 Estado: MUST e R-16 SHOULD concluídos em 2026-10-12; R-19 COULD concluída
-em 2026-10-12 após validação, review e registro de evidências.
+em 2026-10-12 após validação, review e registro de evidências. R-20 SHOULD concluída
+em 2026-10-13 com consolidação de responsabilidades e regressões de ownership.
+R-21 SHOULD concluída em 2026-10-13; R-22 COULD permanece pronta.
+R-23 MUST concluída em 2026-10-13 após achado nas histórias VAL-11.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -597,10 +600,159 @@ Evidência de motivação: [referência delta-crdts C++](TRACEABILITY.md#referen
 Evidência de entrada e planejamento: [planejamento R-19 em 2026-10-12](TRACEABILITY.md#planejamento-r-19-2026-10-12).
 Evidência de conclusão: [execução R-19 em 2026-10-12](TRACEABILITY.md#execucao-r-19-2026-10-12).
 
+<a id="r-20"></a>
+
+## R-20 — Refatorar responsabilidades e eliminar duplicação estrutural
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-16, R-19
+
+Áreas: core, sync, storage, facade, consumidor e documentação de manutenção.
+Autorização: autor pediu refatoração geral, com redução de acoplamento e
+duplicação, além das extrações em arquivos de R-16. Preservar oito CRDTs,
+contratos públicos, formatos v4/v9/v2/schema v1 e regras observáveis.
+
+Critérios:
+
+- [x] Inventariar responsabilidades e registrar baseline antes de alterar código.
+- [x] Consolidar armazenamento dos CRDTs e operações repetidas de cópia,
+  exportação, merge e restauração; Replica coordena identidade/metadados/mutações,
+  sem manter representações paralelas ou framework genérico de plugins.
+- [x] Separar validação de lote e codec de snapshot por contratos explícitos,
+  preservando versões antigas, identidade, atomicidade e lacunas causais.
+- [x] Separar persistência, envio/ACK e fila serial do lifecycle do SyncEngine;
+  compartilhar percurso de commit local simples/em lote e remoto, sem bloquear
+  edição durante rede lenta nem perder eventos ou IDs da outbox.
+- [x] Dar ao contexto causal MV dono independente e consolidar leitura explícita/
+  compacta. Desacoplar adaptador MemoryStorage do contrato; preservar imports
+  públicos e remover apenas duplicações/código com uso substituído comprovado.
+- [x] Revisar diff após correções; executar mesmas provas de core/sync/storage,
+  SQLite com reabertura/rollback, facade e consumidor Flutter antes/depois.
+- [x] Atualizar mapa de manutenção, decisões/riscos e evidências por etapa;
+  revalidar gate técnico e executar checker/diff antes de concluir.
+
+Validação: safe-refactor por fronteira, baseline e checks intermediários;
+analyze/test de todos os pacotes e facade; Flutter analyze/test/build do consumidor.
+Build/runtime adicionais se integração de plataforma mudar. Sem escrita do TCC.
+Evidência de conclusão: [execução R-20 em 2026-10-13](TRACEABILITY.md#execucao-r-20-2026-10-13).
+
+<a id="r-21"></a>
+
+## R-21 — Reduzir travessias e alocações redundantes no core
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-20
+
+Áreas: validação de lotes/JSON, contexto MV e consulta pontual de ReplicaState.
+Objetivo: eliminar trabalho evitável identificado na revisão de 2026-10-13,
+mantendo contratos, isolamento, causalidade e comportamento de falhas.
+Motivação: `change.context.any(...)` expande os prefixos compactos MV;
+`validateJsonInput` copia e serializa o mesmo valor; `ReplicaState.operator[]`
+constrói a visão de todos os valores para consultar um endereço.
+Entrada: R-20 concluída; melhorias de custo não constituem novos requisitos MUST
+acadêmicos. Defeito de correção confirmado deve receber tarefa MUST própria.
+
+Critérios:
+
+- [x] Registrar baseline e entradas fixas para validação MV com prefixos/lacunas,
+  valores JSON aninhados e consulta de um campo em estado com muitos endereços.
+  Separar custo estrutural, alocações observadas e tempo; não prometer ganho universal.
+- [x] Validar contexto MV sem materializar a lista pública de dots nas operações
+  internas afetadas. Manter `MvRegisterDelta.context` compatível e preservar
+  validação de endereço, origem, sequência, lacunas e formatos explícito/compacto.
+- [x] Consolidar validação JSON usando as regras existentes em um dono claro.
+  Rejeitar ciclos, chaves não-string, números não-finitos e objetos não-JSON antes
+  da mutação; preservar ordem, classe de erro e ausência de efeitos parciais.
+- [x] Consultar somente o endereço solicitado em `ReplicaState.operator[]`,
+  preservando campo ausente/null/tombstone e cópia isolada de coleções aninhadas.
+  A visão `values` mantém seu contrato; consulta não expõe registros mutáveis.
+- [x] Preservar cópias necessárias de candidata/adoção, commit/rollback, IDs e
+  sequências. Remover apenas travessias/materializações substituídas com prova;
+  não alterar joins, GC, API pública nem formatos v4/v9/v2/schema v1 por otimização.
+- [x] Revisar após correções e executar format/analyze/test do core e consumidores
+  afetados, incluindo sync/facade e SQLite com reabertura/rollback quando pertinentes.
+  Demonstrar os percursos simplificados com mesmos dados antes/depois; medir limites.
+- [x] Atualizar mapa de manutenção, decisões/riscos e evidências; revalidar gate
+  técnico com checks proporcionais e liberar VAL-11 ao concluir.
+
+Validação: safe-refactor e ciclo plan-executor; comandos `dart format`,
+`dart analyze` e `dart test` nos pacotes afetados. Registrar versão do SDK do PATH,
+casos de falha, compatibilidade e resultados das cargas fixas.
+Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: [execução R-21](TRACEABILITY.md#execucao-r-21-2026-10-13).
+
+<a id="r-22"></a>
+
+## R-22 — Reutilizar enlace comum dos exemplos sem generalizar infraestrutura
+
+Status: pronta
+MoSCoW: COULD
+Dependências: R-20
+
+Áreas: demonstrações CLI/Flutter e código de suporte dos exemplos.
+Objetivo: compartilhar o comportamento repetido de DemoPeerLink/PeerLink,
+comprovado nos exemplos, mantendo cada cenário legível e executável.
+
+Critérios:
+
+- [ ] Comparar implementações e distinguir enlace comum de doubles que simulam
+  falhas, retry ou entrega parcial; registrar baseline dos exemplos afetados.
+- [ ] Reusar apenas o enlace comum em suporte Dart dos exemplos, com dependências
+  públicas da biblioteca. Sem pacote novo, framework de mocks ou transporte de
+  produção no core; variantes com comportamento diferente permanecem justificadas.
+- [ ] Preservar peer fixo, confirmação somente após commit remoto, fechamento
+  do stream e falhas observáveis. Manter comandos CLI e consumidor Flutter
+  executáveis sem depender de detalhes privados ou caminhos locais de SDK.
+- [ ] Revisar após correções e validar demonstração offline/reconnect, testes e
+  build do consumidor quando afetados, incluindo caminhos de import e uso isolado.
+  Se executada após VAL-12 e alterar o consumidor Flutter, repetir o percurso
+  runtime afetado antes de reutilizar a evidência Android como resultado do app atualizado.
+- [ ] Registrar ganho concreto de manutenção e compatibilidade dos exemplos;
+  atualizar README/mapa/evidências. Adiar explicitamente se compartilhamento
+  aumentar dependências ou dificultar consumo mais do que a repetição pequena.
+
+Validação: safe-refactor; `dart analyze` e exemplos pertinentes; `flutter analyze`,
+`flutter test` e build se consumidor afetado. COULD não condiciona R-21 ou VAL-11/12/13.
+Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
+Evidência de conclusão: ainda não registrada.
+
+<a id="r-23"></a>
+
+## R-23 — Preservar equivalência da adição repetida no G-Set
+
+Status: concluída
+MoSCoW: MUST
+Dependências: R-06a
+
+Áreas: mutação G-Set, seleção canônica de eventos, delta e restauração.
+Origem: histórias VAL-11 reproduziram divergência após observar um valor remoto
+e adicioná-lo localmente. DEC-36 exige registrar defeito de correção como MUST.
+A correção começou durante VAL-11; esta tarefa formaliza seu fechamento próprio.
+
+Critérios:
+
+- [x] Registrar regressão mínima: réplica a recebe adição de b, adiciona mesmo
+  valor e compara snapshot local com aplicação do delta numa cópia anterior.
+  Demonstrar falha anterior e aprovação depois da correção.
+- [x] Aplicar a mesma seleção canônica na mutação e no delta, inclusive sem valor
+  novo. Preservar valor, sequência, compacidade, IDs e formatos; sem GC novo.
+- [x] Revisar correção e cobrir histórias/permutações, replay, restauração e SQLite
+  real. Validar pacotes afetados e consumidor, com comandos do PATH.
+- [x] Registrar compatibilidade, causa, evidências e limites; revalidar gate
+  técnico e liberar fechamento de VAL-11 somente após aprovação.
+
+Validação: ciclo plan-executor; format/analyze/test do workspace e Flutter
+analyze/test. Sem mudança de API, formato ou integração de plataforma.
+Evidência de motivação: [execução VAL-11](TRACEABILITY.md#execucao-val-11-2026-10-13).
+Evidência de conclusão: [execução R-23](TRACEABILITY.md#execucao-r-23-2026-10-13).
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
 afetados. Concluir fase somente com evidências de R-01 a R-05, R-09a/R-09b,
 R-10 e R-13/R-14/R-15/R-18. R-16 SHOULD não bloqueia fechamento com adiamento justificado.
 R-09b libera envelopes; R-08d libera expansão dos tipos e contrato durável.
+R-23 MUST, descoberta em VAL-11, também exige fechamento antes de reutilizar o gate.
 Limpeza documental não conclui correções de código.
