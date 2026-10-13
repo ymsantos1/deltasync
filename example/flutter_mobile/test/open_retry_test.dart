@@ -25,24 +25,26 @@ void main() {
     );
     await _pumpUntil(
       tester,
-      () => find
-          .textContaining('Restaurado: A=-/-; itens=0 pendentes=0')
-          .evaluate()
-          .isNotEmpty,
+      () => find.text('Estado restaurado').evaluate().isNotEmpty,
     );
-    await tester.tap(find.text('1. Editar offline'));
+    await _enterTitle(tester, 'A', 'Ana');
+    await _tapKey(tester, 'save-A');
+    await _pumpUntil(
+      tester,
+      () => find.text('Título: Ana').evaluate().isNotEmpty,
+    );
+    await _tapKey(tester, 'increment-A');
+    await _pumpUntil(tester, () => find.text('Itens: 1').evaluate().isNotEmpty);
+    await _tapKey(tester, 'push-pending');
     await _pumpUntil(
       tester,
       () => find
-          .textContaining('offline; falha de envio em 2 réplicas')
+          .text('Falha de envio; commits locais preservados')
           .evaluate()
           .isNotEmpty,
     );
-    expect(find.textContaining('A=Ana/-; itens=2 pendentes=2'), findsOneWidget);
-    expect(
-      find.textContaining('B=-/Beto; itens=3 pendentes=2'),
-      findsOneWidget,
-    );
+    expect(find.text('Pendentes: 2'), findsOneWidget);
+    expect(find.textContaining('Peer shopper-b offline'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await _pumpUntil(
@@ -65,9 +67,9 @@ void main() {
           .evaluate()
           .isNotEmpty,
     );
-    expect(_button(tester, '1. Editar offline').onPressed, isNull);
-    expect(_button(tester, '2. Reconectar').onPressed, isNull);
-    expect(_button(tester, 'Tentar novamente').onPressed, isNotNull);
+    expect(find.byKey(const Key('save-A')), findsNothing);
+    expect(_button(tester, 'push-pending').onPressed, isNull);
+    expect(_button(tester, 'open-retry').onPressed, isNotNull);
     expect(retryFactory.databases, hasLength(1));
     expect(retryFactory.databases.single.isOpen, isFalse);
     expect(await tester.runAsync(() => _storedRows(directory.path)), before);
@@ -76,31 +78,33 @@ void main() {
     await tester.tap(find.text('Tentar novamente'));
     await _pumpUntil(
       tester,
-      () => find
-          .textContaining('Restaurado: A=Ana/-; itens=2 pendentes=2')
-          .evaluate()
-          .isNotEmpty,
+      () => find.text('Estado restaurado').evaluate().isNotEmpty,
     );
-    expect(
-      find.textContaining('B=-/Beto; itens=3 pendentes=2'),
-      findsOneWidget,
-    );
-    expect(_button(tester, '1. Editar offline').onPressed, isNotNull);
+    expect(find.text('Título: Ana'), findsOneWidget);
+    expect(find.text('Itens: 1'), findsOneWidget);
+    expect(find.text('Pendentes: 2'), findsOneWidget);
+    expect(_button(tester, 'save-A').onPressed, isNotNull);
     expect(retryFactory.opens, 4);
     expect(await tester.runAsync(() => _storedRows(directory.path)), before);
 
-    await tester.tap(find.text('2. Reconectar'));
+    await _tapKey(tester, 'peer-available');
     await _pumpUntil(
       tester,
-      () => find
-          .textContaining('convergente; A=Ana/Beto; itens=5 pendentes=0')
-          .evaluate()
-          .isNotEmpty,
+      () =>
+          tester
+              .widget<SelectableText>(find.byKey(const Key('demo-status')))
+              .data ==
+          'Peer disponível',
     );
-    expect(
-      find.textContaining('B=Ana/Beto; itens=5 pendentes=0'),
-      findsOneWidget,
+    await _tapKey(tester, 'push-pending');
+    await _pumpUntil(
+      tester,
+      () => find.text('Envio concluído').evaluate().isNotEmpty,
     );
+    expect(find.text('Título: Ana'), findsNWidgets(2));
+    expect(find.text('Itens: 1'), findsNWidgets(2));
+    expect(find.text('Pendentes: 0'), findsNWidgets(2));
+    expect(find.textContaining('delta(s) confirmado(s)'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await _pumpUntil(
@@ -110,8 +114,22 @@ void main() {
   });
 }
 
-FilledButton _button(WidgetTester tester, String label) =>
-    tester.widget<FilledButton>(find.widgetWithText(FilledButton, label));
+FilledButton _button(WidgetTester tester, String key) =>
+    tester.widget<FilledButton>(find.byKey(Key(key)));
+
+Future<void> _tapKey(WidgetTester tester, String key) async {
+  final target = find.byKey(Key(key));
+  await tester.ensureVisible(target);
+  await tester.tap(target);
+  await tester.pump();
+}
+
+Future<void> _enterTitle(WidgetTester tester, String side, String title) async {
+  final target = find.byKey(Key('input-$side'));
+  await tester.ensureVisible(target);
+  await tester.enterText(target, title);
+  await tester.pump();
+}
 
 Future<void> _pumpUntil(WidgetTester tester, bool Function() done) async {
   for (var attempt = 0; attempt < 150; attempt++) {

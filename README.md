@@ -497,12 +497,16 @@ Exemplo foi executado em Linux x64 com SQLite real via `sqflite_common_ffi`;
 outros desktops e usabilidade com participantes não foram avaliados.
 
 O [consumidor Flutter Android](example/flutter_mobile/README.md) usa a factory do
-plugin `sqflite` e reproduz esse percurso pela UI. VAL-07 executou o app no
-Moto G52 com Android 13, incluindo dois reinícios reais de processo, restauração
-da outbox e confirmação durável; R-15 repetiu o percurso. Falha transitória de
+plugin `sqflite`. Sua UI agora permite editar o mesmo título LWW nas duas
+réplicas, incrementar G-Counter, desligar o peer e repetir envios. O percurso CLI
+acima mantém seus nomes e valores fixos. VAL-07 executou a versão anterior do
+app no Moto G52 com Android 13, incluindo dois reinícios reais, restauração da
+outbox e confirmação durável; R-15 repetiu o percurso. VAL-08 executou a UI
+interativa no mesmo aparelho: conflito LWW, edição durante falha, retry,
+convergência e outbox restaurada antes/depois do ACK. Falha transitória de
 abertura e retry da UI foram injetados no teste Flutter com SQLite FFI em Linux,
-não no aparelho. O exemplo resolve os pacotes locais em workspace
-próprio; core, sync e contrato de storage continuam Dart puro. iOS não foi avaliado.
+não no aparelho. O exemplo resolve os pacotes locais em workspace próprio; core,
+sync e contrato de storage continuam Dart puro. iOS não foi avaliado.
 
 ### Medição de tamanho
 
@@ -527,6 +531,54 @@ Neste cenário, envelopes somam 86,0% dos snapshots separados (14,0% menos bytes
 Isso compara a soma das duas mensagens destinadas ao peer fixo com os dois estados
 locais antes da reconexão. Resultado descreve apenas esse JSON, payload, valores e
 implementação; não demonstra ganho geral nem estima tráfego comprimido ou de rede.
+
+### Custo de contexto e outbox
+
+`dart run example/measure_crdt_cost.dart` compara poucas mudanças em estado
+grande com cargas desfavoráveis de MV-Register e OR-Set. O script fixa IDs,
+valores, quantidades e HLC; executa mutações/commits por `SyncEngine` com
+`SqfliteReplicaStorage` e SQLite FFI real. Um peer SQLite aplica o lote antes de
+retornar ACK `appliedAndPersisted`. O resultado separa bytes JSON do delta,
+envelope, snapshot e linhas da outbox com metadados, contagens causais, tamanho
+do arquivo SQLite e tempos locais observados. Timestamps de criação da outbox e
+tempos são gerados em runtime.
+
+Procedimento reproduzível executado duas vezes em Linux x86_64, Dart 3.13.5,
+12 processadores reportados. Cada linha usa banco novo. Tempos abaixo são a faixa
+mínima/máxima observada entre as duas execuções, sem aquecimento controlado ou
+repetições estatísticas; não são benchmark universal.
+
+| Carga | Estado visível | Estrutura/outbox | Delta | Envelope | Snapshot | SQLite |
+|---|---:|---:|---:|---:|---:|---:|
+| G-Set: 250 valores existentes + 3 novas mudanças | 253 | outbox 1.176 B | 707 B | 809 B | 56.664 B | — |
+| MV, N=4 | 1 versão; 4 context dots; 6 refs | 4 pendentes; outbox 1.807 B | 1.210 B | 1.287 B | 803 B | 24.576 B antes/depois do ACK |
+| MV, N=8 | 1 versão; 8 context dots; 28 refs | 8 pendentes; outbox 4.525 B | 3.296 B | 3.373 B | 1.259 B | 32.768 B antes/depois do ACK |
+| MV, N=16 | 1 versão; 16 context dots; 120 refs | 16 pendentes; outbox 12.922 B | 10.413 B | 10.492 B | 2.221 B | 40.960 B antes/depois do ACK |
+| MV, N=32 | 1 versão; 32 context dots; 496 refs | 32 pendentes; outbox 40.930 B | 35.877 B | 35.956 B | 4.109 B | 86.016 B antes; 90.112 B depois do ACK |
+| OR-Set: 8 ciclos add/remove + add final | 1 valor | 9 tags; 17 eventos; 8 refs observadas; outbox 7.305 B | 4.569 B | 4.661 B | 4.851 B | — |
+
+Refs MV confirmam `N(N−1)/2`: 6, 28, 120 e 496. O delta pendente cresce mais
+rápido que o snapshot neste fluxo sequencial. ACK durável limpa 100% das linhas
+da outbox; snapshot e contexto do MV permanecem iguais, pois ACK não apaga
+conhecimento causal. OR-Set retém 17 eventos para um valor visível. No caso
+favorável, três deltas/envelope custam 809 B diante de snapshot de 56.664 B;
+outbox com metadados custa 1.176 B. Custos observados para outros casos seguem
+carga e histórico.
+
+Faixa de `write-us` entre execuções: N=4 1.127–5.005; N=8 1.020–1.402; N=16
+998–2.354; N=32 861–1.755. ACK: 16, 11, 18–19 e 29–30 ms, respectivamente.
+Essas amostras pequenas variam e não sustentam comparação de desempenho entre
+plataformas. O tamanho do arquivo SQLite inclui páginas/índices e pode crescer
+após apagar linhas; não equivale a bytes de payload ou espaço imediatamente
+recuperável. A execução não mede Android, compressão, rede, concorrência ou
+cargas multi-peer.
+
+Conclusão técnica: custo de contexto MV foi confirmado e localiza a oportunidade
+em contexto repetido nos deltas pendentes. Isso justifica manter R-19 como COULD
+para investigar compactação de representação, sem autorizar descarte causal ou
+mudança de join. R-19 fica adiada para esta entrega: faltam estimativa de esforço
+e margem comprovada para implementação, migração, review e validação SQLite antes
+do congelamento estrutural de 02/11. VAL-05 segue como próximo gate MUST.
 
 ## Validação
 

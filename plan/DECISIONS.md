@@ -58,6 +58,28 @@ Notificação de commits e execução entre dois aparelhos não condicionam fech
 Economia de deltas depende da carga; medir cenários desfavoráveis sem introduzir
 compactação/GC ou alegar ganhos universais. Escrita do TCC continua com o autor.
 
+DEC-31 — Adotada para planejamento após análise da referência C++: reforçar
+VAL-09 com lei de delta-mutação, equivalência com join de estado, lacunas e
+namespaces; reforçar VAL-10 com crescimento causal de MV-Register/OR-Set e custo
+da outbox. R-19 é COULD, com entrada condicionada às provas/medições e margem
+anterior a 02/11. Compactar representação preserva conhecimento causal; não
+autoriza GC por idade/ACK, descarte de pendências ou inferência por dot máximo.
+Tipos separados de estado e delta permanecem válidos quando a equivalência é
+demonstrada; agregar por ID não substitui join. DotKernel compartilhado é opção
+apenas com uso concreto; port integral e OR-Map genérico ficam WON'T-YET.
+Nenhum ajuste se torna MUST sem defeito de correção comprovado. Referência e
+limites em [TRACEABILITY](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
+
+DEC-32 — VAL-10 confirmou crescimento quadrático das referências de contexto
+nos deltas pendentes MV sequenciais: N=4/8/16/32 produziu 6/28/120/496 refs;
+OR-Set reteve 17 eventos para um valor visível. R-19 mantém mérito técnico como
+COULD, limitado à compactação de representação MV e às provas já definidas.
+Adiada para esta entrega: em 12/10 não há estimativa de esforço nem margem
+comprovada antes do congelamento estrutural de 02/11 para implementação,
+migração, review e validação durável SQLite. VAL-05 MUST segue prioritária;
+reabrir R-19 exige novo plano com margem explícita. Medições e limites em
+[TRACEABILITY](TRACEABILITY.md#execucao-val-10-2026-10-12).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

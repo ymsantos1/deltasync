@@ -1,6 +1,8 @@
 # Fase 1 — Simplificação e correções da base existente
 
 Estado: MUST e R-16 SHOULD concluídos em 2026-10-12.
+R-19 COULD planejada; VAL-09/VAL-10 concluídas, mas adiada para esta entrega por
+falta de estimativa de esforço e margem comprovada antes de 02/11.
 
 Objetivo: consolidar core nativo, estado/storage e corrigir commits e lifecycle.
 Entrada: implementação atual, [análise](../docs/analise-arquitetura.md) e
@@ -467,6 +469,67 @@ Validação: revisão documental, links/anchors, consistência com API e diff li
 Testes Dart só se houver mudança de código justificada dentro do escopo.
 Evidência de diagnóstico: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
 Evidência de conclusão: [execução R-18 em 2026-10-12](TRACEABILITY.md#execucao-r-18-2026-10-12).
+
+<a id="r-19"></a>
+
+## R-19 — Compactar contexto causal do MV-Register com compatibilidade
+
+Status: planejada
+MoSCoW: COULD
+Dependências: VAL-09, VAL-10
+
+Áreas: MV-Register, representação de contexto causal, codecs/snapshots e integração
+SQLite afetada; documentação de consumo e manutenção.
+Objetivo: reduzir o custo demonstrado de contexto mantendo o mesmo conhecimento
+causal, valores e comportamento após entrega atrasada/restauração.
+Entrada: VAL-09 aprovada, VAL-10 com custo e ganho esperado identificados, e margem
+para implementação, review, migração e validação antes de 02/11. Se ganho ou margem
+não forem demonstrados, registrar adiamento COULD e continuar o fechamento MUST.
+Defeito de correção encontrado na investigação exige tarefa de correção própria;
+não classificar perda de informação como otimização opcional.
+
+Critérios:
+
+- [ ] Delimitar primeiro MV-Register e a representação responsável pelo custo
+  medido: estado, contexto do delta ou snapshot. Registrar baseline, ganho
+  esperado e limite da mudança. OR-Set/OR-Map só entram em tarefa posterior se
+  medições e semântica justificarem; não reescrever os oito CRDTs nesta tarefa.
+- [ ] Representar prefixos contíguos observados e dots esparsos com lacunas,
+  preservando namespaces `(replicaId, crdtId)`. Comparar pertencimento e join do
+  contexto compacto contra a representação explícita usada como referência;
+  receber dot 3 nunca inventa observação dos dots 1/2.
+- [ ] Preservar substituição causal, versões concorrentes, identidade e
+  sequência local, sem ressuscitar versão eliminada após replay/merge/restore.
+  Compactação deve preservar informação causal; nenhum descarte por idade,
+  envio ou ACK, e nenhuma alteração silenciosa de semântica.
+- [ ] Inventariar APIs, JSON, snapshots e outboxes existentes antes da mudança.
+  Manter formatos quando possível; mudança necessária exige versão explícita,
+  leitura/migração de dados anteriores, rejeição segura por leitor incompatível
+  e percurso de rollback documentado. Não apagar bancos ou pendências para migrar.
+- [ ] Preservar commit atômico, recuperação durável, IDs da outbox e confirmação
+  por mudança/peer. Não eliminar IDs pendentes por dominância como consequência
+  da compactação do estado; agregação de envio exige escopo próprio.
+- [ ] Repetir propriedades e cenários pertinentes de VAL-09 nas duas
+  representações, incluindo lacunas, origens/endereço distintos, snapshots
+  antigos, falhas de migração, nova escrita após restore e replay atrasado.
+  Validar integração SQLite com fechamento/reabertura e rollback real.
+- [ ] Repetir as cargas de VAL-10 com parâmetros e contabilidade iguais;
+  demonstrar redução na representação escolhida, registrar custo adicional e
+  limites. Atualizar APIs/exemplos/mapa de manutenção afetados e revisar após
+  correções antes de concluir.
+
+Um auxiliar de contexto deve ter operações e dono claros. Um DotKernel comum
+só se justifica por regras comprovadamente comuns nos tipos alterados, sem criar
+hierarquia paralela, framework de plugins ou OR-Map genérico. A referência C++
+orienta conceitos e casos; não determina layout, interfaces nem política LWW.
+
+Validação: baseline e provas antes/depois; format/analyze/test do core, facade e
+pacotes/consumidores afetados; equivalência causal e de deltas, compatibilidade de
+formatos, recuperação SQLite e medição reproduzível. Mudança que atingir o
+consumidor mobile exige checks/build/runtime proporcionais. VAL-05 revalida o
+resultado se R-19 for executada; R-19 não é dependência MUST do gate.
+Evidência de motivação: [referência delta-crdts C++](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
+Evidência de conclusão: ainda não registrada.
 
 ## Gate da fase
 

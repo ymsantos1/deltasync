@@ -149,7 +149,7 @@ não extensões. Evidências anteriores permanecem válidas para os cenários ex
 o fechamento requer correção e nova validação dos casos ausentes. Reaberta
 novamente pela [revisão geral de 2026-10-12](TRACEABILITY.md#revisao-geral-2026-10-12):
 R-13/R-14/R-15/R-18 são MUST. Preservar histórico; revalidar após correções e
-eventuais refatorações executadas. R-16, VAL-08/09/10 e R-17 não viram dependências MUST.
+eventuais refatorações executadas. R-16, VAL-08/09/10 e R-17/R-19 não viram dependências MUST.
 
 Critérios:
 
@@ -243,7 +243,7 @@ O [impedimento anterior](TRACEABILITY.md#execucao-val-07-2026-10-12) permanece n
 
 ## VAL-08 — Tornar a demonstração Flutter interativa e explicativa
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-15, VAL-07
 
@@ -252,30 +252,30 @@ Objetivo: mostrar conflito e continuidade de edição offline além do percurso 
 
 Critérios:
 
-- [ ] Mostrar A e B separadamente, com valores, pendências, erro e confirmação;
+- [x] Mostrar A e B separadamente, com valores, pendências, erro e confirmação;
   usuário controla disponibilidade do peer sem exigir rede/backend novo.
-- [ ] Permitir editar um campo LWW compartilhado nas duas réplicas e observar
+- [x] Permitir editar um campo LWW compartilhado nas duas réplicas e observar
   vencedor conforme HLC/desempate. Manter G-Counter como segundo tipo integrado.
-- [ ] Permitir novas edições enquanto houver pendências e após reconectar,
+- [x] Permitir novas edições enquanto houver pendências e após reconectar,
   sem depender de valores hardcoded ou bloquear edição por ausência do peer.
-- [ ] Separar entrada, UI, sessão/modelo e enlace do exemplo em arquivos com
+- [x] Separar entrada, UI, sessão/modelo e enlace do exemplo em arquivos com
   responsabilidade clara; evitar duplicar regras de commit/join da biblioteca.
-- [ ] Permitir repetir o cenário, com limpeza explícita e restrita aos dados
+- [x] Permitir repetir o cenário, com limpeza explícita e restrita aos dados
   da demonstração; reinício real continua parte do procedimento documentado.
-- [ ] Testes pertinentes, build e runtime Android comprovam conflito, edição
+- [x] Testes pertinentes, build e runtime Android comprovam conflito, edição
   durante falha, retry e estado/outbox após reinício; não exigir oito telas.
 
 Validação: consumidor usa API pública; verificar UI e persistência em alvo mobile
 registrado e rever adaptações após correções. Duas réplicas no mesmo app com peer
 sintético são limite declarado; segundo aparelho/protocolo real é extensão opcional.
 Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução VAL-08 em 2026-10-12](TRACEABILITY.md#execucao-val-08-2026-10-12).
 
 <a id="val-09"></a>
 
 ## VAL-09 — Ampliar histórias e metadados nas propriedades dos CRDTs
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-13, R-14
 
@@ -284,28 +284,39 @@ Objetivo: complementar fixtures pequenas com histórias reproduzíveis e estado 
 
 Critérios:
 
-- [ ] Histórias determinísticas variadas exercem os oito tipos, escritas
+- [x] Histórias determinísticas variadas exercem os oito tipos, escritas
   concorrentes, versões substituídas, remoção/readição quando permitida,
   duplicação, reordenação e restauração.
-- [ ] Registrar sementes quando houver RNG, ou enumeração explícita quando não
+- [x] Registrar sementes quando houver RNG, ou enumeração explícita quando não
   houver; reportar condições de entrega/convergência e cenários executados.
-- [ ] Comparar valores e metadados relevantes normalizados, preservando dots,
+- [x] Comparar valores e metadados relevantes normalizados, preservando dots,
   contextos e tombstones; diferenças locais excluídas exigem justificativa.
-- [ ] Operações posteriores a merge/restore e replay antigo não ressuscitam
+- [x] Operações posteriores a merge/restore e replay antigo não ressuscitam
   valores removidos, não reutilizam IDs e mantêm o comportamento esperado.
-- [ ] Associatividade, comutatividade, idempotência e equivalência delta/snapshot
+- [x] Associatividade, comutatividade, idempotência e equivalência delta/snapshot
   verificadas nos casos válidos; fixtures finitas não são prova universal.
+- [x] Verificar a lei de delta-mutação: partir de cópias do mesmo estado,
+  comparar o resultado da mutação com a aplicação do delta retornado sobre a
+  cópia anterior. Comparar também entrega individual, lote agregado e join do
+  estado completo, incluindo metadados causais normalizados. Tipos separados
+  para estado e delta são permitidos; `Delta.merge` agrega por ID e não substitui
+  o join de cada CRDT.
+- [x] Incluir dots recebidos com lacunas (por exemplo, 1 e 3 antes de 2),
+  CRDTs distintos com a mesma réplica e sequências iguais, e empates de HLC em
+  LWW com origens diferentes. Distinguir prefixo observado de máximo recebido;
+  documentar condições de entrega que cada representação exige.
 
 Validação: format/analyze/test do core e integração afetada; regressões de R-13/R-14
 permanecem identificáveis. Evitar volume de casos sem ligação a uma propriedade.
 Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Referência complementar: [comparação com delta-crdts C++](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
+Evidência de conclusão: [execução VAL-09 em 2026-10-12](TRACEABILITY.md#execucao-val-09-2026-10-12).
 
 <a id="val-10"></a>
 
 ## VAL-10 — Medir deltas e custo sob cargas distintas
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: VAL-06
 
@@ -316,22 +327,36 @@ Diagnóstico: 100 escritas LWW pendentes no mesmo campo geraram envelope de
 
 Critérios:
 
-- [ ] Comparar poucas mudanças em estado previamente grande, muitas escritas
+- [x] Comparar poucas mudanças em estado previamente grande, muitas escritas
   no mesmo endereço e contexto/tags crescentes em tipo observado.
-- [ ] Fixar IDs, dados, quantidade e relógio; distinguir bytes de delta,
+- [x] Fixar IDs, dados, quantidade e relógio; distinguir bytes de delta,
   envelope, snapshot e metadados, sem excluir custos seletivamente.
-- [ ] Registrar custo local de um percurso limitado de mutação/commit com
+- [x] Registrar custo local de um percurso limitado de mutação/commit com
   SQLite real, tamanho do estado e ambiente; separar observação estrutural
   de cópia/snapshot de medida de tempo e de alegação de desempenho.
-- [ ] Procedimento e resultados incluem casos favoráveis e desfavoráveis,
+- [x] Procedimento e resultados incluem casos favoráveis e desfavoráveis,
   condições, limites e comparação justa; não prometer redução universal.
-- [ ] Não introduzir compactação, GC, protocolo novo ou alteração de join para
+- [x] Não introduzir compactação, GC, protocolo novo ou alteração de join para
   melhorar números; otimização exige tarefa própria e prova de preservação.
+- [x] Medir escritas sequenciais de MV-Register a partir de contexto vazio em
+  diferentes quantidades N, antes e depois de confirmar a outbox. Contar versões
+  ativas, dots do contexto e referências a dots nos deltas pendentes, além dos
+  bytes. Conferir a hipótese estrutural de N(N−1)/2 referências de contexto
+  acumuladas nas N escritas pendentes atuais; distinguir essa contagem de bytes
+  efetivos e tempo medido.
+- [x] Medir ciclos de adição/remoção/readição em OR-Set com poucos valores
+  visíveis, contando tags e eventos retidos. Explicar quando tamanho visível,
+  metadados causais, snapshot e lote de envio crescem de maneiras distintas.
+- [x] Registrar se resultados justificam executar R-19, qual representação
+  concentra o custo e qual ganho seria verificável. Verificar margem antes do
+  congelamento estrutural; ausência de ganho ou de margem leva a adiamento
+  explícito da otimização, preservando resultados e fechamento MUST.
 
 Validação: repetir medições documentadas; informar ambiente e variação observada
 sem transformar poucos tempos em benchmark universal. SHOULD, não gate MUST.
 Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Referência complementar: [comparação com delta-crdts C++](TRACEABILITY.md#referencia-delta-cpp-2026-10-12).
+Evidência de conclusão: [execução VAL-10 em 2026-10-12](TRACEABILITY.md#execucao-val-10-2026-10-12).
 
 ## Gate da fase
 

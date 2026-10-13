@@ -119,15 +119,14 @@ implementar correções nem alterar status automaticamente.
 Fase 1: **MUST e R-16 SHOULD concluídos**. Fase 5: **reaberta** para
 VAL-05. Fases 2, 3 e 4 mantêm
 conclusões históricas; VAL-06/VAL-07 continuam concluídas nos cenários executados.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-08**.
-VAL-05 está pronta; revalidará a entrega após o trabalho SHOULD executado ou
-adiado. Escrita e revisão do TCC
-ficam sob responsabilidade do autor e fora deste plano.
+Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-05**, gate MUST; VAL-10 concluiu e R-19 COULD foi adiada para esta entrega por falta de margem comprovada. Escrita e revisão do TCC ficam sob responsabilidade do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: R-16, depois VAL-08/VAL-09/VAL-10 conforme margem;
-VAL-05 revalida o resultado efetivamente entregue. R-17 é COULD.
+recomendada: VAL-05 revalida o resultado entregue. VAL-09/VAL-10 concluídas;
+R-19 foi adiada para esta entrega, pois faltam estimativa de esforço e margem
+comprovada antes do congelamento estrutural. R-17/R-19 são COULD e não
+condicionam o gate.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
 
@@ -179,6 +178,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-15](01_PHASE1_CORRECOES.md#r-15) | Recuperar abertura falha no consumidor Flutter | concluída | MUST | VAL-07 |
 | [R-16](01_PHASE1_CORRECOES.md#r-16) | Refatorar organização e remover código sem uso comprovado | concluída | SHOULD | R-13, R-14, R-18 |
 | [R-18](01_PHASE1_CORRECOES.md#r-18) | Precisar contrato de retry e limites de consumo | concluída | MUST | R-08c, VAL-04 |
+| [R-19](01_PHASE1_CORRECOES.md#r-19) | Compactar contexto causal do MV-Register com compatibilidade | planejada | COULD | VAL-09, VAL-10 |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
 | [R-06c](02_PHASE2_CRDTS.md#r-06c) | MV-Register | concluída | MUST | R-08d |
@@ -202,9 +202,9 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
-| [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | pronta | SHOULD | R-15, VAL-07 |
-| [VAL-09](05_PHASE5_VALIDACAO.md#val-09) | Ampliar histórias e metadados nas propriedades dos CRDTs | pronta | SHOULD | R-13, R-14 |
-| [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | pronta | SHOULD | VAL-06 |
+| [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | concluída | SHOULD | R-15, VAL-07 |
+| [VAL-09](05_PHASE5_VALIDACAO.md#val-09) | Ampliar histórias e metadados nas propriedades dos CRDTs | concluída | SHOULD | R-13, R-14 |
+| [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | concluída | SHOULD | VAL-06 |
 
 ## Prazo e sequência até 16/11/2026
 
@@ -217,15 +217,17 @@ ainda não foi informada. Critérios técnicos permanecem exigidos para concluir
 |---|---|---|
 | 12–18/10 | R-14, R-13, R-15, R-18 | Correções MUST e regressões pertinentes |
 | 19–25/10 | R-16, por fronteiras de responsabilidade | Layout e remoções comprovadas, com comportamento preservado |
-| 26/10–01/11 | VAL-08, VAL-09, VAL-10 conforme capacidade | Demonstração e experimentos mais explicativos |
-| 02–08/11 | Congelamento estrutural e VAL-05 | Revalidação de código entregue, SQLite e Android |
+| 26/10–01/11 | VAL-05 gate MUST; R-19 adiada | Revalidação da entrega; compactação exige novo plano com margem explícita |
+| 02–08/11 | Congelamento estrutural e correções de VAL-05 | Revalidação de código entregue, SQLite e Android |
 | 09–15/11 | Margem para regressões encontradas e reprodução da entrega | Sem refatoração ampla ou expansão funcional |
 | 16/11 | Entrega | Estado e limitações finais registrados |
 
 A partir de 02/11, evitar iniciar movimentos estruturais e funcionalidades COULD.
 SHOULD sem margem recebe adiamento justificado, preservando trabalho parcial
-verificável e histórico. R-17 só entra se MUST estiverem resolvidos e não consumir
-a reserva de validação. R-16 deve reduzir concentração e duplicação; criar pastas
+verificável e histórico. R-17/R-19 só entram se correções MUST estiverem concluídas
+e não consumirem a reserva de validação. A entrada específica de R-19 depende das
+provas/medições de VAL-09/VAL-10; não há promessa de executá-la até 16/11.
+R-16 deve reduzir concentração e duplicação; criar pastas
 sem melhorar propriedade/manutenção não justifica ocupar o prazo.
 
 Remoções exigem inventário de referências e contrato público. Não há código morto
@@ -258,9 +260,11 @@ de compatibilidade ou recorte exige direção própria. Escrita do TCC permanece
 | Refatoração por responsabilidades com remoção comprovada | SHOULD | Pedido do autor em 2026-10-12; prazo de 16/11 |
 | Demonstração interativa, histórias variadas e medições sob cargas distintas | SHOULD | Revisão geral de 2026-10-12 |
 | Notificação Dart de commits para consumidores | COULD | Facilidade de integração; sem requisito novo no PDF |
+| Compactação causal de MV-Register após propriedades e medições | COULD | Referência C++ e análise estrutural; ganho e compatibilidade exigem evidência em R-19 |
 | Integração Flutter/sqflite e recuperação em plataforma mobile declarada | SHOULD | Lacuna de plataforma; evidência atual Linux/FFI |
 | ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Extensões dos planos antigos |
 | Anti-entropy genérico, ACK por participante e GC destrutivo de tombstones | WON'T-YET | Extensões além do cenário mínimo |
+| OR-Map genérico com novos tipos internos e port integral de DotKernel | WON'T-YET | Referência C++ não amplia o recorte; auxiliar compartilhado exige uso concreto nos tipos alterados |
 | OR-Seq/ORSeg, backend próprio, autenticação, autorização, protocolo de rede obrigatório e transações distribuídas | WON'T-YET | Limitações da proposta |
 
 OR-Map continua obrigatório, incluindo valores CRDT e semântica de existência
@@ -307,8 +311,8 @@ repositório alinhada. Escrita e
 revisão do TCC são responsabilidade do autor e não integram este plano técnico.
 
 R-16 e VAL-06 a VAL-10 são SHOULD, com adiamento justificado permitido;
-R-17 é COULD. Não bloqueiam o fechamento técnico. Codegen, ObjectCrdt, backend próprio,
-GC destrutivo e anti-entropy genérico não são gates do TCC.
+R-17/R-19 são COULD. Não bloqueiam o fechamento técnico. Codegen, ObjectCrdt,
+backend próprio, GC destrutivo e anti-entropy genérico não são gates do TCC.
 Prazo e esforço acadêmicos não são gates técnicos desta biblioteca.
 
 ## Evidência e validação
