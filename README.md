@@ -331,12 +331,16 @@ SQLite permanece no adaptador `packages/deltasync_storage_sqflite/`.
 
 ### Percurso de integração e manutenção
 
+O [guia de integração](docs/guia-integracao.md) reúne configuração, identidade,
+modelos, consulta, edição, falhas, pendências, confirmação e encerramento, com
+as APIs de ACK e consulta atuais. Não requer geração de código.
+
 O PDF usa nomes conceituais para operações que hoje pertencem a contratos
 distintos. Esta tabela orienta a leitura sem criar aliases na API:
 
 | Conceito no PDF | API atual | Responsabilidade |
 |---|---|---|
-| `query()` | `value` do CRDT ou consulta da aplicação sobre `Replica` | Leitura de valor; a regra de negócio e o mapeamento de modelos ficam no consumidor. |
+| `query()` | `SyncEngine.valueAt(address)`, `Replica.valueAt(address)` ou `value` do CRDT | Leitura isolada; regras de negócio e mapeamento ficam no consumidor. |
 | `merge(other)` | `mergeState(other)` | Join de estado entre instâncias compatíveis do mesmo CRDT. |
 | `generateDelta()` | Métodos de mutação, como `setDelta()` ou `addOrSet()` | A mutação local produz deltas; `SyncEngine` com storage também os registra na outbox. |
 | `applyDelta(delta)` | `applyDelta()` no CRDT; `Replica.apply(Delta)` ou `SyncEngine.applyRemote(Delta)` | Aplicação de mudança; no engine, commit remoto antes de adoção. |
@@ -460,12 +464,12 @@ retry. `replica` só fica consultável após restauração. Mutação concluída
 commit local, não confirmação remota.
 
 Para atualizar a UI, aguarde a mutação pública e consulte `pendingDelta()` após o
-commit local; exiba o valor pela réplica restaurada e a pendência separadamente.
+commit local; exiba o valor com `valueAt(address)` e a pendência separadamente.
 Ao reconectar, chame `push()`, trate erro pela `Future`, consulte o resultado e
 `pendingDelta()` de novo antes de mostrar confirmação remota. Chamadas diretas de
 `applyRemote()` também são aguardáveis. `commits` é um stream broadcast sem replay;
 emite `SyncCommitEvent` com origem `local` ou `remote` após commit e adoção da
-mutação, delta recebido ou snapshot remoto. Ao receber evento, leia `engine.replica`
+mutação, delta recebido ou snapshot remoto. Ao receber evento, leia `engine.valueAt(address)`
 para obter estado atual; eventos não carregam snapshot nem garantem ACK. Restauração
 inicial e progresso de envio não emitem eventos. `dispose()` fecha o stream após
 as operações ativas. `errors` informa falhas de callbacks/stream remoto, não

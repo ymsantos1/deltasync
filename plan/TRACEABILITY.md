@@ -48,6 +48,11 @@ Moto G52/API 33, com plugin sqflite e dois reinícios reais. Após a
 SQLite e HTTP/TCP entre Android e servidor Dart, com 72 testes app/13 servidor.
 R-22 COULD permanece pronta e opcional. Publicação permanece com o autor.
 
+[R-24](#execucao-r-24-2026-10-13)/[R-25](#execucao-r-25-2026-10-13)
+centralizaram ACK e consulta; [VAL-14](#execucao-val-14-2026-10-13) concluiu guia,
+revalidação do workspace e runtime Android das APIs atuais. VAL-05 está pronta,
+aguardando fechamento próprio; SHOULD de coordenação/status continuam pendentes.
+
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
 Este panorama registra o estado inspecionado antes de R-09a/R-09b/R-05 e da
@@ -158,6 +163,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Refatoração geral além das extrações de R-16 | R-20 | SHOULD concluída; estado/cópia/restauração e commits consolidados, componentes independentes, fixture anterior e regressões de ownership; [execução R-20](#execucao-r-20-2026-10-13) |
 | Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD pronta, sem implementação |
 | Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluiu sementes/permutação/SQLite; VAL-12 concluiu runtime da demo; VAL-13 concluiu notas no Compass externo, HTTP/TCP, SQLite e Android. Limites: par fixo, LWW e ambiente de desenvolvimento |
+| Ergonomia e percurso de integração | R-24, R-25, VAL-14 | Codec ACK e consulta pontual documentados/testados; guia e comparação de esforço; workspace/Compass revalidados, inclusive Android/SQLite/HTTP no APK atual. VAL-05 pronta para fechamento próprio |
 | Equivalência de mutação/delta G-Set, achado em VAL-11 | R-23 | MUST concluída: adição repetida aplica seleção canônica, com regressão mínima e revalidação completa |
 
 ### Matriz final de evidências MUST — revalidada em 2026-10-12
@@ -4279,3 +4285,58 @@ Checks após manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas e
 288 links locais; prontas R-22 COULD, R-26 SHOULD e VAL-14 MUST.
 git diff --check aprovado no DeltaSync e no samples. Tarefa ativa nenhuma;
 próxima recomendada VAL-14, sem iniciar execução neste pedido.
+
+<a id="execucao-val-14-2026-10-13"></a>
+
+## Execução VAL-14 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-24/R-25/VAL-13 concluídas, VAL-14 próxima MUST pronta. Cinco skills, RUNBOOK, AGENTS, critérios/índice, DEC-41/42, guia Dart sobre contratos/parsing e consumo Compass inspecionados. Mudanças anteriores R-25 preservadas; revisão 3532a32 observada durante execução, sem commit automático.
+Implementação: docs/guia-integracao.md cobre seis etapas do consumo, contratos, ownership e compatibilidade. README aponta guia, atualiza query conceitual e leitura após eventos para valueAt. Comparação separa produção/testes/configuração. Sem mudar código de produção ou escrever TCC; somente documentação/evidências/plano nesta tarefa.
+Review: aprovado
+Achados: corrigidas formulações de consulta/parsing no guia; tabela/contagens e snippets conferidos contra API e consumidor. Review posterior da comparação/apresentação aprovado; nenhum achado impeditivo restante. Review do implementador não é independente. CLI sem argumentos retornou usage; execução correta reset/offline/reconnect passou. USB caiu durante runtime; cópias vazias descartadas como evidência, usuário reconectou/estabilizou ADB e percurso foi retomado até conclusão.
+Validação: aprovada
+Comandos: Dart 3.13.5/Flutter 3.47.7 do PATH, Linux x64. Format/analyze/test raiz e seis pacotes aprovados: 11/122/45/12/27/8/10 testes (235). Exemplo Flutter analyze/quatro testes aprovados. Compass analyze/72 testes/build APK aprovados; servidor analyze/13 testes aprovados. CLI reset/offline/reconnect em processos distintos aprovado com SQLite/outboxes. Runtime Moto G52 Android 13/API 33 aprovado no APK atual, sem clear-data, com reinício real e HTTP/TCP/USB. Checker/diff finais abaixo.
+Critérios: (1) guia configura storage/identidade/modelos e cobre edição/query/falhas/pendências/ACK/close; (2) ACK público/valueAt e mapa de donos/contratos aparecem sem gerador; (3) workspace e consumidor realmente reexecutados, SQLite/rede/reinícios e leitura atual no Android comprovados; (4) mesma funcionalidade: produção Compass 503 para 488, testes 410 para 435, biblioteca mais 65 linhas de produção documentadas, sem meta de LOC; (5) compatibilidade/limites, matriz/índice/decisões/riscos atualizados, VAL-05 liberada e SHOULD pendentes explícitos.
+Manutenção: cinco critérios marcados, fase/índice/sinopse/matriz atualizados; DEC-43 e RISK-21/33 registrados, tarefa ativa limpa. VAL-05 pronta é próxima MUST; R-26 SHOULD e R-22 COULD continuam opcionais quanto ao gate. Nenhuma próxima implementação iniciada.
+Limitações: runtime cobre notas LWW, um Android e peer fixo em processo Dart separado; não prova dois celulares, iOS, produção/autenticação, publicação ou estudo com participantes. Custos/LOC são da entrada e implementação observadas. Fotos originais retornam 403 e warnings Gradle/Kotlin futuros permanecem; não impedem notas. Backend/túnel criados foram encerrados; app instalado conserva VAL14_peer. Escrita TCC/publicação com autor.
+
+### Validação e runtime
+
+Na raiz, para cada pacote de pubspec.workspace e facade:
+dart format --output=none --set-exit-if-changed lib test; dart analyze;
+dart test --reporter expanded. Saída por pacote guardada em /tmp/val14-*.log
+durante execução; todos passaram. No exemplo Flutter: flutter analyze/flutter test.
+No Compass: flutter analyze; flutter test --reporter expanded;
+flutter build apk --debug --target lib/main_deltasync.dart --no-pub.
+Servidor: dart analyze; dart test --reporter expanded.
+CLI: dart run example/offline_reconciliation.dart reset/offline/reconnect
+/tmp/deltasync-val14-cli, uma execução por etapa. Valores Ana/Beto e contador 5
+convergiram; outboxes vazias após reabertura final.
+
+APK SHA-256 9858de9ce114f58ab481886ccc77ee8f30a7916d31208aee5ae14626fc24921c
+instalado com adb install -r no dispositivo 0081889739, preservando banco.
+PID 23645 exibiu Mobile_final/pending 0 após atualização. Sem reverse, edição
+VAL14_offline foi salva e envio falhou; banco fechado/copied válido comprova
+compass-device:delta:4, status sent, tentativa 1 e pendência retida.
+Primeiras cópias com USB ausente tinham zero bytes e não foram usadas.
+Usuário reconectou e ajustou USB; PID 25661 leu VAL14_offline/pending 1 após restore.
+Peer recebeu POST /notes VAL14_peer, compass-peer:delta:2. Túnel 8091 ativado;
+push/pull confirmaram após commit, UI mostrou VAL14_peer/pending 0/uma mudança
+confirmada. Cópia de banco com processo encerrado e GET /state comprovaram
+LWW/clock iguais e outboxes vazias. Reinício final PID 27333 leu VAL14_peer,
+pending 0 e Nenhum envio nesta sessão.
+
+[Evidência durável do runtime](evidence/val14-runtime.json) preserva snapshots,
+outbox anterior/final e peer final. Capturas inspecionadas ficam em /tmp;
+o JSON permite conferir IDs/valores/clock e ausência de pendências sem depender
+dessas capturas. Banco Android não foi apagado nem substituído.
+Backend de teste encerrado por SIGTERM (PID 54857); somente reverse 8091 criado
+pela tarefa foi removido. Permissões de ferramenta permitiram SDK, USB e execução
+autorizada do consumidor fora do sandbox. Nenhuma mensagem enviada a terceiros.
+
+Checks finais: python3 scripts/check_plan.py aprovado, 53 tarefas e 295 links
+locais; prontas VAL-05 MUST, R-26 SHOULD e R-22 COULD. git diff --check aprovado;
+links/anchors, IDs/dependências/status e frontmatter conferidos pelo checker.
+VAL-05 não concluída por antecipação; tarefa ativa nenhuma.

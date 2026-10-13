@@ -198,6 +198,14 @@ views/helpers anteriores e formatos persistidos não mudam. Sem classe de result
 codegen ou requisito específico de Booking.
 Ver [execução R-25](TRACEABILITY.md#execucao-r-25-2026-10-13).
 
+DEC-43 — Aplicada em VAL-14, 2026-10-13: guia técnico único reúne percurso de
+integração e ownership, vinculado pelo README, sem escrita acadêmica ou codegen.
+Comparação Compass separa configuração/UI/transporte/servidor/testes; 503 para
+488 linhas de produção não é meta nem estudo de usabilidade. Revalidação
+235 testes Dart/quatro Flutter e Compass 72/13 complementa runtime Android do
+APK atual com APIs R-24/R-25. VAL-05 fica pronta, não concluída automaticamente.
+Ver [execução VAL-14](TRACEABILITY.md#execucao-val-14-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

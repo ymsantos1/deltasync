@@ -1,6 +1,6 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: ampliação planejada em 2026-10-13; VAL-05 reaberta para R-24/R-25/VAL-14.
+Estado: R-24/R-25/VAL-14 concluídas; VAL-05 pronta para revalidação em 2026-10-13.
 Conclusão de 2026-10-12 e revalidações posteriores permanecem no histórico.
 Extensão de confiança SHOULD: VAL-11/VAL-12/VAL-13 concluídas em 2026-10-13;
 não apagam o fechamento técnico histórico. VAL-14 MUST e VAL-15 SHOULD
@@ -141,7 +141,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14
 
@@ -500,7 +500,7 @@ Evidência de conclusão: [execução VAL-13](TRACEABILITY.md#execucao-val-13-20
 
 ## VAL-14 — Documentar e revalidar integração com APIs simplificadas
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: R-24, R-25, VAL-13
 
@@ -509,16 +509,16 @@ Origem: análise da integração Compass e autorização do autor em 2026-10-13.
 
 Critérios:
 
-- [ ] Documentar percurso completo: configuração, identidade persistente, endereço/modelo, consulta, edição, falhas, pendências, confirmação e encerramento. Manter escrita acadêmica com o autor.
-- [ ] Mostrar as APIs de R-24/R-25, contratos de extensão e responsáveis por estado, mutação, delta, join, commit e restauração. Preservar instruções de integração sem gerador.
-- [ ] Revalidar workspace e consumidores afetados; repetir SQLite/rede/runtime quando o percurso mudar. Registrar comandos do PATH, versões, resultados e revisão após correções.
-- [ ] Comparar código manual antes/depois com a mesma funcionalidade, separando UI, configuração, transporte, servidor e testes. Não tratar linhas como meta nem alegar estudo de usabilidade com participantes.
-- [ ] Registrar compatibilidade e limitações, atualizar mapa/evidências e liberar revalidação de VAL-05 somente com os novos MUST satisfeitos. SHOULD pendentes não impedem este fechamento.
+- [x] Documentar percurso completo: configuração, identidade persistente, endereço/modelo, consulta, edição, falhas, pendências, confirmação e encerramento. Manter escrita acadêmica com o autor.
+- [x] Mostrar as APIs de R-24/R-25, contratos de extensão e responsáveis por estado, mutação, delta, join, commit e restauração. Preservar instruções de integração sem gerador.
+- [x] Revalidar workspace e consumidores afetados; repetir SQLite/rede/runtime quando o percurso mudar. Registrar comandos do PATH, versões, resultados e revisão após correções.
+- [x] Comparar código manual antes/depois com a mesma funcionalidade, separando UI, configuração, transporte, servidor e testes. Não tratar linhas como meta nem alegar estudo de usabilidade com participantes.
+- [x] Registrar compatibilidade e limitações, atualizar mapa/evidências e liberar revalidação de VAL-05 somente com os novos MUST satisfeitos. SHOULD pendentes não impedem este fechamento.
 
 Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
 regressões e compatibilidade são obrigatórias na própria tarefa.
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução VAL-14](TRACEABILITY.md#execucao-val-14-2026-10-13).
 
 <a id="val-15"></a>
 
