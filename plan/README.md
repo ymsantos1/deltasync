@@ -120,16 +120,16 @@ Fechamento histórico: Fase 1 MUST, R-16/R-20 SHOULD e R-19 COULD concluídos;
 Fase 5 MUST validado antes da nova ampliação de ergonomia.
 SHOULD VAL-06 a VAL-13 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
 R-22 COULD permanece pronta e opcional. Ampliação de ergonomia autorizada em
-13/10: R-24/R-25/VAL-14 MUST concluídas; VAL-05 MUST e R-26 SHOULD prontas.
+13/10: R-24/R-25/VAL-14 e VAL-05 MUST concluídas; R-26 SHOULD pronta.
 R-27/VAL-15 SHOULD planejadas.
-VAL-05 pronta para revalidar os novos MUST, preservando conclusões históricas.
+VAL-05 revalidou os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **VAL-05 MUST**, revalidação do fechamento; R-26 SHOULD também está pronta.
+selecionável: **R-26 SHOULD**, simplificação da recepção e confirmação durável.
 R-22 COULD permanece opcional após os MUST.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
@@ -210,7 +210,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
 | [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | concluída | SHOULD | R-15, VAL-07 |

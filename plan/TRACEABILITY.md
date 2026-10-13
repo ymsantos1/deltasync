@@ -50,8 +50,9 @@ R-22 COULD permanece pronta e opcional. Publicação permanece com o autor.
 
 [R-24](#execucao-r-24-2026-10-13)/[R-25](#execucao-r-25-2026-10-13)
 centralizaram ACK e consulta; [VAL-14](#execucao-val-14-2026-10-13) concluiu guia,
-revalidação do workspace e runtime Android das APIs atuais. VAL-05 está pronta,
-aguardando fechamento próprio; SHOULD de coordenação/status continuam pendentes.
+revalidação do workspace e runtime Android das APIs atuais.
+O [fechamento atual](#execucao-val-05-ergonomia-2026-10-13)
+concluiu VAL-05; SHOULD de coordenação/status continuam pendentes.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -163,7 +164,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Refatoração geral além das extrações de R-16 | R-20 | SHOULD concluída; estado/cópia/restauração e commits consolidados, componentes independentes, fixture anterior e regressões de ownership; [execução R-20](#execucao-r-20-2026-10-13) |
 | Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD pronta, sem implementação |
 | Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluiu sementes/permutação/SQLite; VAL-12 concluiu runtime da demo; VAL-13 concluiu notas no Compass externo, HTTP/TCP, SQLite e Android. Limites: par fixo, LWW e ambiente de desenvolvimento |
-| Ergonomia e percurso de integração | R-24, R-25, VAL-14 | Codec ACK e consulta pontual documentados/testados; guia e comparação de esforço; workspace/Compass revalidados, inclusive Android/SQLite/HTTP no APK atual. VAL-05 pronta para fechamento próprio |
+| Ergonomia e percurso de integração | R-24, R-25, VAL-14, VAL-05 | Codec ACK e consulta pontual documentados/testados; guia e comparação de esforço; workspace/Compass revalidados, inclusive Android/SQLite/HTTP no APK atual. VAL-05 concluiu fechamento com fontes/APK/evidências conferidos e regressões focadas |
 | Equivalência de mutação/delta G-Set, achado em VAL-11 | R-23 | MUST concluída: adição repetida aplica seleção canônica, com regressão mínima e revalidação completa |
 
 ### Matriz final de evidências MUST — revalidada em 2026-10-12
@@ -4340,3 +4341,44 @@ Checks finais: python3 scripts/check_plan.py aprovado, 53 tarefas e 295 links
 locais; prontas VAL-05 MUST, R-26 SHOULD e R-22 COULD. git diff --check aprovado;
 links/anchors, IDs/dependências/status e frontmatter conferidos pelo checker.
 VAL-05 não concluída por antecipação; tarefa ativa nenhuma.
+
+<a id="execucao-val-05-ergonomia-2026-10-13"></a>
+
+## Execução VAL-05 — ergonomia 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: todas as dependências MUST concluídas, inclusive R-24/R-25/VAL-14; VAL-05 próxima pronta autorizada. Lidos cinco procedimentos, RUNBOOK, critérios/índice, AGENTS, DEC-41/42/43 e evidências atuais; guia Dart sobre parsing/switches consultado. Worktree inicial apenas r25_query_cost.json não rastreado, preservado; base e591507f5a4fe17096027e7cce4a276297bf1eb9.
+Implementação: fechamento documental com correção do mapa AGENTS, que ainda dizia storage sem SQLite. Contrato MemoryStorage, adaptador sqflite e suíte de contrato agora descritos separadamente. Nenhuma mudança de produto/API/formato nem teste novo acrescentado. Artefato de vínculo das evidências gerado.
+Review: aprovado
+Achados: descrição antiga de SQLite corrigida e diff revisado após correção. Codec ACK mantém formato/rótulos e isolamento; remoção exige peer/lote/estágio durável no fluxo. Query usa lookup dos oito tipos sem fork e respeita lifecycle/commit. Testes de malformed/ACK parcial/rollback/restore e guia conferidos. Sem achados impeditivos; review do implementador não é independente.
+Validação: aprovada
+Comandos: git diff --exit-code 3532a32 HEAD -- lib packages example pubspec.yaml pubspec.lock confirmou ausência de mudanças de produto desde o runtime. Reprodução de patches VAL-13/R-24/R-25 comparou os 17 arquivos Compass byte a byte ao consumidor atual. sha256sum do APK corresponde ao runtime VAL-14. Logs do workspace conferidos: 235 testes e análise limpa; resultados Compass 72/13, exemplo Flutter quatro, CLI/reinícios e runtime Android vinculados ao código atual. Executados novamente 19 testes focados, todos aprovados; checker e diff após manutenção abaixo.
+Critérios: dez critérios satisfeitos. Oito tipos/propriedades e metadados cobertos no core/fixtures/histórias; SQLite/atomicidade/outbox/rollback/reabertura no storage; ACK parcial/retry/peer nos testes sync/facade/HTTP; formatos e contratos preservados; responsabilidade/manutenção no guia/mapa. R-24/R-25/VAL-14 encerradas e evidências conferidas por fonte/APK; novos checks focados comprovam fronteiras alteradas. Demonstração CLI e Android atuais já executadas em VAL-14, com limite explícito de reutilização.
+Manutenção: último critério marcado, fase/índice/matriz/sinopse atualizados, DEC-44 registrada e riscos revisados sem ampliar claims. VAL-05 e MUST completos; próxima R-26 SHOULD. R-27/VAL-15 ainda planejadas, R-22 COULD pronta; não iniciadas. Tarefa ativa limpa e histórico preservado.
+Limitações: não houve novo runtime Android nem repetição integral de 235 testes nesta tarefa documental; houve conferência de identidade dos fontes/APK e das evidências reais de VAL-14 executadas nesta sessão. Testes focados novos são 19, não 235. Não certifica produção, iOS, dois celulares, participantes ou distribuição publicada. Review não independente; TCC e pub.dev com autor. JSON de custo R-25 não rastreado foi preservado, sem commit automático.
+
+### Checks focados executados
+
+```sh
+dart test test/ack_codec_integration_test.dart test/deltasync_test.dart --reporter expanded
+(cd packages/deltasync_core && dart test test/replica_query_test.dart --reporter expanded)
+(cd packages/deltasync_sync && dart test test/point_query_test.dart --reporter expanded)
+(cd packages/deltasync_storage_sqflite && dart test test/point_query_recovery_test.dart --reporter expanded)
+(cd packages/deltasync_transport && dart test test/delta_acknowledgement_test.dart --reporter expanded)
+python3 scripts/check_plan.py
+git diff --check
+```
+
+Dart 3.13.5/Linux x64 do PATH; permissões de ferramenta necessárias ao cache SDK.
+Resultados 10/1/3/1/4, total 19. SQLite dedicado reabriu banco real e preservou
+oito tipos/IDs pendentes. [Vínculo verificável](evidence/val05-ergonomia-verificacao.json)
+registra revisão, hash APK e contagens do workspace de VAL-14.
+O [runtime VAL-14](evidence/val14-runtime.json) confere pendência offline,
+LWW/clock iguais e outboxes finais vazias; não representa topologia genérica.
+
+Checks finais aprovados: python3 scripts/check_plan.py, 53 tarefas e 300 links
+locais; somente R-26 SHOULD e R-22 COULD prontas. git diff --check limpo.
+Comparação adicional contra worktree atual (git diff --exit-code 3532a32 --
+lib packages example pubspec.yaml pubspec.lock) também vazia, incluindo mudanças
+não commitadas. Todos os MUST concluídos; nenhuma implementação ativa.

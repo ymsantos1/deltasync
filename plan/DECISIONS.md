@@ -206,6 +206,16 @@ Comparação Compass separa configuração/UI/transporte/servidor/testes; 503 pa
 APK atual com APIs R-24/R-25. VAL-05 fica pronta, não concluída automaticamente.
 Ver [execução VAL-14](TRACEABILITY.md#execucao-val-14-2026-10-13).
 
+DEC-44 — Aplicada no fechamento VAL-05 após ergonomia, 2026-10-13: a validação
+completa e runtime de VAL-14 são vinculados ao código atual por comparação Git
+dos fontes, reprodução byte a byte dos 17 arquivos Compass e hash do APK.
+Sem alteração de produto posterior, não repetir runtime nem suíte completa
+por ritual; 19 regressões focadas foram executadas novamente nesta tarefa.
+Isso preserva evidência real do código entregue, sem chamar execução anterior
+de teste novo nem ampliar claims de plataforma/topologia. Corrigido mapa antigo
+de storage em AGENTS para refletir adaptador e suíte já entregues.
+Ver [fechamento VAL-05](TRACEABILITY.md#execucao-val-05-ergonomia-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

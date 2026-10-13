@@ -1,6 +1,6 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: R-24/R-25/VAL-14 concluídas; VAL-05 pronta para revalidação em 2026-10-13.
+Estado: concluída em 2026-10-13 após fechamento de R-24/R-25/VAL-14 e revalidação de VAL-05.
 Conclusão de 2026-10-12 e revalidações posteriores permanecem no histórico.
 Extensão de confiança SHOULD: VAL-11/VAL-12/VAL-13 concluídas em 2026-10-13;
 não apagam o fechamento técnico histórico. VAL-14 MUST e VAL-15 SHOULD
@@ -141,7 +141,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18, R-23, R-24, R-25, VAL-14
 
@@ -179,7 +179,7 @@ Critérios:
   review após correções e evidências; suíte final da raiz e seis subpacotes,
   consumidor Flutter e demonstração offline/reconnect executados após mudanças.
 - [x] Requisitos técnicos MUST do fechamento histórico concluídos; limitações e adiamentos explícitos.
-- [ ] Revalidar novo fechamento após R-24/R-25/VAL-14, com regressões,
+- [x] Revalidar novo fechamento após R-24/R-25/VAL-14, com regressões,
   compatibilidade, consumo e manutenção demonstrados. Atualizar matriz e limites;
   preservar evidências anteriores sem usá-las para aprovar APIs ainda não entregues.
 
@@ -194,6 +194,7 @@ Evidências históricas: [revisão técnica VAL-05](TRACEABILITY.md#execucao-val
 [diagnósticos seguintes](TRACEABILITY.md#revisao-tecnica-2026-10-11) e
 [conclusão anterior](TRACEABILITY.md#execucao-val-05-2026-10-12). A revalidação
 após as correções está em [execução VAL-05 de 2026-10-12](TRACEABILITY.md#execucao-val-05-revalidacao-2026-10-12).
+Evidência de conclusão atual: [fechamento após ergonomia](TRACEABILITY.md#execucao-val-05-ergonomia-2026-10-13).
 
 <a id="val-06"></a>
 
@@ -546,7 +547,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## Gate da fase
 
-Novo fechamento aguarda R-24/R-25/VAL-14 e revalidação de VAL-05.
+Novo fechamento concluído após R-24/R-25/VAL-14 e revalidação de VAL-05.
 R-26/R-27/VAL-15 SHOULD podem ser adiadas com justificativa; codegen fica fora.
 
 VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;

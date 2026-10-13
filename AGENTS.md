@@ -6,7 +6,9 @@ Contexto: [proposta.md](proposta.md). Planejamento: [plan/README.md](plan/README
 ## Organização e limites
 
 - `packages/deltasync_core/`: CRDTs, estado, identidade, clocks e deltas.
-- `packages/deltasync_storage/`: contrato e MemoryStorage; ainda sem SQLite.
+- `packages/deltasync_storage/`: contrato Dart puro e MemoryStorage volátil.
+- `packages/deltasync_storage_sqflite/`: adaptador SQLite/sqflite persistente de referência.
+- `packages/deltasync_storage_testing/`: suíte compartilhada do contrato de storage.
 - `packages/deltasync_sync/`: outbox, mutações e fluxo remoto.
 - `packages/deltasync_transport/`: contrato de transporte e envelopes.
 - `lib/deltasync.dart`: facade; `test/`: somente seus testes.
