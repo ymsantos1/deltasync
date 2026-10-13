@@ -41,10 +41,10 @@ VAL-05 concluiu o fechamento técnico na execução anterior de 2026-10-12.
 A [revisão geral posterior](TRACEABILITY.md#revisao-geral-2026-10-12) confirmou
 dois defeitos de metadados/restauração e identificou falha de retry da UI e
 descrição imprecisa de retry. R-13/R-14/R-15/R-18 são MUST e reabrem VAL-05. Os
-[diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11) e a
-[validação final](TRACEABILITY.md#execucao-val-05-2026-10-12) estão registrados.
-R-13/R-14/R-15/R-18 foram concluídas em 2026-10-12; VAL-05 ainda exige nova
-validação final.
+[diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11), a
+[validação anterior](TRACEABILITY.md#execucao-val-05-2026-10-12) e a
+[revalidação após correções](TRACEABILITY.md#execucao-val-05-revalidacao-2026-10-12)
+estão registradas. R-13/R-14/R-15/R-18 foram concluídas; VAL-05 revalidou o gate.
 
 Os planos anteriores acrescentavam obrigações não presentes no texto acadêmico:
 `ObjectCrdt`, política global add/update-wins para objetos, geração de código,
@@ -116,17 +116,17 @@ validação e manutenção do plano. Review pelo mesmo agente ajuda a detectar e
 mas não é revisão independente. Pedido apenas de análise/review não autoriza
 implementar correções nem alterar status automaticamente.
 
-Fase 1: **MUST e R-16 SHOULD concluídos**. Fase 5: **reaberta** para
-VAL-05. Fases 2, 3 e 4 mantêm
-conclusões históricas; VAL-06/VAL-07 continuam concluídas nos cenários executados.
-Tarefa ativa: **nenhuma**. Próxima tarefa recomendada: **VAL-05**, gate MUST; VAL-10 concluiu e R-19 COULD foi adiada para esta entrega por falta de margem comprovada. Escrita e revisão do TCC ficam sob responsabilidade do autor e fora deste plano.
+Fase 1: **MUST e R-16 SHOULD concluídos**. Fase 5: **MUST concluído**;
+SHOULD VAL-06 a VAL-10 concluídas. Fases 2, 3 e 4 mantêm conclusões históricas.
+Tarefa ativa: **nenhuma**. R-19 COULD permanece adiada por falta de margem
+comprovada; escrita e revisão do TCC ficam sob responsabilidade do autor e fora
+deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: VAL-05 revalida o resultado entregue. VAL-09/VAL-10 concluídas;
-R-19 foi adiada para esta entrega, pois faltam estimativa de esforço e margem
-comprovada antes do congelamento estrutural. R-17/R-19 são COULD e não
-condicionam o gate.
+recomendada: nenhuma tarefa está pronta. R-17 COULD concluiu; R-19 foi adiada,
+pois faltam estimativa de esforço e margem comprovada antes do congelamento
+estrutural. Nenhuma delas condiciona o gate MUST concluído.
 A ordem expressa risco, sem inventar dependência entre defeitos independentes.
 VAL-07 preserva evidência no Moto G52 Android 13; não amplia o gate para iOS.
 
@@ -194,12 +194,12 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-08b](04_PHASE4_SYNC.md#r-08b) | Topologia e confirmação | concluída | MUST | R-03, R-08a |
 | [R-08d](04_PHASE4_SYNC.md#r-08d) | Fluxo integrado dos três tipos atuais | concluída | MUST | R-05, R-08a, R-08b |
 | [R-08c](04_PHASE4_SYNC.md#r-08c) | Reconciliação offline integrada | concluída | MUST | R-07a, R-07d, R-08d |
-| [R-17](04_PHASE4_SYNC.md#r-17) | Notificar commits concluídos pela API Dart | pronta | COULD | R-05, R-08c |
+| [R-17](04_PHASE4_SYNC.md#r-17) | Notificar commits concluídos pela API Dart | concluída | COULD | R-05, R-08c |
 | [VAL-01](05_PHASE5_VALIDACAO.md#val-01) | Propriedades e regressão completas | concluída | MUST | R-07a |
 | [VAL-02](05_PHASE5_VALIDACAO.md#val-02) | Demonstração mínima | concluída | MUST | R-08c |
 | [VAL-03](05_PHASE5_VALIDACAO.md#val-03) | Matriz de evidências e rastreabilidade | concluída | MUST | VAL-01, VAL-02, R-07d, R-08c |
 | [VAL-04](05_PHASE5_VALIDACAO.md#val-04) | Documentação de arquitetura e integração | concluída | MUST | R-07a, R-07d, R-08c, VAL-02 |
-| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | pronta | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
+| [VAL-05](05_PHASE5_VALIDACAO.md#val-05) | Fechamento técnico da biblioteca | concluída | MUST | VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18 |
 | [VAL-06](05_PHASE5_VALIDACAO.md#val-06) | Medir tamanho dos deltas | concluída | SHOULD | VAL-02 |
 | [VAL-07](05_PHASE5_VALIDACAO.md#val-07) | Validar consumo Flutter e SQLite mobile | concluída | SHOULD | VAL-02, R-10, R-11, R-12 |
 | [VAL-08](05_PHASE5_VALIDACAO.md#val-08) | Tornar a demonstração Flutter interativa e explicativa | concluída | SHOULD | R-15, VAL-07 |

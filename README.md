@@ -414,10 +414,13 @@ Para atualizar a UI, aguarde a mutação pública e consulte `pendingDelta()` ap
 commit local; exiba o valor pela réplica restaurada e a pendência separadamente.
 Ao reconectar, chame `push()`, trate erro pela `Future`, consulte o resultado e
 `pendingDelta()` de novo antes de mostrar confirmação remota. Chamadas diretas de
-`applyRemote()` também são aguardáveis; quando o adapter usa o stream de entrada,
-a aplicação precisa coordenar a atualização da tela. `errors` informa falhas de
-callbacks/stream remoto, não sucessos de commit ou falhas de chamadas aguardadas.
-Não há stream público de commits concluídos. O
+`applyRemote()` também são aguardáveis. `commits` é um stream broadcast sem replay;
+emite `SyncCommitEvent` com origem `local` ou `remote` após commit e adoção da
+mutação, delta recebido ou snapshot remoto. Ao receber evento, leia `engine.replica`
+para obter estado atual; eventos não carregam snapshot nem garantem ACK. Restauração
+inicial e progresso de envio não emitem eventos. `dispose()` fecha o stream após
+as operações ativas. `errors` informa falhas de callbacks/stream remoto, não
+sucessos de commit ou falhas de chamadas aguardadas. O
 [consumidor Flutter](example/flutter_mobile/README.md) atualiza o status após
 cada ação; o [exemplo CLI](example/offline_reconciliation.dart) chama
 `push(force: true)` explicitamente ao reconectar.
@@ -452,6 +455,19 @@ final remaining = await engine.pendingDelta(); // ainda retido para envio
 await engine.dispose();
 await errors.cancel();
 ```
+
+Para atualizar após commits locais e remotos, assine antes das operações:
+
+```dart
+final commits = engine.commits.listen((event) {
+  final current = engine.replica;
+  print('${event.origin}: ${current.state.values}'); // não representa ACK
+});
+```
+
+O stream não replay eventos anteriores e não aguarda listeners. Uma mutação em
+lote emite um evento após seu commit. Cancele a assinatura quando a tela sair; o
+stream termina quando `engine.dispose()` fecha o engine.
 
 ### Escopo da persistência
 

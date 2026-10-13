@@ -9,7 +9,8 @@ confirmou três defeitos apesar de 155 testes aprovados.
 [R-10](#execucao-r-10-2026-10-12),
 [R-11](#execucao-r-11-2026-10-12) e
 [R-12](#execucao-r-12-2026-10-12) foram concluídas.
-[VAL-05](#execucao-val-05-2026-10-12) fechou o gate técnico na execução anterior;
+[VAL-05](#execucao-val-05-revalidacao-2026-10-12) revalidou o gate técnico após
+as correções mais recentes;
 [VAL-07](#execucao-val-07-2026-10-12-mobile) concluiu a evidência mobile SHOULD
 no Moto G52 Android 13, com plugin sqflite e reinícios reais de processo.
 Esta [manutenção MoSCoW](#manutencao-moscow-2026-10-11) não corrigiu o produto.
@@ -18,11 +19,10 @@ A [revisão geral posterior](#revisao-geral-2026-10-12) confirmou novos defeitos
 [R-15](#execucao-r-15-2026-10-12) e [R-18](#execucao-r-18-2026-10-12) foram
 concluídas; [R-16](#execucao-r-16-2026-10-12) concluiu a reorganização SHOULD,
 e [VAL-08](#execucao-val-08-2026-10-12) executou a demo interativa no Android.
-VAL-05 permanece reaberta para validação final. O autor informou
+VAL-05 revalidou o gate técnico após correções e refatoração. O autor informou
 entrega em 16/11 e pediu [planejamento das correções/refatoração](#manutencao-revisao-refatoracao-2026-10-12).
-A [referência C++](#referencia-delta-cpp-2026-10-12) orienta novos critérios de
-VAL-09/VAL-10 e R-19 COULD; VAL-09 já tem evidência concluída, sem implementação
-de compactação.
+A [referência C++](#referencia-delta-cpp-2026-10-12) orientou VAL-09/VAL-10 e
+R-19 COULD; VAL-09/VAL-10 concluíram, e R-19 foi adiada para esta entrega.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -128,17 +128,18 @@ máximo por réplica sem representação explícita de lacunas.
 | Correção de metadados/restauração, revisão de 2026-10-12 | R-13, R-14 | R-13 concluída com regressões Set/Map; R-14 concluída com regressões core/SQLite |
 | Recuperação do consumidor e contrato preciso de retry | R-15, R-18 | R-15 concluída com regressão Flutter FFI e percurso Android; R-18 documentou agendamento pelo consumidor, backoff e limites |
 | Organização e evolução da demonstração, pedido do autor | R-16, VAL-08 | R-16 concluiu inventário/extrações; VAL-08 executou UI interativa, conflito, retry e dois reinícios no Moto G52 |
-| Validação ampliada e limites de custo | VAL-09, VAL-10 | VAL-09 concluiu histórias/metadados; VAL-10 ainda mede cargas contrastantes |
-| Compactação causal após evidência de custo, referência C++ | R-19 | COULD planejada; depende de VAL-09/VAL-10, compatibilidade e margem anterior ao congelamento |
-| Notificação pública de commits, COULD | R-17 | facilidade de consumo; contrato ainda não implementado |
+| Validação ampliada e limites de custo | VAL-09, VAL-10 | Ambas concluídas; VAL-10 mede cargas contrastantes e documenta custo/contexto e limites |
+| Compactação causal após evidência de custo, referência C++ | R-19 | COULD planejada; VAL-09/VAL-10 passaram e ganho possível foi localizado, mas R-19 foi adiada sem margem comprovada antes do congelamento |
+| Notificação pública de commits, COULD | R-17 | `SyncEngine.commits` emite origem local/remota após adoção; sem replay ou semântica de ACK; testes sync/facade e documentação |
 
-### Matriz final de evidências MUST — atualizada em 2026-10-12
+### Matriz final de evidências MUST — revalidada em 2026-10-12
 
 Esta matriz resume implementação e execuções até 2026-10-12; a seção de baseline e
 os registros por tarefa abaixo preservam história. Os diagnósticos de 2026-10-11
 reabriram o fechamento; R-10/R-11/R-12 corrigiram os três defeitos confirmados.
 Os novos achados de 2026-10-12 reabriram VAL-05; a matriz preserva execuções
-anteriores e registra R-13/R-14/R-15/R-18. VAL-05 ainda aguarda a nova validação final.
+anteriores e registra R-13/R-14/R-15/R-18. Revalidação final ocorreu após as
+correções e a refatoração, com suíte da workspace, demo e Flutter Android.
 Evidências distinguem unidade,
 integração em processo, recuperação SQLite após fechamento/reabertura e demo
 consumidora entre processos. Uma categoria não substitui outra.
@@ -161,16 +162,16 @@ consumidora entre processos. Uma categoria não substitui outra.
 |---|---|---|---|
 | Oito CRDTs, mutações, deltas e joins | `packages/deltasync_core/lib/src/`; OR-Map compõe G-Set; fachada `lib/deltasync.dart` | Testes por tipo; propriedades VAL-01/VAL-09; lote SQLite de oito tipos R-07a; coleções LWW tipadas e isolamento R-10 | Fixtures algébricas finitas; não constituem prova matemática universal; coleções tipadas exigem `decodeValue` |
 | Identidade, dots e roteamento por endereço | `identity.dart`, `replica.dart`, `delta_change.dart`, `vector_clock.dart` | Testes `ReplicaId and Dot round trip and validate identity`, roteamento misto, conflito de endereço/tipo; R-02/R-09a/R-09b/R-07a; R-13 cobre igualdade/hash de clocks em Set/Map | G/PN usam componentes cumulativos; tipos com eventos individuais mantêm contexto explícito |
-| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10; R-14 rejeita sequência MV atrasada em core e SQLite FFI | Formatos antigos conforme migração documentada; consumidores externos desconhecidos; VAL-05 aguarda demais MUST |
+| JSON, snapshots e restauração | `delta_codec.dart`, `replica.dart`, snapshots canônicos | Testes codec/snapshot core e `sync_recovery_test.dart`; VAL-01/R-07a/R-10; R-14 rejeita sequência MV atrasada em core e SQLite FFI; VAL-05 revalidou os pacotes | Formatos antigos conforme migração documentada; consumidores externos desconhecidos |
 | Core independente e contratos modulares | `deltasync_core`, `deltasync_storage`, `deltasync_sync`, `deltasync_transport`, facade | Analyze/test por pacote; integração pública R-08d e VAL-02 | SQLite fica no adaptador; nenhuma dependência de Flutter no core |
 | Storage substituível e `MemoryStorage` | `ReplicaStorage`, `MemoryStorage`, suíte `deltasync_storage_testing` | R-07b e contrato testado; `memory_storage_contract_test.dart` | Memória é volátil e não prova restart |
-| SQLite, outbox durável e recuperação | `packages/deltasync_storage_sqflite/lib/` | R-07c/R-07d, R-07a (oito tipos), R-08c, R-11 (ID divergente e rollback), R-12 (retry de abertura), VAL-02/VAL-05; VAL-07/R-15 no plugin sqflite Android com reinício de processo | Linux x64 via FFI; Moto G52 Android 13 com LWW/G-Counter; iOS e outros alvos não executados |
+| SQLite, outbox durável e recuperação | `packages/deltasync_storage_sqflite/lib/` | R-07c/R-07d, R-07a (oito tipos), R-08c, R-11 (ID divergente e rollback), R-12 (retry de abertura), VAL-02/VAL-05; VAL-07/R-15 e reabertura atual no Moto G52 Android com sqflite | Linux x64 via FFI; Moto G52 Android 13 com LWW/G-Counter; iOS e outros alvos não executados |
 | Transporte abstrato, roteamento e envelopes | `deltasync_transport`; `SyncEngine` e destino por peer | `delta_envelope_test.dart`, R-08a/R-08b/R-08d | Transporte dos cenários é em processo; protocolo de rede não faz parte do recorte |
 | ACK explícito, retry sem perda e commit atômico | `SyncEngine`, `ReplicaStorage.commit/commitRemote`, outbox por mudança | Testes de ACK parcial, retry, falhas e transação em sync/storage/SQLite; R-03/R-04/R-05/R-07d/R-08b/R-08c/R-11/R-12 | Só `appliedAndPersisted` do peer destinatário confirma; legado `PendingDeltaStore` conserva itens após ACK |
 | Reconciliação offline na topologia declarada | Outbox direcionada e recuperação em `SyncEngine` | R-08c e consumidor VAL-02/VAL-05, com duas réplicas SQLite e processos separados | Peer fixo; peer adicional requer cópia de outbox e confirmação independente |
-| Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10/R-11/R-12 acrescentam regressões; VAL-05 repete sete suítes e consumidor | Cenários e plataformas estão listados por execução, sem alegação universal |
-| Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`, `example/flutter_mobile/`; configuração nos READMEs | VAL-02/VAL-05 e VAL-07: percurso fixo; R-15: retry da abertura; VAL-08: títulos livres conflitantes, erro, edição pendente, ACK e dois reinícios no Moto G52 | Transporte sintético e peer fixo; sem participantes, rede real ou avaliação geral de usabilidade |
-| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-13 validou Set/Map/JSON; R-14 validou rejeição e retry com banco preservado; R-15 validou retry da UI com SQLite FFI; R-18 alinhou README/comentários ao contrato de push existente | Falha injetada de abertura não executada no Android; VAL-05 ainda pendente |
+| Testes unitários, integração, recuperação e regressão | Suítes core, facade, sync, storage, adapter SQLite e transporte | VAL-01 cobre oito tipos; R-07d/R-08c cobrem recuperação SQLite; R-10 a R-15/R-18 acrescentam regressões; VAL-05 repetiu format/analyze/test na raiz e seis pacotes, além dos testes Flutter | Cenários e plataformas estão listados por execução, sem alegação universal |
+| Aplicação demonstrativa mínima | `example/offline_reconciliation.dart`, `example/flutter_mobile/`; configuração nos READMEs | VAL-02/VAL-05 executaram offline/reconnect em processos separados; VAL-07/R-15 e VAL-08 cobrem Android; VAL-05 reinstalou, abriu e reiniciou processo Android atual | Transporte sintético e peer fixo; sem participantes, rede real ou avaliação geral de usabilidade |
+| Novos contratos e recuperação de falhas | `vector_clock.dart`, `mv_register.dart`, consumidor Flutter e README | Revisão geral de 2026-10-12; R-13 validou Set/Map/JSON; R-14 validou rejeição e retry com banco preservado; R-15 validou retry da UI com SQLite FFI; R-18 alinhou README/comentários ao contrato de push existente; VAL-05 revalidou o conjunto | Falha injetada de abertura não executada no Android |
 | Core nativo, snapshot canônico, fila sem espera de rede | `Replica`, `ReplicaState`, `SyncEngine`, `OutboxEntry` | Regressões R-09a/R-09b/R-05; envio lento com commits locais em `sync_engine_test.dart` | Histórico e deduplicação limitados conforme R-09b; sem benchmark de escala |
 | Formatos versionados e compatibilidade explícita | `DeltaCodec`, snapshots e codecs de outbox/envelope | Fixtures de migração/rejeição em core/storage/transport; R-09a/R-09b/R-06/R-07a/R-10; R-10 documenta migração de `const LwwDelta` sem alterar wire JSON | Não há inventário de todos consumidores externos (OPEN-07) |
 
@@ -3238,3 +3239,35 @@ Decisão: há ganho potencial verificável em reduzir contexto repetido de delta
 
 Manutenção: fase/índice marcados; nenhuma tarefa ativa; R-19 preservada como COULD planejada e explicitamente adiada; README, DECISIONS, RISKS e plano sincronizados. Nenhuma escrita do TCC alterada.
 Limitações: execução restrita a Linux x86_64 com SQLite FFI; tempo amostral e tamanho do arquivo SQLite não estimam outras plataformas, throughput de rede ou espaço recuperável. Review pelo executor não é independente.
+
+<a id="execucao-val-05-revalidacao-2026-10-12"></a>
+
+## Execução VAL-05 — revalidação 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: VAL-05 era próxima tarefa pronta MUST; VAL-03/VAL-04 e R-10/R-11/R-12/R-13/R-14/R-15/R-18 estavam concluídas. R-17 COULD ficou pronta após o gate; R-19 permanece adiada por falta de margem comprovada.
+Implementação: sem alteração de código de produto. Matriz final, limites, status e rastreabilidade foram alinhados às correções, à refatoração e às evidências novas. Proposta/TCC não alterados.
+Review: aprovado
+Achados: matriz anterior ainda dizia que VAL-05 aguardava validação; corrigida. Checker detectou depois divergência entre fase e índice no fechamento; status sincronizado e checker repetido. Sem achado técnico impeditivo. Review pelo executor, não independente.
+Validação: aprovada
+Comandos: na raiz, loop `for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do (cd "$package" && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart format --output=none --set-exit-if-changed lib test && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart analyze && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart test --reporter expanded) || exit 1; done` passou nos sete diretórios. Em `example/flutter_mobile`: `dart format --output=none --set-exit-if-changed lib test`, `flutter analyze`, `flutter test --reporter expanded` e `flutter build apk --debug` passaram. APK instalado no Moto G52 Android 13; app abriu e reiniciou em novo processo; log após restart: `VAL08 restored A=Delta itens=2 pendentes=0; B=Delta itens=2 pendentes=0`. `example/offline_reconciliation.dart reset`, `offline` e `reconnect` rodaram em três processos Dart separados, no diretório isolado `/tmp/deltasync-val05-final-2026-10-12`; ambas réplicas restauraram 2 pendências, convergiram para Ana/Beto e 5 itens, receberam ACK e reabriram com 0 pendências. Os três exemplos passaram format/analyze. Checker e `git diff --check` passaram após manutenção.
+Critérios: oito tipos e propriedades cobertos pela suíte core e histórias VAL-09; SQLite/atomicidade/IDs/retry/snapshot inválido cobertos por regressões R-07/R-11/R-12/R-14 e suíte SQLite; ACK/reordenação/réplica ausente e formatos/versionamento cobertos pelas suítes sync/storage/transport e registros R-03/R-06/R-08; limpeza e responsabilidades conferidas em R-09a/R-09b/R-08d; demo CLI reexecutada após mudanças, Flutter testado/buildado/instalado/reiniciado, matriz e documentação revisadas; integração pública e manutenção documentadas em VAL-02/VAL-04; R-10/R-11/R-12/R-13/R-14/R-15/R-18 têm regressões e reviews registrados; limitações Android/iOS, topologia, consumidores externos, participantes e R-19 estão explícitas.
+Manutenção: critérios VAL-05 marcados; fase 5 e índice sincronizados como concluídos; tarefa ativa limpa; matriz e limites revalidados; R-19 COULD preservada como adiada; R-17 COULD selecionada como próxima pronta. DECISIONS/RISKS sem alteração. Checker e diff final aprovados.
+Limitações: Android runtime desta execução comprovou build, instalação, abertura e restauração em novo processo; percurso interativo Android completo permanece na evidência VAL-08. Falha injetada de abertura foi validada no Flutter FFI, não no Android. iOS, rede real, consumidores externos e usabilidade com participantes não foram avaliados. Review pelo próprio executor não é independente.
+
+<a id="execucao-r-17-2026-10-12"></a>
+
+## Execução R-17 — 2026-10-12
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-17 era única tarefa COULD pronta após VAL-05 concluir o gate MUST. Dependências R-05/R-08c satisfeitas; havia margem antes do congelamento de 02/11.
+Implementação: `SyncEngine.commits` é broadcast Dart assíncrono e não replay, com `SyncCommitEvent.origin` (`local`/`remote`). Emite após commit e adoção em mutação local, lote, delta remoto e snapshot remoto; rollback não emite. `dispose()` fecha o stream. Evento sinaliza estado disponível, não ACK; consumidor consulta `engine.replica`. README atualizado com limites e exemplo. Sem Flutter no core/sync e sem mudança de formato persistido, CRDT, transporte ou ACK.
+Review: aprovado
+Achados: fixture inicial de teste reutilizava ID de delta com payload diferente; o merge remoto rejeitou a entrada, não a notificação. A fixture passou a continuar a mesma réplica, com sequência válida; checks repetidos. Sem achado de produto impeditivo. Review pelo executor, não independente.
+Validação: aprovada
+Comandos: em Linux x64/Dart 3.13.5, raiz e `packages/deltasync_sync`: `dart format --output=none --set-exit-if-changed lib test`, `dart analyze` e `dart test --reporter expanded`; os oito testes da facade e 42 testes sync passaram, sem issues e sem alterações de formatação. Checker e `git diff --check` passaram após manutenção.
+Critérios: evento local/remoto só após commit e adoção, incluindo delta de transporte e snapshot; testes cobrem rollback de commit local/remoto, listener assíncrono demorado e erro no listener, fechamento por dispose e export pela facade. Dependências puras Dart preservadas. README mostra atualização por leitura da réplica e distingue evento de ACK; formatos persistidos permanecem iguais.
+Manutenção: critérios marcados; fase 4 e índice sincronizados como concluídos; tarefa ativa limpa; matriz atualizada. DECISIONS/RISKS não mudaram. Checker final indicou nenhuma tarefa pronta; R-19 segue adiada, sem iniciar tarefa adicional.
+Limitações: stream broadcast perde eventos sem assinantes e não reenvia eventos passados; consumidores leem a visão mais recente, que pode incluir commits posteriores ao evento. App Flutter não passou a assinar o stream; cobertura pública veio da facade Dart e dos testes sync. Review pelo próprio executor não é independente.

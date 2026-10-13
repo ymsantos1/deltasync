@@ -4,6 +4,16 @@ part of 'sync_engine.dart';
 
 enum SyncFailureSource { incomingDelta, incomingStream }
 
+enum SyncCommitOrigin { local, remote }
+
+/// Notification after a local mutation or remote merge is committed and adopted.
+/// It signals state availability, not remote acknowledgement.
+class SyncCommitEvent {
+  const SyncCommitEvent({required this.origin});
+
+  final SyncCommitOrigin origin;
+}
+
 /// Failure delivered by [SyncEngine.errors] from an incoming transport callback.
 class SyncFailure {
   const SyncFailure({

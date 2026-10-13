@@ -894,21 +894,29 @@ void main() {
     'failed local commit leaves active replica and outbox unchanged',
     () async {
       final storage = FailOnceCommitStorage();
+      final events = <SyncCommitEvent>[];
       final engine = SyncEngine.withStorage(
         replica: Replica('device-a'),
         storage: storage,
         transport: TestDeltaTransport(),
       );
+      final subscription = engine.commits.listen(events.add);
       await expectLater(engine.setDelta('title', 'draft'), throwsStateError);
+      await Future<void>.delayed(Duration.zero);
       expect(engine.replica.state.values, isEmpty);
       expect(await storage.pending('device-a'), isEmpty);
+      expect(events, isEmpty);
 
       final committed = await engine.setDelta('title', 'saved');
+      await Future<void>.delayed(Duration.zero);
       expect(committed.id, 'device-a:delta:1');
       expect(engine.replica.state.values, {'title': 'saved'});
       expect((await storage.pending('device-a')).single.changeIds, [
         committed.id,
       ]);
+      expect(events.map((event) => event.origin), [SyncCommitOrigin.local]);
+      await subscription.cancel();
+      await engine.dispose();
     },
   );
 
@@ -958,22 +966,124 @@ void main() {
     'failed remote snapshot commit leaves active replica unchanged',
     () async {
       final storage = FailOnceSnapshotStorage();
+      final transport = TestDeltaTransport();
       final engine = SyncEngine.withStorage(
         replica: Replica('device-a'),
         storage: storage,
-        transport: TestDeltaTransport(),
+        transport: transport,
       );
+      final events = <SyncCommitEvent>[];
+      final subscription = engine.commits.listen(events.add);
       await engine.start();
       storage.failNextSnapshot = true;
       final remote = Replica('remote')..setDelta('title', 'remote');
 
       await expectLater(engine.applyRemote(remote.export()), throwsStateError);
+      await Future<void>.delayed(Duration.zero);
       expect(engine.replica.state.values, isEmpty);
+      expect(events, isEmpty);
       await engine.applyRemote(remote.export());
+      await Future<void>.delayed(Duration.zero);
       expect(engine.replica.state.values, {'title': 'remote'});
+      expect(events.map((event) => event.origin), [SyncCommitOrigin.remote]);
+
+      final snapshot = Replica('other-peer')..setDelta('status', 'ready');
+      await engine.applyRemoteSnapshot(snapshot.toSnapshotJson());
+      await Future<void>.delayed(Duration.zero);
+      expect(events.map((event) => event.origin), [
+        SyncCommitOrigin.remote,
+        SyncCommitOrigin.remote,
+      ]);
+      expect(engine.replica.state.values, {
+        'title': 'remote',
+        'status': 'ready',
+      });
+
+      remote.setDelta('incoming', 'applied');
+      final incomingEvent = engine.commits.first;
+      transport.emitDelta(remote.export());
+      expect(
+        (await incomingEvent.timeout(const Duration(seconds: 1))).origin,
+        SyncCommitOrigin.remote,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(events.map((event) => event.origin), [
+        SyncCommitOrigin.remote,
+        SyncCommitOrigin.remote,
+        SyncCommitOrigin.remote,
+      ]);
+      expect(engine.replica.state.values['incoming'], 'applied');
+
+      await subscription.cancel();
       await engine.dispose();
     },
   );
+
+  test('commit listeners do not block successful local commits', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: MemoryStorage(),
+      transport: TestDeltaTransport(),
+    );
+    final listenerStarted = Completer<void>();
+    final releaseListener = Completer<void>();
+    final subscription = engine.commits.listen((_) async {
+      listenerStarted.complete();
+      await releaseListener.future;
+    });
+
+    final change = await engine.setDelta('title', 'committed');
+    await listenerStarted.future;
+    expect(change.id, 'device-a:delta:1');
+    expect(engine.replica.state.values, {'title': 'committed'});
+
+    releaseListener.complete();
+    await subscription.cancel();
+    await engine.dispose();
+  });
+
+  test('listener errors do not invalidate a committed mutation', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: MemoryStorage(),
+      transport: TestDeltaTransport(),
+    );
+    final listenerStarted = Completer<void>();
+    final listenerError = Completer<Object>();
+    late StreamSubscription<SyncCommitEvent> subscription;
+    runZonedGuarded(
+      () {
+        subscription = engine.commits.listen((_) {
+          listenerStarted.complete();
+          throw StateError('listener failed');
+        });
+      },
+      (error, _) {
+        listenerError.complete(error);
+      },
+    );
+
+    final change = await engine.setDelta('title', 'committed');
+    await listenerStarted.future;
+    expect(change.id, 'device-a:delta:1');
+    expect(engine.replica.state.values, {'title': 'committed'});
+    expect(await listenerError.future, isA<StateError>());
+
+    await subscription.cancel();
+    await engine.dispose();
+  });
+
+  test('dispose closes the commit notification stream', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('device-a'),
+      storage: MemoryStorage(),
+      transport: TestDeltaTransport(),
+    );
+
+    await engine.dispose();
+
+    await expectLater(engine.commits, emitsDone);
+  });
 
   test('concurrent local mutations serialize IDs and commits', () async {
     final storage = MemoryStorage();

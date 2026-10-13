@@ -12,6 +12,20 @@ void main() {
     expect(second.state.values['title'], 'offline edit');
   });
 
+  test('facade exposes SyncEngine commit notifications', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-device'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    final eventFuture = engine.commits.first;
+
+    await engine.setDelta('title', 'changed');
+
+    expect((await eventFuture).origin, SyncCommitOrigin.local);
+    await engine.dispose();
+  });
+
   test('export keeps the tombstone winner and duplicate is idempotent', () {
     final replica = Replica('first');
     replica.setDelta('title', 'draft');
@@ -92,4 +106,15 @@ void main() {
     expect(first.orMapValue('profile')['roles'], {'reader', 'writer'});
     expect(second.orMapValue('profile'), first.orMapValue('profile'));
   });
+}
+
+class _FacadeTransport implements DeltaTransport {
+  @override
+  String get peerReplicaId => 'facade-peer';
+
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
 }

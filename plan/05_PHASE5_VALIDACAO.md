@@ -1,7 +1,6 @@
 # Fase 5 — Validação técnica e entrega
 
-Estado: reaberta em 2026-10-12; VAL-05 pronta para validação final após o
-trabalho SHOULD que for executado ou adiado.
+Estado: concluída em 2026-10-12 após revalidação do gate MUST.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
 Entrada: dependências por tarefa; gate final exige fases anteriores concluídas.
@@ -138,7 +137,7 @@ Evidência de conclusão: [execução VAL-04](TRACEABILITY.md#execucao-val-04-20
 
 ## VAL-05 — Fechamento técnico da biblioteca
 
-Status: pronta
+Status: concluída
 MoSCoW: MUST
 Dependências: VAL-03, VAL-04, R-10, R-11, R-12, R-13, R-14, R-15, R-18
 
@@ -153,23 +152,23 @@ eventuais refatorações executadas. R-16, VAL-08/09/10 e R-17/R-19 não viram d
 
 Critérios:
 
-- [ ] Oito tipos integrados e propriedades/deltas validados, incluindo coleções
+- [x] Oito tipos integrados e propriedades/deltas validados, incluindo coleções
   LWW tipadas, igualdade/hash de clocks e restauração MV após R-10/R-13/R-14.
-- [ ] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados,
+- [x] SQLite, commits atômicos, clocks/outbox e recuperação demonstrados,
   incluindo ID pendente divergente, retry de abertura e snapshot MV inválido.
-- [ ] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
-- [ ] Transporte abstrato e formatos compatíveis/versionados verificados.
-- [ ] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
+- [x] ACK parcial/retry/reordenação e réplica ausente não perdem alterações.
+- [x] Transporte abstrato e formatos compatíveis/versionados verificados.
+- [x] Limpeza de R-09a/R-09b e fluxo inicial de R-08d concluídos; classes e contratos
   públicos terem responsabilidade demonstrável, sem quota de classes removidas.
-- [ ] Demonstração executada; matriz e documentação do repositório alinhadas
+- [x] Demonstração executada; matriz e documentação do repositório alinhadas
   às correções e ao layout efetivamente entregue, sem alegar tarefas SHOULD/COULD pendentes.
-- [ ] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
+- [x] VAL-02 demonstrar uso real por um consumidor e VAL-04 manter documentação
   geral de integração/manutenção. Uso do Compass é exemplo adicional e não requisito
   da biblioteca; execução isolada não comprova funcionalidade ou usabilidade geral.
-- [ ] R-10/R-11/R-12/R-13/R-14/R-15/R-18 concluídas com regressões pertinentes,
+- [x] R-10/R-11/R-12/R-13/R-14/R-15/R-18 concluídas com regressões pertinentes,
   review após correções e evidências; suíte final da raiz e seis subpacotes,
   consumidor Flutter e demonstração offline/reconnect executados após mudanças.
-- [ ] Requisitos técnicos MUST concluídos; limitações e adiamentos explícitos.
+- [x] Requisitos técnicos MUST concluídos; limitações e adiamentos explícitos.
 
 Validação: revisar evidências de todas as tarefas técnicas MUST e executar conjunto
 final de checks apenas quando mudanças ou dúvidas justificarem. Aprovação dos testes
@@ -178,11 +177,10 @@ Na reabertura atual, executar analyze/test da raiz e dos seis subpacotes, demo
 em processos separados, format/analyze/test pertinentes e build/runtime do
 consumidor Flutter, checker do plano e diff limpo. Atualizar matriz e limites.
 
-Evidência: [revisão técnica VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-11),
-com histórico das execuções anteriores preservado. Conclusão anterior superada
-pelos [novos diagnósticos](TRACEABILITY.md#revisao-tecnica-2026-10-11).
-Evidência da conclusão anterior: [execução VAL-05 em 2026-10-12](TRACEABILITY.md#execucao-val-05-2026-10-12).
-Evidência de nova conclusão: ainda não registrada.
+Evidências históricas: [revisão técnica VAL-05](TRACEABILITY.md#execucao-val-05-2026-10-11),
+[diagnósticos seguintes](TRACEABILITY.md#revisao-tecnica-2026-10-11) e
+[conclusão anterior](TRACEABILITY.md#execucao-val-05-2026-10-12). A revalidação
+após as correções está em [execução VAL-05 de 2026-10-12](TRACEABILITY.md#execucao-val-05-revalidacao-2026-10-12).
 
 <a id="val-06"></a>
 
@@ -360,5 +358,6 @@ Evidência de conclusão: [execução VAL-10 em 2026-10-12](TRACEABILITY.md#exec
 
 ## Gate da fase
 
-Verificar VAL-05; documentação migrada não marca tarefas de produto concluídas.
-VAL-06 a VAL-10 são SHOULD; registrar adiamento justificado quando aplicável.
+VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;
+R-19 COULD foi adiada com justificativa registrada. Escrita e revisão do TCC
+permanecem fora desta fase.

@@ -56,6 +56,11 @@ class SyncEngine {
   /// This stream does not report successful commits or push progress.
   Stream<SyncFailure> get errors => _errors.stream;
 
+  /// Non-replaying notifications after a local or remote commit is adopted.
+  /// Read [replica] for the latest state; this event does not imply remote ACK.
+  /// The stream closes when [dispose] completes.
+  Stream<SyncCommitEvent> get commits => _commits.stream;
+
   @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
   final PendingDeltaStore? store;
   final ReplicaStorage? storage;
@@ -70,6 +75,8 @@ class SyncEngine {
   Completer<void>? _activeRequestsDrained;
   final StreamController<SyncFailure> _errors =
       StreamController<SyncFailure>.broadcast();
+  final StreamController<SyncCommitEvent> _commits =
+      StreamController<SyncCommitEvent>.broadcast(sync: false);
   final SyncRetryPolicy retryPolicy;
 
   /// Restores state and subscribes to remote changes. Repeated calls after
@@ -149,6 +156,7 @@ class SyncEngine {
     final candidate = _replica.fork()..apply(delta);
     if (storage != null) await storage!.commitRemote(_snapshot(candidate));
     _replica.adopt(candidate);
+    _notifyCommit(SyncCommitOrigin.remote);
   });
 
   /// Merges a peer's materialized snapshot for bootstrap or recovery.
@@ -160,6 +168,7 @@ class SyncEngine {
             await storage!.commitRemote(_snapshot(candidate));
           }
           _replica.adopt(candidate);
+          _notifyCommit(SyncCommitOrigin.remote);
         }),
       );
 
@@ -382,6 +391,7 @@ class SyncEngine {
     }
     await _serialTail;
     await _errors.close();
+    await _commits.close();
   }
 
   Future<void> _commitCandidate(
@@ -418,6 +428,7 @@ class SyncEngine {
         OutboxEntry(delta: delta, recipientPeerId: transport.peerReplicaId),
       ]);
       _replica.adopt(candidate);
+      _notifyCommit(SyncCommitOrigin.local);
       return change;
     }),
   );
@@ -438,6 +449,7 @@ class SyncEngine {
           ),
       ]);
       _replica.adopt(candidate);
+      _notifyCommit(SyncCommitOrigin.local);
       return changes;
     }),
   );
@@ -451,6 +463,10 @@ class SyncEngine {
         _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
       }),
     );
+  }
+
+  void _notifyCommit(SyncCommitOrigin origin) {
+    if (!_commits.isClosed) _commits.add(SyncCommitEvent(origin: origin));
   }
 
   Future<void> _applyIncomingReady(DeltaEnvelope envelope) {
