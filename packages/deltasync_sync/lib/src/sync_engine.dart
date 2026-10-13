@@ -161,6 +161,35 @@ class SyncEngine {
   Future<void> applyRemote(Delta delta) =>
       _withStarted(() => _applyRemoteReady(delta));
 
+  /// Validates, durably applies and acknowledges a stream or pulled envelope.
+  ///
+  /// Network fetching belongs to the adapter. If transport implements
+  /// [IncomingAcknowledgingDeltaTransport], sends ACK after commit/adoption,
+  /// outside the commit queue. Otherwise returns the ACK for the caller to send.
+  /// A send failure throws but leaves committed state intact for safe replay.
+  /// Existing local outbox is preserved. Disposal drains accepted calls, including
+  /// ACK sends; adapters must bound network waits. Calls after disposal fail.
+  Future<DeltaAcknowledgement> receiveEnvelope(DeltaEnvelope envelope) =>
+      _withStarted(() async {
+        if (envelope.recipientReplicaId != _replica.id ||
+            envelope.senderReplicaId != transport.peerReplicaId) {
+          throw const FormatException(
+            'Envelope peer identity does not match sync link',
+          );
+        }
+        await _applyRemoteReady(envelope.delta);
+        final ack = DeltaAcknowledgement(
+          peerReplicaId: _replica.id,
+          stage: DeltaAckStage.appliedAndPersisted,
+          changeIds: envelope.delta.changes.map((change) => change.id),
+        );
+        final adapter = transport;
+        if (adapter is IncomingAcknowledgingDeltaTransport) {
+          await adapter.acknowledge(ack);
+        }
+        return ack;
+      });
+
   Future<void> _applyRemoteReady(Delta delta) =>
       _commitRemote((candidate) => candidate.apply(delta));
 
@@ -363,7 +392,7 @@ class SyncEngine {
 
   void _receiveRemote(DeltaEnvelope envelope) {
     unawaited(
-      _applyIncomingReady(envelope).catchError((
+      receiveEnvelope(envelope).then<void>((_) {}).catchError((
         Object error,
         StackTrace stackTrace,
       ) {
@@ -374,16 +403,6 @@ class SyncEngine {
 
   void _notifyCommit(SyncCommitOrigin origin) {
     if (!_commits.isClosed) _commits.add(SyncCommitEvent(origin: origin));
-  }
-
-  Future<void> _applyIncomingReady(DeltaEnvelope envelope) {
-    if (envelope.recipientReplicaId != _replica.id ||
-        envelope.senderReplicaId != transport.peerReplicaId) {
-      return Future.error(
-        FormatException('Envelope peer identity does not match sync link'),
-      );
-    }
-    return _applyRemoteReady(envelope.delta);
   }
 
   void _receiveStreamError(Object error, StackTrace stackTrace) {

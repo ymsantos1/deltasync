@@ -24,3 +24,10 @@ abstract interface class AcknowledgingDeltaTransport implements DeltaTransport {
   /// Sends [envelope] and returns the peer's latest explicit ACK stage.
   Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope);
 }
+
+/// Optional adapter that sends acknowledgements for incoming envelopes.
+/// The engine invokes this only after the remote snapshot commit succeeds.
+abstract interface class IncomingAcknowledgingDeltaTransport
+    implements DeltaTransport {
+  Future<void> acknowledge(DeltaAcknowledgement acknowledgement);
+}

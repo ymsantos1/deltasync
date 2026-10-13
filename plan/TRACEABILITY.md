@@ -52,7 +52,8 @@ R-22 COULD permanece pronta e opcional. Publicação permanece com o autor.
 centralizaram ACK e consulta; [VAL-14](#execucao-val-14-2026-10-13) concluiu guia,
 revalidação do workspace e runtime Android das APIs atuais.
 O [fechamento atual](#execucao-val-05-ergonomia-2026-10-13)
-concluiu VAL-05; SHOULD de coordenação/status continuam pendentes.
+concluiu VAL-05. [R-26](#execucao-r-26-2026-10-13) concluiu recepção/ACK comuns;
+R-27 SHOULD de acompanhamento permanece pendente.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -4382,3 +4383,48 @@ locais; somente R-26 SHOULD e R-22 COULD prontas. git diff --check limpo.
 Comparação adicional contra worktree atual (git diff --exit-code 3532a32 --
 lib packages example pubspec.yaml pubspec.lock) também vazia, incluindo mudanças
 não commitadas. Todos os MUST concluídos; nenhuma implementação ativa.
+
+<a id="execucao-r-26-2026-10-13"></a>
+
+## Execução R-26 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-24/VAL-13 concluídas; R-26 próxima SHOULD pronta autorizada. Cinco skills, AGENTS/RUNBOOK, critérios/índice, guia Dart sobre contratos/parsing, fluxo incoming e pull Compass inspecionados. Worktree inicial com JSONs anteriores não rastreados preservados; revisão a2084d2 observada, sem commit automático.
+Implementação: SyncEngine.receiveEnvelope valida sender/recipient, aguarda commit/adoção e retorna ACK; IncomingAcknowledgingDeltaTransport permite envio opcional pelo adaptador. Incoming usa mesmo método e reporta falhas pelo stream errors. Compass substitui sequência manual por receiveEnvelope e seu HTTP envia ACK tipado. README/guia atualizados; tests sync/facade e recuperação SQLite ampliados.
+Review: aprovado
+Achados: corrigido acesso ao modelo de snapshot no novo teste durante revisão inicial; ampliada prova SQLite para ACK depois de snapshot persistido e leitura após reabertura, revisada e check afetado repetido. Corrigida ligação de frases no guia externo e revista novamente. Sem achados impeditivos restantes; revisão pelo implementador não é independente.
+Validação: aprovada
+Comandos: Dart 3.13.5/Flutter 3.47.7 do PATH, Linux x64. Format/analyze/test raiz/sync/transport/storage_sqflite aprovados, 12/48/10/27 (97). Compass analyze/72 testes e build APK debug main_deltasync aprovados; exemplo Flutter analyze/quatro testes aprovados. Após ampliação SQLite, format/analyze e teste point_query_recovery_test executados novamente e aprovados. Patch incremental aplicável, diff/checker finais abaixo.
+Critérios: (1) stream e pull chamam um método público com contrato opcional, sem framework; (2) peer/commit/ACK ficam na engine, HTTP/modelos no consumidor; (3) regressões cobrem peer/destinatário errado, rollback sem ACK, duplicação, falha de ACK observável, replay, local outbox preservada, edição durante ACK e dispose que drena; SQLite e HTTP real com perda de ACK/reabertura aprovados; (4) contratos/formatos antigos intactos, fallback sem sender provado pela facade, docs de lifecycle/timeouts explícitas, redução no Compass demonstrada e correções revisadas/revalidadas.
+Manutenção: quatro critérios marcados, fase/índice/guias atualizados, DEC-45 e RISK-33/21 mantidos com limites; R-27 liberada e próxima recomendada. Tarefa ativa limpa. MUST históricos permanecem concluídos; nenhuma tarefa nova iniciada.
+Limitações: nenhum runtime Android novo nesta tarefa; APK compilado, SQLite/HTTP real executados no Linux. VAL-14 mantém prova histórica do APK anterior e não é prova do fluxo R-26 no dispositivo. Topologia segue par fixo; ACK não autentica peer. Dispose pode esperar até timeout do adaptador, sem cancelamento forçado. MemoryStorage nos testes unitários é volátil, complementado pelo SQLite real. Sem alteração de core, codegen, publicação ou escrita TCC.
+
+### Comandos, fluxo e evidência
+
+Format/analyze/test executados em ., packages/deltasync_sync,
+packages/deltasync_transport e packages/deltasync_storage_sqflite. Logs da execução
+em /tmp/r26-*.log. No consumidor Compass: flutter analyze, flutter test --reporter
+expanded, flutter build apk --debug --target lib/main_deltasync.dart --no-pub.
+No exemplo Flutter: flutter analyze e flutter test --reporter expanded.
+Após corrigir/ampliar teste SQLite: dart format --output=none --set-exit-if-changed
+lib test; dart analyze; dart test test/point_query_recovery_test.dart --reporter expanded.
+Permissões de ferramenta permitiram cache SDK e edição autorizada no consumidor
+externo. SDK sempre pelo PATH; nenhuma instalação Android feita.
+
+No stream, errors recebe falha de ACK como incomingDelta mesmo após commit; não
+inferir rollback. No pull, Future devolve erro ao chamador. Em ambos, recepção
+aceita mantém atividade até terminar ACK, e dispose aguarda drenagem. Call após
+dispose falha. Rede/fetch e política de retry são do adaptador/consumidor.
+
+Repositório Compass 106 para 101 linhas, transporte 72 para 68; nove linhas
+de produção removidas, além de validação/ordenação deixarem de viver no app.
+Uma interface opcional é justificada pelo HTTP Compass e adaptador de stream
+nos testes, sem catálogo de plugins ou API específica de Booking.
+[Patch incremental](evidence/r26-compass.patch) cobre três arquivos externos,
+aplicável após VAL-13/R-24/R-25; git apply --check passou contra baseline
+reproduzida em /tmp. Dados/modelos/backend permanecem no consumidor.
+
+Checks finais após manutenção: python3 scripts/check_plan.py aprovado,
+53 tarefas e 304 links locais; prontas R-27 SHOULD e R-22 COULD.
+git diff --check aprovado no DeltaSync e samples; nenhuma tarefa ativa.

@@ -434,6 +434,12 @@ preservam fonte de tempo HLC injetada.
 ### Confirmação e retry
 
 `DeltaTransport.send` concluir significa apenas que transmissão local terminou.
+`receiveEnvelope(envelope)` centraliza validação do peer/destinatário e commit
+remoto para pull e stream incoming. Transporte que implementa
+`IncomingAcknowledgingDeltaTransport` recebe ACK somente após commit/adoção;
+sem esse contrato, método retorna ACK e stream não o envia automaticamente.
+Falha no envio do ACK conserva estado incorporado e permite reenvio idempotente.
+Espera de ACK fica fora da fila de commits; dispose drena chamadas aceitas.
 `AcknowledgingDeltaTransport.sendAndAwaitAck` retorna peer e estágio explícitos;
 `received` não confirma mudança, `appliedAndPersisted` confirma aplicação e commit
 remoto durável. ACK parcial remove apenas IDs confirmados para aquele peer. Sem ACK,

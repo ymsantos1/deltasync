@@ -39,6 +39,20 @@ void main() {
         for (final address in addresses) address: first.valueAt(address),
       };
       final ids = (await first.pendingDelta()).changes.map((c) => c.id).toSet();
+      final remote = Replica('peer').setDelta('remote', 'persisted before ACK');
+      final ack = await first.receiveEnvelope(
+        DeltaEnvelope(
+          senderReplicaId: 'peer',
+          recipientReplicaId: 'query',
+          delta: Delta([remote]),
+        ),
+      );
+      expect(ack.stage, DeltaAckStage.appliedAndPersisted);
+      expect(ack.changeIds, {remote.id});
+      expect(
+        (await firstStore.loadReplica('query'))!.snapshot!['lww'],
+        contains('remote'),
+      );
       await expectLater(first.push(), throwsStateError);
       await first.dispose();
       await firstStore.close();
@@ -47,6 +61,7 @@ void main() {
       try {
         expect(() => restored.valueAt('lww'), throwsStateError);
         await restored.start();
+        expect(restored.valueAt('remote'), 'persisted before ACK');
         for (final entry in before.entries) {
           expect(restored.valueAt(entry.key), entry.value);
         }

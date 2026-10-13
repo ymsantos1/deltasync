@@ -216,6 +216,17 @@ de teste novo nem ampliar claims de plataforma/topologia. Corrigido mapa antigo
 de storage em AGENTS para refletir adaptador e suíte já entregues.
 Ver [fechamento VAL-05](TRACEABILITY.md#execucao-val-05-ergonomia-2026-10-13).
 
+DEC-45 — Aplicada em R-26, 2026-10-13: receiveEnvelope centraliza validação
+do par, aplicação/commit remoto e ACK. IncomingAcknowledgingDeltaTransport é
+contrato opcional mínimo para envio do ACK pelo adaptador, sem HTTP no sync.
+Pull e incoming reutilizam o mesmo método; sem contrato opcional, retorna ACK
+para envio explícito e stream conserva comportamento sem ACK automático.
+Aplicação direta de Delta por applyRemote permanece disponível. ACK espera fora
+da fila de commits; falha de envio preserva commit e permite replay. Dispose
+drena recepções aceitas/ACK; adaptador limita espera de rede e fecha após drenagem.
+Não há cancelamento implícito de commit nem rollback após ACK falhar. API aditiva,
+schema/envelope/ACK preservados. Ver [R-26](TRACEABILITY.md#execucao-r-26-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

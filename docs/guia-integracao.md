@@ -88,9 +88,17 @@ aplicar e aguardar persistência precede emitir appliedAndPersisted.
 received indica apenas recebimento e não remove outbox. Remover somente IDs
 do lote/destinatário reconhecidos; perda de ACK exige reenvio seguro.
 
-No pull do Compass, o consumidor valida envelope, aguarda applyRemote e só então
-envia ACK. GET entrega sem remover pendências do servidor. Rede/timeouts continuam
-no adaptador HTTP; esse fluxo ainda é manual (R-26). Protocolos não entram no core.
+No pull do Compass, o consumidor busca envelope e chama receiveEnvelope.
+Esse método valida peer/destinatário, aguarda commit/adoção e envia ACK pelo
+contrato opcional IncomingAcknowledgingDeltaTransport. O mesmo percurso atende
+incoming; sem esse contrato, retorna ACK para envio pelo chamador e o stream
+mantém comportamento anterior sem envio automático de ACK.
+GET entrega sem remover pendências do servidor. Rede/timeouts continuam no
+adaptador HTTP. Falha ao enviar ACK preserva commit e permite replay; no stream,
+errors informa a falha, sem prometer rollback. Protocolos não entram no core.
+ACK aguarda fora da fila de commits; edição local continua possível. Dispose
+drena recepções aceitas, inclusive envio de ACK; adaptador deve limitar espera
+e fechar seus recursos após a drenagem. R-27 trata conveniências de status.
 
 ## 6. Encerrar e restaurar
 
@@ -147,6 +155,7 @@ Testes cresceram ao verificar ACK inválido por HTTP. Configuração Android,
 dependências e documentação ficam fora desses totais.
 
 Bootstrap, domínio, interface e canal real ainda exigem código próprio.
-Coordenação pull/ACK e acompanhamento continuam manuais (R-26/R-27 SHOULD).
+Após R-26, validação/commit/ACK ficam em receiveEnvelope; busca e ação de
+sincronizar continuam no consumidor. Conveniências de acompanhamento ficam em R-27.
 Esta comparação mostra manutenção e consumo; não mede tempo de integração de
 terceiros, esforço acadêmico ou usabilidade com participantes.

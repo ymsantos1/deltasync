@@ -2,6 +2,30 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'facade exposes received-envelope ACK without optional sender',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-query'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      final change = Replica(
+        engine.transport.peerReplicaId,
+      ).setDelta('remote', 'value');
+      final ack = await engine.receiveEnvelope(
+        DeltaEnvelope(
+          senderReplicaId: engine.transport.peerReplicaId,
+          recipientReplicaId: 'facade-query',
+          delta: Delta([change]),
+        ),
+      );
+      expect(ack.changeIds, {change.id});
+      expect(ack.peerReplicaId, 'facade-query');
+      expect(engine.valueAt('remote'), 'value');
+    },
+  );
   test('facade exposes isolated point query after start', () async {
     final engine = SyncEngine.withStorage(
       replica: Replica('facade-query'),

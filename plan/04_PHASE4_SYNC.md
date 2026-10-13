@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: R-24 MUST concluída em 2026-10-13; R-26 SHOULD pronta e R-27 planejada.
+Estado: R-24 MUST e R-26 SHOULD concluídas em 2026-10-13; R-27 SHOULD pronta.
 R-08a a R-08d mantêm conclusão histórica no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
@@ -188,7 +188,7 @@ Evidência de conclusão: [execução R-24](TRACEABILITY.md#execucao-r-24-2026-1
 
 ## R-26 — Simplificar recepção e confirmação durável no consumidor
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-24, VAL-13
 
@@ -197,21 +197,21 @@ Origem: análise da integração Compass e autorização do autor em 2026-10-13.
 
 Critérios:
 
-- [ ] Comparar fluxo incoming existente e pull do Compass; escolher apoio mínimo com uso concreto nos dois percursos, sem framework de plugins ou protocolo obrigatório.
-- [ ] Centralizar sequência repetida de validação de envelope, aplicação durável e confirmação; deixar busca/rede configuráveis no adaptador e regras do domínio no consumidor.
-- [ ] ACK appliedAndPersisted ocorre somente após commit bem-sucedido; peer errado, rollback, falha de rede, duplicação e retry preservam estado/outbox. Edição local continua disponível durante espera de rede.
-- [ ] Preservar contratos existentes e lifecycle/cancelamento explícitos. Mostrar redução de coordenação no consumidor, revisar após correções e validar sync/transport/SQLite/facade e integração afetada.
+- [x] Comparar fluxo incoming existente e pull do Compass; escolher apoio mínimo com uso concreto nos dois percursos, sem framework de plugins ou protocolo obrigatório.
+- [x] Centralizar sequência repetida de validação de envelope, aplicação durável e confirmação; deixar busca/rede configuráveis no adaptador e regras do domínio no consumidor.
+- [x] ACK appliedAndPersisted ocorre somente após commit bem-sucedido; peer errado, rollback, falha de rede, duplicação e retry preservam estado/outbox. Edição local continua disponível durante espera de rede.
+- [x] Preservar contratos existentes e lifecycle/cancelamento explícitos. Mostrar redução de coordenação no consumidor, revisar após correções e validar sync/transport/SQLite/facade e integração afetada.
 
 Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
 regressões e compatibilidade são obrigatórias na própria tarefa.
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-26](TRACEABILITY.md#execucao-r-26-2026-10-13).
 
 <a id="r-27"></a>
 
 ## R-27 — Facilitar acompanhamento público da sincronização
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-26, R-17
 
