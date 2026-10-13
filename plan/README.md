@@ -117,15 +117,15 @@ mas não é revisão independente. Pedido apenas de análise/review não autoriz
 implementar correções nem alterar status automaticamente.
 
 Fase 1: **MUST, R-16/R-20 SHOULD e R-19 COULD concluídos**. Fase 5: **MUST concluído**;
-SHOULD VAL-06 a VAL-11 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
-R-22 COULD e VAL-12 SHOULD prontas; VAL-13 SHOULD planejada.
+SHOULD VAL-06 a VAL-12 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
+R-22 COULD e VAL-13 SHOULD prontas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Sequência
-recomendada: **VAL-12**, depois VAL-13 conforme dependências e
+recomendada: **VAL-13**, conforme dependências e
 entradas. R-22 é COULD independente e não condiciona essa sequência. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
 concluíram. Publicação no pub.dev fica com o autor; este plano não autoriza upload.
@@ -212,8 +212,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-09](05_PHASE5_VALIDACAO.md#val-09) | Ampliar histórias e metadados nas propriedades dos CRDTs | concluída | SHOULD | R-13, R-14 |
 | [VAL-10](05_PHASE5_VALIDACAO.md#val-10) | Medir deltas e custo sob cargas distintas | concluída | SHOULD | VAL-06 |
 | [VAL-11](05_PHASE5_VALIDACAO.md#val-11) | Exercitar histórias geradas e múltiplas ordens de entrega | concluída | SHOULD | R-21, VAL-09, R-23 |
-| [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | pronta | SHOULD | R-21, VAL-11 |
-| [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | planejada | SHOULD | R-21, VAL-11, VAL-12 |
+| [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | concluída | SHOULD | R-21, VAL-11 |
+| [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | pronta | SHOULD | R-21, VAL-11, VAL-12 |
 
 ## Prazo e sequência até 16/11/2026
 

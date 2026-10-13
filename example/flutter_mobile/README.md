@@ -82,3 +82,12 @@ e `sqflite` 2.4.4+1 pertence a
 O percurso interativo desta versão foi executado no mesmo Moto G52 em
 [VAL-08](../../plan/TRACEABILITY.md#execucao-val-08-2026-10-12).
 iOS, rede real e avaliação com participantes não foram executados.
+
+Em 2026-10-13, [VAL-12](../../plan/TRACEABILITY.md#execucao-val-12-2026-10-13)
+revalidou o app após R-20/R-21/R-23 no mesmo Moto G52 Android 13/API 33.
+APK novo, análise e quatro testes Flutter passaram. Instalação preservou os bancos
+existentes; edição concorrente, envio offline falho, nova edição durante pendência,
+dois force-stops/reaberturas e reconciliação passaram. Inspeção dos bancos confirmou
+IDs/peers pendentes antes do ACK e outboxes vazias depois, com novo ID após restore.
+O enlace continua sintético no mesmo processo; esse percurso não comprova rede real,
+todos os oito CRDTs no Android ou outras plataformas.

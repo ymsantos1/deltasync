@@ -41,7 +41,9 @@ aprovados. VAL-11 foi liberada; autor autorizou executar a próxima ação após
 VAL-11 [concluiu](#execucao-val-11-2026-10-13) oito histórias e 32 permutações,
 com três sementes duráveis SQLite. Encontrou divergência G-Set, corrigida como
 [R-23 MUST](#execucao-r-23-2026-10-13). Gate revalidado: 224 testes Dart e quatro
-Flutter. Próxima recomendada: VAL-12 pronta; VAL-13 permanece planejada.
+Flutter. VAL-12 [concluiu](#execucao-val-12-2026-10-13) o runtime atualizado no
+Moto G52/API 33, com plugin sqflite e dois reinícios reais. Próxima: VAL-13 pronta;
+consumidor externo e rede real continuam pendentes.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -152,7 +154,7 @@ máximo por réplica sem representação explícita de lacunas.
 | Notificação pública de commits, COULD | R-17 | `SyncEngine.commits` emite origem local/remota após adoção; sem replay ou semântica de ACK; testes sync/facade e documentação |
 | Refatoração geral além das extrações de R-16 | R-20 | SHOULD concluída; estado/cópia/restauração e commits consolidados, componentes independentes, fixture anterior e regressões de ownership; [execução R-20](#execucao-r-20-2026-10-13) |
 | Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD pronta, sem implementação |
-| Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluída com oito sementes/32 permutações e três sementes SQLite; VAL-12 pronta e VAL-13 planejada. Android final e app externo/rede real pendentes |
+| Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluída com oito sementes/32 permutações e três sementes SQLite; VAL-12 concluiu runtime atualizado no Moto G52. VAL-13 pronta: app externo/rede real pendentes |
 | Equivalência de mutação/delta G-Set, achado em VAL-11 | R-23 | MUST concluída: adição repetida aplica seleção canônica, com regressão mínima e revalidação completa |
 
 ### Matriz final de evidências MUST — revalidada em 2026-10-12
@@ -3792,3 +3794,112 @@ com processos separados/Android permanecem evidência histórica própria.
 Transporte em processo não comprova rede real. Não executado runtime Android novo;
 VAL-12 exige alvo disponível. VAL-13 exige consumidor externo e rede real.
 Review não independente; escrita do TCC e publicação permanecem com o autor.
+
+<a id="execucao-val-12-2026-10-13"></a>
+
+## Execução VAL-12 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Procedimento: plan-executor, em um agente; sem revisão independente.
+
+Leitura: VAL-12 SHOULD pronta e recomendada, R-21/VAL-11 concluídas, com R-23
+MUST já corrigida. Cinco skills/AGENTS/RUNBOOK, critérios, DEC-36/38, RISK-21/31,
+percurso VAL-08 e guia Dart sobre contratos/nulabilidade consultados. Worktree
+inicial limpo; HEAD 75f03ef0bf50d0c4d9c628c5dff788fa248269db inclui os ajustes
+anteriores. Moto G52 conectado, Android 13/API 33, serial 0081889739, USB autorizado
+e tela desbloqueada. Usada autorização anterior do autor para este dispositivo.
+
+Implementação: tarefa de runtime; nenhuma alteração de produto/teste/API/formato.
+Reusado percurso interativo público da demo, sem emulador, reset ou pm clear.
+Instalação com -r preservou bancos, inicialmente A=B=Delta, itens=2, outboxes vazias.
+Backend sqflite 2.4.4+1; schema1, snapshot Replica v9/wrapper2, delta v4/outbox2.
+Build pelo Flutter do PATH produziu APK debug da revisão acima, instalado com
+Success. SHA-256: 422bd2a5d99e36d713db10e07a71e31cb5ec0ee78339da511421729748c536c4.
+Somente documentação/plano foram alterados durante VAL-12.
+
+Review: aprovado
+Achados: revisão em etapa própria do diff documental e fluxo existente:
+DemoSession usa duas engines/storages separadas, estado da UI deriva das APIs
+públicas; start restaura antes de editar; commit precede adoção. PeerLink aguarda
+applyRemote antes de confirmar appliedAndPersisted; outbound restringe ACK ao
+peer/IDs enviados; SQLite acknowledge filtra réplica/peer/entry_id. Disponibilidade
+do peer e mensagem de confirmação são locais à sessão. Nenhum achado impeditivo
+ou correção de produto necessária. Evidências de UI/log/banco revistas depois
+do percurso: contagens/IDs/vencedor/clock consistentes; sem crash nos logs filtrados.
+Não houve correção que exigisse novo ciclo de testes. Review pelo executor não
+é independente.
+
+Validação: aprovada
+Comandos: em example/flutter_mobile, `flutter --version`, `flutter analyze`,
+`flutter test --reporter expanded`, `flutter build apk --debug` e
+`sha256sum build/app/outputs/flutter-apk/app-debug.apk`. Flutter 3.47.7/Dart 3.13.5,
+host Linux x64. Análise sem issues, quatro testes aprovados, APK gerado;
+avisos Gradle sobre acesso nativo não impediram build. Tentativas iniciais de
+ADB/Flutter no sandbox falharam por USB/socket/cache; repetidas com execução
+autorizada. Nenhuma falha de ambiente foi contada como aprovação.
+
+ADB do PATH: `adb devices -l`; demais comandos com `adb -s 0081889739`:
+`shell getprop ro.build.version.release`, `shell getprop ro.build.version.sdk`,
+`install -r build/app/outputs/flutter-apk/app-debug.apk`,
+`shell am start -n com.example.deltasync_mobile_consumer/.MainActivity`,
+`shell pidof com.example.deltasync_mobile_consumer`,
+`shell am force-stop com.example.deltasync_mobile_consumer`,
+`logcat -d --pid=<PID> -s flutter:I AndroidRuntime:E`,
+`exec-out screencap -p`, `shell uiautomator dump /sdcard/deltasync-val12-ui.xml`,
+`shell input tap <x> <y>`, `shell input text <título>`, `shell input keyevent 4`
+e `shell input swipe <coordenadas> 500`. Controles localizados por captura/UI;
+aguardado término das ações antes de verificar estado. Sem hot reload/restart.
+
+Runtime, logs VAL08 preservados como rótulo da instrumentação existente:
+
+| Etapa | PID | A: título/itens/pendências | B: título/itens/pendências |
+|---|---:|---|---|
+| Instalação preserva banco e restaura | 32696 | Delta/2/0 | Delta/2/0 |
+| Escritas concorrentes e incrementos offline | 32696 | VAL12_A/3/2 | VAL12_B/3/2 |
+| Envio falha, peer offline | 32696 | VAL12_A/3/2 | VAL12_B/3/2 |
+| Nova edição após falha | 32696 | VAL12_C/3/3 | VAL12_B/3/2 |
+| Primeiro force-stop/reabertura | 1364 | VAL12_C/3/3 | VAL12_B/3/2 |
+| Peer ativado, envio e ACK | 1364 | VAL12_C/4/0 | VAL12_C/4/0 |
+| Nova edição após reconciliação | 1364 | VAL12_D/4/1 | VAL12_C/4/0 |
+| Novo envio confirmado | 1364 | VAL12_D/4/0 | VAL12_D/4/0 |
+| Segundo force-stop/reabertura | 2541 | VAL12_D/4/0 | VAL12_D/4/0 |
+
+Nos dois force-stops, pidof retornou vazio antes do novo am start. UI confirmou
+3 deltas de A e 2 de B após o primeiro envio bem-sucedido; último envio removeu
+a nova pendência de A. Peer voltou offline ao reabrir, conforme contrato da demo.
+
+Bancos lidos após encerramento do processo via `exec-out run-as
+com.example.deltasync_mobile_consumer cat databases/shopper-a.sqlite` e arquivo
+equivalente de B, somente para cópias locais. Python sqlite3 abriu cópias com
+`mode=ro`, consultou deltasync_snapshots/deltasync_outbox e conferiu asserts.
+Antes do ACK: A guardava shopper-a:delta:4, shopper-a:delta:5 e
+g-counter:["shopping/items","shopper-a",2], todos destinados a shopper-b;
+B guardava shopper-b:delta:2 e g-counter:["shopping/items","shopper-b",2],
+destinados a shopper-a. Quatro entradas enviadas tinham attempts=1/status=sent;
+nova escrita A:5 permanecia pending/attempts=0. Nada foi apagado pela falha.
+Depois: ambas outboxes vazias; vencedor id shopper-a:delta:6, valor VAL12_D,
+HLC 1791918365292:0; clocks a=6/b=2, componentes G a=2/b=2. Nova sequência A=6,
+B=2, sem reutilizar IDs após restauração. Essas verificações complementam UI/logs.
+
+Critérios: (1) revisão/SDK/alvo/plugin/hash/build/install registrados; (2) conflito
+offline, falha/retry e nova edição com pendências executados; (3) dois reinícios
+reais, outbox antes/depois, ACK só após commit e nova abertura aprovados;
+(4) ações/logs/bancos/limites acima; (5) review de evidências sem bloqueios e gate
+de runtime atualizado. Gate Dart de 224 testes permanece evidência de VAL-11/R-23,
+não foi reexecutado nesta tarefa sem alteração de produto.
+
+Manutenção: critérios VAL-12 marcados, fase/índice/matriz/RISK-21/31 e README
+do consumidor atualizados; VAL-13 liberada, R-22 COULD permanece pronta, tarefa
+ativa limpa. DEC-36/38 continuam suficientes, sem decisão arquitetural nova.
+`python3 scripts/check_plan.py` e `git diff --check` executados após manutenção
+e conferidos antes de concluir.
+
+Limitações: duas réplicas no mesmo app, enlace sintético, dois tipos no percurso
+Android (LWW/G-Counter); demais seis continuam cobertos pelas suítes gerais.
+Nenhuma alegação de rede real, iOS, outro aparelho, participantes ou injeção de
+falha de abertura no Android. SDK/build/host tests não substituem esses cenários.
+Logs/capturas/cópias locais em /tmp/deltasync-val12-* são temporários; esta tabela,
+IDs/hash/fontes e comandos preservam a evidência textual no repositório.
+App ficou instalado e aberto com os dados finais da demo. Escrita do TCC e
+publicação seguem sob responsabilidade do autor.

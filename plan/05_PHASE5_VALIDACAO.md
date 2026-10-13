@@ -1,7 +1,7 @@
 # Fase 5 — Validação técnica e entrega
 
 Estado: concluída em 2026-10-12 após revalidação do gate MUST.
-Extensão de confiança SHOULD: VAL-11 concluída; VAL-12 pronta e VAL-13 planejada em 2026-10-13;
+Extensão de confiança SHOULD: VAL-11/VAL-12 concluídas; VAL-13 pronta em 2026-10-13;
 não apagam o fechamento técnico histórico nem criam novos requisitos MUST.
 VAL-07 mantém conclusão histórica no Android; melhorias são tarefas próprias.
 Objetivo: consolidar evidências técnicas e demonstração da biblioteca.
@@ -403,7 +403,7 @@ Evidência de conclusão: [execução VAL-11](TRACEABILITY.md#execucao-val-11-20
 
 ## VAL-12 — Revalidar runtime Android após os ajustes estruturais
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-21, VAL-11
 
@@ -415,30 +415,30 @@ autor, sem tornar emulador ou segundo aparelho uma exigência automática.
 
 Critérios:
 
-- [ ] Registrar revisão/diff executado, Flutter/Dart, dispositivo, Android/API,
+- [x] Registrar revisão/diff executado, Flutter/Dart, dispositivo, Android/API,
   backend sqflite e preparação; gerar e instalar o APK correspondente.
-- [ ] Executar edição offline, versões concorrentes e falha/retry de envio;
+- [x] Executar edição offline, versões concorrentes e falha/retry de envio;
   confirmar disponibilidade da edição e preservação de pendências antes do ACK.
-- [ ] Encerrar e reiniciar o processo, verificando estado e outbox em banco
+- [x] Encerrar e reiniciar o processo, verificando estado e outbox em banco
   persistente. Reconciliar réplicas e confirmar remoção apenas de IDs reconhecidos
   por ACK durável; verificar nova abertura após confirmação.
-- [ ] Registrar ações/resultados/logs e limitações. Distinguir duas réplicas no
+- [x] Registrar ações/resultados/logs e limitações. Distinguir duas réplicas no
   mesmo app, enlace em processo e comunicação real entre dispositivos; não
   extrapolar execução em um Android para iOS, outros modelos ou rede real.
-- [ ] Revisar evidências e corrigir/retestar achados relevantes antes da conclusão;
+- [x] Revisar evidências e corrigir/retestar achados relevantes antes da conclusão;
   atualizar matriz e gate técnico. Sem alvo disponível, registrar pendência ou
   adiamento SHOULD; nunca declarar runtime aprovado apenas pelo build.
 
 Validação: `flutter analyze`, `flutter test`, `flutter build apk --debug` e runtime
 no alvo registrado. Uso de dispositivo continua respeitando autorização do autor.
 Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução VAL-12](TRACEABILITY.md#execucao-val-12-2026-10-13).
 
 <a id="val-13"></a>
 
 ## VAL-13 — Validar integração de consumidor externo com SQLite e rede real
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-21, VAL-11, VAL-12
 
@@ -494,8 +494,8 @@ sem dispositivo conectado e sem mudança na integração de plataforma. Evidênc
 anteriores permanecem no histórico.
 R-21 revalidou o gate com suíte completa, SQLite/CLI e Flutter analyze/test em 2026-10-13.
 VAL-11/R-23 revalidaram o gate em 2026-10-13: 224 testes Dart e quatro Flutter,
-com histórias geradas e reabertura SQLite. VAL-12 pronta e VAL-13 planejada mantêm
-evidências Android final/consumidor externo pendentes. São ampliações SHOULD;
+com histórias geradas e reabertura SQLite. VAL-12 concluiu Android final no Moto G52/API 33, com dois reinícios reais,
+SQLite e reconciliação; VAL-13 pronta mantém consumidor externo/rede real pendentes. São ampliações SHOULD;
 complementam as quatro categorias de testes já demonstradas;
 não invalidam resultados históricos nem certificam prontidão para publicação.
 Escrita e revisão do TCC permanecem fora desta fase.
