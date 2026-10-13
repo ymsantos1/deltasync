@@ -35,6 +35,24 @@ class Replica {
   /// Detached read-only state; mutations must go through this Replica.
   ReplicaState get state => _state.copy();
 
+  /// Returns the isolated value of one address without copying other fields.
+  ///
+  /// Missing addresses, LWW null values and LWW tombstones return null, as in
+  /// indexing [ReplicaState]. Bound counters return int, sets/registers
+  /// return `Set<Object?>` (except LWW), and OR-Map returns `Map<String, Set<Object?>>`.
+  /// Nested collections are read-only and detached from future mutations.
+  Object? valueAt(String address) => switch (_state.kindAt(address)) {
+    null => null,
+    CrdtKind.lww => _state[address],
+    CrdtKind.gCounter => gCounterValue(address),
+    CrdtKind.pnCounter => pnCounterValue(address),
+    CrdtKind.gSet => gSetValue(address),
+    CrdtKind.twoPSet => twoPSetValue(address),
+    CrdtKind.mvRegister => mvRegisterValue(address),
+    CrdtKind.orSet => orSetValue(address),
+    CrdtKind.orMap => orMapValue(address),
+  };
+
   VectorClock get clock => _clock;
 
   HlcTimestamp get hlcTimestamp => _hlc.current;

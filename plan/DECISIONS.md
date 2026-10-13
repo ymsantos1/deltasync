@@ -187,6 +187,17 @@ Compass reutiliza codec nas duas direções; ACK de pull mantém checagem de pee
 estágio e interseção com pendências. Envelopes/snapshots/SQLite não mudam.
 Ver [execução R-24](TRACEABILITY.md#execucao-r-24-2026-10-13).
 
+DEC-42 — Aplicada em R-25, 2026-10-13: Replica.valueAt usa kindAt e switch
+exaustivo dos oito CRDTs, reutilizando valores isolados existentes; SyncEngine.valueAt
+consulta a réplica interna somente quando started. Não chama fork/state.copy nem
+altera cópias de commit/rollback. Query síncrona lê último estado adotado durante
+commit/rede; antes de restauração ou após dispose lança StateError.
+Ausente/LWW null/tombstone continuam null; valores dos demais tipos preservam
+int/Set/Map. Coleções aninhadas permanecem isoladas/somente leitura. API é aditiva;
+views/helpers anteriores e formatos persistidos não mudam. Sem classe de resultado,
+codegen ou requisito específico de Booking.
+Ver [execução R-25](TRACEABILITY.md#execucao-r-25-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

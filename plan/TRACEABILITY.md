@@ -4225,3 +4225,57 @@ passam a ter um dono comum. Identidade/domínio/UI continuam no consumidor.
 Checks finais após manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas
 e 283 links locais; prontas R-22 COULD, R-25 MUST e R-26 SHOULD. git diff --check
 aprovado no DeltaSync e no samples. Tarefa ativa nenhuma; próxima R-25.
+
+<a id="execucao-r-25-2026-10-13"></a>
+
+## Execução R-25 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-21/VAL-13 concluídas, R-25 próxima MUST pronta e autorizada. Lidos cinco procedimentos, índice/RUNBOOK, critérios da fase, AGENTS, guia Dart sobre switches exaustivos/nulabilidade, DEC-40/41 e RISK-33; código de estado/valores, commits e baseline R-21/Compass inspecionados. Base observada e338843; trabalho anterior preservado, sem commits automáticos.
+Implementação: Replica.valueAt e SyncEngine.valueAt oferecem consulta pública por endereço; switch fechado reutiliza oito consultas isoladas. Engine lê somente quando started e não faz fork. Testes core/sync/facade/SQLite e carga fixa reproduzível adicionados. Compass TripNotesRepository usa valueAt; README e guia externo documentam consumo/lifecycle/limites.
+Review: aprovado
+Achados: primeira validação encontrou preparo incompleto OR-Map nos novos testes (chave não criada), dois avisos de HTML no dartdoc e nome do script fora de convenção. Corrigidos nos três testes, comentário e nome r25_query_cost.dart; revisão das correções aprovada e suíte afetada repetida. Sem achados impeditivos restantes; review pelo implementador não é independente.
+Validação: aprovada
+Comandos: Dart 3.13.5/Flutter 3.47.7 do PATH, Linux x64. Format/analyze/test raiz/core/sync/storage_sqflite aprovados após correções: 11/122/45/27 testes (205), análise sem issues. Compass flutter analyze e 72 testes aprovados, incluindo processos separados/HTTP real/SQLite/reabertura/perda de ACK; APK debug main_deltasync compilado. Comparação fixa de consulta executada e snapshot inalterado. diff --check nos dois repositórios e check do patch incremental aprovados; checker final após manutenção abaixo.
+Critérios: (1) testes core/sync/facade cobrem ausência, LWW null/tombstone, tipos e consultas antes/durante restauração e após dispose; (2) inspeção confirma lookup por endereço sem fork/state.copy, cópias transacionais intactas; (3) oito tipos após snapshot e SQLite reaberto, coleções aninhadas imutáveis/destacadas, falha de rede e leitura durante commit/rollback cobertas; carga fixa preserva snapshot; (4) consumo Compass/guia atualizados, APIs anteriores e formatos preservados, revisão e checks repetidos após correções.
+Manutenção: quatro critérios marcados, índice/fase atualizados, DEC-42 e RISK-33 registrados; VAL-14 liberada e próxima recomendada. VAL-05 continua planejada até VAL-14. Resultados/patch externo reproduzíveis preservados; nenhuma tarefa SHOULD iniciada.
+Limitações: Object? exige interpretação pelo consumidor conforme tipo CRDT; ausência/LWW null/tombstone compartilham retorno null, como API anterior, sem perda de metadados internos. Consulta não implica ACK. Comparação não mede heap nem garante latência universal. SQLite/HTTP provados no Linux; APK compilado, sem instalação/runtime novo Android. Warnings Gradle/Kotlin futuros do consumidor permanecem. MemoryStorage não comprova durabilidade; teste SQLite dedicado complementa. Sem codegen, publicação ou escrita do TCC.
+
+### Comandos e evidência reproduzível
+
+Na raiz DeltaSync:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage_sqflite; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done
+dart run plan/evidence/r25_query_cost.dart
+python3 scripts/check_plan.py
+git diff --check
+```
+
+No Compass app: flutter analyze; flutter test --reporter expanded;
+flutter build apk --debug --target lib/main_deltasync.dart --no-pub.
+Escrita externa e comandos SDK usaram permissões da ferramenta para os caminhos
+fora do sandbox; autorização de R-25 já fornecida. Falha inicial de validação
+permanece registrada acima; não foi tratada como aprovação.
+
+[Carga fixa](evidence/r25_query_cost.dart) e [resultado](evidence/r25_query_cost.json):
+500 campos LWW, dez itens por campo, dez leituras de aquecimento e cinco amostras
+de cem leituras. Medianas: engine.replica.state[] 756.267 microsegundos;
+engine.valueAt 990 microsegundos. Resultados equivalentes e snapshot completo
+inalterado; valores refletem somente esta entrada/host/execução, sem threshold.
+
+[Patch incremental Compass](evidence/r25-compass.patch) altera repositório e guia.
+Aplicar após patches VAL-13/R-24; git apply --check passou em cópia temporária
+reproduzida dessas baselines. Fonte externa ainda possui alterações não commitadas;
+patch mantém reprodução até existir referência Git equivalente acessível.
+Regras de chave/UI/domínio continuam no consumidor; estado, delta, join, commit
+e restore continuam nos contratos da biblioteca. Nenhuma nova camada/classe de
+produção foi criada; a manutenção da consulta reside em Replica.valueAt.
+
+Checks após manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas e
+288 links locais; prontas R-22 COULD, R-26 SHOULD e VAL-14 MUST.
+git diff --check aprovado no DeltaSync e no samples. Tarefa ativa nenhuma;
+próxima recomendada VAL-14, sem iniciar execução neste pedido.

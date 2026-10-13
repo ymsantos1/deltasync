@@ -2,6 +2,24 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('facade exposes isolated point query after start', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-query'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    addTearDown(engine.dispose);
+    await engine.setDelta('field', {
+      'items': [1],
+    });
+    expect(engine.valueAt('field'), {
+      'items': [1],
+    });
+    expect(
+      () => (engine.valueAt('field') as Map).clear(),
+      throwsUnsupportedError,
+    );
+  });
   test('replicas converge after exchanging deltas', () {
     final first = Replica('first');
     final second = Replica('second');

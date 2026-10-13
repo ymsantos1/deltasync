@@ -120,8 +120,8 @@ Fechamento histórico: Fase 1 MUST, R-16/R-20 SHOULD e R-19 COULD concluídos;
 Fase 5 MUST validado antes da nova ampliação de ergonomia.
 SHOULD VAL-06 a VAL-13 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
 R-22 COULD permanece pronta e opcional. Ampliação de ergonomia autorizada em
-13/10: R-24 MUST concluída; R-25 MUST e R-26 SHOULD prontas.
-VAL-14 MUST e R-27/VAL-15 SHOULD planejadas.
+13/10: R-24/R-25 MUST concluídas; VAL-14 MUST e R-26 SHOULD prontas.
+R-27/VAL-15 SHOULD planejadas.
 VAL-05 retorna a planejada para revalidar os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
@@ -129,7 +129,7 @@ do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-25 MUST**, consulta pontual pela engine; R-26 SHOULD também está pronta.
+selecionável: **VAL-14 MUST**, guia de integração e revalidação; R-26 SHOULD também está pronta.
 R-22 COULD permanece opcional após os MUST.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
@@ -219,11 +219,11 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-11](05_PHASE5_VALIDACAO.md#val-11) | Exercitar histórias geradas e múltiplas ordens de entrega | concluída | SHOULD | R-21, VAL-09, R-23 |
 | [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | concluída | SHOULD | R-21, VAL-11 |
 | [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | concluída | SHOULD | R-21, VAL-11, VAL-12 |
-| [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | pronta | MUST | R-21, VAL-13 |
+| [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | concluída | MUST | R-21, VAL-13 |
 | [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | concluída | MUST | R-08b, VAL-13 |
 | [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | pronta | SHOULD | R-24, VAL-13 |
 | [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | planejada | SHOULD | R-26, R-17 |
-| [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | planejada | MUST | R-24, R-25, VAL-13 |
+| [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | pronta | MUST | R-24, R-25, VAL-13 |
 | [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | planejada | SHOULD | R-26, R-27, VAL-13 |
 
 ## Prazo e sequência até 16/11/2026

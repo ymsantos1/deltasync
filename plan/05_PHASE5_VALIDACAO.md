@@ -500,7 +500,7 @@ Evidência de conclusão: [execução VAL-13](TRACEABILITY.md#execucao-val-13-20
 
 ## VAL-14 — Documentar e revalidar integração com APIs simplificadas
 
-Status: planejada
+Status: pronta
 MoSCoW: MUST
 Dependências: R-24, R-25, VAL-13
 

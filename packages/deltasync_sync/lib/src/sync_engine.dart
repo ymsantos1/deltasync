@@ -54,6 +54,20 @@ class SyncEngine {
     return _replica.fork();
   }
 
+  /// Reads one committed field without forking the replica or copying its state.
+  ///
+  /// Call after awaiting [start]. Throws StateError before restoration or after
+  /// disposal. During an in-flight commit, reads the last successfully adopted
+  /// value; network waits do not block this synchronous query.
+  /// Result types and null semantics follow [Replica.valueAt]. Collections are
+  /// detached and read-only. This read does not imply remote acknowledgement.
+  Object? valueAt(String address) {
+    if (_lifecycle != SyncEngineLifecycle.started) {
+      throw StateError('SyncEngine query requires a started engine');
+    }
+    return _replica.valueAt(address);
+  }
+
   /// Current initialization, running or terminal lifecycle state.
   SyncEngineLifecycle get lifecycle => _lifecycle;
 

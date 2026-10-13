@@ -208,6 +208,16 @@ exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
 `DeltaAcknowledgement` e `DeltaAckStage`. A facade `deltasync` reexporta esses
 quatro pacotes.
 
+Para consultar um campo após `await engine.start()`, use
+`engine.valueAt('endereco')`. A consulta síncrona lê somente o valor já
+incorporado por commit; não copia toda a réplica nem aguarda rede. Antes de
+restaurar e após dispose, lança StateError. Durante commit em andamento, devolve
+o último valor adotado. `Replica.valueAt` oferece a mesma consulta no core.
+Endereço ausente, LWW null e tombstone retornam null, como a consulta LWW
+anterior; contadores vinculados retornam int, MV/sets retornam Set<Object?> e
+OR-Map retorna Map<String, Set<Object?>>. Coleções aninhadas são isoladas e
+somente leitura. Consultar não confirma envio; APIs anteriores continuam disponíveis.
+
 `DeltaCodec` grava versão 4 com contexto MV compacto. Lê v3 com listas explícitas
 e versões 1 e 2 antigas, convertendo operações LWW em `LwwDelta`: soma dos
 componentes de `VectorClock` vira timestamp físico sintético; `replicaId` e ID
