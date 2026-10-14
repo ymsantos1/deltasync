@@ -21,6 +21,11 @@ e medições permanecem na pasta `example/` do
 próprias. Consulte ou clone o repositório para executá-los. Planos e evidências
 também permanecem no repositório, fora do pacote distribuído pelo pub.dev.
 
+A integração em um aplicativo existente está no
+[fork do Compass com DeltaSync](https://github.com/ymsantos1/samples-for-tcc).
+Consulte esse repositório para acessar as adaptações do aplicativo e o servidor
+de notas usado nos exemplos de sincronização.
+
 ## Uso
 
 ```dart
