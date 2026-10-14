@@ -1,0 +1,20 @@
+{
+  "codeRevision": "3532a32",
+  "closureBase": "e591507f5a4fe17096027e7cce4a276297bf1eb9",
+  "librarySourceUnchangedSinceRuntime": true,
+  "compassFilesCompared": 17,
+  "compassMatchesValidatedPatches": true,
+  "apkSha256": "9858de9ce114f58ab481886ccc77ee8f30a7916d31208aee5ae14626fc24921c",
+  "runtimeArtifactVerified": true,
+  "workspaceTestCounts": {
+    ".": 11,
+    "deltasync_core": 122,
+    "deltasync_sync": 45,
+    "deltasync_storage": 12,
+    "deltasync_storage_sqflite": 27,
+    "deltasync_storage_testing": 8,
+    "deltasync_transport": 10
+  },
+  "workspaceTotal": 235,
+  "evidenceOrigin": "VAL-14 execution in this session; no new Android execution claimed"
+}

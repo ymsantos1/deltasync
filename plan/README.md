@@ -119,9 +119,9 @@ implementar correções nem alterar status automaticamente.
 Fechamento histórico: Fase 1 MUST, R-16/R-20 SHOULD e R-19 COULD concluídos;
 Fase 5 MUST validado antes da nova ampliação de ergonomia.
 SHOULD VAL-06 a VAL-13 e R-21 concluídas; R-23 MUST corrigiu achado de VAL-11.
-R-22 COULD permanece pronta e opcional. Ampliação de ergonomia autorizada em
+R-22 COULD concluída com runtime Android do enlace compartilhado. Ampliação de ergonomia autorizada em
 13/10: R-24/R-25/VAL-14 e VAL-05 MUST concluídas; R-26 SHOULD concluída.
-R-27 SHOULD pronta; VAL-15 SHOULD planejada.
+R-27 e VAL-15 SHOULD concluídas; VAL-15 validou dois Androids físicos com hub HTTP/SQLite.
 VAL-05 revalidou os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
@@ -129,7 +129,8 @@ do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-27 SHOULD**, acompanhamento público da sincronização.
+selecionável: **nenhuma**. Todas as tarefas atuais concluídas, inclusive VAL-16
+com oito CRDTs em dois Androids; limites de histórias/plataforma permanecem registrados.
 R-22 COULD permanece opcional após os MUST.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
@@ -188,7 +189,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-19](01_PHASE1_CORRECOES.md#r-19) | Compactar contexto causal do MV-Register com compatibilidade | concluída | COULD | VAL-09, VAL-10 |
 | [R-20](01_PHASE1_CORRECOES.md#r-20) | Refatorar responsabilidades e eliminar duplicação estrutural | concluída | SHOULD | R-16, R-19 |
 | [R-21](01_PHASE1_CORRECOES.md#r-21) | Reduzir travessias e alocações redundantes no core | concluída | SHOULD | R-20 |
-| [R-22](01_PHASE1_CORRECOES.md#r-22) | Reutilizar enlace comum dos exemplos sem generalizar infraestrutura | pronta | COULD | R-20 |
+| [R-22](01_PHASE1_CORRECOES.md#r-22) | Reutilizar enlace comum dos exemplos sem generalizar infraestrutura | concluída | COULD | R-20 |
 | [R-23](01_PHASE1_CORRECOES.md#r-23) | Preservar equivalência da adição repetida no G-Set | concluída | MUST | R-06a |
 | [R-06a](02_PHASE2_CRDTS.md#r-06a) | G-Set | concluída | MUST | R-08d |
 | [R-06b](02_PHASE2_CRDTS.md#r-06b) | 2P-Set | concluída | MUST | R-08d |
@@ -222,9 +223,10 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | concluída | MUST | R-21, VAL-13 |
 | [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | concluída | MUST | R-08b, VAL-13 |
 | [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | concluída | SHOULD | R-24, VAL-13 |
-| [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | pronta | SHOULD | R-26, R-17 |
+| [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | concluída | SHOULD | R-26, R-17 |
 | [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | concluída | MUST | R-24, R-25, VAL-13 |
-| [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | planejada | SHOULD | R-26, R-27, VAL-13 |
+| [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | concluída | SHOULD | R-26, R-27, VAL-13 |
+| [VAL-16](05_PHASE5_VALIDACAO.md#val-16) | Exercitar oito CRDTs entre dois Androids com peers diretos | concluída | SHOULD | VAL-15, R-07a, R-26 |
 
 ## Prazo e sequência até 16/11/2026
 

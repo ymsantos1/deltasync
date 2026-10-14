@@ -80,6 +80,15 @@ class SyncEngine {
   /// The stream closes when [dispose] completes.
   Stream<SyncCommitEvent> get commits => _commits.stream;
 
+  /// Non-replaying session events: restored, committed, push result/failure and
+  /// incoming failure. Existing commits/errors streams retain their contracts.
+  /// Read pendingDelta/valueAt after events; commit never means remote ACK.
+  /// Subscribe before start for restoration, or query after start when joining
+  /// later. Push results follow durable local outbox acknowledgement.
+  /// Listeners run asynchronously and cannot govern commits. Cancel subscriptions
+  /// before dispose if paused; the stream closes after accepted work drains.
+  Stream<SyncObservation> get observations => _observations.stream;
+
   @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
   final PendingDeltaStore? store;
   final ReplicaStorage? storage;
@@ -106,6 +115,8 @@ class SyncEngine {
       StreamController<SyncFailure>.broadcast();
   final StreamController<SyncCommitEvent> _commits =
       StreamController<SyncCommitEvent>.broadcast(sync: false);
+  final StreamController<SyncObservation> _observations =
+      StreamController<SyncObservation>.broadcast(sync: false);
   final SyncRetryPolicy retryPolicy;
 
   /// Restores state and subscribes to remote changes. Repeated calls after
@@ -145,6 +156,7 @@ class SyncEngine {
         _receiveRemote,
         onError: _receiveStreamError,
       );
+      _observations.add(const SyncRestoredEvent());
     } catch (_) {
       if (_lifecycle != SyncEngineLifecycle.disposed) {
         _lifecycle = SyncEngineLifecycle.created;
@@ -301,9 +313,21 @@ class SyncEngine {
     final running = _pushFuture;
     if (running != null) return running;
     late final Future<SyncPushResult> pushing;
-    pushing = start().then((_) => _pushReady(force: force)).whenComplete(() {
-      if (identical(_pushFuture, pushing)) _pushFuture = null;
-    });
+    pushing = start()
+        .then((_) => _pushReady(force: force))
+        .then((result) {
+          _observations.add(result);
+          return result;
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          _observations.add(
+            SyncPushFailure(error: error, stackTrace: stackTrace),
+          );
+          Error.throwWithStackTrace(error, stackTrace);
+        })
+        .whenComplete(() {
+          if (identical(_pushFuture, pushing)) _pushFuture = null;
+        });
     _pushFuture = pushing;
     return pushing;
   }
@@ -361,6 +385,7 @@ class SyncEngine {
     await _queue.drained;
     await _errors.close();
     await _commits.close();
+    await _observations.close();
   }
 
   Future<T> _commitLocal<T extends DeltaChange>(T Function(Replica) mutate) =>
@@ -402,7 +427,9 @@ class SyncEngine {
   }
 
   void _notifyCommit(SyncCommitOrigin origin) {
-    if (!_commits.isClosed) _commits.add(SyncCommitEvent(origin: origin));
+    final event = SyncCommitEvent(origin: origin);
+    if (!_commits.isClosed) _commits.add(event);
+    if (!_observations.isClosed) _observations.add(event);
   }
 
   void _receiveStreamError(Object error, StackTrace stackTrace) {
@@ -414,11 +441,13 @@ class SyncEngine {
     Object error,
     StackTrace stackTrace,
   ) {
-    if (!_errors.isClosed) {
-      _errors.add(
-        SyncFailure(source: source, error: error, stackTrace: stackTrace),
-      );
-    }
+    final failure = SyncFailure(
+      source: source,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    if (!_errors.isClosed) _errors.add(failure);
+    if (!_observations.isClosed) _observations.add(failure);
   }
 
   Future<T> _withStarted<T>(Future<T> Function() action) {

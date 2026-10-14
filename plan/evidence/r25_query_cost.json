@@ -1,0 +1,14 @@
+{
+  "fields": 500,
+  "itemsPerField": 10,
+  "readsPerSample": 100,
+  "warmupReads": 10,
+  "unit": "microseconds",
+  "samples": {
+    "replica.state[]": [791059, 756267, 761222, 732314, 746806],
+    "valueAt": [1056, 973, 990, 974, 999]
+  },
+  "snapshotUnchanged": true,
+  "environment": "Dart 3.13.5, Linux x64",
+  "limitations": "Fixed workload; not a universal benchmark, memory measurement or test threshold."
+}

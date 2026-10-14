@@ -1,0 +1,18 @@
+{
+  "runtime": "not executed; user disconnected phone",
+  "topology": "two fixed LWW clients, durable materialized-state hub",
+  "apks": {
+    "alpha": {
+      "path": "/tmp/val15-apks/compass-alpha.apk",
+      "replicaId": "alpha",
+      "peerId": "notes-hub",
+      "sha256": "058230c4b987617ce1d2cae34ed748cc479f653d20e828a9e8f42bdb47ea6a2e"
+    },
+    "beta": {
+      "path": "/tmp/val15-apks/compass-beta.apk",
+      "replicaId": "beta",
+      "peerId": "notes-hub",
+      "sha256": "9eccc5414c1ce87bcea661d1f105a4a18931b29e434913a667688af326d56602"
+    }
+  }
+}

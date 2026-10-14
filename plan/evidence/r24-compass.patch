@@ -1,0 +1,187 @@
+--- a/compass_app/app/lib/data/services/notes/http_notes_transport.dart
++++ b/compass_app/app/lib/data/services/notes/http_notes_transport.dart
+@@ -49,35 +49,24 @@
+ 
+   @override
+   Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async =>
+-      decodeNotesAck(await request('POST', '/sync/push', envelope.toJson()));
++      DeltaAcknowledgement.fromJson(
++        await request('POST', '/sync/push', envelope.toJson()),
++      );
+ 
+   Future<DeltaEnvelope> pull() async =>
+       DeltaEnvelope.fromJson(await request('GET', '/sync/pull'));
+ 
+   Future<void> acknowledge(DeltaEnvelope envelope) async {
+-    await request('POST', '/sync/ack', {
+-      'peerReplicaId': envelope.recipientReplicaId,
+-      'stage': DeltaAckStage.appliedAndPersisted.wireName,
+-      'changeIds': [for (final change in envelope.delta.changes) change.id],
+-    });
++    await request(
++      'POST',
++      '/sync/ack',
++      DeltaAcknowledgement(
++        peerReplicaId: envelope.recipientReplicaId,
++        stage: DeltaAckStage.appliedAndPersisted,
++        changeIds: envelope.delta.changes.map((change) => change.id),
++      ).toJson(),
++    );
+   }
+ 
+   void close() => _client.close(force: true);
+ }
+-
+-DeltaAcknowledgement decodeNotesAck(Map<String, Object?> json) {
+-  final peer = json['peerReplicaId'];
+-  final stage = json['stage'];
+-  final ids = json['changeIds'];
+-  if (peer is! String ||
+-      stage is! String ||
+-      ids is! List ||
+-      ids.any((id) => id is! String)) {
+-    throw const FormatException('Invalid notes ACK');
+-  }
+-  return DeltaAcknowledgement(
+-    peerReplicaId: peer,
+-    stage: DeltaAckStage.fromWire(stage),
+-    changeIds: ids.cast<String>(),
+-  );
+-}
+--- a/compass_app/server/bin/notes_server.dart
++++ b/compass_app/server/bin/notes_server.dart
+@@ -63,13 +63,11 @@
+             throw const FormatException('Wrong notes peer');
+           }
+           await engine.applyRemote(envelope.delta);
+-          result = {
+-            'peerReplicaId': 'compass-peer',
+-            'stage': DeltaAckStage.appliedAndPersisted.wireName,
+-            'changeIds': [
+-              for (final change in envelope.delta.changes) change.id,
+-            ],
+-          };
++          result = DeltaAcknowledgement(
++            peerReplicaId: 'compass-peer',
++            stage: DeltaAckStage.appliedAndPersisted,
++            changeIds: envelope.delta.changes.map((change) => change.id),
++          ).toJson();
+         case ('GET', '/sync/pull'):
+           result = DeltaEnvelope(
+             senderReplicaId: 'compass-peer',
+@@ -77,11 +75,9 @@
+             delta: await engine.pendingDelta(),
+           ).toJson();
+         case ('POST', '/sync/ack'):
+-          final ids = body['changeIds'];
+-          if (body['peerReplicaId'] != 'compass-device' ||
+-              body['stage'] != DeltaAckStage.appliedAndPersisted.wireName ||
+-              ids is! List ||
+-              ids.any((id) => id is! String)) {
++          final ack = DeltaAcknowledgement.fromJson(body);
++          if (ack.peerReplicaId != 'compass-device' ||
++              ack.stage != DeltaAckStage.appliedAndPersisted) {
+             throw const FormatException('Invalid durable ACK');
+           }
+           final pending = (await engine.pendingDelta()).changes
+@@ -90,7 +86,7 @@
+           await storage.acknowledge(
+             'compass-peer',
+             'compass-device',
+-            ids.cast<String>().toSet().intersection(pending),
++            ack.changeIds.intersection(pending),
+           );
+           result = {'ok': true};
+         case ('POST', '/notes'):
+--- a/compass_app/app/test/trip_notes_integration_test.dart
++++ b/compass_app/app/test/trip_notes_integration_test.dart
+@@ -38,7 +38,7 @@
+ 
+   test('notes ACK rejects invalid stage and IDs', () {
+     expect(
+-      () => decodeNotesAck({
++      () => DeltaAcknowledgement.fromJson({
+         'peerReplicaId': 'peer',
+         'stage': 'unknown',
+         'changeIds': <String>[],
+@@ -46,7 +46,7 @@
+       throwsFormatException,
+     );
+     expect(
+-      () => decodeNotesAck({
++      () => DeltaAcknowledgement.fromJson({
+         'peerReplicaId': 'peer',
+         'stage': 'applied-and-persisted',
+         'changeIds': [1],
+@@ -166,23 +166,48 @@
+           (finalState['snapshot'] as Map)['lww'],
+           repository.engine.replica.toSnapshotJson()['lww'],
+         );
+-        // ACK from another peer cannot remove any of this fixed peer's changes.
++        // Invalid ACKs cannot remove any of this fixed peer's changes.
+         await repository.transport.request('POST', '/notes', {
+           'key': key,
+           'text': 'kept',
+         });
+-        await expectLater(
+-          repository.transport.request('POST', '/sync/ack', {
++        for (final invalid in [
++          {
+             'peerReplicaId': 'other-device',
+             'stage': 'applied-and-persisted',
+             'changeIds': ['compass-peer:delta:2'],
+-          }),
+-          throwsA(isA<HttpException>()),
+-        );
+-        expect(
+-          (await repository.transport.request('GET', '/state'))['pending'],
+-          hasLength(1),
+-        );
++          },
++          {
++            'peerReplicaId': ' compass-device',
++            'stage': 'applied-and-persisted',
++            'changeIds': ['compass-peer:delta:2'],
++          },
++          {
++            'peerReplicaId': 'compass-device',
++            'stage': 'received',
++            'changeIds': ['compass-peer:delta:2'],
++          },
++          {
++            'peerReplicaId': 'compass-device',
++            'stage': 'applied-and-persisted',
++            'changeIds': [1],
++          },
++        ]) {
++          await expectLater(
++            repository.transport.request('POST', '/sync/ack', invalid),
++            throwsA(
++              isA<HttpException>().having(
++                (error) => error.message,
++                'status',
++                startsWith('HTTP 400:'),
++              ),
++            ),
++          );
++          expect(
++            (await repository.transport.request('GET', '/state'))['pending'],
++            hasLength(1),
++          );
++        }
+       } finally {
+         await repository?.close();
+         await proxy?.close();
+--- a/compass_app/README_DELTASYNC.md
++++ b/compass_app/README_DELTASYNC.md
+@@ -77,7 +77,9 @@
+ | POST /sync/ack | Cliente confirma somente após commit SQLite local; servidor remove IDs pendentes do peer correspondente |
+ | POST /notes | Criar mudança local do peer e persistir snapshot/outbox pelo SyncEngine |
+ 
+-`http_notes_transport.dart` contém HTTP, timeouts e decodificação de ACK; o
++`http_notes_transport.dart` contém HTTP e timeouts; o codec público
++`DeltaAcknowledgement.toJson()/fromJson()` centraliza formato e validação do ACK.
++O backend ainda valida peer e estágio durável antes de remover IDs pendentes; o
+ repositório controla push/pull, restauração e notificações/falhas. `trip_notes_card.dart`
+ apresenta valor, pendência e confirmação. A identidade da chave vive em
+ `tripNotesKey`; o card recebe key por viagem para não reutilizar rascunho de outra.

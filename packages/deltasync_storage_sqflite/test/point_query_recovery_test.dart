@@ -59,8 +59,13 @@ void main() {
       final restoredStore = storage();
       final restored = engine(restoredStore);
       try {
+        final events = <SyncObservation>[];
+        final subscription = restored.observations.listen(events.add);
         expect(() => restored.valueAt('lww'), throwsStateError);
         await restored.start();
+        await Future<void>.delayed(Duration.zero);
+        expect(events.single, isA<SyncRestoredEvent>());
+        expect(events.whereType<SyncPushResult>(), isEmpty);
         expect(restored.valueAt('remote'), 'persisted before ACK');
         for (final entry in before.entries) {
           expect(restored.valueAt(entry.key), entry.value);
@@ -73,6 +78,7 @@ void main() {
           () => ((restored.valueAt('lww') as Map)['items'] as List).clear(),
           throwsUnsupportedError,
         );
+        await subscription.cancel();
       } finally {
         await restored.dispose();
         await restoredStore.close();

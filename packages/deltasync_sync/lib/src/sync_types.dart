@@ -8,16 +8,35 @@ enum SyncFailureSource { incomingDelta, incomingStream }
 
 enum SyncCommitOrigin { local, remote }
 
+/// Session events for observing sync without duplicating durable state.
+/// Query pendingDelta/valueAt for current data; events are not replayed.
+sealed class SyncObservation {
+  const SyncObservation();
+}
+
+/// Initialization finished; restored outbox may still contain pending changes.
+class SyncRestoredEvent extends SyncObservation {
+  const SyncRestoredEvent();
+}
+
+/// A push failed. Committed state/outbox remain available for retry.
+/// Other directly awaited failures still belong to their calling Future.
+class SyncPushFailure extends SyncObservation {
+  const SyncPushFailure({required this.error, required this.stackTrace});
+  final Object error;
+  final StackTrace stackTrace;
+}
+
 /// Notification after a local mutation or remote merge is committed and adopted.
 /// It signals state availability, not remote acknowledgement.
-class SyncCommitEvent {
+class SyncCommitEvent extends SyncObservation {
   const SyncCommitEvent({required this.origin});
 
   final SyncCommitOrigin origin;
 }
 
 /// Failure delivered by `SyncEngine.errors` from an incoming transport callback.
-class SyncFailure {
+class SyncFailure extends SyncObservation {
   const SyncFailure({
     required this.source,
     required this.error,
@@ -32,7 +51,7 @@ class SyncFailure {
 /// Result of one push attempt. A null [acknowledgement] means only local send
 /// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
 /// retains changes even when remote ACK is received.
-class SyncPushResult {
+class SyncPushResult extends SyncObservation {
   SyncPushResult({
     required this.sent,
     required Iterable<String> acknowledgedIds,

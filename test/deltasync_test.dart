@@ -2,6 +2,18 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('facade exposes restoration observation without implying ACK', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-observer'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    final restored = engine.observations.first;
+    await engine.start();
+    expect(await restored, isA<SyncRestoredEvent>());
+    expect((await engine.pendingDelta()).changes, isEmpty);
+    await engine.dispose();
+  });
   test(
     'facade exposes received-envelope ACK without optional sender',
     () async {

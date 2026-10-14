@@ -1,5 +1,8 @@
 # Consumidor Flutter Android — VAL-08
 
+Para o percurso técnico de oito tipos em dois aparelhos, veja
+[VAL-16](EIGHT_CRDTS.md), com entrada `lib/main_eight.dart` e bancos próprios.
+
 Este app consome apenas APIs públicas de DeltaSync. Duas réplicas usam bancos
 SQLite separados no diretório do aplicativo. O enlace é sintético, no mesmo
 processo e com peer fixo; não representa rede ou backend. O projeto usa paths e
@@ -44,6 +47,14 @@ envio mantém commit e outbox para outra tentativa.
 
 ## Validação e manutenção
 
+O enlace em processo é compartilhado com a CLI em
+`lib/support/peer_link.dart`; `lib/peer_link.dart` preserva o import existente.
+O suporte é Dart puro; a CLI o acessa por um export de example/support.
+Execute a partir de um checkout DeltaSync que mantenha ambos os exemplos e os
+pacotes indicados pelos paths. Não copiar somente a pasta Flutter isoladamente.
+ACK e fechamento têm um dono comum; doubles especializados de falha/retry
+continuam nos seus testes. Isso não fornece transporte de produção.
+
 ```sh
 flutter analyze
 flutter test
@@ -72,7 +83,8 @@ Após obter o PID atual, `adb logcat -d --pid=<PID> -s flutter:I` mostra linhas
 
 `lib/main.dart` inicia o app; `demo_page.dart` apresenta estados e comandos;
 `demo_session.dart` coordena as duas engines, snapshots da UI, armazenamento e
-limpeza; `peer_link.dart` implementa o enlace sintético. Estado, mutação, delta,
+limpeza; `lib/support/peer_link.dart` implementa o enlace sintético e
+`peer_link.dart` mantém o export compatível. Estado, mutação, delta,
 join, commit e restauração continuam nos contratos públicos da biblioteca e no
 adaptador SQLite. A divisão não muda APIs nem formatos persistidos da biblioteca.
 
@@ -91,3 +103,11 @@ dois force-stops/reaberturas e reconciliação passaram. Inspeção dos bancos c
 IDs/peers pendentes antes do ACK e outboxes vazias depois, com novo ID após restore.
 O enlace continua sintético no mesmo processo; esse percurso não comprova rede real,
 todos os oito CRDTs no Android ou outras plataformas.
+
+Em 2026-10-13, [R-22](../../plan/TRACEABILITY.md#execucao-r-22-2026-10-13)
+revalidou o APK atualizado após compartilhar o enlace com a CLI. No Moto G52
+Android 13/API 33, instalação preservou bancos existentes; edições independentes,
+envio offline falho, nova edição durante falha, dois force-stops/reaberturas e
+reconciliação passaram. Cópias SQLite confirmaram IDs/peers pendentes antes do
+ACK, novo ID após restauração, mesmo vencedor LWW, contador 6 e outboxes vazias
+persistidas depois. Duas réplicas no mesmo processo não representam dois aparelhos.

@@ -227,6 +227,61 @@ drena recepções aceitas/ACK; adaptador limita espera de rede e fecha após dre
 Não há cancelamento implícito de commit nem rollback após ACK falhar. API aditiva,
 schema/envelope/ACK preservados. Ver [R-26](TRACEABILITY.md#execucao-r-26-2026-10-13).
 
+DEC-46 — Aplicada em R-27, 2026-10-13: observations oferece stream broadcast
+assíncrono sem replay/cache de estado, com SyncObservation sealed na mesma library
+das variantes. Reutiliza os próprios objetos SyncCommitEvent/SyncFailure/SyncPushResult;
+SyncRestoredEvent distingue restauração de commit, SyncPushFailure distingue erro
+de push de falha recebida. Nenhum enum antigo ou formato persistido muda.
+Pendências continuam derivadas de pendingDelta; sessão/ACK não são restaurados.
+APIs anteriores e implementação externa dos eventos antigos seguem compatíveis.
+Listeners não governam commit; assinaturas pausadas devem ser canceladas antes
+do dispose. Falhas diretas diferentes de push seguem nas Futures. Consumidor
+Compass reage a commits externos sem polling; mais linhas são justificadas pelo
+comportamento novo, sem prometer redução de LOC.
+Ver [R-27](TRACEABILITY.md#execucao-r-27-2026-10-13).
+
+DEC-47 — Preparação R-22, 2026-10-13: enlace Dart puro comum vive no suporte do
+lib Flutter para compatibilidade de package URI. Export CLI local usa exceção
+de lint documentada; nenhum pacote novo. Imports, nomes e mensagens anteriores
+preservados, inclusive wrapper DemoPeerLink. Testes/CLI/build passaram antes e
+depois; runtime pendente após autor retirar celular, sem conclusão da tarefa.
+Retomada posterior: autorização ADB resolvida e runtime do APK atualizado aprovado
+no Moto G52, com dois reinícios, valores/IDs restaurados e ACK durável.
+R-22 concluída; ver [execução R-22](TRACEABILITY.md#execucao-r-22-2026-10-13).
+
+DEC-48 — Preparação VAL-15, 2026-10-13: dois clientes Compass com IDs alpha/beta
+estáveis por dart-define e bancos próprios apontam para notes-hub. Hub consumidor
+usa uma engine/SQLite serial e aceita somente notas LWW. Push confirma commit
+no hub; pull envia estado materializado dirigido ao cliente, sem outbox global
+que ACK de um possa remover. Não promete entrega incremental do hub, confirmação
+no segundo celular ou histórico completo de clocks. Modo legado permanece padrão;
+snapshot-pull recusa outbox local/dados de outros tipos e não aceita edição local
+no hub. Configuração rejeita espaços que seriam normalizados pelo core, sem
+mudar ReplicaId. Topologia/roteamento/reabertura passaram no host, dois APKs
+preparados; dispositivos físicos permanecem necessários. Sem mudança da biblioteca.
+Ver [preparação VAL-15](TRACEABILITY.md#preparacao-val-15-2026-10-13).
+Retomada física: VAL-15 concluída no Moto G52 Android 13/API 33 e Moto G53 5G
+Android 14/API 34, HTTP por reverse USB independente. Bancos confirmam identidades,
+ACK isolado, vencedor comum e outboxes vazias após reinícios dos apps/hub.
+Não amplia o contrato da biblioteca; ver [execução VAL-15](TRACEABILITY.md#execucao-val-15-2026-10-13).
+
+DEC-49 — VAL-16, 2026-10-13: reutilizar projeto Android, com entrada técnica
+separada, cenário explícito e HTTP de peers diretos alpha/beta. Envelopes completos
+passam pelo receiveEnvelope/SQLite, incluindo contexto MV e tombstones; não adaptar
+o hub materializado LWW do Compass aos oito tipos. Forward/reverse USB mantém peer
+fixo por cliente. Sem nova API/pacote/dependência da biblioteca; helper de exemplo
+não define transporte de produção. Prova deve cobrir os oito, ACK, restauração e
+resolução causal MV. Ver [roteiro](../example/flutter_mobile/EIGHT_CRDTS.md).
+Host aprovado com sete testes e dois APKs. Runtime parcial: base entregue a beta,
+alpha editou durante falha e restaurou outbox/contextos; G53 bloqueado interrompeu
+ramificação beta. VAL-16 incompleta até reconciliação/resolução MV nos aparelhos.
+Retomada posterior concluída: beta ramificou sobre a base preservada, ambos
+restauraram outboxes/contextos, convergiram nos oito tipos e confirmaram peers
+diretos. MV manteve duas versões concorrentes e resolução posterior removeu ambas;
+replay de envelopes antigos e novos reinícios não as ressuscitaram. Auditoria
+compara estado causal sem owner/sequence locais e normaliza componentes PN zero,
+sem exigir HLCs iguais. Ver [execução VAL-16](TRACEABILITY.md#execucao-val-16-2026-10-13).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

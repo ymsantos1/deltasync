@@ -60,6 +60,23 @@ valueAt lança StateError. APIs anteriores de leitura permanecem disponíveis.
 
 ## 4. Observar falhas e pendências
 
+Use `engine.observations` para uma assinatura tipada, sem polling nem cache de
+snapshot/pendências paralelo. Inscreva-se antes de start para receber
+SyncRestoredEvent; assinatura tardia não recebe replay e deve consultar valor e
+pendingDelta inicialmente. A outbox permanece fonte de pendências.
+
+SyncCommitEvent sinaliza commit local/remoto; SyncPushResult reutiliza o resultado
+de push após confirmação da outbox; SyncPushFailure informa erro de push;
+SyncFailure reutiliza falhas recebidas. Restore não implica ACK nem restaura
+mensagens de confirmação da sessão anterior. Resultado recebido/vazio não prova
+confirmação durável de pendências; examine acknowledgedIds e pendingDelta.
+
+Os streams commits/errors existentes mantêm contratos. observations é broadcast
+assíncrono; listeners não governam commits. Falhas de chamadas diretas diferentes
+de push continuam nas Futures, inclusive falha de busca no adaptador.
+Depois de cancelar listeners (especialmente pausados), aguarde dispose.
+O stream fecha após drenar operações aceitas; nenhuma observação é persistida.
+
 Aguarde mutações/push/applyRemote e trate seus erros no chamador. O stream
 `errors` informa falhas de recepção/callback remoto; não substitui try/catch
 das chamadas diretas. Uma falha de rede conserva outbox e não impede editar.
@@ -98,7 +115,7 @@ adaptador HTTP. Falha ao enviar ACK preserva commit e permite replay; no stream,
 errors informa a falha, sem prometer rollback. Protocolos não entram no core.
 ACK aguarda fora da fila de commits; edição local continua possível. Dispose
 drena recepções aceitas, inclusive envio de ACK; adaptador deve limitar espera
-e fechar seus recursos após a drenagem. R-27 trata conveniências de status.
+e fechar seus recursos após a drenagem. observations oferece acompanhamento da sessão.
 
 ## 6. Encerrar e restaurar
 
@@ -156,6 +173,13 @@ dependências e documentação ficam fora desses totais.
 
 Bootstrap, domínio, interface e canal real ainda exigem código próprio.
 Após R-26, validação/commit/ACK ficam em receiveEnvelope; busca e ação de
-sincronizar continuam no consumidor. Conveniências de acompanhamento ficam em R-27.
+sincronizar continuam no consumidor. R-27 oferece observações da sessão com os
+mesmos resultados de push, commits e erros, sem duplicar estado persistido.
 Esta comparação mostra manutenção e consumo; não mede tempo de integração de
 terceiros, esforço acadêmico ou usabilidade com participantes.
+
+R-26 reduziu a produção do consumidor para 479 linhas. R-27 acrescentou
+assinatura e tratamento de observações: repositório 101 para 125 linhas, total
+de produção novamente 503. O ganho desta etapa é reagir a commits externos
+ao fluxo da tela sem polling, usando os contratos comuns. Não é redução de LOC.
+As contagens anteriores da tabela são históricas, posteriores a R-24/R-25.

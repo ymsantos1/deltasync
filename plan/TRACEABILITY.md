@@ -46,14 +46,21 @@ Moto G52/API 33, com plugin sqflite e dois reinícios reais. Após a
 [tentativa VAL-13](#tentativa-val-13-2026-10-13), autor forneceu Compass;
 [VAL-13 concluiu](#execucao-val-13-2026-10-13) notas de viagem no app externo,
 SQLite e HTTP/TCP entre Android e servidor Dart, com 72 testes app/13 servidor.
-R-22 COULD permanece pronta e opcional. Publicação permanece com o autor.
+R-22 COULD é opcional; sua preparação atual está registrada abaixo. Publicação permanece com o autor.
 
 [R-24](#execucao-r-24-2026-10-13)/[R-25](#execucao-r-25-2026-10-13)
 centralizaram ACK e consulta; [VAL-14](#execucao-val-14-2026-10-13) concluiu guia,
 revalidação do workspace e runtime Android das APIs atuais.
 O [fechamento atual](#execucao-val-05-ergonomia-2026-10-13)
 concluiu VAL-05. [R-26](#execucao-r-26-2026-10-13) concluiu recepção/ACK comuns;
-R-27 SHOULD de acompanhamento permanece pendente.
+[R-27](#execucao-r-27-2026-10-13) concluiu acompanhamento
+da sessão. A [preparação R-22](#preparacao-r-22-2026-10-13) compartilhou o enlace dos exemplos;
+a [preparação VAL-15](#preparacao-val-15-2026-10-13) configurou clientes/hub e gerou APKs.
+Após a [execução R-22](#execucao-r-22-2026-10-13), R-22 concluiu também o runtime Android.
+[VAL-15](#execucao-val-15-2026-10-13) concluiu runtime em dois aparelhos físicos,
+com hub HTTP/SQLite e ACK isolado. [VAL-16](#execucao-val-16-2026-10-13) concluiu
+os oito CRDTs em peers Android diretos, inclusive MV concorrente/resolução/replay.
+Todas as tarefas atuais concluídas; nenhuma tarefa ativa.
 
 ## Panorama da análise inicial — 2026-10-03 (histórico)
 
@@ -163,8 +170,10 @@ máximo por réplica sem representação explícita de lacunas.
 | Compactação causal após evidência de custo, referência C++ | R-19 | COULD concluída; VAL-09/VAL-10 passaram, margem confirmada em DEC-33 e compactação/compatibilidade/recuperação/ganho medidos em [execução R-19](#execucao-r-19-2026-10-12) |
 | Notificação pública de commits, COULD | R-17 | `SyncEngine.commits` emite origem local/remota após adoção; sem replay ou semântica de ACK; testes sync/facade e documentação |
 | Refatoração geral além das extrações de R-16 | R-20 | SHOULD concluída; estado/cópia/restauração e commits consolidados, componentes independentes, fixture anterior e regressões de ownership; [execução R-20](#execucao-r-20-2026-10-13) |
-| Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD pronta, sem implementação |
+| Custos redundantes e reuso dos exemplos, revisão de 2026-10-13 | R-21, R-22 | R-21 SHOULD concluída, com redução observada de materialização/travessias; R-22 COULD concluída com suporte compartilhado e provas CLI/Flutter/Android |
 | Confiança adicional em testes e consumo externo | VAL-11, VAL-12, VAL-13 | VAL-11 concluiu sementes/permutação/SQLite; VAL-12 concluiu runtime da demo; VAL-13 concluiu notas no Compass externo, HTTP/TCP, SQLite e Android. Limites: par fixo, LWW e ambiente de desenvolvimento |
+| Duas instalações físicas e confirmação isolada | VAL-15 | Moto G52/G53 com IDs/bancos próprios e hub HTTP/SQLite; falha offline, edição, reinícios, ACK isolado e vencedor LWW comum comprovados; limites em DEC-48 |
+| Oito tipos entre peers Android diretos | VAL-16 | História causal compartilhada, ramos offline, SQLite/outbox, join dos oito, MV com duas versões/resolução e replay idempotente; limites em DEC-49 |
 | Ergonomia e percurso de integração | R-24, R-25, VAL-14, VAL-05 | Codec ACK e consulta pontual documentados/testados; guia e comparação de esforço; workspace/Compass revalidados, inclusive Android/SQLite/HTTP no APK atual. VAL-05 concluiu fechamento com fontes/APK/evidências conferidos e regressões focadas |
 | Equivalência de mutação/delta G-Set, achado em VAL-11 | R-23 | MUST concluída: adição repetida aplica seleção canônica, com regressão mínima e revalidação completa |
 
@@ -4428,3 +4437,307 @@ reproduzida em /tmp. Dados/modelos/backend permanecem no consumidor.
 Checks finais após manutenção: python3 scripts/check_plan.py aprovado,
 53 tarefas e 304 links locais; prontas R-27 SHOULD e R-22 COULD.
 git diff --check aprovado no DeltaSync e samples; nenhuma tarefa ativa.
+
+<a id="execucao-r-27-2026-10-13"></a>
+
+## Execução R-27 — 2026-10-13
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-26/R-17 concluídas; R-27 próxima SHOULD pronta autorizada. Cinco skills, AGENTS/RUNBOOK, tarefa/índice, DEC-45/RISK-33, guia Dart sobre sealed/contratos e consumo Compass inspecionados. Inventariados commits/errors/pendingDelta/SyncPushResult: objetos existentes reutilizáveis, sem motivo para cache de pendências. Worktree inicial apenas JSONs anteriores não rastreados, preservados; revisão f1864fa observada.
+Implementação: observations publica família fechada SyncObservation, com três tipos existentes e dois eventos específicos de restauração/falha de push. Publicação assíncrona após restore/commit/ACK; nenhuma outbox/snapshot paralela. Streams anteriores intactos. Compass usa assinatura única para reagir a eventos, mantendo atualização aguardável das ações e estilo de UI próprio. Docs e regressões sync/facade/SQLite/consumidor ampliadas.
+Review: aprovado
+Achados: sem defeitos impeditivos reproduzidos. Revisão ampliou cobertura de implementação externa dos eventos antigos e de atualização no consumidor sem chamar ações do repositório; deltas revistos e checks correspondentes repetidos. Objetos de commit/falha/push compartilhados entre APIs sem copiar dados; sealed restringe somente a família nova, variantes antigas continuam implementáveis. Sem review independente.
+Validação: aprovada
+Comandos: Dart 3.13.5/Flutter 3.47.7 do PATH, Linux x64. Format/analyze/test raiz/sync/transport/storage_sqflite aprovados, 13/51/10/27 (101). Compass analyze/suíte de 72 e build APK main_deltasync aprovados; após ampliar prova, analyze e cinco testes de integração aprovados (inclui um caso novo, 73 casos distintos aprovados nas execuções). Exemplo Flutter analyze/quatro testes aprovados. Após ampliar compatibilidade externa, analyze da raiz e import_compatibility_test aprovados. Patch/checker/diff finais abaixo.
+Critérios: (1) stream publica mesmos commits/falhas/resultados sem manter estado derivado; (2) restored/commit/result/failure separados, outbox consultada e ACK não inferido de commit/vazio/received; (3) rollback não emite commit, ACK parcial preserva restante, falha/retry e stream failure cobertos, observações após SQLite reaberto sem ACK fictício, listeners pausados/throwing não invalidam escrita e fechamento testado; (4) Compass recebe atualização local/remota fora de suas ações sem polling, sync permanece Dart puro, contratos externos/formatos preservados e deltas revisados/revalidados.
+Manutenção: quatro critérios marcados, índice/fase/guias atualizados, DEC-46 e riscos registrados; VAL-15 liberada com entrada runtime explícita. Próxima VAL-15 SHOULD; R-22 COULD continua opcional. MUST mantêm conclusões históricas; nenhuma tarefa seguinte iniciada.
+Limitações: sem novo runtime Android nesta tarefa; APK compilado e integração SQLite/HTTP executada no Linux. Prova Android VAL-14 é histórica. Stream sem replay exige consulta inicial para assinante tardio; assinaturas pausadas precisam cancelar antes de dispose. Erros diretos diferentes de push continuam nas Futures. Não há contador duplicado, histórico persistido de ACK, agendador ou estudo com participantes. Segundo aparelho/topologia ainda precisam ser identificados para VAL-15. Sem codegen, publicação, TCC ou commits automáticos.
+
+### Contrato, testes e reprodução
+
+Comandos nos quatro pacotes afetados: dart format --output=none
+--set-exit-if-changed lib test; dart analyze; dart test --reporter expanded.
+Logs em /tmp/r27-*.log. No Compass: flutter analyze; flutter test --reporter
+expanded; flutter build apk --debug --target lib/main_deltasync.dart --no-pub.
+Após prova adicional: flutter analyze e flutter test
+test/trip_notes_integration_test.dart --reporter expanded. Root compatibilidade:
+dart analyze e dart test test/import_compatibility_test.dart --reporter expanded.
+Permissões da ferramenta permitiram cache SDK e edição externa autorizada.
+
+SyncRestoredEvent publica somente após adoção inicial. Consulta pendingDelta
+continua fonte de pendência real; não publica resultado push ao restaurar.
+SyncPushResult é observado após confirmação local de IDs da outbox e é o mesmo
+objeto retornado pela Future; SyncPushFailure mantém erro/stack e erro da Future.
+SyncFailure mantém sua origem/objeto no stream errors. Commit e observação não
+mudam política de retry nem indicam confirmação remota por si sós.
+Outras falhas aguardadas ficam com o chamador, incluindo busca de rede no app.
+
+Testes provam late/no replay, local commit/rollback, received/ACK parcial, falha
+e retry, reabertura, erro recebido compartilhado, assinatura pausada/throwing
+e fechamento. Caso Compass com SQLite verifica que commits feitos diretamente
+pela engine atualizam nota e contagem do repositório sem polling, inclusive remoto.
+Caso de compatibilidade implementa SyncCommitEvent em library consumidora.
+
+Repositório Compass passou de 101 para 125 linhas. O aumento de 24 linhas
+implementa atualização reativa, sem alegar redução de código. Guia registra
+produção total 479 após R-26 e 503 após R-27, com mesma UI/rede e capacidade nova.
+[Patch incremental](evidence/r27-compass.patch) preserva três arquivos externos;
+git apply --check aprovado sobre VAL-13/R-24/R-25/R-26 reproduzidos em /tmp.
+
+Checks finais: python3 scripts/check_plan.py aprovado, 53 tarefas e 308 links
+locais; prontas VAL-15 SHOULD e R-22 COULD. git diff --check aprovado no DeltaSync
+e samples. Tarefa ativa nenhuma; segundo dispositivo não foi presumido disponível.
+
+<a id="preparacao-r-22-2026-10-13"></a>
+
+## Preparação R-22 — 2026-10-13
+
+Status final: bloqueada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-20 concluída; autor autorizou R-22/preparação VAL-15 e depois retirou celular. Cinco skills e safe-refactor aplicados. Baseline antes de editar: Flutter analyze/quatro testes e CLI reset/offline/reconnect com SQLite aprovados.
+Implementação: PeerLink Dart puro compartilhado em example/flutter_mobile/lib/support; shims mantêm imports e DemoPeerLink derivado preserva mensagem exata. Um dono send/ACK/close; doubles especializados intactos, sem pacote novo ou mudança de core.
+Review: aprovado
+Achados: export inicial fora do lib Flutter falhou por package URI. Corrigidos local do suporte/export CLI e super parameter; deltas revistos e checks repetidos. Exceção pontual do lint para export Dart puro, sem dependência Flutter. Sem impeditivo de código; review não independente.
+Validação: parcial, runtime Android pendente
+Comandos: Dart/Flutter do PATH. Format/analyze limpos; dois testes de enlace aprovados; CLI reset/offline/reconnect /tmp/r22-after-cli reproduziu baseline, inclusive diagnósticos e reabertura SQLite. Flutter analyze/quatro testes/build APK aprovados após correções. Runtime não realizado por direção do autor.
+Critérios: 1/2/3/5 satisfeitos; 4 parcial. Mensagens preservadas, ACK espera handler de commit, falha não ACKa, stream fecha. Dois donos send/ACK/close reduzidos a um; wrapper CLI só preserva diagnóstico.
+Manutenção: bloqueada no índice/fase, runtime aberto, sem conclusão. Próximo trabalho autorizado: preparação VAL-15, um ativo por vez.
+Limitações: suporte dentro do lib Flutter mantém package URIs; CLI export usa exceção de lint local. Clone completo já exigido pelos paths. Build/FFI não provam Android. Retomar runtime quando primeiro celular voltar.
+
+<a id="preparacao-val-15-2026-10-13"></a>
+
+## Preparação VAL-15 — 2026-10-13
+
+Status final: bloqueada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-26/R-27/VAL-13 concluídas. Autor autorizou preparação sem aparelhos. Cinco skills reaplicadas por etapa; fonte/hub/ID/outbox e guia de contratos conferidos. Alterações anteriores R-27 preservadas; nenhuma implementação da biblioteca alterada nesta preparação.
+Implementação: NotesConfiguration no consumidor permite IDs/endpoint por dart-define e nomes de banco estáveis/isolados, preservando defaults. HTTP pull envia destinatário explícito. Backend opcional com dois clientes/notes-hub exporta estado LWW materializado, sem outbox global; cliente mantém outbox para hub e confirma commit daquele peer. Roteiro técnico, testes e APKs alpha/beta preparados. Modo legado permanece padrão.
+Review: aprovado
+Achados: testes expuseram IDs com espaços aceitos por normalização ReplicaId sem refletir configuração do transporte. Corrigida validação estrita no consumidor/hub, sem alterar core; expectativa temporária de FormatException descartada ao conferir contrato real ArgumentError. Revisadas correções e reexecutados checks. Startup do hub também rejeita banco com outbox local/dados fora de LWW trip-notes, com regra em um helper. Sem review independente.
+Validação: parcial, runtime físico pendente
+Comandos: Flutter/Dart do PATH, Linux x64. Compass analyze e 77 testes aprovados após correção; servidor analyze/13 testes aprovados. Após ampliar concorrência, analyze e nove testes de config/integração passaram novamente. Depois de limitar dados existentes do hub, analyze e teste pareado HTTP/SQLite passaram novamente. Dois builds APK com IDs alpha/beta e peer notes-hub aprovados; nenhum install/adb/runtime realizado.
+Critérios: 1/2 satisfeitos no host: configuração sem editar fonte, destinatário explícito, clientes/bancos/outboxes/ACK isolados, hub sem remoção global por ACK, requests simultâneas/retry/reabertura testados. Critérios 3/4/5 permanecem abertos pela execução física ausente. Valores/winners LWW convergem, sem alegar equivalência de todo histórico causal no bootstrap.
+Manutenção: dois critérios marcados, bloqueio/índice/fase/decisões/riscos atualizados; tarefa ativa limpa. R-22 também aguarda runtime do primeiro celular. Nenhuma tarefa concluída por testes de host/build. Roteiro e artefatos preservados para retomada.
+Limitações: hub LWW é composição do consumidor para este cenário, não fanout genérico da biblioteca. ACK confirma hub, não recepção pelo outro celular; somente após pulls relevantes ambos convergem. Não há auth de produção, delta incremental no pull do hub ou prova de oito tipos nessa topologia. Dois clientes no Linux não substituem dois Androids. IDs/configuração fixos por artefato devem permanecer iguais na reinstalação. App original ainda tem limites de reservas/imagens registrados em VAL-13.
+
+### Reprodução e artefatos
+
+No Compass: flutter analyze, flutter test --reporter expanded.
+No servidor: dart analyze, dart test --reporter expanded.
+Check corrigido: flutter test test/notes_configuration_test.dart
+test/trip_notes_integration_test.dart --reporter expanded. Check após regra
+de dados do hub: flutter test test/trip_notes_integration_test.dart
+--name 'two configured clients' --reporter expanded.
+Builds: flutter build apk --debug --target lib/main_deltasync.dart --no-pub
+--dart-define=REPLICA_ID=alpha/beta --dart-define=PEER_ID=notes-hub, uma execução
+por ID. Saída copiada para /tmp/val15-apks/compass-alpha.apk e compass-beta.apk.
+
+[Metadados/hashes](evidence/val15-preparacao.json) e
+[patch incremental de sete arquivos](evidence/val15-preparacao-compass.patch)
+preservam preparação. Aplicar patch após VAL-13/R-24/R-25/R-26/R-27; check passou
+na baseline reproduzida. APKs em /tmp são temporários; comandos e hashes
+permitem reprodução. [Roteiro físico](../docs/val15-dois-dispositivos.md) define
+seriais/canal, reinstalação, edição offline, falha, reinícios, pulls e inspeção.
+
+Teste local comprovou: confirmação alpha não remove outbox beta; ACK beta não
+remove pendência alpha; pull falta destinatário/ID desconhecido e envelope com
+destinatário errado são rejeitados; received não confirma; edições permanecem
+disponíveis durante falha; clientes e hub reabrem mesmos bancos/IDs; requests
+concorrentes e pulls posteriores convergem em winners LWW. Processos/bancos
+temporários de testes encerrados pelos fixtures.
+
+Uma revisão automática de permissão para check do servidor expirou sem avaliar
+a ação. Retry único permitido foi aprovado e os checks executados; não tratada
+como defeito ou risco do servidor. Permissões de ferramenta usadas somente
+para SDK/cache e consumidor externo autorizados. Escrita do TCC/pub.dev com autor.
+
+Checks finais da manutenção R-22/VAL-15: python3 scripts/check_plan.py aprovado,
+53 tarefas e 317 links locais; nenhuma pronta. git diff --check aprovado no
+DeltaSync e no repositório externo samples_test_lib. Status bloqueados e tarefa
+ativa vazia refletem os critérios de runtime ainda abertos.
+
+## Retomada R-22 — 2026-10-13 — autorização ADB pendente
+
+Status final: bloqueada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: dependência R-20 concluída; critérios da R-22, preparação anterior, RUNBOOK e guia Dart conferidos. Autor autorizou prosseguir com um aparelho conectado; VAL-15 continua exigindo dois aparelhos.
+Implementação: nenhuma mudança de produto necessária. Preservadas alterações anteriores; gerado novamente o APK a partir do código atual. Safe-refactor aplicado à conferência do comportamento e dos caminhos de import.
+Review: aprovado
+Achados: diff CLI/Flutter, suporte novo e testes revistos, sem novo impeditivo de código. Herança do wrapper preserva diagnóstico e contrato sem modificadores que impeçam seu uso. Review pelo mesmo agente, não independente.
+Validação: parcial, runtime não realizado
+Comandos: flutter build apk --debug --no-pub em example/flutter_mobile aprovado. SHA-256 do APK atual: 8b0425dad01ece8a52ce31b1f17143d6e8d9ae1114da67bb7f66cb8ca50dc2f6. adb devices -l repetido identificou serial 0081889739 como unauthorized; solicitação de autorização enviada ao autor. Nenhuma instalação, edição ou inspeção de banco no aparelho realizada nesta retomada.
+Critérios: host/build anteriores preservados e build atual aprovado; critério 4 ainda aberto pelo runtime Android ausente. Identidade/modelo/API Android do aparelho não confirmados enquanto unauthorized.
+Manutenção: bloqueio atualizado na fase/índice, tarefa ativa limpa; não concluída. VAL-15 permanece bloqueada no runtime com dois aparelhos. Não reapresentar baseline como prova física atual.
+Limitações: conexão USB detectada não equivale a autorização ADB. Retomar instalação e percurso offline/reinício/ACK após aceite da depuração USB no celular.
+
+<a id="execucao-r-22-2026-10-13"></a>
+
+## Execução R-22 — 2026-10-13 — fechamento Android
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: tarefa/dependência R-20, preparação e critérios conferidos; autor confirmou autorização USB do único aparelho. Cinco skills lidas integralmente; safe-refactor aplicado à preservação de comportamento. Alterações anteriores do workspace preservadas.
+Implementação: suporte compartilhado já preparado, sem nova alteração de produto nesta retomada. APK atual instalado com -r, preservando bancos existentes; sem limpar dados. README corrigiu mapa do enlace e registra runtime atualizado.
+Review: aprovado
+Achados: diff CLI/Flutter e arquivos novos de suporte/teste revistos, sem impeditivos. Imports, wrapper e mensagens preservados; ACK somente após handler remoto, mesma falha/fechamento. Correções de package URI/super parameter da preparação permanecem validadas. Review do próprio agente, não independente.
+Validação: aprovada
+Comandos: flutter build apk --debug --no-pub aprovado na retomada imediatamente anterior; APK SHA-256 8b0425dad01ece8a52ce31b1f17143d6e8d9ae1114da67bb7f66cb8ca50dc2f6. adb devices -l autorizou Moto G52 serial 0081889739; adb install -r, am start, input, logcat --pid, am force-stop e exec-out run-as cat executados. Android 13/API 33; sqflite real. PIDs 16300, 24688 e 25090, sem PID após cada force-stop. Host: analyze, dois testes do enlace, quatro Flutter, CLI reset/offline/reconnect e build aprovados na preparação, sem mudanças de código posteriores; não apresentados como nova execução nesta retomada.
+Critérios: 1/2/3/5 satisfeitos pelas provas e review da preparação; 4 fechado com runtime atual. Estado inicial preservado VAL12_D/contador 4/outboxes zero. A/B editaram R22_A/R22_B e incrementaram offline: contador 5 cada, duas pendências cada; envio falhou sem perda. A editou R22_C após falha: três pendências, B duas, restauradas no primeiro reinício. Após restore A editou R22_D, gerando shopper-a:delta:9 depois de delta:8. Reconexão/envio convergiu em R22_D e contador 6; outboxes zero. Segundo reinício restaurou mesmo resultado. Cópias SQLite confirmam vencedor completo igual, componentes/IDs/peers e remoção durável das pendências.
+Manutenção: todos os critérios marcados, fase/índice/matriz/mapa/DEC-47 atualizados; autorização pendente resolvida sem apagar histórico. Nenhuma tarefa ativa/pronta. VAL-15 continua bloqueada por exigir dois aparelhos físicos.
+Limitações: enlace sintético entre duas réplicas no mesmo app; não rede real ou duas instalações físicas. Runtime cobre LWW/G-Counter e adaptador Android, sem ampliar prova a oito tipos/iOS. Sem nova API/formato de produção. Evidências de host permanecem vinculadas à preparação e runtime à execução atual.
+
+[Artefato de runtime e bancos inspecionados](evidence/r22-runtime.json) preserva
+hash do APK, IDs/peers, snapshots resumidos e logs dos dois reinícios. Cópias
+completas dos bancos/telas ficam em /tmp/r22-runtime; não necessárias para ler
+o artefato persistido. Nenhum banco do consumidor foi apagado.
+
+Checks finais desta manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas
+e 321 links locais, nenhuma pronta; git diff --check aprovado. Sem mudanças no
+Compass nesta retomada e sem atribuir seu runtime à validação do exemplo R-22.
+
+<a id="execucao-val-15-2026-10-13"></a>
+
+## Execução VAL-15 — 2026-10-13 — dois Androids físicos
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-26/R-27/VAL-13 concluídas; tarefa/roteiro/DEC-48/RISK-34 e preparação anterior conferidos. Cinco skills lidas integralmente, RUNBOOK e guia Dart consultados. Autor disponibilizou ambos aparelhos; ADB autorizado nos seriais 0081889739 (alpha, Moto G52 Android 13/API 33) e 0085287528 (beta, Moto G53 5G Android 14/API 34). Topologia/canal definidos antes de runtime: clientes com bancos privados, peer fixo notes-hub, hub consumidor LWW materializado, HTTP/TCP via reverse USB por serial.
+Implementação: nenhuma mudança de produto na retomada; configurações/adaptadores/testes da preparação reaproveitados. APK alpha/beta instalados com -r nos aparelhos respectivos, sem clear-data ou clone de banco. Hub usou /tmp/val15-runtime/notes-hub.sqlite dedicado. Preservadas alterações anteriores do workspace/consumidor. Roteiro atualizado com execução real.
+Review: aprovado
+Achados: configuração/main/repositório/transporte/backend e teste pareado revisados, incluindo novos arquivos do consumidor. Correções da preparação sobre normalização de ReplicaId, ArgumentError e domínio LWW/outbox do hub permanecem validadas. Sem novo impeditivo de código ou alteração de formato/API. Biblioteca mantém par fixo por cliente; ACK confirma hub, não recepção pelo outro aparelho. Review pelo próprio agente, não independente.
+Validação: aprovada
+Comandos: adb devices -l, install -r, am start/force-stop, pidof, input, uiautomator dump, exec-out screencap e run-as cat executados por serial. flutter analyze aprovado no Compass; flutter test --no-pub test/notes_configuration_test.dart test/trip_notes_integration_test.dart test/trip_notes_card_test.dart --reporter expanded: dez testes aprovados. dart analyze aprovado no servidor. dart run bin/notes_server.dart --replica notes-hub --clients alpha,beta --snapshot-pull --port 8091 --db /tmp/val15-runtime/notes-hub.sqlite executado e reiniciado com mesmo banco. GET /state/pull validou estado/recipientes. Inspeção Python/sqlite3 das cópias fechadas confirmou valores, IDs e outboxes. Dart/Flutter do PATH; builds/hashes da preparação conferidos, sem novo build nesta execução.
+Critérios: 1/2 mantidos pelas provas de preparação e conferidos na topologia física. 3 satisfeito: ambos salvaram nota OFFLINE, tentaram envio sem reverse e receberam SocketException Connection refused, depois salvaram nova nota RETRY durante falha. Force-stop/reabertura preservou notas e pendências. 4 satisfeito: cada banco tinha IDs próprios :delta:1/:delta:2, duas entradas destinadas a notes-hub. Após somente alpha.sync, alpha outbox vazia e beta manteve exatamente suas duas entradas. Beta.sync seguido de alpha.sync convergiu para VAL15_BETA_RETRY, vencedor completo beta:delta:2 com mesmo HLC/dot/value nos dois clientes/hub, todas outboxes vazias. Novo reinício dos apps e do hub preservou resultado; snapshot completo do hub igual antes/depois do restart. Nova sincronização de ambos manteve igualdade/ACK durável. 5 satisfeito por review, regressões de identidade/roteamento/falhas/ACK perdido/duplicação/SQLite/UI, análise app/backend e percurso físico sem correção de produto necessária.
+Manutenção: critérios, índice/fase/matriz/DEC-48/RISK-34/roteiro e artefato atualizados; nenhuma tarefa ativa/pronta ou incompleta no plano atual. Backend de teste e apps encerrados, somente reverses tcp:8091 criados removidos. Stay-on temporário restaurado ao valor original 0 nos dois aparelhos. Preferência de tempo de bloqueio ajustada pelo autor permaneceu intacta. Nenhum banco apagado; apps instalados conservam nota confirmada.
+Limitações: dois Androids via USB, notas LWW e backend de desenvolvimento. Não extrapolar a iOS/Wi-Fi, oito CRDTs nessa topologia, multiparty genérico, autenticação de produção, histórico causal completo ou entrega incremental no pull. Reserva/catálogo/imagens do sample mantêm limites de VAL-13; fotos 403 não impediram notas. UI observada pelo desenvolvedor, sem estudo com participantes. TCC/publicação permanecem com autor.
+
+Provas persistidas: [dispositivos/APKs/bancos/IDs/PIDs e hub](evidence/val15-runtime.json).
+Snapshots resumidos de quatro checkpoints por aparelho incluem estado offline,
+ACK alpha isolado, convergência e reconciliação após reinícios. PIDs alpha
+7186/9203/10380/11512 e beta 3898/5398/5903/6777 encerrados em cada checkpoint;
+sem PID após force-stop. Hub 91358/93044 conforme artefato, com mesmo banco.
+Hashes de APKs: alpha 058230c4b987617ce1d2cae34ed748cc479f653d20e828a9e8f42bdb47ea6a2e;
+beta 9eccc5414c1ce87bcea661d1f105a4a18931b29e434913a667688af326d56602.
+Cópias completas de bancos/telas/logs permanecem temporárias em /tmp/val15-runtime.
+
+Falhas de ambiente preservadas: primeira revisão automática da permissão adb
+devices expirou; repetição única autorizada passou, sem interpretar timeout como
+rejeição por risco. Tela beta bloqueada interrompeu navegação e produziu dumps
+vazios/StopIteration; autor desbloqueou e ajustou timeout. Com tela acessível,
+restauração e runtime foram observados antes de concluir. Não houve alteração
+do produto para contornar esses eventos nem teste ausente declarado aprovado.
+
+Checks finais da manutenção: python3 scripts/check_plan.py aprovado, 53 tarefas
+e 325 links locais, nenhuma pronta; git diff --check aprovado no DeltaSync e no
+repositório externo samples_test_lib. Todas as tarefas atuais concluídas;
+extensões futuras e limitações documentadas não foram convertidas em tarefas novas.
+
+<a id="preparacao-val-16-2026-10-13"></a>
+
+## Preparação VAL-16 — 2026-10-13 — oito CRDTs entre peers Android
+
+Status final: bloqueada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: autor autorizou executar ampliação após discutir teste físico dos oito tipos. VAL-15/R-07a/R-26 concluídas; índice/fase, RUNBOOK, contratos/guia Dart e cinco skills conferidos. Lean-build aplicado ao escopo concreto, investigate-first ao bloqueio do fixture. Aparelhos ADB autorizados, IDs/bancos próprios e topologia definidos antes de agir. Worktrees anteriores preservados; um agente, sem delegação.
+Implementação: entrada main_eight.dart no projeto Flutter existente, EightScenario para história pública e HttpPeerLink loopback para par direto. Sem novo pacote/dependência ou mudança da biblioteca/Compass. Envelopes passam por receiveEnvelope e ACK é retornado após commit SQLite. Oito tipos consultados por valueAt com catálogo CrdtKind/wireName; JSON ordena sets para inspeção. UI mostra estado/pendências e acompanha commits. HTTP cleartext habilitado somente no manifest debug. Dois testes HTTP/SQLite e teste de widget separados; README/roteiro/mapa adicionados. Seed/branch têm commits por mutação, sem promessa de transação global; resolução MV exige observar duas versões.
+Review: aprovado
+Achados: corrigidos imports relativos sinalizados pelo analyzer, refresh inicial/remoto/contagem de pendências, guard de base incompleta e comando de edição durante falha. Fixture de widget esperava no fechamento com zonas fake/real; checkpoints demonstraram que recepção passou e dispose ficou esperando. Corrigidos construção/runAsync e bombeamento da drenagem, removidos prints temporários. Misturar testWidgets e HTTP no mesmo isolate ativou HttpOverrides e retornou 400 falso; separação dos arquivos manteve testes HTTP reais. Deltas das correções revistos, sem impeditivo de código; review não independente. Helper novo justificado por I/O HTTP concreto, distinto do enlace sintético R-22; sem framework genérico.
+Validação: parcial, runtime beta/reconciliação pendente
+Comandos: dart format --output=none --set-exit-if-changed lib test: 13 arquivos sem mudança. flutter analyze --no-pub aprovado; flutter test --no-pub --reporter expanded: sete testes aprovados após todas correções, quatro anteriores e três novos. Teste geral dos oito cobriu base, ramos isolados, envio falho, edição posterior, reabertura SQLite, requisições concorrentes, resultados semânticos, replay idempotente e resolução MV/restauração; segundo rejeitou destinatário errado sem ACK/commit; widget acompanhou commit remoto. flutter build apk --debug --no-pub --target lib/main_eight.dart --dart-define=REPLICA_ID=alpha/beta: dois builds aprovados, Dart/Flutter do PATH. adb install -r, forward/reverse, am start/force-stop, input, uiautomator, GET /state, exec-out run-as cat e inspeção sqlite3 executados por serial.
+Critérios: 1/2 satisfeitos pela implementação/review/testes e base nativa recebida. Moto G52 Android 13/API 33 alpha e Moto G53 5G Android 14/API 34 beta carregaram oito tipos em bancos próprios pelo plugin sqflite. Alpha criou base e recebeu ACK de beta; ambos tinham os mesmos oito valores e outbox zero. Removidos reverses para isolar ramificações. Alpha aplicou todos os oito ramos, tentou envio e recebeu Connection refused; editou novamente LWW para alpha-retry, mantendo 11 entradas com peer beta. Force-stop/reabertura (PIDs 21742/22786) preservou exatamente valores/pending/contextos/versões/sequências; só HLC local avançou. Nova cópia SQLite fechada confirmou estado e 11 entradas. Beta conserva base recebida e outbox zero, PID 12765 fechado. Critérios 3/4/5 permanecem parciais: falta desbloquear G53, ramificar beta, restaurar/reconciliar ambos, repetir envelopes e resolver MV no Android, com prova final dos bancos.
+Manutenção: VAL-16 criada SHOULD com dependências satisfeitas, depois bloqueada no keyguard do G53; dois critérios marcados, demais abertos. DEC-49/RISK-35/índice/fase/mapa/artefato atualizados. Solicitação de desbloqueio enviada, sem resposta nesta execução. Apps técnicos encerrados, forwards 18092/28092 e reverses 8093 criados removidos; stay-on original 0 restaurado sem alterar timeout do autor. Nenhum banco apagado/clonado. Não recriar base nem repetir branch alpha na retomada; começar pelo ramo beta sobre base preservada.
+Limitações: build/host/base compartilhada não substituem conflito e convergência físicos completos. Erro inicial de comparação de snapshot inteiro revelou somente avanço legítimo do HLC no restore; comparação corrigida exige todos os demais campos/valores/pending idênticos. Não alegar igualdade de clocks locais. Helpers loopback de desenvolvimento sem auth/limite de payload, para roteiro técnico. AppId reutilizado substitui entrada da demo, preservando shopper-a/b e usando eight-alpha/beta novos; Compass permanece instalado separadamente. TCC/pub.dev com autor.
+
+[Artefato parcial](evidence/val16-preparacao.json) contém hashes dos dois APKs,
+valores da base e snapshots/outboxes dos bancos fechados, PIDs e prova de restore
+alpha. Código/roteiro em [oito CRDTs](../example/flutter_mobile/EIGHT_CRDTS.md).
+Cópias completas/telas/logs em /tmp/val16-runtime, sem requisito de mantê-los para
+ler o artefato persistido. APKs temporários /tmp/eight-alpha.apk e /tmp/eight-beta.apk
+são reproduzíveis pelos comandos documentados; reinstalar sempre a mesma identidade.
+
+Checks finais desta manutenção: python3 scripts/check_plan.py aprovado, 54 tarefas
+e 330 links locais, nenhuma pronta; git diff --check aprovado. VAL-16 permanece
+bloqueada, não concluída; evidência de host não foi apresentada como runtime completo.
+
+<a id="execucao-val-16-2026-10-13"></a>
+
+## Execução VAL-16 — 2026-10-13 — fechamento físico dos oito tipos
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: cinco skills lidas integralmente; dependências/tarefa/índice/roteiro/DEC-49/RISK-35 e último registro conferidos. Autor autorizou retomar após desbloquear telas. Ambos ADB autorizados; G53 agora mostrou controles técnicos, resolvendo impedimento observado. Mantidos bancos/IDs e ramo alpha existente; beta ainda tinha base causal completa. RUNBOOK e guia Dart consultados. Sem delegação.
+Implementação: nenhuma alteração de produto ou novos builds nesta retomada. Peers/listeners reabertos com mesmas identidades/bancos e apenas forwards de inspeção inicialmente; reverses continuaram ausentes até ambos ramificarem. Beta executou fases restantes, sem recriar base nem repetir alpha. Documentação/artefato registram resultado final; mudanças anteriores preservadas.
+Review: aprovado
+Achados: suporte HTTP/EightScenario revistos; mudanças/correções da preparação conferidas, sem novo impeditivo. ACK continua após receiveEnvelope/commit, fora de envio local, sem alteração da biblioteca. Auditoria inicialmente comparou PN positivo/negativo com ausência versus componente zero, apesar de representarem mesmo estado; corrigido comparador de evidência, preservando componentes não zero, sequências e contextos. Primeiro replay manual omitiu wrapper DeltaCodec e recebeu HTTP 400; corrigido fixture para envelope v2/delta codec v4 após leitura do contrato, sem mudar aplicativo. Review não independente.
+Validação: aprovada
+Comandos: adb devices, forward/reverse por serial, am start/force-stop, input/uiautomator, GET /state, POST /delta, exec-out run-as cat e sqlite3 executados. Moto G52 alpha Android 13/API 33, serial 0081889739; Moto G53 5G beta Android 14/API 34, serial 0085287528. Sete testes Flutter/analyze/format e dois APKs aprovados na preparação após correções, sem mudanças de fonte posteriores; não repetidos por ritual nem apresentados como novos nesta retomada. APKs/hashes no artefato persistido. Canais: host 18092/28092 encaminham listeners 8092; reverse de cada 8093 aponta ao outro host forward; HTTP/TCP entre aparelhos por USB, sem hub.
+Critérios: 1/2 preservados pelas provas de implementação/testes/review. 3 fechado: ramos partem da base compartilhada e não receberam alterações do outro antes de editar; alpha com 11 pendências, beta com 13. Ambos tiveram envio falho sem rede, nova edição LWW e force-stop/restauração com mesmas entradas/contextos/versões. Após reconectar, alpha enviou e beta manteve exatamente seus 13 IDs; beta enviou e ambos zeraram outbox. 4 fechado: SQLite fechado de cada aparelho coincide com estado consultado, IDs/peers e contextos conferidos, valores dos oito iguais às expectativas abaixo, ACK após commit. Resolver MV em alpha observou as duas versões; envio produziu apenas resolved nos dois. Após reinício, replay dos envelopes originais (11/13 mudanças) recebeu ACK applied-and-persisted com todos os IDs, sem ressuscitar versões removidas ou alterar contadores/conjuntos/mapa. Bancos finais fechados mantêm resolução e outboxes vazias. 5 fechado: review/correções e host/build da preparação, runtime completo nesta retomada, docs/índice/fase/decisões/riscos e artefato consistentes.
+Manutenção: todos os critérios marcados, VAL-16 concluída; nenhuma tarefa ativa/pronta ou incompleta no plano atual. Forwards/reverses criados removidos, stay-on original 0 restaurado, timeout do usuário intacto; apps técnicos encerrados, bancos preservados. TCC/publicação continuam com autor.
+Limitações: uma história concreta dos oito CRDTs em dois Androids e canal USB, complementando propriedades/permutação das suítes. Sem iOS/Wi-Fi/produção, autenticação, topologia arbitrária ou transação de oito mutações. Comparação causal exclui owner/sequence locais; ausência de componente PN zero equivale a zero. HLC local avança em restore/recepção, sem perda de versões/contextos. Replay usa fixture host para reenviar conteúdo dos envelopes aos receivers Android; não simula perda de ACK nessa execução física. Sem claim de independência do review.
+
+### Resultados físicos por tipo
+
+| Tipo | Resultado comprovado |
+|---|---|
+| LWW | beta-retry; vencedor beta:delta:2 e HLC/dot iguais, ranking conferido contra ambos ramos |
+| G-Counter | 6; componentes/sequências equivalentes, sem duplicação no replay |
+| PN-Counter | 3; positivos alpha 5, negativos beta 2; zeros locais equivalentes |
+| G-Set | alpha, beta, seed; mudanças/dots convergentes |
+| 2P-Set | alpha, beta; shared permanece removido apesar da adição concorrente |
+| MV-Register | alpha/beta concorrentes; depois somente resolved, sem ressuscitar versões no replay |
+| OR-Set | alpha, beta, shared; nova tag concorrente sobrevive à remoção observada |
+| OR-Map | shared contém beta; encarnação removida não ressuscita seed |
+
+[Artefato completo](evidence/val16-runtime.json) preserva estados offline e antes
+da resolução, snapshots finais dos dois bancos, IDs/peers/PIDs/hashes, receipts de
+replay, auditoria e limpeza. Ramo beta: PID 14053 antes e 14312 depois do reinício;
+resolução: alpha 24617/beta 14312; final após novo restart: alpha 25815/beta 15340.
+Nenhum PID após force-stop. Snapshot/contexto/outbox foram preservados em cada
+restore, exceto avanço legítimo de HLC local. Logs/telas/bancos completos em
+/tmp/val16-runtime complementam o artefato persistido. Histórico da preparação
+bloqueada permanece acima, sem substituir seu resultado por aprovação retroativa.
+
+Checks finais da manutenção: python3 scripts/check_plan.py aprovado, 54 tarefas
+e 334 links locais, nenhuma pronta; git diff --check aprovado. Artefato final
+reconferido: oito valores comuns, MV resolvido, outboxes vazias, ACKs de replay
+com 11/13 IDs e pendências beta intactas após ACK alpha. Nenhuma tarefa ativa.
+
+## Manutenção da distribuição e evidências — 2026-10-13
+
+Pedido: autor autorizou criar .pubignore e corrigir .gitignore, mantendo exemplos
+consultáveis no repositório e excluindo-os do download da biblioteca. Aplicado
+plan-maintainer; nenhuma tarefa de produto reaberta ou publicação autorizada.
+
+Alterações: .pubignore da raiz usa lista explícita de inclusão: lib, README,
+CHANGELOG, LICENSE, pubspec, analysis_options e exemplo mínimo deltasync_example.
+Demais exemplos, medições, subpacotes do monorepo, planos/evidências e ferramentas
+ficam fora do arquivo da facade. Regras adicionais excluem build/cache/coverage,
+locks e APK/AAB mesmo dentro de diretórios incluídos. .gitignore preserva regras
+anteriores e acrescenta exclusões de gerados; exceções estreitas permitem versionar
+patches e runtime JSON de plan/evidence. README fornece link completo ao repositório
+para consultar/clonar exemplos e documentos excluídos do pacote.
+
+Review: aprovado para o escopo de filtragem, pelo mesmo agente. Sem remoção de
+arquivos, staging ou commit; trabalho anterior preservado. O exemplo mínimo é
+independente dos helpers Flutter/SQLite excluídos. As inclusões da facade usam
+dependências públicas dos subpacotes, sem copiar fontes do monorepo para seu pacote.
+
+Validação: dart pub publish --dry-run, Dart do PATH, gerou lista esperada e
+arquivo comprimido de 19 KB. Incluiu somente os arquivos acima; não incluiu
+Flutter, medições, plan/evidence ou binários. Processo terminou com código 65
+por três avisos: README modificado no Git, ausência de homepage/repository no
+pubspec e CHANGELOG sem entrada para versão 2.0.0. Não são falhas de filtragem;
+preparação final de publicação permanece com o autor. Nenhum upload executado.
+git check-ignore --no-index confirmou 11 patches/runtime JSON disponíveis para
+Git e build/APK/coverage ignorados. Testes Dart não repetidos: mudança de regras
+de distribuição/documentação, sem alterar código da biblioteca ou consumidores.
+
+Limitações: dry-run da facade não substitui validação/publicação de cada subpacote,
+disponibilidade das versões dependentes ou prova de consumo instalado do pub.dev.
+Link do repositório é estável; exemplos/evidências novos precisam ser commitados
+e enviados pelo autor para ficarem disponíveis remotamente. Nenhuma tarefa ativa;
+conclusões técnicas anteriores preservadas, sem confundir filtros com pacote publicado.
+
+Checks finais: python3 scripts/check_plan.py aprovado, 54 tarefas e 334 links
+locais; git diff --check aprovado. Status e critérios técnicos preservados.

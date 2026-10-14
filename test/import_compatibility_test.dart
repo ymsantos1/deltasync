@@ -7,6 +7,7 @@ void main() {
   test(
     'original import paths retain type identity after internal separation',
     () {
+      expect(_ExternalCommit(), isA<facade.SyncObservation>());
       expect(storage.MemoryStorage(), isA<facade.MemoryStorage>());
       expect(const sync.SyncRetryPolicy(), isA<facade.SyncRetryPolicy>());
       expect(
@@ -19,4 +20,10 @@ void main() {
       );
     },
   );
+}
+
+/// Existing event contracts remain implementable outside the sync library.
+class _ExternalCommit implements facade.SyncCommitEvent {
+  @override
+  facade.SyncCommitOrigin get origin => facade.SyncCommitOrigin.local;
 }

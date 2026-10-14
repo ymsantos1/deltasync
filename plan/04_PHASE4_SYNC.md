@@ -1,6 +1,6 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: R-24 MUST e R-26 SHOULD concluídas em 2026-10-13; R-27 SHOULD pronta.
+Estado: R-24 MUST e R-26/R-27 SHOULD concluídas em 2026-10-13.
 R-08a a R-08d mantêm conclusão histórica no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
@@ -211,7 +211,7 @@ Evidência de conclusão: [execução R-26](TRACEABILITY.md#execucao-r-26-2026-1
 
 ## R-27 — Facilitar acompanhamento público da sincronização
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-26, R-17
 
@@ -220,15 +220,15 @@ Origem: análise da integração Compass e autorização do autor em 2026-10-13.
 
 Critérios:
 
-- [ ] Inventariar commits/errors/pendingDelta/resultados de push; reutilizar contratos e escolher conveniência mínima, sem representações paralelas da mesma informação.
-- [ ] Distinguir commit local, pendência de envio e confirmação remota; definir estado inicial após restore, falhas, atualização e encerramento. Não inferir ACK de um evento de commit.
-- [ ] Cobrir commit/rollback, ACK parcial, falha/retry, reabertura e descarte/listeners. Confirmar que observação não bloqueia edição nem invalida commit.
-- [ ] Mostrar consumo sem polling desnecessário e sem Flutter no sync; documentar compatibilidade, revisar após correções e validar pacotes e consumidor afetados.
+- [x] Inventariar commits/errors/pendingDelta/resultados de push; reutilizar contratos e escolher conveniência mínima, sem representações paralelas da mesma informação.
+- [x] Distinguir commit local, pendência de envio e confirmação remota; definir estado inicial após restore, falhas, atualização e encerramento. Não inferir ACK de um evento de commit.
+- [x] Cobrir commit/rollback, ACK parcial, falha/retry, reabertura e descarte/listeners. Confirmar que observação não bloqueia edição nem invalida commit.
+- [x] Mostrar consumo sem polling desnecessário e sem Flutter no sync; documentar compatibilidade, revisar após correções e validar pacotes e consumidor afetados.
 
 Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
 regressões e compatibilidade são obrigatórias na própria tarefa.
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-27](TRACEABILITY.md#execucao-r-27-2026-10-13).
 
 ## Gate da fase
 

@@ -525,29 +525,77 @@ Evidência de conclusão: [execução VAL-14](TRACEABILITY.md#execucao-val-14-20
 
 ## VAL-15 — Validar duas instalações em dispositivos físicos distintos
 
-Status: planejada
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-26, R-27, VAL-13
 
 Áreas: Identidade/configuração do exemplo consumidor e runtime em rede real.
+Entrada de runtime: identificar dois dispositivos físicos disponíveis/autorizados
+e definir a topologia suportada. Conclusão das dependências libera desenho e
+preparação, sem afirmar que um segundo aparelho já está disponível.
 Origem: análise da integração Compass e autorização do autor em 2026-10-13.
 
 Critérios:
 
-- [ ] Definir antes da execução a topologia suportada e canal real. Configurar identidades distintas e persistentes sem editar fonte; não clonar banco nem ampliar implicitamente o par fixo para múltiplos peers.
-- [ ] Se houver servidor intermediário, comprovar roteamento e outbox/ACK por destinatário em escopo explícito antes do runtime. Registrar tarefa própria para alteração geral necessária; não confirmar para dois clientes com o vínculo fixo atual.
-- [ ] Usar dois dispositivos disponíveis/autorizados; executar edições offline/concorrentes, desconexão, reinício com pendências, retry e reconciliação, incluindo disponibilidade da edição durante falha.
-- [ ] Comprovar convergência e confirmações duráveis pelos bancos/IDs; registrar dispositivos, versões, canal e limites. Sem segundo aparelho, manter pendência ou adiamento SHOULD justificado.
-- [ ] Revisar após correções e validar app/backend e runtime afetado; não extrapolar dois dispositivos para topologia arbitrária, produção ou outras plataformas.
+- [x] Definir antes da execução a topologia suportada e canal real. Configurar identidades distintas e persistentes sem editar fonte; não clonar banco nem ampliar implicitamente o par fixo para múltiplos peers.
+- [x] Se houver servidor intermediário, comprovar roteamento e outbox/ACK por destinatário em escopo explícito antes do runtime. Registrar tarefa própria para alteração geral necessária; não confirmar para dois clientes com o vínculo fixo atual.
+- [x] Usar dois dispositivos disponíveis/autorizados; executar edições offline/concorrentes, desconexão, reinício com pendências, retry e reconciliação, incluindo disponibilidade da edição durante falha.
+- [x] Comprovar convergência e confirmações duráveis pelos bancos/IDs; registrar dispositivos, versões, canal e limites. Sem segundo aparelho, manter pendência ou adiamento SHOULD justificado.
+- [x] Revisar após correções e validar app/backend e runtime afetado; não extrapolar dois dispositivos para topologia arbitrária, produção ou outras plataformas.
 
 Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
 regressões e compatibilidade são obrigatórias na própria tarefa.
+Preparação: [roteiro e topologia](../docs/val15-dois-dispositivos.md).
+Hub é composição do consumidor com estado LWW materializado, sem outbox global
+de entrega. Clientes mantêm outbox separada para hub; ACK de um não confirma outro.
+Defaults antigos preservados; não houve alteração geral da biblioteca.
+Impedimento resolvido: dois aparelhos autorizados, Moto G52 Android 13/API 33 e
+Moto G53 5G Android 14/API 34. Runtime HTTP/USB, reinícios e bancos inspecionados
+confirmaram convergência/ACK isolado. Review e checks do consumidor/backend aprovados.
+Evidência parcial: [preparação VAL-15](TRACEABILITY.md#preparacao-val-15-2026-10-13).
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução VAL-15](TRACEABILITY.md#execucao-val-15-2026-10-13).
+
+<a id="val-16"></a>
+
+## VAL-16 — Exercitar oito CRDTs entre dois Androids com peers diretos
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: VAL-15, R-07a, R-26
+
+Origem: autor autorizou ampliar teste físico após discutir limites LWW da VAL-15.
+Áreas: entrada técnica do exemplo Flutter existente, suporte HTTP e cenários de teste.
+Topologia: duas engines/SQLite privados com IDs alpha/beta e peer fixo direto;
+HTTP/TCP por forward/reverse USB. Não ampliar hub Compass nem contratos da biblioteca.
+
+Critérios:
+
+- [x] Implementar cenário explícito dos oito tipos com base causal compartilhada,
+  LWW/MV concorrentes, incrementos e adição/remoção concorrente de conjuntos/mapa;
+  expectativas semânticas documentadas e testes gerais independentes dos aparelhos.
+- [x] Usar APIs públicas, IDs/bancos isolados e ACK somente após commit remoto;
+  preservar exemplos anteriores e fechar recursos/rejeitar envelopes inválidos.
+- [x] Validar em dois Androids: falha de rede, edição offline, reinício com outbox,
+  retry/duplicação, convergência dos oito tipos e resolução causal do MV-Register.
+- [x] Inspecionar SQLite/metadados/IDs/outboxes após reinícios e ACK, registrar
+  APKs/aparelhos/canal, sem confundir igualdade de valores com toda causalidade.
+- [x] Revisar após correções, passar análise/testes/build/runtime e atualizar mapa,
+  evidências/decisões/riscos; manter limites de exemplo técnico sem produção/iOS.
+
+Validação: analyze/test/build do exemplo e testes HTTP/SQLite dos cenários;
+runtime em Moto G52/G53 disponíveis. Sem novo pacote ou dependência de produção.
+Impedimento resolvido: telas desbloqueadas permitiram retomar os mesmos bancos.
+Dois ramos, restauração, ACK isolado, convergência dos oito, replay e resolução
+causal MV passaram no Android. Túneis temporários removidos, bancos preservados.
+Evidência parcial: [preparação VAL-16](TRACEABILITY.md#preparacao-val-16-2026-10-13).
+Evidência de conclusão: [execução VAL-16](TRACEABILITY.md#execucao-val-16-2026-10-13).
 
 ## Gate da fase
 
 Novo fechamento concluído após R-24/R-25/VAL-14 e revalidação de VAL-05.
+VAL-15 concluiu a evidência adicional de dois Androids físicos em 2026-10-13,
+com hub LWW/SQLite, ACK isolado, restauração e convergência; limites em DEC-48.
 R-26/R-27/VAL-15 SHOULD podem ser adiadas com justificativa; codegen fica fora.
 
 VAL-05 concluiu o gate técnico MUST. VAL-06 a VAL-10 SHOULD foram concluídas;

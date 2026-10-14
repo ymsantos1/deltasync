@@ -1,0 +1,1478 @@
+{
+  "task": "VAL-16",
+  "date": "2026-10-13",
+  "status": "blocked: Moto G53 keyguard must be unlocked for UI branch",
+  "settings": {
+    "alpha": {
+      "stayOn": "0",
+      "screenTimeout": "2147483647",
+      "model": "moto g52",
+      "android": "13",
+      "api": "33"
+    },
+    "beta": {
+      "stayOn": "0",
+      "screenTimeout": "1800000",
+      "model": "moto g53 5G",
+      "android": "14",
+      "api": "34"
+    }
+  },
+  "devices": {
+    "alpha": {
+      "serial": "0081889739",
+      "apkSha256": "b5eaec9b21e3993c08d1d6f00ca4a7851b24e089bb74c7d6eea3a924e5bdae53"
+    },
+    "beta": {
+      "serial": "0085287528",
+      "apkSha256": "05e9980f0bf65e0249fad8a46fc5e3428dd83d3a16f720e6f6a5d501d96784e3"
+    }
+  },
+  "sharedBaseValues": {
+    "alpha": {
+      "lww": "base",
+      "g-counter": 1,
+      "pn-counter": 1,
+      "g-set": [
+        "seed"
+      ],
+      "2p-set": [
+        "shared"
+      ],
+      "mv-register": [
+        "base"
+      ],
+      "or-set": [
+        "shared"
+      ],
+      "or-map": {
+        "shared": [
+          "seed"
+        ]
+      }
+    },
+    "beta": {
+      "lww": "base",
+      "g-counter": 1,
+      "pn-counter": 1,
+      "g-set": [
+        "seed"
+      ],
+      "2p-set": [
+        "shared"
+      ],
+      "mv-register": [
+        "base"
+      ],
+      "or-set": [
+        "shared"
+      ],
+      "or-map": {
+        "shared": [
+          "seed"
+        ]
+      }
+    }
+  },
+  "remaining": {
+    "alpha": {
+      "state": {
+        "replicaId": "alpha",
+        "pending": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "lab/lww",
+              "id": "alpha:delta:2",
+              "replicaId": "alpha",
+              "timestamp": {
+                "physicalMilliseconds": 1791941352303,
+                "logical": 0
+              },
+              "value": "alpha",
+              "deleted": false,
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2
+              }
+            },
+            {
+              "type": "g-counter",
+              "id": "g-counter:[\"lab/g-counter\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/g-counter",
+              "value": 3,
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/g-counter"
+              }
+            },
+            {
+              "type": "pn-counter",
+              "id": "pn-counter:[\"lab/pn-counter\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/pn-counter",
+              "positive": 5,
+              "negative": 0,
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/pn-counter"
+              }
+            },
+            {
+              "type": "g-set",
+              "id": "g-set:[\"lab/g-set\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/g-set",
+              "elements": [
+                "alpha"
+              ],
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/g-set"
+              }
+            },
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"lab/2p-set\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/2p-set",
+              "action": "add",
+              "elements": [
+                "alpha"
+              ],
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/2p-set"
+              }
+            },
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"lab/2p-set\",\"alpha\",3]",
+              "replicaId": "alpha",
+              "crdtId": "lab/2p-set",
+              "action": "remove",
+              "elements": [
+                "shared"
+              ],
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 3,
+                "crdtId": "lab/2p-set"
+              }
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"lab/or-set\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/or-set",
+              "action": "remove",
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/or-set"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "alpha",
+                  "counter": 1,
+                  "crdtId": "lab/or-set"
+                }
+              ]
+            },
+            {
+              "type": "or-map",
+              "id": "or-map:[\"lab/or-map\",\"alpha\",3]",
+              "replicaId": "alpha",
+              "crdtId": "lab/or-map",
+              "action": "remove-key",
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 3,
+                "crdtId": "lab/or-map"
+              },
+              "key": "shared",
+              "observedDots": [
+                {
+                  "replicaId": "alpha",
+                  "counter": 1,
+                  "crdtId": "lab/or-map"
+                }
+              ]
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"lab/or-set\",\"alpha\",3]",
+              "replicaId": "alpha",
+              "crdtId": "lab/or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 3,
+                "crdtId": "lab/or-set"
+              },
+              "element": "alpha"
+            },
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"lab/mv-register\",\"alpha\",2]",
+              "replicaId": "alpha",
+              "crdtId": "lab/mv-register",
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 2,
+                "crdtId": "lab/mv-register"
+              },
+              "value": "alpha",
+              "context": {
+                "crdtId": "lab/mv-register",
+                "replicas": {
+                  "alpha": {
+                    "prefix": 1,
+                    "sparse": []
+                  }
+                }
+              }
+            },
+            {
+              "type": "lww",
+              "key": "lab/lww",
+              "id": "alpha:delta:3",
+              "replicaId": "alpha",
+              "timestamp": {
+                "physicalMilliseconds": 1791941372160,
+                "logical": 0
+              },
+              "value": "alpha-retry",
+              "deleted": false,
+              "dot": {
+                "replicaId": "alpha",
+                "counter": 3
+              }
+            }
+          ]
+        },
+        "values": {
+          "lww": "alpha-retry",
+          "g-counter": 3,
+          "pn-counter": 5,
+          "g-set": [
+            "alpha",
+            "seed"
+          ],
+          "2p-set": [
+            "alpha"
+          ],
+          "mv-register": [
+            "alpha"
+          ],
+          "or-set": [
+            "alpha"
+          ],
+          "or-map": {}
+        },
+        "snapshot": {
+          "version": 9,
+          "replicaId": "alpha",
+          "clock": {
+            "alpha": 3
+          },
+          "hlc": {
+            "physicalMilliseconds": 1791941380513,
+            "logical": 0
+          },
+          "deltaSequence": 3,
+          "lww": {
+            "lab/lww": {
+              "winner": {
+                "type": "lww",
+                "key": "lab/lww",
+                "id": "alpha:delta:3",
+                "replicaId": "alpha",
+                "timestamp": {
+                  "physicalMilliseconds": 1791941372160,
+                  "logical": 0
+                },
+                "value": "alpha-retry",
+                "deleted": false,
+                "dot": {
+                  "replicaId": "alpha",
+                  "counter": 3
+                }
+              }
+            }
+          },
+          "gCounters": {
+            "lab/g-counter": {
+              "replicaId": "alpha",
+              "crdtId": "lab/g-counter",
+              "components": {
+                "alpha": 3
+              },
+              "sequences": {
+                "alpha": 2
+              },
+              "sequence": 2
+            }
+          },
+          "pnCounters": {
+            "lab/pn-counter": {
+              "replicaId": "alpha",
+              "crdtId": "lab/pn-counter",
+              "positive": {
+                "alpha": 5
+              },
+              "negative": {},
+              "sequences": {
+                "alpha": 2
+              },
+              "sequence": 2
+            }
+          },
+          "gSets": {
+            "lab/g-set": {
+              "replicaId": "alpha",
+              "crdtId": "lab/g-set",
+              "sequence": 2,
+              "changes": [
+                {
+                  "type": "g-set",
+                  "id": "g-set:[\"lab/g-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/g-set",
+                  "elements": [
+                    "seed"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/g-set"
+                  }
+                },
+                {
+                  "type": "g-set",
+                  "id": "g-set:[\"lab/g-set\",\"alpha\",2]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/g-set",
+                  "elements": [
+                    "alpha"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/g-set"
+                  }
+                }
+              ]
+            }
+          },
+          "twoPSets": {
+            "lab/2p-set": {
+              "replicaId": "alpha",
+              "crdtId": "lab/2p-set",
+              "sequence": 3,
+              "changes": [
+                {
+                  "type": "2p-set",
+                  "id": "2p-set:[\"lab/2p-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/2p-set",
+                  "action": "add",
+                  "elements": [
+                    "shared"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/2p-set"
+                  }
+                },
+                {
+                  "type": "2p-set",
+                  "id": "2p-set:[\"lab/2p-set\",\"alpha\",2]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/2p-set",
+                  "action": "add",
+                  "elements": [
+                    "alpha"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/2p-set"
+                  }
+                },
+                {
+                  "type": "2p-set",
+                  "id": "2p-set:[\"lab/2p-set\",\"alpha\",3]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/2p-set",
+                  "action": "remove",
+                  "elements": [
+                    "shared"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 3,
+                    "crdtId": "lab/2p-set"
+                  }
+                }
+              ]
+            }
+          },
+          "mvRegisters": {
+            "lab/mv-register": {
+              "replicaId": "alpha",
+              "crdtId": "lab/mv-register",
+              "sequence": 2,
+              "context": {
+                "crdtId": "lab/mv-register",
+                "replicas": {
+                  "alpha": {
+                    "prefix": 2,
+                    "sparse": []
+                  }
+                }
+              },
+              "versions": [
+                {
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/mv-register"
+                  },
+                  "value": "alpha",
+                  "context": {
+                    "crdtId": "lab/mv-register",
+                    "replicas": {
+                      "alpha": {
+                        "prefix": 1,
+                        "sparse": []
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "orSets": {
+            "lab/or-set": {
+              "replicaId": "alpha",
+              "crdtId": "lab/or-set",
+              "sequence": 3,
+              "changes": [
+                {
+                  "type": "or-set",
+                  "id": "or-set:[\"lab/or-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-set",
+                  "action": "add",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-set"
+                  },
+                  "element": "shared"
+                },
+                {
+                  "type": "or-set",
+                  "id": "or-set:[\"lab/or-set\",\"alpha\",2]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-set",
+                  "action": "remove",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/or-set"
+                  },
+                  "observedDots": [
+                    {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-set"
+                    }
+                  ]
+                },
+                {
+                  "type": "or-set",
+                  "id": "or-set:[\"lab/or-set\",\"alpha\",3]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-set",
+                  "action": "add",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 3,
+                    "crdtId": "lab/or-set"
+                  },
+                  "element": "alpha"
+                }
+              ]
+            }
+          },
+          "orMaps": {
+            "lab/or-map": {
+              "replicaId": "alpha",
+              "crdtId": "lab/or-map",
+              "sequence": 3,
+              "changes": [
+                {
+                  "type": "or-map",
+                  "id": "or-map:[\"lab/or-map\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-map",
+                  "action": "add-key",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-map"
+                  },
+                  "key": "shared"
+                },
+                {
+                  "type": "or-map",
+                  "id": "or-map:[\"lab/or-map\",\"alpha\",2]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-map",
+                  "action": "add-value",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/or-map"
+                  },
+                  "key": "shared",
+                  "keyDot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-map"
+                  },
+                  "valueChange": {
+                    "type": "g-set",
+                    "id": "g-set:[\"or-map-value:[\\\"lab/or-map\\\",\\\"shared\\\",\\\"alpha\\\",1]\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]",
+                    "elements": [
+                      "seed"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]"
+                    }
+                  }
+                },
+                {
+                  "type": "or-map",
+                  "id": "or-map:[\"lab/or-map\",\"alpha\",3]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-map",
+                  "action": "remove-key",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 3,
+                    "crdtId": "lab/or-map"
+                  },
+                  "key": "shared",
+                  "observedDots": [
+                    {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-map"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "closedDatabaseProof": {
+        "pidBeforeStop": "22786",
+        "pidAfterStop": "",
+        "snapshot": {
+          "version": 2,
+          "replicaId": "alpha",
+          "snapshot": {
+            "version": 9,
+            "replicaId": "alpha",
+            "clock": {
+              "alpha": 3
+            },
+            "hlc": {
+              "physicalMilliseconds": 1791941380513,
+              "logical": 0
+            },
+            "deltaSequence": 3,
+            "lww": {
+              "lab/lww": {
+                "winner": {
+                  "type": "lww",
+                  "key": "lab/lww",
+                  "id": "alpha:delta:3",
+                  "replicaId": "alpha",
+                  "timestamp": {
+                    "physicalMilliseconds": 1791941372160,
+                    "logical": 0
+                  },
+                  "value": "alpha-retry",
+                  "deleted": false,
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 3
+                  }
+                }
+              }
+            },
+            "gCounters": {
+              "lab/g-counter": {
+                "replicaId": "alpha",
+                "crdtId": "lab/g-counter",
+                "components": {
+                  "alpha": 3
+                },
+                "sequences": {
+                  "alpha": 2
+                },
+                "sequence": 2
+              }
+            },
+            "pnCounters": {
+              "lab/pn-counter": {
+                "replicaId": "alpha",
+                "crdtId": "lab/pn-counter",
+                "positive": {
+                  "alpha": 5
+                },
+                "negative": {},
+                "sequences": {
+                  "alpha": 2
+                },
+                "sequence": 2
+              }
+            },
+            "gSets": {
+              "lab/g-set": {
+                "replicaId": "alpha",
+                "crdtId": "lab/g-set",
+                "sequence": 2,
+                "changes": [
+                  {
+                    "type": "g-set",
+                    "id": "g-set:[\"lab/g-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/g-set",
+                    "elements": [
+                      "seed"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/g-set"
+                    }
+                  },
+                  {
+                    "type": "g-set",
+                    "id": "g-set:[\"lab/g-set\",\"alpha\",2]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/g-set",
+                    "elements": [
+                      "alpha"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/g-set"
+                    }
+                  }
+                ]
+              }
+            },
+            "twoPSets": {
+              "lab/2p-set": {
+                "replicaId": "alpha",
+                "crdtId": "lab/2p-set",
+                "sequence": 3,
+                "changes": [
+                  {
+                    "type": "2p-set",
+                    "id": "2p-set:[\"lab/2p-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/2p-set",
+                    "action": "add",
+                    "elements": [
+                      "shared"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/2p-set"
+                    }
+                  },
+                  {
+                    "type": "2p-set",
+                    "id": "2p-set:[\"lab/2p-set\",\"alpha\",2]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/2p-set",
+                    "action": "add",
+                    "elements": [
+                      "alpha"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/2p-set"
+                    }
+                  },
+                  {
+                    "type": "2p-set",
+                    "id": "2p-set:[\"lab/2p-set\",\"alpha\",3]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/2p-set",
+                    "action": "remove",
+                    "elements": [
+                      "shared"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 3,
+                      "crdtId": "lab/2p-set"
+                    }
+                  }
+                ]
+              }
+            },
+            "mvRegisters": {
+              "lab/mv-register": {
+                "replicaId": "alpha",
+                "crdtId": "lab/mv-register",
+                "sequence": 2,
+                "context": {
+                  "crdtId": "lab/mv-register",
+                  "replicas": {
+                    "alpha": {
+                      "prefix": 2,
+                      "sparse": []
+                    }
+                  }
+                },
+                "versions": [
+                  {
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/mv-register"
+                    },
+                    "value": "alpha",
+                    "context": {
+                      "crdtId": "lab/mv-register",
+                      "replicas": {
+                        "alpha": {
+                          "prefix": 1,
+                          "sparse": []
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "orSets": {
+              "lab/or-set": {
+                "replicaId": "alpha",
+                "crdtId": "lab/or-set",
+                "sequence": 3,
+                "changes": [
+                  {
+                    "type": "or-set",
+                    "id": "or-set:[\"lab/or-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-set",
+                    "action": "add",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-set"
+                    },
+                    "element": "shared"
+                  },
+                  {
+                    "type": "or-set",
+                    "id": "or-set:[\"lab/or-set\",\"alpha\",2]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-set",
+                    "action": "remove",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/or-set"
+                    },
+                    "observedDots": [
+                      {
+                        "replicaId": "alpha",
+                        "counter": 1,
+                        "crdtId": "lab/or-set"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "or-set",
+                    "id": "or-set:[\"lab/or-set\",\"alpha\",3]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-set",
+                    "action": "add",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 3,
+                      "crdtId": "lab/or-set"
+                    },
+                    "element": "alpha"
+                  }
+                ]
+              }
+            },
+            "orMaps": {
+              "lab/or-map": {
+                "replicaId": "alpha",
+                "crdtId": "lab/or-map",
+                "sequence": 3,
+                "changes": [
+                  {
+                    "type": "or-map",
+                    "id": "or-map:[\"lab/or-map\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-map",
+                    "action": "add-key",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-map"
+                    },
+                    "key": "shared"
+                  },
+                  {
+                    "type": "or-map",
+                    "id": "or-map:[\"lab/or-map\",\"alpha\",2]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-map",
+                    "action": "add-value",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/or-map"
+                    },
+                    "key": "shared",
+                    "keyDot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-map"
+                    },
+                    "valueChange": {
+                      "type": "g-set",
+                      "id": "g-set:[\"or-map-value:[\\\"lab/or-map\\\",\\\"shared\\\",\\\"alpha\\\",1]\",\"alpha\",1]",
+                      "replicaId": "alpha",
+                      "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]",
+                      "elements": [
+                        "seed"
+                      ],
+                      "dot": {
+                        "replicaId": "alpha",
+                        "counter": 1,
+                        "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]"
+                      }
+                    }
+                  },
+                  {
+                    "type": "or-map",
+                    "id": "or-map:[\"lab/or-map\",\"alpha\",3]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-map",
+                    "action": "remove-key",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 3,
+                      "crdtId": "lab/or-map"
+                    },
+                    "key": "shared",
+                    "observedDots": [
+                      {
+                        "replicaId": "alpha",
+                        "counter": 1,
+                        "crdtId": "lab/or-map"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "outbox": [
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "2p-set:[\"lab/2p-set\",\"alpha\",2]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "2p-set:[\"lab/2p-set\",\"alpha\",3]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "alpha:delta:2"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "alpha:delta:3"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "g-counter:[\"lab/g-counter\",\"alpha\",2]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "g-set:[\"lab/g-set\",\"alpha\",2]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "mv-register:[\"lab/mv-register\",\"alpha\",2]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "or-map:[\"lab/or-map\",\"alpha\",3]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "or-set:[\"lab/or-set\",\"alpha\",2]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "or-set:[\"lab/or-set\",\"alpha\",3]"
+          },
+          {
+            "replicaId": "alpha",
+            "recipientPeerId": "beta",
+            "entryId": "pn-counter:[\"lab/pn-counter\",\"alpha\",2]"
+          }
+        ]
+      },
+      "databaseSha256": "85b7670789b390552fe0d3b0118b25c074941459a64c785094561577b02b529b"
+    },
+    "beta": {
+      "state": {
+        "replicaId": "beta",
+        "pending": {
+          "changes": []
+        },
+        "values": {
+          "lww": "base",
+          "g-counter": 1,
+          "pn-counter": 1,
+          "g-set": [
+            "seed"
+          ],
+          "2p-set": [
+            "shared"
+          ],
+          "mv-register": [
+            "base"
+          ],
+          "or-set": [
+            "shared"
+          ],
+          "or-map": {
+            "shared": [
+              "seed"
+            ]
+          }
+        },
+        "snapshot": {
+          "version": 9,
+          "replicaId": "beta",
+          "clock": {
+            "alpha": 1
+          },
+          "hlc": {
+            "physicalMilliseconds": 1791941292964,
+            "logical": 0
+          },
+          "deltaSequence": 0,
+          "lww": {
+            "lab/lww": {
+              "winner": {
+                "type": "lww",
+                "key": "lab/lww",
+                "id": "alpha:delta:1",
+                "replicaId": "alpha",
+                "timestamp": {
+                  "physicalMilliseconds": 1791941286446,
+                  "logical": 0
+                },
+                "value": "base",
+                "deleted": false,
+                "dot": {
+                  "replicaId": "alpha",
+                  "counter": 1
+                }
+              }
+            }
+          },
+          "gCounters": {
+            "lab/g-counter": {
+              "replicaId": "beta",
+              "crdtId": "lab/g-counter",
+              "components": {
+                "alpha": 1
+              },
+              "sequences": {
+                "alpha": 1
+              },
+              "sequence": 0
+            }
+          },
+          "pnCounters": {
+            "lab/pn-counter": {
+              "replicaId": "beta",
+              "crdtId": "lab/pn-counter",
+              "positive": {
+                "alpha": 1
+              },
+              "negative": {
+                "alpha": 0
+              },
+              "sequences": {
+                "alpha": 1
+              },
+              "sequence": 0
+            }
+          },
+          "gSets": {
+            "lab/g-set": {
+              "replicaId": "beta",
+              "crdtId": "lab/g-set",
+              "sequence": 0,
+              "changes": [
+                {
+                  "type": "g-set",
+                  "id": "g-set:[\"lab/g-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/g-set",
+                  "elements": [
+                    "seed"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/g-set"
+                  }
+                }
+              ]
+            }
+          },
+          "twoPSets": {
+            "lab/2p-set": {
+              "replicaId": "beta",
+              "crdtId": "lab/2p-set",
+              "sequence": 0,
+              "changes": [
+                {
+                  "type": "2p-set",
+                  "id": "2p-set:[\"lab/2p-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/2p-set",
+                  "action": "add",
+                  "elements": [
+                    "shared"
+                  ],
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/2p-set"
+                  }
+                }
+              ]
+            }
+          },
+          "mvRegisters": {
+            "lab/mv-register": {
+              "replicaId": "beta",
+              "crdtId": "lab/mv-register",
+              "sequence": 0,
+              "context": {
+                "crdtId": "lab/mv-register",
+                "replicas": {
+                  "alpha": {
+                    "prefix": 1,
+                    "sparse": []
+                  }
+                }
+              },
+              "versions": [
+                {
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/mv-register"
+                  },
+                  "value": "base",
+                  "context": {
+                    "crdtId": "lab/mv-register",
+                    "replicas": {}
+                  }
+                }
+              ]
+            }
+          },
+          "orSets": {
+            "lab/or-set": {
+              "replicaId": "beta",
+              "crdtId": "lab/or-set",
+              "sequence": 0,
+              "changes": [
+                {
+                  "type": "or-set",
+                  "id": "or-set:[\"lab/or-set\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-set",
+                  "action": "add",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-set"
+                  },
+                  "element": "shared"
+                }
+              ]
+            }
+          },
+          "orMaps": {
+            "lab/or-map": {
+              "replicaId": "beta",
+              "crdtId": "lab/or-map",
+              "sequence": 0,
+              "changes": [
+                {
+                  "type": "or-map",
+                  "id": "or-map:[\"lab/or-map\",\"alpha\",1]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-map",
+                  "action": "add-key",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-map"
+                  },
+                  "key": "shared"
+                },
+                {
+                  "type": "or-map",
+                  "id": "or-map:[\"lab/or-map\",\"alpha\",2]",
+                  "replicaId": "alpha",
+                  "crdtId": "lab/or-map",
+                  "action": "add-value",
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 2,
+                    "crdtId": "lab/or-map"
+                  },
+                  "key": "shared",
+                  "keyDot": {
+                    "replicaId": "alpha",
+                    "counter": 1,
+                    "crdtId": "lab/or-map"
+                  },
+                  "valueChange": {
+                    "type": "g-set",
+                    "id": "g-set:[\"or-map-value:[\\\"lab/or-map\\\",\\\"shared\\\",\\\"alpha\\\",1]\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]",
+                    "elements": [
+                      "seed"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "closedDatabaseProof": {
+        "pidBeforeStop": "12765",
+        "pidAfterStop": "",
+        "snapshot": {
+          "version": 2,
+          "replicaId": "beta",
+          "snapshot": {
+            "version": 9,
+            "replicaId": "beta",
+            "clock": {
+              "alpha": 1
+            },
+            "hlc": {
+              "physicalMilliseconds": 1791941292964,
+              "logical": 0
+            },
+            "deltaSequence": 0,
+            "lww": {
+              "lab/lww": {
+                "winner": {
+                  "type": "lww",
+                  "key": "lab/lww",
+                  "id": "alpha:delta:1",
+                  "replicaId": "alpha",
+                  "timestamp": {
+                    "physicalMilliseconds": 1791941286446,
+                    "logical": 0
+                  },
+                  "value": "base",
+                  "deleted": false,
+                  "dot": {
+                    "replicaId": "alpha",
+                    "counter": 1
+                  }
+                }
+              }
+            },
+            "gCounters": {
+              "lab/g-counter": {
+                "replicaId": "beta",
+                "crdtId": "lab/g-counter",
+                "components": {
+                  "alpha": 1
+                },
+                "sequences": {
+                  "alpha": 1
+                },
+                "sequence": 0
+              }
+            },
+            "pnCounters": {
+              "lab/pn-counter": {
+                "replicaId": "beta",
+                "crdtId": "lab/pn-counter",
+                "positive": {
+                  "alpha": 1
+                },
+                "negative": {
+                  "alpha": 0
+                },
+                "sequences": {
+                  "alpha": 1
+                },
+                "sequence": 0
+              }
+            },
+            "gSets": {
+              "lab/g-set": {
+                "replicaId": "beta",
+                "crdtId": "lab/g-set",
+                "sequence": 0,
+                "changes": [
+                  {
+                    "type": "g-set",
+                    "id": "g-set:[\"lab/g-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/g-set",
+                    "elements": [
+                      "seed"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/g-set"
+                    }
+                  }
+                ]
+              }
+            },
+            "twoPSets": {
+              "lab/2p-set": {
+                "replicaId": "beta",
+                "crdtId": "lab/2p-set",
+                "sequence": 0,
+                "changes": [
+                  {
+                    "type": "2p-set",
+                    "id": "2p-set:[\"lab/2p-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/2p-set",
+                    "action": "add",
+                    "elements": [
+                      "shared"
+                    ],
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/2p-set"
+                    }
+                  }
+                ]
+              }
+            },
+            "mvRegisters": {
+              "lab/mv-register": {
+                "replicaId": "beta",
+                "crdtId": "lab/mv-register",
+                "sequence": 0,
+                "context": {
+                  "crdtId": "lab/mv-register",
+                  "replicas": {
+                    "alpha": {
+                      "prefix": 1,
+                      "sparse": []
+                    }
+                  }
+                },
+                "versions": [
+                  {
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/mv-register"
+                    },
+                    "value": "base",
+                    "context": {
+                      "crdtId": "lab/mv-register",
+                      "replicas": {}
+                    }
+                  }
+                ]
+              }
+            },
+            "orSets": {
+              "lab/or-set": {
+                "replicaId": "beta",
+                "crdtId": "lab/or-set",
+                "sequence": 0,
+                "changes": [
+                  {
+                    "type": "or-set",
+                    "id": "or-set:[\"lab/or-set\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-set",
+                    "action": "add",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-set"
+                    },
+                    "element": "shared"
+                  }
+                ]
+              }
+            },
+            "orMaps": {
+              "lab/or-map": {
+                "replicaId": "beta",
+                "crdtId": "lab/or-map",
+                "sequence": 0,
+                "changes": [
+                  {
+                    "type": "or-map",
+                    "id": "or-map:[\"lab/or-map\",\"alpha\",1]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-map",
+                    "action": "add-key",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-map"
+                    },
+                    "key": "shared"
+                  },
+                  {
+                    "type": "or-map",
+                    "id": "or-map:[\"lab/or-map\",\"alpha\",2]",
+                    "replicaId": "alpha",
+                    "crdtId": "lab/or-map",
+                    "action": "add-value",
+                    "dot": {
+                      "replicaId": "alpha",
+                      "counter": 2,
+                      "crdtId": "lab/or-map"
+                    },
+                    "key": "shared",
+                    "keyDot": {
+                      "replicaId": "alpha",
+                      "counter": 1,
+                      "crdtId": "lab/or-map"
+                    },
+                    "valueChange": {
+                      "type": "g-set",
+                      "id": "g-set:[\"or-map-value:[\\\"lab/or-map\\\",\\\"shared\\\",\\\"alpha\\\",1]\",\"alpha\",1]",
+                      "replicaId": "alpha",
+                      "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]",
+                      "elements": [
+                        "seed"
+                      ],
+                      "dot": {
+                        "replicaId": "alpha",
+                        "counter": 1,
+                        "crdtId": "or-map-value:[\"lab/or-map\",\"shared\",\"alpha\",1]"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "outbox": []
+      },
+      "databaseSha256": "d0a2b2f0e8493599dab0cde233ff54cbda744bf1d3b3316ae20ea40e7f309775"
+    }
+  },
+  "alphaRestore": {
+    "pidBefore": "21742",
+    "pidAfter": "22786",
+    "valuesEqual": true,
+    "pendingEqual": true,
+    "snapshotsEqualExceptLocalHlc": true,
+    "hlcBefore": {
+      "physicalMilliseconds": 1791941372160,
+      "logical": 0
+    },
+    "hlcAfter": {
+      "physicalMilliseconds": 1791941380513,
+      "logical": 0
+    }
+  },
+  "checks": {
+    "flutterAnalyze": "passed",
+    "flutterTests": 7,
+    "format": "13 files unchanged",
+    "androidBuilds": [
+      "alpha passed",
+      "beta passed"
+    ],
+    "runtime": "base shared; alpha branch/failure/edit/restart passed; beta branch/reconciliation/MV resolution pending"
+  },
+  "cleanup": {
+    "appsStopped": true,
+    "createdForwardsRemoved": true,
+    "createdReversesRemovedBeforeBranch": true,
+    "stayOnRestored": true,
+    "banksPreserved": true
+  },
+  "limits": [
+    "No complete physical convergence proof yet",
+    "Technical loopback HTTP only; no production authentication",
+    "No library API changes"
+  ]
+}

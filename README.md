@@ -12,6 +12,15 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 - `deltasync_transport`: contrato de transporte, sem dependência de HTTP ou WebSocket.
 - `deltasync`: facade que exporta APIs dos subpackages.
 
+## Exemplos
+
+O pacote publicado inclui somente `example/deltasync_example.dart`, um consumidor
+Dart pequeno. Os exemplos completos de SQLite, Flutter, oito CRDTs entre aparelhos
+e medições permanecem na pasta `example/` do
+[repositório do projeto](https://github.com/ymsantos1/deltasync), com instruções
+próprias. Consulte ou clone o repositório para executá-los. Planos e evidências
+também permanecem no repositório, fora do pacote distribuído pelo pub.dev.
+
 ## Uso
 
 ```dart
@@ -432,6 +441,15 @@ por preparação, commit e adoção comuns; falha mantém estado/outbox prévios
 preservam fonte de tempo HLC injetada.
 
 ### Confirmação e retry
+
+`engine.observations` reúne eventos tipados de restauração, commits, falhas
+recebidas e resultado/falha de push. Assine antes de start e consulte
+`valueAt/pendingDelta` após eventos; não há replay nem cache de estado paralelo.
+`SyncRestoredEvent` não confirma entrega. `SyncPushResult` chega após remoção
+dos IDs confirmados na outbox; commit local continua distinto de ACK remoto.
+Streams `commits/errors` e resultados aguardáveis permanecem disponíveis.
+Observações são assíncronas e fecham após drenagem no dispose; cancele listeners
+pausados antes de fechar. Falhas diretas diferentes de push seguem nas Futures.
 
 `DeltaTransport.send` concluir significa apenas que transmissão local terminou.
 `receiveEnvelope(envelope)` centraliza validação do peer/destinatário e commit

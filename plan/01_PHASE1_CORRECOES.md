@@ -3,7 +3,7 @@
 Estado: MUST e R-16 SHOULD concluídos em 2026-10-12; R-19 COULD concluída
 em 2026-10-12 após validação, review e registro de evidências. R-20 SHOULD concluída
 em 2026-10-13 com consolidação de responsabilidades e regressões de ownership.
-R-21 SHOULD concluída em 2026-10-13; R-22 COULD permanece pronta.
+R-21 SHOULD e R-22 COULD concluídas em 2026-10-13, incluindo runtime Android da R-22.
 R-23 MUST concluída em 2026-10-13 após achado nas histórias VAL-11.
 Ampliação de ergonomia: R-25 MUST concluída, sem apagar conclusões anteriores.
 
@@ -688,7 +688,7 @@ Evidência de conclusão: [execução R-21](TRACEABILITY.md#execucao-r-21-2026-1
 
 ## R-22 — Reutilizar enlace comum dos exemplos sem generalizar infraestrutura
 
-Status: pronta
+Status: concluída
 MoSCoW: COULD
 Dependências: R-20
 
@@ -698,26 +698,29 @@ comprovado nos exemplos, mantendo cada cenário legível e executável.
 
 Critérios:
 
-- [ ] Comparar implementações e distinguir enlace comum de doubles que simulam
+- [x] Comparar implementações e distinguir enlace comum de doubles que simulam
   falhas, retry ou entrega parcial; registrar baseline dos exemplos afetados.
-- [ ] Reusar apenas o enlace comum em suporte Dart dos exemplos, com dependências
+- [x] Reusar apenas o enlace comum em suporte Dart dos exemplos, com dependências
   públicas da biblioteca. Sem pacote novo, framework de mocks ou transporte de
   produção no core; variantes com comportamento diferente permanecem justificadas.
-- [ ] Preservar peer fixo, confirmação somente após commit remoto, fechamento
+- [x] Preservar peer fixo, confirmação somente após commit remoto, fechamento
   do stream e falhas observáveis. Manter comandos CLI e consumidor Flutter
   executáveis sem depender de detalhes privados ou caminhos locais de SDK.
-- [ ] Revisar após correções e validar demonstração offline/reconnect, testes e
+- [x] Revisar após correções e validar demonstração offline/reconnect, testes e
   build do consumidor quando afetados, incluindo caminhos de import e uso isolado.
   Se executada após VAL-12 e alterar o consumidor Flutter, repetir o percurso
   runtime afetado antes de reutilizar a evidência Android como resultado do app atualizado.
-- [ ] Registrar ganho concreto de manutenção e compatibilidade dos exemplos;
+- [x] Registrar ganho concreto de manutenção e compatibilidade dos exemplos;
   atualizar README/mapa/evidências. Adiar explicitamente se compartilhamento
   aumentar dependências ou dificultar consumo mais do que a repetição pequena.
 
 Validação: safe-refactor; `dart analyze` e exemplos pertinentes; `flutter analyze`,
 `flutter test` e build se consumidor afetado. COULD não condiciona R-21 ou VAL-11/12/13.
+Impedimento resolvido: autorização ADB aceita; runtime do APK atual passou no
+Moto G52 Android 13/API 33, com dois reinícios reais e inspeção SQLite.
+Evidência parcial: [preparação R-22](TRACEABILITY.md#preparacao-r-22-2026-10-13).
 Evidência de motivação: [revisão e planejamento de 2026-10-13](TRACEABILITY.md#manutencao-ajustes-consumidor-2026-10-13).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-22](TRACEABILITY.md#execucao-r-22-2026-10-13).
 
 <a id="r-23"></a>
 
