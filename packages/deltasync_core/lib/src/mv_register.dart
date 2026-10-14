@@ -1,22 +1,38 @@
 import 'crdt.dart';
+import 'causal/dot_context.dart';
 import 'delta_change.dart';
 import 'identity.dart';
 import 'json_value.dart';
+import 'json/value.dart' show validateJsonValue;
 import 'json_set_value.dart';
 
 /// One write and the exact causal dots it had observed.
 class MvRegisterDelta implements DeltaChange {
   MvRegisterDelta({
+    required String id,
+    required String replicaId,
+    required String crdtId,
+    required Dot dot,
+    required Object? value,
+    required Iterable<Dot> context,
+  }) : this._(
+         id: id,
+         replicaId: replicaId,
+         crdtId: crdtId,
+         dot: dot,
+         value: value,
+         context: DotContext.fromDots(crdtId, context),
+       );
+
+  MvRegisterDelta._({
     required this.id,
     required this.replicaId,
     required this.crdtId,
     required this.dot,
     required Object? value,
-    required Iterable<Dot> context,
+    required DotContext context,
   }) : value = copyJsonValue(value, freeze: true),
-       context = List.unmodifiable(
-         context.toSet().toList()..sort(_compareDots),
-       ) {
+       _context = context.copy() {
     _validateAddress(crdtId);
     if (replicaId.isEmpty ||
         replicaId.trim() != replicaId ||
@@ -30,14 +46,8 @@ class MvRegisterDelta implements DeltaChange {
               replicaId,
               dot.counter,
             ) ||
-        this.context.any(
-          (item) =>
-              item.crdtId != crdtId ||
-              item.replicaId.isEmpty ||
-              item.replicaId.trim() != item.replicaId ||
-              item.counter <= 0 ||
-              item == dot,
-        )) {
+        _context.crdtId != crdtId ||
+        _context.contains(dot)) {
       throw ArgumentError('Invalid MV-Register delta identity or context');
     }
     _validateJsonValue(this.value);
@@ -51,7 +61,10 @@ class MvRegisterDelta implements DeltaChange {
   final String crdtId;
   final Dot dot;
   final Object? value;
-  final List<Dot> context;
+  final DotContext _context;
+
+  /// Exact observed dots. Access expands compact prefixes into a list.
+  List<Dot> get context => _context.toDots();
   @override
   CrdtKind get kind => CrdtKind.mvRegister;
 
@@ -63,27 +76,33 @@ class MvRegisterDelta implements DeltaChange {
     'crdtId': crdtId,
     'dot': dot.toJson(),
     'value': copyJsonValue(value),
-    'context': [for (final item in context) item.toJson()],
+    'context': _context.toJson(),
   };
 
-  factory MvRegisterDelta.fromJson(Map<String, Object?> json) {
+  factory MvRegisterDelta.fromJson(
+    Map<String, Object?> json, {
+    bool allowCompactContext = true,
+  }) {
     final dot = json['dot'];
     final context = json['context'];
     if (dot is! Map ||
-        context is! List ||
-        context.any((item) => item is! Map)) {
+        context is! List && (!allowCompactContext || context is! Map)) {
       throw const FormatException('Invalid MV-Register delta');
     }
     try {
-      return MvRegisterDelta(
+      final crdtId = _requiredString(json, 'crdtId');
+      final causalContext = DotContext.decode(
+        context,
+        crdtId,
+        allowCompactContext: allowCompactContext,
+      );
+      return MvRegisterDelta._(
         id: _requiredString(json, 'id'),
         replicaId: _requiredString(json, 'replicaId'),
-        crdtId: _requiredString(json, 'crdtId'),
+        crdtId: crdtId,
         dot: Dot.fromJson(Map<String, Object?>.from(dot)),
         value: json['value'],
-        context: context.map(
-          (item) => Dot.fromJson(Map<String, Object?>.from(item as Map)),
-        ),
+        context: causalContext,
       );
     } on ArgumentError {
       throw const FormatException('Invalid MV-Register delta');
@@ -101,7 +120,7 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
   final String replicaId;
   final String crdtId;
   int _sequence = 0;
-  final Set<Dot> _context = {};
+  late final DotContext _context = DotContext(crdtId);
   final Map<Dot, _MvVersion> _versions = {};
 
   @override
@@ -120,7 +139,7 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
   MvRegisterDelta write(Object? value) {
     _validateJsonValue(value);
     final dot = Dot(replicaId: replicaId, counter: ++_sequence, crdtId: crdtId);
-    final delta = MvRegisterDelta(
+    final delta = MvRegisterDelta._(
       id: crdtDeltaId(kind.wireName, crdtId, replicaId, dot.counter),
       replicaId: replicaId,
       crdtId: crdtId,
@@ -145,15 +164,13 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
     final observedByCurrent = _versions.values.any(
       (v) => v.context.contains(delta.dot),
     );
-    for (final dot in delta.context) {
-      _context.add(dot);
-      _versions.remove(dot);
-    }
+    _context.addAll(delta._context);
+    _versions.removeWhere((dot, _) => delta._context.contains(dot));
     _context.add(delta.dot);
     if (!observedByCurrent) {
       _versions.putIfAbsent(
         delta.dot,
-        () => _MvVersion(copyJsonValue(delta.value), delta.context.toSet()),
+        () => _MvVersion(copyJsonValue(delta.value), delta._context.copy()),
       );
     }
     if (delta.replicaId == replicaId && delta.dot.counter > _sequence) {
@@ -167,9 +184,7 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
     if (state.crdtId != crdtId) {
       throw ArgumentError('Cannot merge MV-Registers with different addresses');
     }
-    for (final dot in state._context) {
-      _context.add(dot);
-    }
+    _context.addAll(state._context);
     for (final entry in state._versions.entries) {
       final current = _versions[entry.key];
       if (current != null &&
@@ -181,12 +196,14 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
         entry.key,
         () => _MvVersion(
           copyJsonValue(entry.value.value),
-          entry.value.context.toSet(),
+          entry.value.context.copy(),
         ),
       );
     }
-    final observed = _versions.values.expand((v) => v.context).toSet();
-    _versions.removeWhere((dot, _) => observed.contains(dot));
+    final observed = [for (final version in _versions.values) version.context];
+    _versions.removeWhere(
+      (dot, _) => observed.any((context) => context.contains(dot)),
+    );
     if (state.replicaId == replicaId && state._sequence > _sequence) {
       _sequence = state._sequence;
     }
@@ -197,25 +214,20 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
     'replicaId': replicaId,
     'crdtId': crdtId,
     'sequence': _sequence,
-    'context': [
-      for (final dot in (_context.toList()..sort(_compareDots))) dot.toJson(),
-    ],
+    'context': _context.toJson(),
     'versions': [
       for (final e in _versions.entries)
         {
           'dot': e.key.toJson(),
           'value': copyJsonValue(e.value.value),
-          'context': [
-            for (final dot in (e.value.context.toList()..sort(_compareDots)))
-              dot.toJson(),
-          ],
+          'context': e.value.context.toJson(),
         },
     ],
   };
 
   Iterable<MvRegisterDelta> exportChanges() sync* {
     for (final entry in _versions.entries) {
-      yield MvRegisterDelta(
+      yield MvRegisterDelta._(
         id: crdtDeltaId(
           kind.wireName,
           crdtId,
@@ -231,54 +243,70 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
     }
   }
 
-  factory MvRegister.fromJson(Map<String, Object?> json) {
+  /// Restores state only if the local sequence cannot reuse an observed dot.
+  factory MvRegister.fromJson(
+    Map<String, Object?> json, {
+    bool allowCompactContext = true,
+  }) {
     final replicaId = json['replicaId'],
         crdtId = json['crdtId'],
         sequence = json['sequence'],
         context = json['context'],
         versions = json['versions'];
     if (replicaId is! String ||
+        replicaId.isEmpty ||
+        replicaId.trim() != replicaId ||
         crdtId is! String ||
+        crdtId.isEmpty ||
+        crdtId.trim() != crdtId ||
+        crdtId.startsWith('legacy/') ||
         sequence is! int ||
         sequence < 0 ||
-        context is! List ||
+        (context is! List && (!allowCompactContext || context is! Map)) ||
         versions is! List) {
       throw const FormatException('Invalid MV-Register state');
     }
     final result = MvRegister(replicaId, crdtId: crdtId).._sequence = sequence;
-    for (final raw in context) {
-      if (raw is! Map) {
-        throw const FormatException('Invalid MV-Register context');
-      }
-      final dot = Dot.fromJson(Map<String, Object?>.from(raw));
-      if (dot.crdtId != crdtId || dot.replicaId.trim() != dot.replicaId) {
-        throw const FormatException('Invalid MV-Register context');
-      }
-      result._context.add(dot);
+    try {
+      result._context.addAll(
+        DotContext.decode(
+          context,
+          crdtId,
+          allowCompactContext: allowCompactContext,
+        ),
+      );
+    } on ArgumentError {
+      throw const FormatException('Invalid MV-Register context');
+    }
+    if (result._context.highestCounter(replicaId) > sequence) {
+      throw const FormatException(
+        'MV-Register sequence is behind local context',
+      );
     }
     for (final raw in versions) {
-      if (raw is! Map || raw['dot'] is! Map || raw['context'] is! List) {
+      if (raw is! Map ||
+          raw['dot'] is! Map ||
+          (raw['context'] is! List &&
+              (!allowCompactContext || raw['context'] is! Map))) {
         throw const FormatException('Invalid MV-Register version');
       }
       final dot = Dot.fromJson(Map<String, Object?>.from(raw['dot'] as Map));
-      final dots = (raw['context'] as List).map((item) {
-        if (item is! Map) {
-          throw const FormatException('Invalid MV-Register context');
-        }
-        return Dot.fromJson(Map<String, Object?>.from(item));
-      }).toSet();
+      final encodedVersionContext = raw['context'];
+      final versionContext = DotContext.decode(
+        encodedVersionContext,
+        crdtId,
+        allowCompactContext: allowCompactContext,
+      );
       if (dot.crdtId != crdtId ||
           !result._context.contains(dot) ||
-          dots.any(
-            (d) =>
-                d.crdtId != crdtId ||
-                d.replicaId.trim() != d.replicaId ||
-                !result._context.contains(d),
-          )) {
+          !result._context.containsAll(versionContext)) {
         throw const FormatException('Invalid MV-Register version context');
       }
       _validateJsonValue(raw['value']);
-      result._versions[dot] = _MvVersion(copyJsonValue(raw['value']), dots);
+      result._versions[dot] = _MvVersion(
+        copyJsonValue(raw['value']),
+        versionContext,
+      );
     }
     return result;
   }
@@ -289,12 +317,12 @@ class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta> {
 class _MvVersion {
   _MvVersion(this.value, this.context);
   final Object? value;
-  final Set<Dot> context;
+  final DotContext context;
 }
 
-int _compareDots(Dot a, Dot b) => a.replicaId.compareTo(b.replicaId) != 0
-    ? a.replicaId.compareTo(b.replicaId)
-    : a.counter.compareTo(b.counter);
+// Retained exported helper for source compatibility.
+int maxOf(int a, int b) => a > b ? a : b;
+
 String _requiredString(Map<String, Object?> json, String key) {
   final value = json[key];
   if (value is! String || value.isEmpty || value.trim() != value) {
@@ -311,7 +339,7 @@ void _validateAddress(String value) {
 
 void _validateJsonValue(Object? value) {
   try {
-    copyJsonValue(value);
+    validateJsonValue(value);
   } on ArgumentError {
     throw ArgumentError.value(value, 'value', 'must be JSON-compatible');
   }

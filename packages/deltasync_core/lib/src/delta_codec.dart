@@ -2,7 +2,7 @@ import 'delta.dart';
 
 /// Versioned wire/storage codec for [Delta].
 class DeltaCodec {
-  static const int currentVersion = 3;
+  static const int currentVersion = 4;
 
   const DeltaCodec._();
 
@@ -14,14 +14,18 @@ class DeltaCodec {
   static Delta decode(Map<String, Object?> json) {
     final version = json['version'];
     final encoded = json['delta'];
-    if ((version != 1 && version != 2 && version != currentVersion) ||
+    if ((version != 1 &&
+            version != 2 &&
+            version != 3 &&
+            version != currentVersion) ||
         encoded is! Map) {
       throw FormatException('Unsupported or invalid delta codec version');
     }
     return Delta.fromJson(
       Map<String, Object?>.from(encoded),
-      allowLegacyOperations: version != currentVersion,
+      allowLegacyOperations: version == 1 || version == 2,
       allowLegacyCounterIdentity: version == 1,
+      allowCompactContext: version == currentVersion,
     );
   }
 }

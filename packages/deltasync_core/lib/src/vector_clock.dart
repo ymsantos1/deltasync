@@ -1,6 +1,8 @@
 enum ClockRelation { equal, before, after, concurrent }
 
 /// Causal version vector indexed by replica identifier.
+///
+/// Missing and zero components compare equal; JSON retains supplied zeros.
 class VectorClock {
   VectorClock([Map<String, int> entries = const {}])
     : entries = Map.unmodifiable(entries) {
@@ -62,6 +64,8 @@ class VectorClock {
 
   @override
   int get hashCode => Object.hashAllUnordered(
-    entries.entries.map((entry) => Object.hash(entry.key, entry.value)),
+    entries.entries
+        .where((entry) => entry.value != 0)
+        .map((entry) => Object.hash(entry.key, entry.value)),
   );
 }

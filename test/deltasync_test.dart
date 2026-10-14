@@ -2,6 +2,60 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('facade exposes restoration observation without implying ACK', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-observer'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    final restored = engine.observations.first;
+    await engine.start();
+    expect(await restored, isA<SyncRestoredEvent>());
+    expect((await engine.pendingDelta()).changes, isEmpty);
+    await engine.dispose();
+  });
+  test(
+    'facade exposes received-envelope ACK without optional sender',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-query'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      final change = Replica(
+        engine.transport.peerReplicaId,
+      ).setDelta('remote', 'value');
+      final ack = await engine.receiveEnvelope(
+        DeltaEnvelope(
+          senderReplicaId: engine.transport.peerReplicaId,
+          recipientReplicaId: 'facade-query',
+          delta: Delta([change]),
+        ),
+      );
+      expect(ack.changeIds, {change.id});
+      expect(ack.peerReplicaId, 'facade-query');
+      expect(engine.valueAt('remote'), 'value');
+    },
+  );
+  test('facade exposes isolated point query after start', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-query'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    addTearDown(engine.dispose);
+    await engine.setDelta('field', {
+      'items': [1],
+    });
+    expect(engine.valueAt('field'), {
+      'items': [1],
+    });
+    expect(
+      () => (engine.valueAt('field') as Map).clear(),
+      throwsUnsupportedError,
+    );
+  });
   test('replicas converge after exchanging deltas', () {
     final first = Replica('first');
     final second = Replica('second');
@@ -10,6 +64,20 @@ void main() {
     second.apply(first.export());
 
     expect(second.state.values['title'], 'offline edit');
+  });
+
+  test('facade exposes SyncEngine commit notifications', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-device'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    final eventFuture = engine.commits.first;
+
+    await engine.setDelta('title', 'changed');
+
+    expect((await eventFuture).origin, SyncCommitOrigin.local);
+    await engine.dispose();
   });
 
   test('export keeps the tombstone winner and duplicate is idempotent', () {
@@ -92,4 +160,15 @@ void main() {
     expect(first.orMapValue('profile')['roles'], {'reader', 'writer'});
     expect(second.orMapValue('profile'), first.orMapValue('profile'));
   });
+}
+
+class _FacadeTransport implements DeltaTransport {
+  @override
+  String get peerReplicaId => 'facade-peer';
+
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
 }

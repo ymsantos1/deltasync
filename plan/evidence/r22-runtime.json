@@ -1,0 +1,194 @@
+{
+  "task": "R-22",
+  "date": "2026-10-13",
+  "device": {
+    "serial": "0081889739",
+    "model": "Moto G52",
+    "android": "13",
+    "api": 33
+  },
+  "apkSha256": "8b0425dad01ece8a52ce31b1f17143d6e8d9ae1114da67bb7f66cb8ca50dc2f6",
+  "installation": "adb install -r; existing SQLite databases preserved",
+  "pids": [
+    16300,
+    24688,
+    25090
+  ],
+  "forceStops": 2,
+  "databaseProof": {
+    "offline": {
+      "shopper-b": {
+        "winner": {
+          "type": "lww",
+          "key": "shopping/title",
+          "id": "shopper-b:delta:3",
+          "replicaId": "shopper-b",
+          "timestamp": {
+            "physicalMilliseconds": 1791936022439,
+            "logical": 0
+          },
+          "value": "R22_B",
+          "deleted": false,
+          "dot": {
+            "replicaId": "shopper-b",
+            "counter": 3
+          }
+        },
+        "counter": {
+          "replicaId": "shopper-b",
+          "crdtId": "shopping/items",
+          "components": {
+            "shopper-b": 3,
+            "shopper-a": 2
+          },
+          "sequences": {
+            "shopper-b": 3,
+            "shopper-a": 2
+          },
+          "sequence": 3
+        },
+        "deltaSequence": 3,
+        "outbox": [
+          [
+            "shopper-b",
+            "shopper-a",
+            "g-counter:[\"shopping/items\",\"shopper-b\",3]"
+          ],
+          [
+            "shopper-b",
+            "shopper-a",
+            "shopper-b:delta:3"
+          ]
+        ]
+      },
+      "shopper-a": {
+        "winner": {
+          "type": "lww",
+          "key": "shopping/title",
+          "id": "shopper-a:delta:8",
+          "replicaId": "shopper-a",
+          "timestamp": {
+            "physicalMilliseconds": 1791936048900,
+            "logical": 0
+          },
+          "value": "R22_C",
+          "deleted": false,
+          "dot": {
+            "replicaId": "shopper-a",
+            "counter": 8
+          }
+        },
+        "counter": {
+          "replicaId": "shopper-a",
+          "crdtId": "shopping/items",
+          "components": {
+            "shopper-a": 3,
+            "shopper-b": 2
+          },
+          "sequences": {
+            "shopper-a": 3,
+            "shopper-b": 2
+          },
+          "sequence": 3
+        },
+        "deltaSequence": 8,
+        "outbox": [
+          [
+            "shopper-a",
+            "shopper-b",
+            "g-counter:[\"shopping/items\",\"shopper-a\",3]"
+          ],
+          [
+            "shopper-a",
+            "shopper-b",
+            "shopper-a:delta:7"
+          ],
+          [
+            "shopper-a",
+            "shopper-b",
+            "shopper-a:delta:8"
+          ]
+        ]
+      }
+    },
+    "after-ack": {
+      "shopper-b": {
+        "winner": {
+          "type": "lww",
+          "key": "shopping/title",
+          "id": "shopper-a:delta:9",
+          "replicaId": "shopper-a",
+          "timestamp": {
+            "physicalMilliseconds": 1791936079869,
+            "logical": 0
+          },
+          "value": "R22_D",
+          "deleted": false,
+          "dot": {
+            "replicaId": "shopper-a",
+            "counter": 9
+          }
+        },
+        "counter": {
+          "replicaId": "shopper-b",
+          "crdtId": "shopping/items",
+          "components": {
+            "shopper-b": 3,
+            "shopper-a": 3
+          },
+          "sequences": {
+            "shopper-b": 3,
+            "shopper-a": 3
+          },
+          "sequence": 3
+        },
+        "deltaSequence": 3,
+        "outbox": []
+      },
+      "shopper-a": {
+        "winner": {
+          "type": "lww",
+          "key": "shopping/title",
+          "id": "shopper-a:delta:9",
+          "replicaId": "shopper-a",
+          "timestamp": {
+            "physicalMilliseconds": 1791936079869,
+            "logical": 0
+          },
+          "value": "R22_D",
+          "deleted": false,
+          "dot": {
+            "replicaId": "shopper-a",
+            "counter": 9
+          }
+        },
+        "counter": {
+          "replicaId": "shopper-a",
+          "crdtId": "shopping/items",
+          "components": {
+            "shopper-a": 3,
+            "shopper-b": 3
+          },
+          "sequences": {
+            "shopper-a": 3,
+            "shopper-b": 3
+          },
+          "sequence": 3
+        },
+        "deltaSequence": 9,
+        "outbox": []
+      }
+    }
+  },
+  "runtimeLog": {
+    "offline.log": "--------- beginning of main\n10-13 21:00:05.536 16300 16300 I flutter : VAL08 Commit local A concluído A=R22_A itens=4 pendentes=1; B=VAL12_D itens=4 pendentes=0\n10-13 21:00:06.206 16300 16300 I flutter : VAL08 Commit local A concluído A=R22_A itens=5 pendentes=2; B=VAL12_D itens=4 pendentes=0\n10-13 21:00:22.598 16300 16300 I flutter : VAL08 Commit local B concluído A=R22_A itens=5 pendentes=2; B=R22_B itens=4 pendentes=1\n10-13 21:00:23.345 16300 16300 I flutter : VAL08 Commit local B concluído A=R22_A itens=5 pendentes=2; B=R22_B itens=5 pendentes=2\n10-13 21:00:25.453 16300 16300 I flutter : VAL08 Falha de envio; commits locais preservados A=R22_A itens=5 pendentes=2; B=R22_B itens=5 pendentes=2\n",
+    "restart-1.log": "--------- beginning of main\n10-13 21:00:50.827 24688 24732 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).\n10-13 21:00:50.895 24688 24732 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).\n10-13 21:00:50.930 24688 24744 I flutter : The Dart VM service is listening on http://127.0.0.1:37185/e5ozyyWj5ZU=/\n10-13 21:00:54.357 24688 24688 I flutter : VAL08 restored A=R22_C itens=5 pendentes=3; B=R22_B itens=5 pendentes=2\n",
+    "ack.log": "--------- beginning of main\n10-13 21:00:50.827 24688 24732 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).\n10-13 21:00:50.895 24688 24732 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).\n10-13 21:00:50.930 24688 24744 I flutter : The Dart VM service is listening on http://127.0.0.1:37185/e5ozyyWj5ZU=/\n10-13 21:00:54.357 24688 24688 I flutter : VAL08 restored A=R22_C itens=5 pendentes=3; B=R22_B itens=5 pendentes=2\n10-13 21:01:20.172 24688 24688 I flutter : VAL08 Commit local A concluído A=R22_D itens=5 pendentes=4; B=R22_B itens=5 pendentes=2\n10-13 21:01:20.902 24688 24688 I flutter : VAL08 Peer disponível A=R22_D itens=5 pendentes=4; B=R22_B itens=5 pendentes=2\n10-13 21:01:22.074 24688 24688 I flutter : VAL08 Envio concluído A=R22_D itens=6 pendentes=0; B=R22_D itens=6 pendentes=0\n",
+    "restart-2.log": "--------- beginning of main\n10-13 21:01:24.908 25090 25237 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).\n10-13 21:01:24.938 25090 25237 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).\n10-13 21:01:25.091 25090 25255 I flutter : The Dart VM service is listening on http://127.0.0.1:42487/b5qCgdzdomE=/\n10-13 21:01:28.151 25090 25090 I flutter : VAL08 restored A=R22_D itens=6 pendentes=0; B=R22_D itens=6 pendentes=0\n"
+  },
+  "limits": [
+    "Synthetic in-process fixed peer link; not real network",
+    "Two replicas within one Android app; not two physical installations",
+    "LWW and G-Counter only in this runtime"
+  ]
+}

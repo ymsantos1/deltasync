@@ -1,0 +1,270 @@
+{
+  "version": 9,
+  "replicaId": "fixture",
+  "clock": {
+    "fixture": 1
+  },
+  "hlc": {
+    "physicalMilliseconds": 1000,
+    "logical": 0
+  },
+  "deltaSequence": 1,
+  "lww": {
+    "title": {
+      "winner": {
+        "type": "lww",
+        "key": "title",
+        "id": "fixture:delta:1",
+        "replicaId": "fixture",
+        "timestamp": {
+          "physicalMilliseconds": 1000,
+          "logical": 0
+        },
+        "value": {
+          "labels": [
+            "draft"
+          ]
+        },
+        "deleted": false,
+        "dot": {
+          "replicaId": "fixture",
+          "counter": 1
+        }
+      }
+    }
+  },
+  "gCounters": {
+    "count": {
+      "replicaId": "fixture",
+      "crdtId": "count",
+      "components": {
+        "fixture": 3
+      },
+      "sequences": {
+        "fixture": 1
+      },
+      "sequence": 1
+    }
+  },
+  "pnCounters": {
+    "balance": {
+      "replicaId": "fixture",
+      "crdtId": "balance",
+      "positive": {},
+      "negative": {
+        "fixture": 2
+      },
+      "sequences": {
+        "fixture": 1
+      },
+      "sequence": 1
+    }
+  },
+  "gSets": {
+    "labels": {
+      "replicaId": "fixture",
+      "crdtId": "labels",
+      "sequence": 1,
+      "changes": [
+        {
+          "type": "g-set",
+          "id": "g-set:[\"labels\",\"fixture\",1]",
+          "replicaId": "fixture",
+          "crdtId": "labels",
+          "elements": [
+            {
+              "id": 1
+            }
+          ],
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 1,
+            "crdtId": "labels"
+          }
+        }
+      ]
+    }
+  },
+  "twoPSets": {
+    "removed": {
+      "replicaId": "fixture",
+      "crdtId": "removed",
+      "sequence": 2,
+      "changes": [
+        {
+          "type": "2p-set",
+          "id": "2p-set:[\"removed\",\"fixture\",1]",
+          "replicaId": "fixture",
+          "crdtId": "removed",
+          "action": "add",
+          "elements": [
+            "old"
+          ],
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 1,
+            "crdtId": "removed"
+          }
+        },
+        {
+          "type": "2p-set",
+          "id": "2p-set:[\"removed\",\"fixture\",2]",
+          "replicaId": "fixture",
+          "crdtId": "removed",
+          "action": "remove",
+          "elements": [
+            "old"
+          ],
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 2,
+            "crdtId": "removed"
+          }
+        }
+      ]
+    }
+  },
+  "mvRegisters": {
+    "versions": {
+      "replicaId": "fixture",
+      "crdtId": "versions",
+      "sequence": 2,
+      "context": {
+        "crdtId": "versions",
+        "replicas": {
+          "fixture": {
+            "prefix": 2,
+            "sparse": []
+          }
+        }
+      },
+      "versions": [
+        {
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 2,
+            "crdtId": "versions"
+          },
+          "value": "new",
+          "context": {
+            "crdtId": "versions",
+            "replicas": {
+              "fixture": {
+                "prefix": 1,
+                "sparse": []
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "orSets": {
+    "members": {
+      "replicaId": "fixture",
+      "crdtId": "members",
+      "sequence": 3,
+      "changes": [
+        {
+          "type": "or-set",
+          "id": "or-set:[\"members\",\"fixture\",1]",
+          "replicaId": "fixture",
+          "crdtId": "members",
+          "action": "add",
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 1,
+            "crdtId": "members"
+          },
+          "element": "old"
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"members\",\"fixture\",2]",
+          "replicaId": "fixture",
+          "crdtId": "members",
+          "action": "remove",
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 2,
+            "crdtId": "members"
+          },
+          "observedDots": [
+            {
+              "replicaId": "fixture",
+              "counter": 1,
+              "crdtId": "members"
+            }
+          ]
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"members\",\"fixture\",3]",
+          "replicaId": "fixture",
+          "crdtId": "members",
+          "action": "add",
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 3,
+            "crdtId": "members"
+          },
+          "element": "new"
+        }
+      ]
+    }
+  },
+  "orMaps": {
+    "profile": {
+      "replicaId": "fixture",
+      "crdtId": "profile",
+      "sequence": 2,
+      "changes": [
+        {
+          "type": "or-map",
+          "id": "or-map:[\"profile\",\"fixture\",1]",
+          "replicaId": "fixture",
+          "crdtId": "profile",
+          "action": "add-key",
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 1,
+            "crdtId": "profile"
+          },
+          "key": "roles"
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"profile\",\"fixture\",2]",
+          "replicaId": "fixture",
+          "crdtId": "profile",
+          "action": "add-value",
+          "dot": {
+            "replicaId": "fixture",
+            "counter": 2,
+            "crdtId": "profile"
+          },
+          "key": "roles",
+          "keyDot": {
+            "replicaId": "fixture",
+            "counter": 1,
+            "crdtId": "profile"
+          },
+          "valueChange": {
+            "type": "g-set",
+            "id": "g-set:[\"or-map-value:[\\\"profile\\\",\\\"roles\\\",\\\"fixture\\\",1]\",\"fixture\",1]",
+            "replicaId": "fixture",
+            "crdtId": "or-map-value:[\"profile\",\"roles\",\"fixture\",1]",
+            "elements": [
+              "reader"
+            ],
+            "dot": {
+              "replicaId": "fixture",
+              "counter": 1,
+              "crdtId": "or-map-value:[\"profile\",\"roles\",\"fixture\",1]"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

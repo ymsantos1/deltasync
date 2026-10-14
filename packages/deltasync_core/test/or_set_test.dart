@@ -74,7 +74,7 @@ void main() {
     expect(receiver.orSetValue('members'), isEmpty);
 
     final restored = Replica.fromSnapshotJson(source.toSnapshotJson());
-    expect(restored.toSnapshotJson()['version'], 8);
+    expect(restored.toSnapshotJson()['version'], 9);
     restored.apply(Delta([add]));
     expect(restored.orSetValue('members'), isEmpty);
     expect(

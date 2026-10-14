@@ -1,0 +1,22 @@
+--- a/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
++++ b/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
+@@ -44,7 +44,7 @@
+   }
+ 
+   String read(Booking booking) {
+-    final value = engine.replica.state[tripNotesKey(booking)];
++    final value = engine.valueAt(tripNotesKey(booking));
+     return value is Map ? value['text'] as String? ?? '' : '';
+   }
+ 
+--- a/compass_app/README_DELTASYNC.md
++++ b/compass_app/README_DELTASYNC.md
+@@ -83,6 +83,8 @@
+ repositório controla push/pull, restauração e notificações/falhas. `trip_notes_card.dart`
+ apresenta valor, pendência e confirmação. A identidade da chave vive em
+ `tripNotesKey`; o card recebe key por viagem para não reutilizar rascunho de outra.
++O repositório consulta notas com `engine.valueAt(chave)` após start, sem copiar
++toda a réplica. A leitura devolve valor local comprometido, sem indicar ACK.
+ `server/bin/notes_server.dart` possui o backend e o ACK de pull. Estado, mutação,
+ delta, join, commit e restore permanecem nas APIs públicas de DeltaSync.
+ Não há import de src, override de internos, codegen ou mudança no core.

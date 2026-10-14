@@ -35,6 +35,7 @@ class Delta {
     Map<String, Object?> json, {
     bool allowLegacyOperations = false,
     bool allowLegacyCounterIdentity = false,
+    bool allowCompactContext = true,
   }) {
     final encodedChanges = json['changes'];
     final encodedOperations = json['operations'];
@@ -44,7 +45,10 @@ class Delta {
         throw FormatException('Native delta is invalid in legacy format');
       }
       return Delta(
-        encodedChanges.map(_decodeChange),
+        encodedChanges.map(
+          (item) =>
+              _decodeChange(item, allowCompactContext: allowCompactContext),
+        ),
       ).merge(const Delta.empty());
     }
     if (!allowLegacyOperations ||
@@ -59,6 +63,7 @@ class Delta {
         _decodeChange(
           item,
           allowLegacyCounterIdentity: allowLegacyCounterIdentity,
+          allowCompactContext: allowCompactContext,
         ),
     ];
     return Delta(migrated).merge(const Delta.empty());
@@ -81,6 +86,7 @@ class Delta {
 DeltaChange _decodeChange(
   Object? item, {
   bool allowLegacyCounterIdentity = false,
+  bool allowCompactContext = true,
 }) {
   if (item is! Map) throw FormatException('Invalid CRDT delta');
   final value = Map<String, Object?>.from(item);
@@ -100,7 +106,10 @@ DeltaChange _decodeChange(
     ),
     CrdtKind.gSet => GSetDelta.fromJson(value),
     CrdtKind.twoPSet => TwoPSetDelta.fromJson(value),
-    CrdtKind.mvRegister => MvRegisterDelta.fromJson(value),
+    CrdtKind.mvRegister => MvRegisterDelta.fromJson(
+      value,
+      allowCompactContext: allowCompactContext,
+    ),
     CrdtKind.orSet => OrSetDelta.fromJson(value),
     CrdtKind.orMap => OrMapDelta.fromJson(value),
   };

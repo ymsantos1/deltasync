@@ -1,9 +1,10 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:deltasync/deltasync.dart';
 import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'support/peer_link.dart';
 
 const _replicaA = 'shopper-a';
 const _replicaB = 'shopper-b';
@@ -254,33 +255,7 @@ class ShoppingView {
       'itemCount: $itemCount)';
 }
 
-class DemoPeerLink implements AcknowledgingDeltaTransport {
-  DemoPeerLink(this.peerReplicaId);
-
-  @override
-  final String peerReplicaId;
-  final _incoming = StreamController<DeltaEnvelope>.broadcast();
-  Future<void> Function(DeltaEnvelope)? deliver;
-
-  @override
-  Stream<DeltaEnvelope> get incoming => _incoming.stream;
-
-  @override
-  Future<void> send(DeltaEnvelope envelope) async {
-    final handler = deliver;
-    if (handler == null) throw StateError('Peer $peerReplicaId is offline');
-    await handler(envelope);
-  }
-
-  @override
-  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async {
-    await send(envelope);
-    return DeltaAcknowledgement(
-      peerReplicaId: peerReplicaId,
-      stage: DeltaAckStage.appliedAndPersisted,
-      changeIds: envelope.delta.changes.map((change) => change.id),
-    );
-  }
-
-  Future<void> close() => _incoming.close();
+class DemoPeerLink extends PeerLink {
+  DemoPeerLink(super.peerReplicaId)
+    : super(offlineMessage: 'Peer $peerReplicaId is offline');
 }

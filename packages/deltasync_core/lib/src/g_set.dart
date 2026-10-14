@@ -146,7 +146,9 @@ class GSet implements DeltaCrdt<Set<Object?>, GSetDelta> {
       elements: novel.isEmpty ? additions : novel,
       dot: dot,
     );
-    if (novel.isNotEmpty) applyDelta(delta);
+    // Repeated values still participate in canonical event selection. Local
+    // mutation must produce the same state as applying its emitted delta.
+    applyDelta(delta);
     return delta;
   }
 

@@ -1,0 +1,568 @@
+--- a/compass_app/app/lib/main_deltasync.dart
++++ b/compass_app/app/lib/main_deltasync.dart
+@@ -7,27 +7,27 @@
+ import 'config/dependencies.dart';
+ import 'data/repositories/notes/trip_notes_repository.dart';
+ import 'data/services/notes/http_notes_transport.dart';
++import 'data/services/notes/notes_configuration.dart';
+ import 'main.dart';
+ 
+ /// Local Compass catalogue with durable notes synchronized to its HTTP peer.
+ Future<void> main() async {
+   WidgetsFlutterBinding.ensureInitialized();
++  final configuration = NotesConfiguration.fromEnvironment();
+   final transport = HttpNotesTransport(
+-    Uri.parse(
+-      const String.fromEnvironment(
+-        'NOTES_URL',
+-        defaultValue: 'http://127.0.0.1:8091',
+-      ),
+-    ),
++    configuration.endpoint,
++    localReplicaId: configuration.replicaId,
++    peerReplicaId: configuration.peerReplicaId,
+   );
+   final storage = SqfliteReplicaStorage(
+     databaseFactory: databaseFactory,
+-    databasePath: '${await getDatabasesPath()}/compass-notes.sqlite',
++    databasePath:
++        '${await getDatabasesPath()}/${configuration.databaseFileName}',
+   );
+   final repository = TripNotesRepository(
+     storage: storage,
+     engine: SyncEngine.withStorage(
+-      replica: Replica('compass-device'),
++      replica: Replica(configuration.replicaId),
+       storage: storage,
+       transport: transport,
+     ),
+--- a/compass_app/app/lib/data/services/notes/http_notes_transport.dart
++++ b/compass_app/app/lib/data/services/notes/http_notes_transport.dart
+@@ -9,9 +9,14 @@
+     implements
+         AcknowledgingDeltaTransport,
+         IncomingAcknowledgingDeltaTransport {
+-  HttpNotesTransport(this.baseUri, {this.peerReplicaId = 'compass-peer'});
++  HttpNotesTransport(
++    this.baseUri, {
++    this.peerReplicaId = 'compass-peer',
++    this.localReplicaId = 'compass-device',
++  });
+ 
+   final Uri baseUri;
++  final String localReplicaId;
+   final _client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
+ 
+   @override
+@@ -56,8 +61,12 @@
+         await request('POST', '/sync/push', envelope.toJson()),
+       );
+ 
+-  Future<DeltaEnvelope> pull() async =>
+-      DeltaEnvelope.fromJson(await request('GET', '/sync/pull'));
++  Future<DeltaEnvelope> pull() async => DeltaEnvelope.fromJson(
++    await request(
++      'GET',
++      '/sync/pull?recipientReplicaId=${Uri.encodeQueryComponent(localReplicaId)}',
++    ),
++  );
+ 
+   @override
+   Future<void> acknowledge(DeltaAcknowledgement acknowledgement) async {
+--- a/compass_app/server/bin/notes_server.dart
++++ b/compass_app/server/bin/notes_server.dart
+@@ -12,21 +12,58 @@
+   final options =
+       (ArgParser()
+             ..addOption('port', defaultsTo: '8091')
+-            ..addOption('db', defaultsTo: 'compass-peer.sqlite'))
++            ..addOption('db', defaultsTo: 'compass-peer.sqlite')
++            ..addOption('host', defaultsTo: '127.0.0.1')
++            ..addOption('replica', defaultsTo: 'compass-peer')
++            ..addOption('clients', defaultsTo: 'compass-device')
++            ..addFlag('snapshot-pull', negatable: false))
+           .parse(arguments);
++  final replicaId = (options['replica'] as String);
++  final clientList = (options['clients'] as String).split(',');
++  final clients = clientList.toSet();
++  final snapshotPull = options['snapshot-pull'] as bool;
++  if (ReplicaId(replicaId).value != replicaId) {
++    throw ArgumentError('Hub identity must not have surrounding whitespace');
++  }
++  for (final client in clients) {
++    if (ReplicaId(client).value != client) {
++      throw ArgumentError(
++        'Client identity must not have surrounding whitespace',
++      );
++    }
++  }
++  if (clients.length != clientList.length ||
++      clients.length > 2 ||
++      clients.contains(replicaId) ||
++      (clients.length > 1 && !snapshotPull)) {
++    throw const FormatException(
++      'Use one fixed client or two clients with snapshot-pull',
++    );
++  }
+   sqfliteFfiInit();
+   final storage = SqfliteReplicaStorage(
+     databaseFactory: databaseFactoryFfi,
+     databasePath: options['db'] as String,
+   );
+   final engine = SyncEngine.withStorage(
+-    replica: Replica('compass-peer'),
++    replica: Replica(replicaId),
+     storage: storage,
+-    transport: _PullTransport(),
++    transport: _PullTransport(clients.first),
+   );
+   await engine.start();
++  if (snapshotPull &&
++      ((await storage.pending(replicaId)).isNotEmpty ||
++          engine.replica.export().changes.any(
++            (change) => !_isHubNote(change),
++          ))) {
++    await engine.dispose();
++    await storage.close();
++    throw const FormatException(
++      'Snapshot hub requires LWW trip notes and no local outbox',
++    );
++  }
+   final server = await HttpServer.bind(
+-    InternetAddress.loopbackIPv4,
++    options['host'] as String,
+     int.parse(options['port'] as String),
+   );
+   stdout.writeln('NOTES_READY ${server.port}');
+@@ -58,38 +95,65 @@
+       switch ((request.method, request.uri.path)) {
+         case ('POST', '/sync/push'):
+           final envelope = DeltaEnvelope.fromJson(body);
+-          if (envelope.senderReplicaId != 'compass-device' ||
+-              envelope.recipientReplicaId != 'compass-peer') {
++          if (!clients.contains(envelope.senderReplicaId) ||
++              envelope.recipientReplicaId != replicaId) {
+             throw const FormatException('Wrong notes peer');
++          }
++          if (snapshotPull &&
++              envelope.delta.changes.any((change) => !_isHubNote(change))) {
++            throw const FormatException(
++              'Snapshot hub accepts only LWW trip notes',
++            );
+           }
+           await engine.applyRemote(envelope.delta);
+           result = DeltaAcknowledgement(
+-            peerReplicaId: 'compass-peer',
++            peerReplicaId: replicaId,
+             stage: DeltaAckStage.appliedAndPersisted,
+             changeIds: envelope.delta.changes.map((change) => change.id),
+           ).toJson();
+         case ('GET', '/sync/pull'):
++          final recipient =
++              request.uri.queryParameters['recipientReplicaId'] ??
++              (clients.length == 1 ? clients.single : null);
++          if (!clients.contains(recipient)) {
++            throw const FormatException(
++              'Explicit configured notes recipient required',
++            );
++          }
+           result = DeltaEnvelope(
+-            senderReplicaId: 'compass-peer',
+-            recipientReplicaId: 'compass-device',
+-            delta: await engine.pendingDelta(),
++            senderReplicaId: replicaId,
++            recipientReplicaId: recipient!,
++            delta: snapshotPull
++                ? engine.replica.export()
++                : await engine.pendingDelta(),
+           ).toJson();
+         case ('POST', '/sync/ack'):
+           final ack = DeltaAcknowledgement.fromJson(body);
+-          if (ack.peerReplicaId != 'compass-device' ||
++          if (!clients.contains(ack.peerReplicaId) ||
+               ack.stage != DeltaAckStage.appliedAndPersisted) {
+             throw const FormatException('Invalid durable ACK');
++          }
++          if (snapshotPull) {
++            // Pull exports materialized LWW state, not a shared delivery outbox.
++            // Receipt from one client must never delete another client's data.
++            result = {'ok': true};
++            break;
+           }
+           final pending = (await engine.pendingDelta()).changes
+               .map((c) => c.id)
+               .toSet();
+           await storage.acknowledge(
+-            'compass-peer',
+-            'compass-device',
++            replicaId,
++            ack.peerReplicaId,
+             ack.changeIds.intersection(pending),
+           );
+           result = {'ok': true};
+         case ('POST', '/notes'):
++          if (snapshotPull) {
++            throw const FormatException(
++              'Snapshot hub accepts edits from clients only',
++            );
++          }
+           final key = body['key'];
+           final text = body['text'];
+           if (key is! String ||
+@@ -125,10 +189,15 @@
+   }
+ }
+ 
++bool _isHubNote(DeltaChange change) =>
++    change.kind == CrdtKind.lww && change.crdtId.startsWith('trip-notes:');
++
++/// Transport used by the legacy one-client mode; hub mode does not push.
+ /// Server outbox is delivered by GET /sync/pull, never cleared by local send.
+ class _PullTransport implements DeltaTransport {
++  _PullTransport(this.peerReplicaId);
+   @override
+-  String get peerReplicaId => 'compass-device';
++  final String peerReplicaId;
+   @override
+   Stream<DeltaEnvelope> get incoming => const Stream.empty();
+   @override
+--- /dev/null
++++ b/compass_app/app/lib/data/services/notes/notes_configuration.dart
+@@ -0,0 +1,44 @@
++import 'package:deltasync/deltasync.dart';
++
++/// Consumer configuration; keep the same identity when reinstalling a device.
++class NotesConfiguration {
++  NotesConfiguration({
++    required this.replicaId,
++    required this.peerReplicaId,
++    required this.endpoint,
++  }) {
++    if (ReplicaId(replicaId).value != replicaId ||
++        ReplicaId(peerReplicaId).value != peerReplicaId ||
++        replicaId == peerReplicaId ||
++        !{'http', 'https'}.contains(endpoint.scheme) ||
++        endpoint.host.isEmpty) {
++      throw ArgumentError(
++        'Distinct notes identities and HTTP endpoint required',
++      );
++    }
++  }
++
++  factory NotesConfiguration.fromEnvironment() => NotesConfiguration(
++    replicaId: const String.fromEnvironment(
++      'REPLICA_ID',
++      defaultValue: 'compass-device',
++    ),
++    peerReplicaId: const String.fromEnvironment(
++      'PEER_ID',
++      defaultValue: 'compass-peer',
++    ),
++    endpoint: Uri.parse(
++      const String.fromEnvironment(
++        'NOTES_URL',
++        defaultValue: 'http://127.0.0.1:8091',
++      ),
++    ),
++  );
++
++  final String replicaId;
++  final String peerReplicaId;
++  final Uri endpoint;
++  String get databaseFileName => replicaId == 'compass-device'
++      ? 'compass-notes.sqlite'
++      : 'compass-notes-${Uri.encodeComponent(replicaId)}.sqlite';
++}
+--- /dev/null
++++ b/compass_app/app/test/notes_configuration_test.dart
+@@ -0,0 +1,52 @@
++import 'package:compass_app/data/services/notes/notes_configuration.dart';
++import 'package:flutter_test/flutter_test.dart';
++
++void main() {
++  test('default configuration preserves existing identity and database', () {
++    final config = NotesConfiguration.fromEnvironment();
++    expect(config.replicaId, 'compass-device');
++    expect(config.peerReplicaId, 'compass-peer');
++    expect(config.databaseFileName, 'compass-notes.sqlite');
++  });
++  test('configured identities have stable distinct safe database names', () {
++    NotesConfiguration config(String id) => NotesConfiguration(
++      replicaId: id,
++      peerReplicaId: 'hub',
++      endpoint: Uri.parse('http://127.0.0.1:8091'),
++    );
++    expect(config('alpha').databaseFileName, config('alpha').databaseFileName);
++    expect(
++      config('alpha').databaseFileName,
++      isNot(config('beta').databaseFileName),
++    );
++    expect(config('../alpha').databaseFileName, isNot(contains('/')));
++  });
++  test('configuration rejects invalid identity, self peer and endpoint', () {
++    for (final id in ['', ' alpha']) {
++      expect(
++        () => NotesConfiguration(
++          replicaId: id,
++          peerReplicaId: 'hub',
++          endpoint: Uri.parse('http://127.0.0.1:8091'),
++        ),
++        throwsArgumentError,
++      );
++    }
++    expect(
++      () => NotesConfiguration(
++        replicaId: 'hub',
++        peerReplicaId: 'hub',
++        endpoint: Uri.parse('http://127.0.0.1:8091'),
++      ),
++      throwsArgumentError,
++    );
++    expect(
++      () => NotesConfiguration(
++        replicaId: 'alpha',
++        peerReplicaId: 'hub',
++        endpoint: Uri.parse('file:///tmp/notes'),
++      ),
++      throwsArgumentError,
++    );
++  });
++}
+--- a/compass_app/app/test/trip_notes_integration_test.dart
++++ b/compass_app/app/test/trip_notes_integration_test.dart
+@@ -13,6 +13,162 @@
+ 
+ void main() {
+   sqfliteFfiInit();
++
++  test(
++    'two configured clients reconcile through durable LWW snapshot hub',
++    () async {
++      final directory = await Directory.systemTemp.createTemp('compass-pair-');
++      const arguments = [
++        '--replica',
++        'notes-hub',
++        '--clients',
++        'alpha,beta',
++        '--snapshot-pull',
++      ];
++      final hubPath = '${directory.path}/hub.sqlite';
++      var backend = await _Backend.start(hubPath, extraArguments: arguments);
++      final port = backend.port;
++      Future<TripNotesRepository> open(String id) => _repository(
++        '${directory.path}/$id.sqlite',
++        backend.uri,
++        replicaId: id,
++        peerReplicaId: 'notes-hub',
++      );
++      var alpha = await open('alpha');
++      var beta = await open('beta');
++      try {
++        await alpha.edit(kBooking, 'alpha offline');
++        await beta.edit(kBooking, 'beta offline');
++        final betaPending = (await beta.engine.pendingDelta()).changes
++            .map((c) => c.id)
++            .toSet();
++        await alpha.sync();
++        expect(alpha.pending, 0);
++        expect(
++          (await beta.engine.pendingDelta()).changes.map((c) => c.id).toSet(),
++          betaPending,
++        );
++        expect((await alpha.transport.pull()).recipientReplicaId, 'alpha');
++        expect((await beta.transport.pull()).recipientReplicaId, 'beta');
++        await expectLater(
++          alpha.transport.request('GET', '/sync/pull'),
++          throwsA(isA<HttpException>()),
++        );
++        await expectLater(
++          alpha.transport.request(
++            'GET',
++            '/sync/pull?recipientReplicaId=intruder',
++          ),
++          throwsA(isA<HttpException>()),
++        );
++        await expectLater(
++          alpha.transport.request('POST', '/sync/ack', {
++            'peerReplicaId': 'intruder',
++            'stage': 'applied-and-persisted',
++            'changeIds': [],
++          }),
++          throwsA(isA<HttpException>()),
++        );
++        await beta.sync();
++        await alpha.sync();
++        expect(alpha.read(kBooking), beta.read(kBooking));
++        await alpha.edit(kBooking, 'kept alpha');
++        final retained = (await alpha.engine.pendingDelta()).changes
++            .map((c) => c.id)
++            .toSet();
++        await expectLater(
++          beta.transport.request('POST', '/sync/ack', {
++            'peerReplicaId': 'beta',
++            'stage': 'received',
++            'changeIds': retained.toList(),
++          }),
++          throwsA(isA<HttpException>()),
++        );
++        await beta.transport.request('POST', '/sync/ack', {
++          'peerReplicaId': 'beta',
++          'stage': 'applied-and-persisted',
++          'changeIds': retained.toList(),
++        });
++        expect(
++          (await alpha.engine.pendingDelta()).changes.map((c) => c.id).toSet(),
++          retained,
++        );
++        await expectLater(
++          alpha.transport.request(
++            'POST',
++            '/sync/push',
++            DeltaEnvelope(
++              senderReplicaId: 'alpha',
++              recipientReplicaId: 'beta',
++              delta: await alpha.engine.pendingDelta(),
++            ).toJson(),
++          ),
++          throwsA(isA<HttpException>()),
++        );
++        await backend.close();
++        await expectLater(alpha.sync(), throwsA(isA<SocketException>()));
++        await alpha.edit(kBooking, 'edited after network failure');
++        await beta.edit(kBooking, 'beta after disconnect');
++        final pendingAlpha = (await alpha.engine.pendingDelta()).changes
++            .map((c) => c.id)
++            .toSet();
++        final pendingBeta = (await beta.engine.pendingDelta()).changes
++            .map((c) => c.id)
++            .toSet();
++        await alpha.close();
++        await beta.close();
++        alpha = await open('alpha');
++        beta = await open('beta');
++        expect(alpha.read(kBooking), 'edited after network failure');
++        expect(beta.read(kBooking), 'beta after disconnect');
++        expect(
++          (await alpha.engine.pendingDelta()).changes.map((c) => c.id).toSet(),
++          pendingAlpha,
++        );
++        expect(
++          (await beta.engine.pendingDelta()).changes.map((c) => c.id).toSet(),
++          pendingBeta,
++        );
++        backend = await _Backend.start(
++          hubPath,
++          port: port,
++          extraArguments: arguments,
++        );
++        await Future.wait([alpha.sync(), beta.sync()]);
++        await alpha.sync();
++        expect(alpha.pending, 0);
++        expect(beta.pending, 0);
++        expect(alpha.read(kBooking), beta.read(kBooking));
++        final state = await alpha.transport.request('GET', '/state');
++        expect(state['pending'], isEmpty);
++        expect(
++          alpha.engine.replica.toSnapshotJson()['lww'],
++          beta.engine.replica.toSnapshotJson()['lww'],
++        );
++        expect(
++          alpha.engine.replica.toSnapshotJson()['lww'],
++          (state['snapshot'] as Map)['lww'],
++        );
++        await backend.close();
++        backend = await _Backend.start(
++          hubPath,
++          port: port,
++          extraArguments: arguments,
++        );
++        final restored = await alpha.transport.request('GET', '/state');
++        expect(
++          (restored['snapshot'] as Map)['lww'],
++          (state['snapshot'] as Map)['lww'],
++        );
++      } finally {
++        await alpha.close();
++        await beta.close();
++        await backend.close();
++        await directory.delete(recursive: true);
++      }
++    },
++    timeout: const Timeout(Duration(minutes: 3)),
++  );
+ 
+   test(
+     'observations refresh notes after commits outside repository actions',
+@@ -298,17 +454,26 @@
+   });
+ }
+ 
+-Future<TripNotesRepository> _repository(String path, Uri endpoint) async {
++Future<TripNotesRepository> _repository(
++  String path,
++  Uri endpoint, {
++  String replicaId = 'compass-device',
++  String peerReplicaId = 'compass-peer',
++}) async {
+   final storage = SqfliteReplicaStorage(
+     databaseFactory: databaseFactoryFfi,
+     databasePath: path,
+   );
+-  final transport = HttpNotesTransport(endpoint);
++  final transport = HttpNotesTransport(
++    endpoint,
++    localReplicaId: replicaId,
++    peerReplicaId: peerReplicaId,
++  );
+   final repository = TripNotesRepository(
+     storage: storage,
+     transport: transport,
+     engine: SyncEngine.withStorage(
+-      replica: Replica('compass-device'),
++      replica: Replica(replicaId),
+       storage: storage,
+       transport: transport,
+     ),
+@@ -324,7 +489,11 @@
+   bool closed = false;
+   Uri get uri => Uri.parse('http://127.0.0.1:$port');
+ 
+-  static Future<_Backend> start(String path, {int port = 0}) async {
++  static Future<_Backend> start(
++    String path, {
++    int port = 0,
++    List<String> extraArguments = const [],
++  }) async {
+     final process = await Process.start('dart', [
+       'run',
+       'bin/notes_server.dart',
+@@ -332,6 +501,7 @@
+       '$port',
+       '--db',
+       path,
++      ...extraArguments,
+     ], workingDirectory: '../server');
+     final ready = Completer<int>();
+     final output = StringBuffer();
+--- a/compass_app/README_DELTASYNC.md
++++ b/compass_app/README_DELTASYNC.md
+@@ -130,3 +130,19 @@
+ Reservas criadas no backend local original continuam voláteis. Esta validação
+ cobre notas LWW, um Android e o canal descrito; os oito CRDTs têm suas suítes
+ gerais próprias. Não certifica iOS, produção, publicação ou desempenho universal.
++
++## Preparação VAL-15, sem runtime físico
++
++REPLICA_ID/PEER_ID/NOTES_URL por dart-define configuram identidade e endpoint.
++Defaults preservam banco e par legados; IDs diferentes usam bancos separados.
++Não trocar IDs entre reinstalações nem clonar bancos para criar outra réplica.
++
++Backend opcional --replica notes-hub --clients alpha,beta --snapshot-pull
++recebe edições LWW em SQLite e exporta estado materializado para pull com
++destinatário explícito. Não há outbox global do hub a confirmar: ACK de pull
++não remove estado. Push confirma persistência no hub, sem provar que outro
++celular já buscou a nota. Modo antigo permanece padrão.
++
++Roteiro e comandos: [preparação dos dois aparelhos](../../deltasync/docs/val15-dois-dispositivos.md).
++Testes locais com dois clientes/processo HTTP e reabertura SQLite passaram;
++não substituem execução em dois aparelhos. Nenhum celular usado nesta preparação.

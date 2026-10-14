@@ -6,6 +6,13 @@ import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 import 'package:deltasync_transport/deltasync_transport.dart';
 
+import 'sync_types.dart';
+import 'sync/outbound_sync.dart';
+import 'sync/replica_persistence.dart';
+import 'sync/serial_commit_queue.dart';
+
+export 'sync_types.dart';
+
 /// Coordinates local CRDT changes, pending persistence, and remote deltas.
 class SyncEngine {
   SyncEngine({
@@ -47,12 +54,40 @@ class SyncEngine {
     return _replica.fork();
   }
 
+  /// Reads one committed field without forking the replica or copying its state.
+  ///
+  /// Call after awaiting [start]. Throws StateError before restoration or after
+  /// disposal. During an in-flight commit, reads the last successfully adopted
+  /// value; network waits do not block this synchronous query.
+  /// Result types and null semantics follow [Replica.valueAt]. Collections are
+  /// detached and read-only. This read does not imply remote acknowledgement.
+  Object? valueAt(String address) {
+    if (_lifecycle != SyncEngineLifecycle.started) {
+      throw StateError('SyncEngine query requires a started engine');
+    }
+    return _replica.valueAt(address);
+  }
+
   /// Current initialization, running or terminal lifecycle state.
   SyncEngineLifecycle get lifecycle => _lifecycle;
 
-  /// Failures from transport stream callbacks; awaited methods still throw
-  /// their own errors to the caller.
+  /// Failures from transport stream callbacks; awaited methods throw to callers.
+  /// This stream does not report successful commits or push progress.
   Stream<SyncFailure> get errors => _errors.stream;
+
+  /// Non-replaying notifications after a local or remote commit is adopted.
+  /// Read [replica] for the latest state; this event does not imply remote ACK.
+  /// The stream closes when [dispose] completes.
+  Stream<SyncCommitEvent> get commits => _commits.stream;
+
+  /// Non-replaying session events: restored, committed, push result/failure and
+  /// incoming failure. Existing commits/errors streams retain their contracts.
+  /// Read pendingDelta/valueAt after events; commit never means remote ACK.
+  /// Subscribe before start for restoration, or query after start when joining
+  /// later. Push results follow durable local outbox acknowledgement.
+  /// Listeners run asynchronously and cannot govern commits. Cancel subscriptions
+  /// before dispose if paused; the stream closes after accepted work drains.
+  Stream<SyncObservation> get observations => _observations.stream;
 
   @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
   final PendingDeltaStore? store;
@@ -63,11 +98,25 @@ class SyncEngine {
   Future<void>? _startFuture;
   Future<void>? _disposeFuture;
   Future<SyncPushResult>? _pushFuture;
-  Future<void> _serialTail = Future<void>.value();
+  final SerialCommitQueue _queue = SerialCommitQueue();
+  late final ReplicaPersistence _persistence = ReplicaPersistence(
+    storage: storage,
+    store: store,
+  );
+  late final OutboundSync _outbound = OutboundSync(
+    replicaId: _replica.id,
+    persistence: _persistence,
+    transport: transport,
+    retryPolicy: retryPolicy,
+  );
   int _activeRequests = 0;
   Completer<void>? _activeRequestsDrained;
   final StreamController<SyncFailure> _errors =
       StreamController<SyncFailure>.broadcast();
+  final StreamController<SyncCommitEvent> _commits =
+      StreamController<SyncCommitEvent>.broadcast(sync: false);
+  final StreamController<SyncObservation> _observations =
+      StreamController<SyncObservation>.broadcast(sync: false);
   final SyncRetryPolicy retryPolicy;
 
   /// Restores state and subscribes to remote changes. Repeated calls after
@@ -92,32 +141,12 @@ class SyncEngine {
   Future<void> _startInternal() async {
     final candidate = _replica.fork();
     try {
-      if (storage != null) {
-        final snapshot = await storage!.loadReplica(candidate.id);
-        if (snapshot != null) {
-          if (snapshot.version == 2) {
-            final encodedState = snapshot.snapshot;
-            if (encodedState == null) {
-              throw FormatException('Missing canonical replica snapshot');
-            }
-            candidate.adopt(Replica.fromSnapshotJson(encodedState));
-          } else if (snapshot.version == 1) {
-            _restoreLegacySnapshot(candidate, snapshot);
-          } else {
-            throw FormatException('Unsupported storage snapshot version');
-          }
-        }
-        for (final entry in await storage!.pending(candidate.id)) {
-          candidate.apply(entry.delta);
-        }
-      } else {
-        candidate.apply(await store!.read(candidate.id));
-      }
+      await _persistence.restoreInto(candidate);
 
       if (_lifecycle == SyncEngineLifecycle.disposed) {
         throw StateError('SyncEngine disposed while starting');
       }
-      if (storage != null) await storage!.saveReplica(_snapshot(candidate));
+      await _persistence.save(candidate);
       if (_lifecycle == SyncEngineLifecycle.disposed) {
         throw StateError('SyncEngine disposed while starting');
       }
@@ -127,6 +156,7 @@ class SyncEngine {
         _receiveRemote,
         onError: _receiveStreamError,
       );
+      _observations.add(const SyncRestoredEvent());
     } catch (_) {
       if (_lifecycle != SyncEngineLifecycle.disposed) {
         _lifecycle = SyncEngineLifecycle.created;
@@ -143,23 +173,53 @@ class SyncEngine {
   Future<void> applyRemote(Delta delta) =>
       _withStarted(() => _applyRemoteReady(delta));
 
-  Future<void> _applyRemoteReady(Delta delta) => _serialize(() async {
-    final candidate = _replica.fork()..apply(delta);
-    if (storage != null) await storage!.commitRemote(_snapshot(candidate));
-    _replica.adopt(candidate);
-  });
+  /// Validates, durably applies and acknowledges a stream or pulled envelope.
+  ///
+  /// Network fetching belongs to the adapter. If transport implements
+  /// [IncomingAcknowledgingDeltaTransport], sends ACK after commit/adoption,
+  /// outside the commit queue. Otherwise returns the ACK for the caller to send.
+  /// A send failure throws but leaves committed state intact for safe replay.
+  /// Existing local outbox is preserved. Disposal drains accepted calls, including
+  /// ACK sends; adapters must bound network waits. Calls after disposal fail.
+  Future<DeltaAcknowledgement> receiveEnvelope(DeltaEnvelope envelope) =>
+      _withStarted(() async {
+        if (envelope.recipientReplicaId != _replica.id ||
+            envelope.senderReplicaId != transport.peerReplicaId) {
+          throw const FormatException(
+            'Envelope peer identity does not match sync link',
+          );
+        }
+        await _applyRemoteReady(envelope.delta);
+        final ack = DeltaAcknowledgement(
+          peerReplicaId: _replica.id,
+          stage: DeltaAckStage.appliedAndPersisted,
+          changeIds: envelope.delta.changes.map((change) => change.id),
+        );
+        final adapter = transport;
+        if (adapter is IncomingAcknowledgingDeltaTransport) {
+          await adapter.acknowledge(ack);
+        }
+        return ack;
+      });
+
+  Future<void> _applyRemoteReady(Delta delta) =>
+      _commitRemote((candidate) => candidate.apply(delta));
 
   /// Merges a peer's materialized snapshot for bootstrap or recovery.
   Future<void> applyRemoteSnapshot(Map<String, Object?> snapshot) =>
       _withStarted(
-        () => _serialize(() async {
-          final candidate = _replica.fork()..mergeSnapshotJson(snapshot);
-          if (storage != null) {
-            await storage!.commitRemote(_snapshot(candidate));
-          }
-          _replica.adopt(candidate);
-        }),
+        () =>
+            _commitRemote((candidate) => candidate.mergeSnapshotJson(snapshot)),
       );
+
+  Future<void> _commitRemote(void Function(Replica) mutate) =>
+      _queue.run(() async {
+        final candidate = _replica.fork();
+        mutate(candidate);
+        await _persistence.commitRemote(candidate);
+        _replica.adopt(candidate);
+        _notifyCommit(SyncCommitOrigin.remote);
+      });
 
   @Deprecated('Use removeDelta; returns native LwwDelta.')
   Future<LwwDelta<Object?>> remove(String key) => removeDelta(key);
@@ -240,7 +300,11 @@ class SyncEngine {
     (candidate) => candidate.addOrMapValue(crdtId, key, value),
   );
 
-  /// Sends current pending changes without holding the commit queue during I/O.
+  /// Sends eligible pending changes without holding the commit queue during I/O.
+  /// The caller schedules each push; this engine has no background retry timer.
+  /// With [ReplicaStorage], normal calls select new entries and sent entries
+  /// whose delay has elapsed and attempts remain below the cap. [force] bypasses
+  /// those filters.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {
     if (_lifecycle == SyncEngineLifecycle.disposed) {
@@ -249,102 +313,46 @@ class SyncEngine {
     final running = _pushFuture;
     if (running != null) return running;
     late final Future<SyncPushResult> pushing;
-    pushing = start().then((_) => _pushReady(force: force)).whenComplete(() {
-      if (identical(_pushFuture, pushing)) _pushFuture = null;
-    });
+    pushing = start()
+        .then((_) => _pushReady(force: force))
+        .then((result) {
+          _observations.add(result);
+          return result;
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          _observations.add(
+            SyncPushFailure(error: error, stackTrace: stackTrace),
+          );
+          Error.throwWithStackTrace(error, stackTrace);
+        })
+        .whenComplete(() {
+          if (identical(_pushFuture, pushing)) _pushFuture = null;
+        });
     _pushFuture = pushing;
     return pushing;
   }
 
   Future<SyncPushResult> _pushReady({required bool force}) async {
-    final outbound = await _serialize(() => _prepareOutbound(force: force));
-    if (outbound.delta.isEmpty) return SyncPushResult.empty;
-
-    final envelope = DeltaEnvelope(
-      senderReplicaId: _replica.id,
-      recipientReplicaId: transport.peerReplicaId,
-      delta: outbound.delta,
-    );
-    final acknowledgement = transport is AcknowledgingDeltaTransport
-        ? await (transport as AcknowledgingDeltaTransport).sendAndAwaitAck(
-            envelope,
-          )
-        : await _sendWithoutAck(envelope);
-    if (acknowledgement != null &&
-        acknowledgement.peerReplicaId != transport.peerReplicaId) {
-      throw StateError('ACK peer does not match configured transport peer');
-    }
-    final acceptedIds =
-        acknowledgement?.stage == DeltaAckStage.appliedAndPersisted
-        ? acknowledgement!.changeIds
-              .where(outbound.ids.toSet().contains)
-              .toSet()
-        : <String>{};
-    if (storage != null && acceptedIds.isNotEmpty) {
-      await _serialize(
-        () => storage!.acknowledge(
+    final batch = await _queue.run(() => _outbound.prepare(force: force));
+    if (batch.delta.isEmpty) return SyncPushResult.empty;
+    final result = await _outbound.send(batch);
+    if (storage != null && result.acknowledgedIds.isNotEmpty) {
+      await _queue.run(
+        () => _persistence.acknowledge(
           _replica.id,
           transport.peerReplicaId,
-          acceptedIds,
+          result.acknowledgedIds,
         ),
       );
     }
-    return SyncPushResult(
-      sent: outbound.delta,
-      acknowledgedIds: acceptedIds,
-      acknowledgement: acknowledgement,
-    );
-  }
-
-  Future<({Delta delta, List<String> ids})> _prepareOutbound({
-    required bool force,
-  }) async {
-    if (storage == null) {
-      final pending = await store!.read(_replica.id);
-      return (
-        delta: pending,
-        ids: pending.changes.map((change) => change.id).toList(),
-      );
-    }
-    final allEntries = await storage!.pending(
-      _replica.id,
-      recipientPeerId: transport.peerReplicaId,
-    );
-    final now = DateTime.now().toUtc();
-    final entries = allEntries.where((entry) {
-      if (force || entry.status == OutboxStatus.pending) return true;
-      final maxAttempts = retryPolicy.maxAttempts;
-      if (maxAttempts != null && entry.attempts >= maxAttempts) return false;
-      final sentAt = entry.sentAt;
-      return sentAt == null ||
-          now.difference(sentAt) >= retryPolicy.delayFor(entry.attempts);
-    }).toList();
-    if (entries.isEmpty) {
-      return (delta: const Delta.empty(), ids: const <String>[]);
-    }
-    var pending = const Delta.empty();
-    for (final entry in entries) {
-      pending = pending.merge(entry.delta);
-    }
-    final ids = entries.expand((entry) => entry.changeIds).toList();
-    await storage!.markSent(_replica.id, transport.peerReplicaId, ids);
-    return (delta: pending, ids: ids);
+    return result;
   }
 
   /// Locally retained changes, including sent but unacknowledged changes. The
   /// deprecated store cannot remove entries even after a remote ACK.
-  Future<Delta> pendingDelta() async {
-    return _withStarted(
-      () => _serialize(() async {
-        if (storage == null) return store!.read(_replica.id);
-        var pending = const Delta.empty();
-        for (final entry in await storage!.pending(_replica.id)) {
-          pending = pending.merge(entry.delta);
-        }
-        return pending;
-      }),
-    );
-  }
+  Future<Delta> pendingDelta() => _withStarted(
+    () => _queue.run(() => _persistence.pendingDelta(_replica.id)),
+  );
 
   Future<void> dispose() {
     if (_lifecycle == SyncEngineLifecycle.disposed) {
@@ -374,71 +382,42 @@ class SyncEngine {
       final drained = _activeRequestsDrained ??= Completer<void>();
       await drained.future;
     }
-    await _serialTail;
+    await _queue.drained;
     await _errors.close();
+    await _commits.close();
+    await _observations.close();
   }
 
-  Future<void> _commitCandidate(
-    Replica candidate,
-    Delta delta,
-    List<OutboxEntry> entries,
-  ) async {
-    if (storage != null) {
-      await storage!.commit(_snapshot(candidate), entries);
-    } else {
-      final pending = await store!.read(_replica.id);
-      await store!.write(_replica.id, pending.merge(delta));
-    }
-  }
-
-  Future<DeltaAcknowledgement?> _sendWithoutAck(DeltaEnvelope envelope) async {
-    await transport.send(envelope);
-    return null;
-  }
-
-  ReplicaSnapshot _snapshot([Replica? source]) {
-    final snapshotSource = source ?? _replica;
-    return ReplicaSnapshot.fromReplica(snapshotSource);
-  }
-
-  Future<T> _commitLocal<T extends DeltaChange>(
-    T Function(Replica candidate) mutate,
-  ) => _withStarted(
-    () => _serialize(() async {
-      final candidate = _replica.fork();
-      final change = mutate(candidate);
-      final delta = Delta([change]);
-      await _commitCandidate(candidate, delta, [
-        OutboxEntry(delta: delta, recipientPeerId: transport.peerReplicaId),
-      ]);
-      _replica.adopt(candidate);
-      return change;
-    }),
-  );
+  Future<T> _commitLocal<T extends DeltaChange>(T Function(Replica) mutate) =>
+      _commitLocalResult(mutate, (change) => [change]);
 
   Future<List<T>> _commitLocalBatch<T extends DeltaChange>(
-    List<T> Function(Replica candidate) mutate,
+    List<T> Function(Replica) mutate,
+  ) => _commitLocalResult(mutate, (changes) => changes);
+
+  Future<R> _commitLocalResult<R>(
+    R Function(Replica) mutate,
+    Iterable<DeltaChange> Function(R) changesOf,
   ) => _withStarted(
-    () => _serialize(() async {
+    () => _queue.run(() async {
       final candidate = _replica.fork();
-      final changes = mutate(candidate);
+      final result = mutate(candidate);
+      final changes = changesOf(result).toList();
       if (changes.isEmpty) throw StateError('Local change batch is empty');
-      final delta = Delta(changes);
-      await _commitCandidate(candidate, delta, [
-        for (final change in changes)
-          OutboxEntry(
-            delta: Delta([change]),
-            recipientPeerId: transport.peerReplicaId,
-          ),
-      ]);
+      await _persistence.commitLocal(
+        candidate,
+        changes,
+        transport.peerReplicaId,
+      );
       _replica.adopt(candidate);
-      return changes;
+      _notifyCommit(SyncCommitOrigin.local);
+      return result;
     }),
   );
 
   void _receiveRemote(DeltaEnvelope envelope) {
     unawaited(
-      _applyIncomingReady(envelope).catchError((
+      receiveEnvelope(envelope).then<void>((_) {}).catchError((
         Object error,
         StackTrace stackTrace,
       ) {
@@ -447,14 +426,10 @@ class SyncEngine {
     );
   }
 
-  Future<void> _applyIncomingReady(DeltaEnvelope envelope) {
-    if (envelope.recipientReplicaId != _replica.id ||
-        envelope.senderReplicaId != transport.peerReplicaId) {
-      return Future.error(
-        FormatException('Envelope peer identity does not match sync link'),
-      );
-    }
-    return _applyRemoteReady(envelope.delta);
+  void _notifyCommit(SyncCommitOrigin origin) {
+    final event = SyncCommitEvent(origin: origin);
+    if (!_commits.isClosed) _commits.add(event);
+    if (!_observations.isClosed) _observations.add(event);
   }
 
   void _receiveStreamError(Object error, StackTrace stackTrace) {
@@ -466,11 +441,13 @@ class SyncEngine {
     Object error,
     StackTrace stackTrace,
   ) {
-    if (!_errors.isClosed) {
-      _errors.add(
-        SyncFailure(source: source, error: error, stackTrace: stackTrace),
-      );
-    }
+    final failure = SyncFailure(
+      source: source,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    if (!_errors.isClosed) _errors.add(failure);
+    if (!_observations.isClosed) _observations.add(failure);
   }
 
   Future<T> _withStarted<T>(Future<T> Function() action) {
@@ -486,126 +463,5 @@ class SyncEngine {
         if (drained != null && !drained.isCompleted) drained.complete();
       }
     });
-  }
-
-  void _restoreLegacySnapshot(Replica target, ReplicaSnapshot snapshot) {
-    if (snapshot.replicaId != target.id) {
-      throw FormatException('Snapshot replica ID mismatch');
-    }
-    final metadata = snapshot.legacyMetadata;
-    final clock = snapshot.legacyClock;
-    if (metadata == null || clock == null) {
-      throw FormatException('Invalid legacy replica snapshot');
-    }
-    final encodedState = metadata['replicaState'];
-    if (encodedState is Map) {
-      target.adopt(
-        Replica.fromSnapshotJson(Map<String, Object?>.from(encodedState)),
-      );
-      return;
-    }
-    final hlc = _readHlcOrNull(metadata);
-    if (hlc != null) target.restoreMetadata(clock: clock, hlc: hlc);
-    final encoded = metadata['delta'];
-    if (encoded is Map) {
-      target.apply(
-        Delta.fromJson(
-          Map<String, Object?>.from(encoded),
-          allowLegacyOperations: true,
-          allowLegacyCounterIdentity: true,
-        ),
-      );
-      return;
-    }
-    if (snapshot.legacyState?.isNotEmpty ?? false) {
-      throw FormatException('Legacy snapshot lacks replayable state');
-    }
-  }
-
-  Future<T> _serialize<T>(Future<T> Function() action) {
-    final result = Completer<T>();
-    _serialTail = _serialTail.then((_) async {
-      try {
-        result.complete(await action());
-      } catch (error, stackTrace) {
-        result.completeError(error, stackTrace);
-      }
-    });
-    return result.future;
-  }
-
-  HlcTimestamp? _readHlcOrNull(Map<String, Object?> metadata) {
-    final value = metadata['hlc'];
-    if (value == null) return null;
-    if (value is! Map) throw FormatException('Invalid snapshot HLC');
-    return HlcTimestamp.fromJson(Map<String, Object?>.from(value));
-  }
-}
-
-/// Public lifecycle of a [SyncEngine]. A failed start returns to [created] and
-/// may be retried; [disposed] is terminal.
-enum SyncEngineLifecycle { created, starting, started, disposed }
-
-enum SyncFailureSource { incomingDelta, incomingStream }
-
-/// Failure delivered by [SyncEngine.errors] from an incoming transport callback.
-class SyncFailure {
-  const SyncFailure({
-    required this.source,
-    required this.error,
-    required this.stackTrace,
-  });
-
-  final SyncFailureSource source;
-  final Object error;
-  final StackTrace stackTrace;
-}
-
-/// Result of one push attempt. A null [acknowledgement] means only local send
-/// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
-/// retains changes even when remote ACK is received.
-class SyncPushResult {
-  SyncPushResult({
-    required this.sent,
-    required Iterable<String> acknowledgedIds,
-    this.acknowledgement,
-  }) : acknowledgedIds = Set.unmodifiable(acknowledgedIds);
-
-  static SyncPushResult get empty =>
-      SyncPushResult(sent: const Delta.empty(), acknowledgedIds: const []);
-
-  final Delta sent;
-  final Set<String> acknowledgedIds;
-  final DeltaAcknowledgement? acknowledgement;
-
-  bool get fullyAcknowledged =>
-      sent.changes.every((change) => acknowledgedIds.contains(change.id));
-}
-
-/// Exponential retry policy for ReplicaStorage entries without confirmation.
-///
-/// Automatic retries stop after [maxAttempts] when configured. `push(force:
-/// true)` deliberately bypasses both the retry delay and attempt cap for manual
-/// retransmission. The legacy [PendingDeltaStore] path has no attempt metadata;
-/// every push retries its retained delta and this policy does not apply there.
-class SyncRetryPolicy {
-  const SyncRetryPolicy({
-    this.baseDelay = const Duration(seconds: 1),
-    this.maxDelay = const Duration(minutes: 1),
-    this.maxAttempts,
-  });
-
-  final Duration baseDelay;
-  final Duration maxDelay;
-  final int? maxAttempts;
-
-  Duration delayFor(int attempts) {
-    if (attempts <= 0) return Duration.zero;
-    var delay = baseDelay > maxDelay ? maxDelay : baseDelay;
-    for (var index = 1; index < attempts; index++) {
-      final doubled = delay * 2;
-      delay = doubled > maxDelay ? maxDelay : doubled;
-    }
-    return delay;
   }
 }

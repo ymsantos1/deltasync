@@ -1,6 +1,7 @@
 # Fase 4 — Fluxo offline e reconciliação
 
-Estado: concluída. R-08a a R-08d concluídas; objetivo de fluxo de duas réplicas atendido no cenário declarado.
+Estado: R-24 MUST e R-26/R-27 SHOULD concluídas em 2026-10-13.
+R-08a a R-08d mantêm conclusão histórica no cenário declarado.
 Entrada: R-09b para envelopes; R-03 para confirmação; R-05 para integração inicial.
 Storage durável e oito tipos são necessários antes do gate completo.
 Saída: R-08a a R-08d concluídas com cenário/topologia e limitações declarados.
@@ -134,33 +135,103 @@ Evidência de conclusão: execução R-08c em TRACEABILITY.md.
 
 ## R-17 — Notificar commits concluídos pela API Dart
 
-Status: pronta
+Status: concluída
 MoSCoW: COULD
 Dependências: R-05, R-08c
 
 Áreas: contrato público de SyncEngine e integração do consumidor.
 Objetivo: facilitar atualização de consumidores após commit remoto sem polling.
-Lacuna de consumo, sem defeito de commit confirmado: errors informa falhas,
-mas não há evento público de alteração incorporada com sucesso.
+Lacuna identificada: `errors` informa falhas, mas não sinalizava alteração
+incorporada com sucesso. R-17 adiciona evento Dart sem alterar contrato de ACK.
 
 Critérios:
 
-- [ ] Justificar um contrato mínimo de notificação para mutações locais e remotas,
+- [x] Justificar um contrato mínimo de notificação para mutações locais e remotas,
   com emissão somente após commit e adoção bem-sucedidos.
-- [ ] Core/sync continuam Dart puro; sem dependência de Flutter, callbacks que
+- [x] Core/sync continuam Dart puro; sem dependência de Flutter, callbacks que
   governem regras internas ou framework de plugins.
-- [ ] Erro/rollback não publica sucesso; listener não bloqueia nem invalida commit;
+- [x] Erro/rollback não publica sucesso; listener não bloqueia nem invalida commit;
   lifecycle e descarte do stream ficam definidos e testados.
-- [ ] Documentar consumo para atualizar UI e distinguir evento de estado de ACK;
+- [x] Documentar consumo para atualizar UI e distinguir evento de estado de ACK;
   exemplos e formato persistido permanecem compatíveis.
 
 Validação: regressões de local/remoto, rollback e dispose no sync/facade;
 analyze/test dos consumidores afetados. COULD: só selecionar com MUST resolvidos
 e margem antes do congelamento; não condiciona VAL-05 ou VAL-08.
 Evidência de motivação: [revisão geral](TRACEABILITY.md#revisao-geral-2026-10-12).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-17 em 2026-10-12](TRACEABILITY.md#execucao-r-17-2026-10-12).
+
+<a id="r-24"></a>
+
+## R-24 — Centralizar codec público de confirmação remota
+
+Status: concluída
+MoSCoW: MUST
+Dependências: R-08b, VAL-13
+
+Áreas: DeltaAcknowledgement, contrato wire e adaptadores consumidores.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [x] Definir codec JSON público para ACK e validar peer, estágio e IDs na fronteira, reutilizando rótulos estáveis existentes. Descrever regras para entrada inválida.
+- [x] Preservar formato usado no Compass e semântica received versus appliedAndPersisted; não alterar envelopes, outbox ou snapshots nem aceitar confirmação de peer divergente.
+- [x] Cobrir round-trip, ACK vazio/parcial/duplicado e entradas inválidas; comprovar que erro ou ACK insuficiente não remove pendências indevidas.
+- [x] Substituir montagem/decodificação duplicada no percurso consumidor autorizado e demonstrar uso por outro adaptador de teste. Revisar após correções e validar transport/sync/facade e consumidores afetados.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+Evidência de conclusão: [execução R-24](TRACEABILITY.md#execucao-r-24-2026-10-13).
+
+<a id="r-26"></a>
+
+## R-26 — Simplificar recepção e confirmação durável no consumidor
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-24, VAL-13
+
+Áreas: SyncEngine e apoio público ao fluxo remoto, independente de HTTP/Flutter.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [x] Comparar fluxo incoming existente e pull do Compass; escolher apoio mínimo com uso concreto nos dois percursos, sem framework de plugins ou protocolo obrigatório.
+- [x] Centralizar sequência repetida de validação de envelope, aplicação durável e confirmação; deixar busca/rede configuráveis no adaptador e regras do domínio no consumidor.
+- [x] ACK appliedAndPersisted ocorre somente após commit bem-sucedido; peer errado, rollback, falha de rede, duplicação e retry preservam estado/outbox. Edição local continua disponível durante espera de rede.
+- [x] Preservar contratos existentes e lifecycle/cancelamento explícitos. Mostrar redução de coordenação no consumidor, revisar após correções e validar sync/transport/SQLite/facade e integração afetada.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+Evidência de conclusão: [execução R-26](TRACEABILITY.md#execucao-r-26-2026-10-13).
+
+<a id="r-27"></a>
+
+## R-27 — Facilitar acompanhamento público da sincronização
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-26, R-17
+
+Áreas: API Dart de observação e apresentação no consumidor.
+Origem: análise da integração Compass e autorização do autor em 2026-10-13.
+
+Critérios:
+
+- [x] Inventariar commits/errors/pendingDelta/resultados de push; reutilizar contratos e escolher conveniência mínima, sem representações paralelas da mesma informação.
+- [x] Distinguir commit local, pendência de envio e confirmação remota; definir estado inicial após restore, falhas, atualização e encerramento. Não inferir ACK de um evento de commit.
+- [x] Cobrir commit/rollback, ACK parcial, falha/retry, reabertura e descarte/listeners. Confirmar que observação não bloqueia edição nem invalida commit.
+- [x] Mostrar consumo sem polling desnecessário e sem Flutter no sync; documentar compatibilidade, revisar após correções e validar pacotes e consumidor afetados.
+
+Validação: ciclo plan-executor, checks proporcionais ao contrato/consumidor afetado;
+regressões e compatibilidade são obrigatórias na própria tarefa.
+Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
+Evidência de conclusão: [execução R-27](TRACEABILITY.md#execucao-r-27-2026-10-13).
 
 ## Gate da fase
 
+R-24 exige codec e regressões antes de novo fechamento em VAL-05.
 Reconciliação comprovada no cenário declarado. Push de outbox e testes de
 serialização isolados não satisfazem este gate.
