@@ -1,0 +1,127 @@
+--- a/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
++++ b/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
+@@ -27,7 +27,7 @@
+   final SyncEngine engine;
+   final HttpNotesTransport transport;
+   final SqfliteReplicaStorage storage;
+-  StreamSubscription<SyncFailure>? _failures;
++  StreamSubscription<SyncObservation>? _observations;
+   bool _closed = false;
+   bool syncing = false;
+   int pending = 0;
+@@ -35,11 +35,35 @@
+   String? confirmation;
+ 
+   Future<void> start() async {
++    _observations ??= engine.observations.listen((event) {
++      if (_closed) return;
++      switch (event) {
++        case SyncRestoredEvent():
++          confirmation = null;
++        case SyncCommitEvent():
++          if (event.origin == SyncCommitOrigin.local) confirmation = null;
++        case SyncPushResult():
++          error = null;
++          if (event.acknowledgedIds.isNotEmpty) {
++            confirmation =
++                '${event.acknowledgedIds.length} mudança(s) confirmada(s)';
++          }
++        case SyncPushFailure():
++          error = event.error.toString();
++          confirmation = null;
++        case SyncFailure():
++          error = event.error.toString();
++      }
++      unawaited(
++        _refresh().catchError((Object failure) {
++          if (!_closed) {
++            error = failure.toString();
++            notifyListeners();
++          }
++        }),
++      );
++    });
+     await engine.start();
+-    _failures ??= engine.errors.listen((failure) {
+-      error = failure.error.toString();
+-      if (!_closed) notifyListeners();
+-    });
+     await _refresh();
+   }
+ 
+@@ -84,7 +108,7 @@
+   Future<void> close() async {
+     if (_closed) return;
+     _closed = true;
+-    await _failures?.cancel();
++    await _observations?.cancel();
+     try {
+       await engine.dispose();
+     } finally {
+--- a/compass_app/app/test/trip_notes_integration_test.dart
++++ b/compass_app/app/test/trip_notes_integration_test.dart
+@@ -13,6 +13,51 @@
+ 
+ void main() {
+   sqfliteFfiInit();
++
++  test(
++    'observations refresh notes after commits outside repository actions',
++    () async {
++      final directory = await Directory.systemTemp.createTemp(
++        'compass-observations-',
++      );
++      final repository = await _repository(
++        '${directory.path}/client.sqlite',
++        Uri.parse('http://127.0.0.1:8091'),
++      );
++      addTearDown(() async {
++        await repository.close();
++        await directory.delete(recursive: true);
++      });
++      final local = Completer<void>();
++      final remote = Completer<void>();
++      repository.addListener(() {
++        if (repository.read(kBooking) == 'observed' &&
++            repository.pending == 1 &&
++            !local.isCompleted)
++          local.complete();
++        if (repository.read(kBooking) == 'remote' &&
++            repository.pending == 1 &&
++            !remote.isCompleted)
++          remote.complete();
++      });
++      final key = tripNotesKey(kBooking);
++      await repository.engine.setDelta(key, {'text': 'observed'});
++      await local.future.timeout(const Duration(seconds: 2));
++      final timestamp =
++          repository.engine.replica.hlcTimestamp.physicalMilliseconds + 1;
++      final peer = Replica(
++        'compass-peer',
++        hlc: HlcClock(nowMilliseconds: () => timestamp),
++      );
++      await repository.engine.applyRemote(
++        Delta([
++          peer.setDelta(key, {'text': 'remote'}),
++        ]),
++      );
++      await remote.future.timeout(const Duration(seconds: 2));
++      expect(repository.confirmation, isNull);
++    },
++  );
+ 
+   test('trip keys use calendar dates and ignore local booking IDs', () {
+     final original = tripNotesKey(kBooking);
+--- a/compass_app/README_DELTASYNC.md
++++ b/compass_app/README_DELTASYNC.md
+@@ -81,6 +81,10 @@
+ `DeltaAcknowledgement.toJson()/fromJson()` centraliza formato e validação do ACK.
+ O backend ainda valida peer e estágio durável antes de remover IDs pendentes; o
+ repositório controla push/pull, restauração e notificações/falhas.
++Uma assinatura de engine.observations acompanha restauração, commits e push;
++pendingDelta continua fonte de pendências. Confirmação da sessão não é persistida.
++Chamadas aguardáveis continuam atualizando a tela antes de retornar; eventos
++também atualizam alterações remotas sem polling ou ação manual no repositório.
+ Após pull, receiveEnvelope centraliza validação do par, commit e envio de ACK
+ pelo contrato IncomingAcknowledgingDeltaTransport. HTTP permanece no adaptador.
+ Falha ao enviar ACK não desfaz commit; retry pode repetir o envelope.

@@ -1,0 +1,23 @@
+# Publish only the library and its small public entry points.
+# This file replaces the root .gitignore rules for pub publication.
+# Pub inherits this filter into nested packages; prepare their independent
+# release directories with scripts/prepare_release.py before publication.
+/*
+!/lib/
+!/README.md
+!/CHANGELOG.md
+!/LICENSE
+!/pubspec.yaml
+!/analysis_options.yaml
+!/example/
+/example/*
+!/example/deltasync_example.dart
+
+# Full examples, benchmarks, plans and evidence remain in the repository.
+# Generated files under an included directory must also remain excluded.
+**/.dart_tool/
+**/build/
+**/coverage/
+**/pubspec.lock
+*.apk
+*.aab

@@ -1,0 +1,1123 @@
+--- a/compass_app/README.md
++++ b/compass_app/README.md
+@@ -1,0 +2,2 @@
++
++For durable offline trip notes synchronized over HTTP, see [DeltaSync integration](README_DELTASYNC.md).
+--- a/compass_app/app/android/app/src/debug/AndroidManifest.xml
++++ b/compass_app/app/android/app/src/debug/AndroidManifest.xml
+@@ -6,0 +7 @@
++    <application android:usesCleartextTraffic="true" />
+--- a/compass_app/app/android/gradle.properties
++++ b/compass_app/app/android/gradle.properties
+@@ -3,0 +4,4 @@
++# This builtInKotlin flag was added automatically by Flutter migrator
++android.builtInKotlin=false
++# This newDsl flag was added automatically by Flutter migrator
++android.newDsl=false
+--- a/compass_app/app/android/gradle/wrapper/gradle-wrapper.properties
++++ b/compass_app/app/android/gradle/wrapper/gradle-wrapper.properties
+@@ -5 +5 @@
+-distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-all.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-9.3.1-all.zip
+--- a/compass_app/app/android/settings.gradle
++++ b/compass_app/app/android/settings.gradle
+@@ -21,2 +21,2 @@
+-    id "com.android.application" version "8.6.0" apply false
+-    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
++    id "com.android.application" version "9.1.0" apply false
++    id "org.jetbrains.kotlin.android" version "2.4.0" apply false
+--- a/compass_app/app/lib/ui/booking/widgets/booking_body.dart
++++ b/compass_app/app/lib/ui/booking/widgets/booking_body.dart
+@@ -6,0 +7 @@
++import 'package:provider/provider.dart';
+@@ -7,0 +9 @@
++import '../../../data/repositories/notes/trip_notes_repository.dart';
+@@ -12,0 +15 @@
++import 'trip_notes_card.dart';
+@@ -28,0 +32,8 @@
++            if (context.read<TripNotesRepository?>() case final notes?)
++              SliverToBoxAdapter(
++                child: TripNotesCard(
++                  key: ValueKey(tripNotesKey(booking)),
++                  booking: booking,
++                  repository: notes,
++                ),
++              ),
+--- a/compass_app/app/pubspec.yaml
++++ b/compass_app/app/pubspec.yaml
+@@ -11,0 +12,5 @@
++  deltasync:
++    path: ../../../deltasync
++  deltasync_storage_sqflite:
++    path: ../../../deltasync/packages/deltasync_storage_sqflite
++  sqflite: ^2.4.4
+@@ -28,0 +34 @@
++  sqflite_common_ffi: ^2.3.6
+--- a/compass_app/server/pubspec.yaml
++++ b/compass_app/server/pubspec.yaml
+@@ -10,0 +11,5 @@
++  deltasync:
++    path: ../../../deltasync
++  deltasync_storage_sqflite:
++    path: ../../../deltasync/packages/deltasync_storage_sqflite
++  sqflite_common_ffi: ^2.3.6
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -60,0 +61,10 @@
++
++dependency_overrides:
++  deltasync_core:
++    path: ../deltasync/packages/deltasync_core
++  deltasync_storage:
++    path: ../deltasync/packages/deltasync_storage
++  deltasync_sync:
++    path: ../deltasync/packages/deltasync_sync
++  deltasync_transport:
++    path: ../deltasync/packages/deltasync_transport
+--- /dev/null
++++ b/compass_app/README_DELTASYNC.md
+@@ -0,0 +1,121 @@
++# Compass com notas de viagem offline — VAL-13
++
++Esta integração acrescenta notas à tela de uma reserva existente do Compass.
++O catálogo, autenticação de desenvolvimento, reservas e demais fluxos continuam
++nos repositórios originais do sample. Somente as notas usam DeltaSync e SQLite.
++
++## Consumo e escopo
++
++`app/lib/main_deltasync.dart` compõe os providers locais do Compass com
++`TripNotesRepository`. A biblioteca é consumida por path, fora de seu workspace:
++`../../../deltasync` e seu adaptador SQLite; os quatro pacotes transitivos usam
++overrides explícitos no `pubspec.yaml` da raiz de flutter/samples. Os caminhos
++pressupõem que samples_test_lib e deltasync são diretórios irmãos. Não houve
++publicação no pub.dev. SDK efetivo mínimo: Dart 3.12, exigido por DeltaSync.
++
++A chave `trip-notes:[destinationRef,startDate,endDate]` usa datas de calendário
++YYYY-MM-DD; IDs locais de Booking e fuso não identificam a nota. Reservas do mesmo
++destino/período compartilham a nota neste cenário de usuário único. O valor LWW é
++`{"text":"..."}`. Edições concorrentes escolhem vencedor por HLC/origem/ID,
++conforme a biblioteca. Não há merge de texto por caractere.
++
++O dispositivo usa identidade fixa `compass-device`, banco compass-notes.sqlite
++no diretório do app e sqflite Android. O peer usa `compass-peer` e SQLite FFI.
++Este recorte aceita um par fixo de réplicas; múltiplos usuários/dispositivos,
++autenticação e bootstrap após perda definitiva de banco exigem desenho próprio
++do consumidor. O backend de notas é de desenvolvimento e escuta somente loopback.
++
++## Executar
++
++Na raiz compass_app, em terminais separados:
++
++```sh
++cd server
++dart run bin/notes_server.dart --port 8091 --db /tmp/compass-peer.sqlite
++```
++
++```sh
++cd app
++flutter pub get
++adb reverse tcp:8091 tcp:8091
++flutter run --target lib/main_deltasync.dart
++```
++
++O canal é HTTP/TCP real, encaminhado por USB com adb reverse: Android e servidor
++Dart são processos distintos, com bancos distintos. Não é Wi-Fi, backend público
++ou callback em processo. `NOTES_URL` pode ser configurada com `--dart-define`.
++HTTP sem TLS foi habilitado somente no manifest debug. O backend original do
++Compass e main_development/main_staging permanecem disponíveis.
++
++Abra a reserva Alaska no início do app e role até **Notas da viagem**. Digite e
++toque **Salvar no dispositivo**; o commit SQLite precede a atualização da nota.
++**Pendentes de notas** conta a outbox das notas de todas as viagens. O envio
++ocorre somente ao tocar **Sincronizar notas**; erro de rede não impede nova edição.
++Confirmação remota e pendência são distintas do valor salvo localmente. Após
++reinício, a confirmação da sessão é reiniciada; outbox e notas são restauradas.
++
++Para reproduzir perda de conexão, encerre o backend com Ctrl+C, salve uma nota e
++tente sincronizar. Edite novamente após a falha. Encerre o processo Android com
++`adb shell am force-stop com.example.compass_app`, abra o app e confira a nota e
++pendências. Reinicie o backend usando o mesmo arquivo SQLite.
++
++O endpoint local `POST /notes` permite edição concorrente pelo peer, com JSON
++`{"key":"trip-notes:[...]","text":"nota do peer"}`. A chave exata pode ser
++obtida no snapshot de `GET /state`, após sincronizar uma nota inicial. Para um
++conflito offline, prepare a chave antes de editar independentemente nas réplicas.
++`GET /state` mostra snapshot/IDs pendentes para a verificação de desenvolvimento.
++Sincronize, confira o vencedor e outboxes vazias, então reinicie os processos.
++O arquivo em /tmp serve ao roteiro; escolha armazenamento persistente apropriado
++ao ambiente ao reutilizar o backend. Não apague o banco para simular reinício.
++
++## Contrato HTTP e manutenção
++
++| Operação | Responsabilidade |
++|---|---|
++| POST /sync/push | Validar envelope/peers, aplicar e fazer commit remoto; retornar ACK applied-and-persisted somente depois |
++| GET /sync/pull | Entregar a outbox do peer sem removê-la |
++| POST /sync/ack | Cliente confirma somente após commit SQLite local; servidor remove IDs pendentes do peer correspondente |
++| POST /notes | Criar mudança local do peer e persistir snapshot/outbox pelo SyncEngine |
++
++`http_notes_transport.dart` contém HTTP, timeouts e decodificação de ACK; o
++repositório controla push/pull, restauração e notificações/falhas. `trip_notes_card.dart`
++apresenta valor, pendência e confirmação. A identidade da chave vive em
++`tripNotesKey`; o card recebe key por viagem para não reutilizar rascunho de outra.
++`server/bin/notes_server.dart` possui o backend e o ACK de pull. Estado, mutação,
++delta, join, commit e restore permanecem nas APIs públicas de DeltaSync.
++Não há import de src, override de internos, codegen ou mudança no core.
++
++```sh
++cd app
++flutter analyze
++flutter test
++flutter build apk --debug --target lib/main_deltasync.dart
++```
++
++```sh
++cd server
++dart analyze
++dart test
++```
++
++`app/test/trip_notes_integration_test.dart` usa os modelos de teste existentes,
++bancos SQLite reais e processo Dart separado. Cobre perda de conexão, edição
++após falha, reabertura, conflito, resposta ACK perdida após commit via proxy HTTP,
++duplicação no retry, outboxes/IDs, rejeição de peer incorreto e chaves de calendário.
++Execute os testes do app a partir de app, para carregar os assets nativos FFI.
++
++## Resultado e limites
++
++Em 2026-10-13: análise sem issues, 72 testes do app e 13 do servidor aprovados;
++cinco regressões novas cobrem HTTP, datas e estado da UI após correções. Build debug e percurso
++no Moto G52 Android 13/API 33 usaram Flutter 3.47.7/Dart 3.13.5. Gradle 9.3.1,
++AGP 9.1.0 e Kotlin 2.4.0 substituíram versões incompatíveis com Java 25 deste host.
++Flags adicionadas pelo migrador Flutter mantêm compatibilidade do DSL/Kotlin.
++share_plus conserva aviso de migração futura; build atual passou.
++
++O fluxo de notas foi observado pelo desenvolvedor, sem estudo com participantes.
++Imagens remotas originais do sample retornaram HTTP 403 no aparelho; isso afeta
++a apresentação do catálogo, sem impedir edição/sincronização das notas.
++Reservas criadas no backend local original continuam voláteis. Esta validação
++cobre notas LWW, um Android e o canal descrito; os oito CRDTs têm suas suítes
++gerais próprias. Não certifica iOS, produção, publicação ou desempenho universal.
+--- /dev/null
++++ b/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
+@@ -0,0 +1,106 @@
++import 'dart:async';
++import 'dart:convert';
++
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:flutter/foundation.dart';
++
++import '../../../domain/models/booking/booking.dart';
++import '../../services/notes/http_notes_transport.dart';
++
++/// Maps existing Compass trips to shared notes without changing Booking IDs.
++/// Destination and dates identify a trip in this single-user sample.
++String tripNotesKey(Booking booking) =>
++    'trip-notes:${jsonEncode([booking.destination.ref, _calendarDate(booking.startDate), _calendarDate(booking.endDate)])}';
++
++// Compass travel dates are calendar days, not timezone-dependent instants.
++String _calendarDate(DateTime value) =>
++    value.toIso8601String().split('T').first;
++
++class TripNotesRepository extends ChangeNotifier {
++  TripNotesRepository({
++    required this.engine,
++    required this.transport,
++    required this.storage,
++  });
++
++  final SyncEngine engine;
++  final HttpNotesTransport transport;
++  final SqfliteReplicaStorage storage;
++  StreamSubscription<SyncFailure>? _failures;
++  bool _closed = false;
++  bool syncing = false;
++  int pending = 0;
++  String? error;
++  String? confirmation;
++
++  Future<void> start() async {
++    await engine.start();
++    _failures ??= engine.errors.listen((failure) {
++      error = failure.error.toString();
++      if (!_closed) notifyListeners();
++    });
++    await _refresh();
++  }
++
++  String read(Booking booking) {
++    final value = engine.replica.state[tripNotesKey(booking)];
++    return value is Map ? value['text'] as String? ?? '' : '';
++  }
++
++  Future<void> edit(Booking booking, String text) async {
++    await engine.setDelta(tripNotesKey(booking), {'text': text});
++    confirmation = null;
++    await _refresh();
++  }
++
++  /// Manual push/pull. A failed network request leaves local editing available.
++  Future<void> sync() async {
++    if (syncing) return;
++    syncing = true;
++    notifyListeners();
++    try {
++      final result = await engine.push(force: true);
++      final incoming = await transport.pull();
++      if (incoming.senderReplicaId != transport.peerReplicaId ||
++          incoming.recipientReplicaId != engine.replica.id) {
++        throw const FormatException('Notes envelope addressed to wrong peer');
++      }
++      await engine.applyRemote(incoming.delta);
++      // ACK only after the local SQLite remote commit completes.
++      await transport.acknowledge(incoming);
++      error = null;
++      confirmation =
++          '${result.acknowledgedIds.length} mudança(s) confirmada(s)';
++    } catch (failure) {
++      error = failure.toString();
++      rethrow;
++    } finally {
++      syncing = false;
++      await _refresh();
++    }
++  }
++
++  Future<void> _refresh() async {
++    pending = (await engine.pendingDelta()).changes.length;
++    if (!_closed) notifyListeners();
++  }
++
++  Future<void> close() async {
++    if (_closed) return;
++    _closed = true;
++    await _failures?.cancel();
++    try {
++      await engine.dispose();
++    } finally {
++      transport.close();
++      await storage.close();
++    }
++  }
++
++  @override
++  void dispose() {
++    unawaited(close());
++    super.dispose();
++  }
++}
+--- /dev/null
++++ b/compass_app/app/lib/data/services/notes/http_notes_transport.dart
+@@ -0,0 +1,83 @@
++import 'dart:convert';
++import 'dart:io';
++
++import 'package:deltasync/deltasync.dart';
++
++/// Development HTTP adapter for one durable Compass peer.
++/// Incoming delivery is explicitly pulled by the repository, then acknowledged.
++class HttpNotesTransport implements AcknowledgingDeltaTransport {
++  HttpNotesTransport(this.baseUri, {this.peerReplicaId = 'compass-peer'});
++
++  final Uri baseUri;
++  final _client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
++
++  @override
++  final String peerReplicaId;
++
++  @override
++  Stream<DeltaEnvelope> get incoming => const Stream.empty();
++
++  Future<Map<String, Object?>> request(
++    String method,
++    String path, [
++    Map<String, Object?>? body,
++  ]) async {
++    final request = await _client
++        .openUrl(method, baseUri.resolve(path))
++        .timeout(const Duration(seconds: 5));
++    request.headers.contentType = ContentType.json;
++    if (body != null) request.write(jsonEncode(body));
++    final response = await request.close().timeout(const Duration(seconds: 5));
++    final text = await response
++        .transform(utf8.decoder)
++        .join()
++        .timeout(const Duration(seconds: 5));
++    if (response.statusCode != HttpStatus.ok) {
++      throw HttpException('HTTP ${response.statusCode}: $text');
++    }
++    final decoded = jsonDecode(text);
++    if (decoded is! Map<String, dynamic>) {
++      throw const FormatException('Expected JSON object');
++    }
++    return Map<String, Object?>.from(decoded);
++  }
++
++  @override
++  Future<void> send(DeltaEnvelope envelope) async {
++    await sendAndAwaitAck(envelope);
++  }
++
++  @override
++  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async =>
++      decodeNotesAck(await request('POST', '/sync/push', envelope.toJson()));
++
++  Future<DeltaEnvelope> pull() async =>
++      DeltaEnvelope.fromJson(await request('GET', '/sync/pull'));
++
++  Future<void> acknowledge(DeltaEnvelope envelope) async {
++    await request('POST', '/sync/ack', {
++      'peerReplicaId': envelope.recipientReplicaId,
++      'stage': DeltaAckStage.appliedAndPersisted.wireName,
++      'changeIds': [for (final change in envelope.delta.changes) change.id],
++    });
++  }
++
++  void close() => _client.close(force: true);
++}
++
++DeltaAcknowledgement decodeNotesAck(Map<String, Object?> json) {
++  final peer = json['peerReplicaId'];
++  final stage = json['stage'];
++  final ids = json['changeIds'];
++  if (peer is! String ||
++      stage is! String ||
++      ids is! List ||
++      ids.any((id) => id is! String)) {
++    throw const FormatException('Invalid notes ACK');
++  }
++  return DeltaAcknowledgement(
++    peerReplicaId: peer,
++    stage: DeltaAckStage.fromWire(stage),
++    changeIds: ids.cast<String>(),
++  );
++}
+--- /dev/null
++++ b/compass_app/app/lib/main_deltasync.dart
+@@ -0,0 +1,58 @@
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import 'package:sqflite/sqflite.dart';
++
++import 'config/dependencies.dart';
++import 'data/repositories/notes/trip_notes_repository.dart';
++import 'data/services/notes/http_notes_transport.dart';
++import 'main.dart';
++
++/// Local Compass catalogue with durable notes synchronized to its HTTP peer.
++Future<void> main() async {
++  WidgetsFlutterBinding.ensureInitialized();
++  final transport = HttpNotesTransport(
++    Uri.parse(
++      const String.fromEnvironment(
++        'NOTES_URL',
++        defaultValue: 'http://127.0.0.1:8091',
++      ),
++    ),
++  );
++  final storage = SqfliteReplicaStorage(
++    databaseFactory: databaseFactory,
++    databasePath: '${await getDatabasesPath()}/compass-notes.sqlite',
++  );
++  final repository = TripNotesRepository(
++    storage: storage,
++    engine: SyncEngine.withStorage(
++      replica: Replica('compass-device'),
++      storage: storage,
++      transport: transport,
++    ),
++    transport: transport,
++  );
++  try {
++    await repository.start();
++  } catch (error) {
++    await repository.close();
++    runApp(
++      MaterialApp(
++        home: Scaffold(
++          body: Center(child: Text('Falha ao abrir notas: $error')),
++        ),
++      ),
++    );
++    return;
++  }
++  runApp(
++    MultiProvider(
++      providers: [
++        ...providersLocal,
++        ChangeNotifierProvider(create: (_) => repository),
++      ],
++      child: const MainApp(),
++    ),
++  );
++}
+--- /dev/null
++++ b/compass_app/app/lib/ui/booking/widgets/trip_notes_card.dart
+@@ -0,0 +1,104 @@
++import 'package:flutter/material.dart';
++
++import '../../../data/repositories/notes/trip_notes_repository.dart';
++import '../../../domain/models/booking/booking.dart';
++
++/// Notes are committed locally; synchronization is a separate user action.
++class TripNotesCard extends StatefulWidget {
++  const TripNotesCard({
++    super.key,
++    required this.booking,
++    required this.repository,
++  });
++
++  final Booking booking;
++  final TripNotesRepository repository;
++
++  @override
++  State<TripNotesCard> createState() => _TripNotesCardState();
++}
++
++class _TripNotesCardState extends State<TripNotesCard> {
++  final _input = TextEditingController();
++  String? _localError;
++  bool _saving = false;
++
++  @override
++  void dispose() {
++    _input.dispose();
++    super.dispose();
++  }
++
++  Future<void> _save() async {
++    setState(() => _saving = true);
++    try {
++      await widget.repository.edit(widget.booking, _input.text);
++      if (mounted) setState(() => _localError = null);
++    } catch (error) {
++      if (mounted) setState(() => _localError = error.toString());
++    } finally {
++      if (mounted) setState(() => _saving = false);
++    }
++  }
++
++  Future<void> _sync() async {
++    try {
++      await widget.repository.sync();
++    } catch (_) {
++      // Repository publishes the network failure while preserving local commits.
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) => ListenableBuilder(
++    listenable: widget.repository,
++    builder: (context, _) {
++      final repository = widget.repository;
++      return Card(
++        margin: const EdgeInsets.all(16),
++        child: Padding(
++          padding: const EdgeInsets.all(16),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.stretch,
++            children: [
++              Text(
++                'Notas da viagem',
++                style: Theme.of(context).textTheme.titleLarge,
++              ),
++              Text(
++                'Nota salva no dispositivo: ${repository.read(widget.booking)}',
++              ),
++              Text('Pendentes de notas: ${repository.pending}'),
++              Text(
++                repository.confirmation ??
++                    (repository.pending > 0
++                        ? 'Aguardando confirmação remota'
++                        : 'Nenhum envio nesta sessão'),
++              ),
++              if (_localError != null) Text('Falha local: $_localError'),
++              if (repository.error != null)
++                Text('Falha de sincronização: ${repository.error}'),
++              TextField(
++                key: const Key('trip-note-input'),
++                controller: _input,
++                decoration: const InputDecoration(labelText: 'Nova nota'),
++              ),
++              FilledButton(
++                key: const Key('trip-note-save'),
++                onPressed: _saving ? null : _save,
++                child: const Text('Salvar no dispositivo'),
++              ),
++              OutlinedButton(
++                key: const Key('trip-note-sync'),
++                onPressed: repository.syncing ? null : _sync,
++                child: Text(
++                  repository.syncing ? 'Sincronizando...' : 'Sincronizar notas',
++                ),
++              ),
++            ],
++          ),
++        ),
++      );
++    },
++  );
++}
+--- /dev/null
++++ b/compass_app/app/test/trip_notes_card_test.dart
+@@ -0,0 +1,68 @@
++import 'dart:io';
++
++import 'package:compass_app/data/repositories/notes/trip_notes_repository.dart';
++import 'package:compass_app/data/services/notes/http_notes_transport.dart';
++import 'package:compass_app/ui/booking/widgets/trip_notes_card.dart';
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:sqflite_common_ffi/sqflite_ffi.dart';
++
++import '../testing/models/booking.dart';
++
++void main() {
++  sqfliteFfiInit();
++  testWidgets(
++    'notes distinguish session confirmation and durable pending edits',
++    (tester) async {
++      late Directory directory;
++      late TripNotesRepository repository;
++      await tester.runAsync(() async {
++        directory = await Directory.systemTemp.createTemp('compass-note-card-');
++        final storage = SqfliteReplicaStorage(
++          databaseFactory: databaseFactoryFfi,
++          databasePath: '${directory.path}/device.sqlite',
++        );
++        final transport = HttpNotesTransport(Uri.parse('http://127.0.0.1:1'));
++        repository = TripNotesRepository(
++          storage: storage,
++          transport: transport,
++          engine: SyncEngine.withStorage(
++            replica: Replica('compass-device'),
++            storage: storage,
++            transport: transport,
++          ),
++        );
++        await repository.start();
++      });
++      try {
++        await tester.pumpWidget(
++          MaterialApp(
++            home: Scaffold(
++              body: TripNotesCard(booking: kBooking, repository: repository),
++            ),
++          ),
++        );
++        expect(find.text('Nenhum envio nesta sessão'), findsOneWidget);
++        expect(find.text('Pendentes de notas: 0'), findsOneWidget);
++        await tester.runAsync(
++          () => repository.edit(kBooking, 'Packed passport'),
++        );
++        await tester.pumpAndSettle();
++        expect(
++          find.text('Nota salva no dispositivo: Packed passport'),
++          findsOneWidget,
++        );
++        expect(find.text('Pendentes de notas: 1'), findsOneWidget);
++        expect(find.text('Aguardando confirmação remota'), findsOneWidget);
++        expect(find.text('Nenhum envio nesta sessão'), findsNothing);
++      } finally {
++        await tester.pumpWidget(const SizedBox());
++        await tester.runAsync(repository.close);
++        repository.dispose();
++        await tester.runAsync(() => directory.delete(recursive: true));
++      }
++    },
++  );
++}
+--- /dev/null
++++ b/compass_app/app/test/trip_notes_integration_test.dart
+@@ -0,0 +1,342 @@
++import 'dart:async';
++import 'dart:convert';
++import 'dart:io';
++
++import 'package:compass_app/data/repositories/notes/trip_notes_repository.dart';
++import 'package:compass_app/data/services/notes/http_notes_transport.dart';
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:sqflite_common_ffi/sqflite_ffi.dart';
++
++import '../testing/models/booking.dart';
++
++void main() {
++  sqfliteFfiInit();
++
++  test('trip keys use calendar dates and ignore local booking IDs', () {
++    final original = tripNotesKey(kBooking);
++    final sameTrip = kBooking.copyWith(
++      id: 999,
++      startDate: DateTime.utc(
++        kBooking.startDate.year,
++        kBooking.startDate.month,
++        kBooking.startDate.day,
++      ),
++      endDate: DateTime.utc(
++        kBooking.endDate.year,
++        kBooking.endDate.month,
++        kBooking.endDate.day,
++      ),
++    );
++    expect(tripNotesKey(sameTrip), original);
++    expect(
++      tripNotesKey(kBooking.copyWith(endDate: DateTime(2025))),
++      isNot(original),
++    );
++  });
++
++  test('notes ACK rejects invalid stage and IDs', () {
++    expect(
++      () => decodeNotesAck({
++        'peerReplicaId': 'peer',
++        'stage': 'unknown',
++        'changeIds': <String>[],
++      }),
++      throwsFormatException,
++    );
++    expect(
++      () => decodeNotesAck({
++        'peerReplicaId': 'peer',
++        'stage': 'applied-and-persisted',
++        'changeIds': [1],
++      }),
++      throwsFormatException,
++    );
++  });
++
++  test(
++    'Compass notes survive disconnect, lost ACK, duplicate HTTP and restart',
++    () async {
++      final directory = await Directory.systemTemp.createTemp(
++        'compass-notes-test-',
++      );
++      final path = '${directory.path}/device.sqlite';
++      _Backend? backend;
++      TripNotesRepository? repository;
++      _LostAckProxy? proxy;
++      try {
++        backend = await _Backend.start('${directory.path}/peer.sqlite');
++        repository = await _repository(path, backend.uri);
++        final key = tripNotesKey(kBooking);
++        // Real connection loss, not a callback that simulates an unavailable peer.
++        final port = backend.port;
++        await backend.close();
++        await repository.edit(kBooking, 'client offline');
++        await expectLater(repository.sync(), throwsA(isA<SocketException>()));
++        expect(repository.pending, 1);
++        expect(repository.error, isNotNull);
++        await repository.edit(kBooking, 'client after failure');
++        expect(repository.pending, 2);
++        final ids = (await repository.engine.pendingDelta()).changes
++            .map((c) => c.id)
++            .toSet();
++        await repository.close();
++        repository = await _repository(
++          path,
++          Uri.parse('http://127.0.0.1:$port'),
++        );
++        expect(repository.read(kBooking), 'client after failure');
++        expect(
++          (await repository.engine.pendingDelta()).changes
++              .map((c) => c.id)
++              .toSet(),
++          ids,
++        );
++
++        backend = await _Backend.start(
++          '${directory.path}/peer.sqlite',
++          port: port,
++        );
++        await repository.transport.request('POST', '/notes', {
++          'key': key,
++          'text': 'peer concurrent',
++        });
++        final before = await repository.transport.request('GET', '/state');
++        expect(before['pending'], hasLength(1));
++        // Peer process restarts with its own pending changes before delivery.
++        await backend.close();
++        backend = await _Backend.start(
++          '${directory.path}/peer.sqlite',
++          port: port,
++        );
++        expect(
++          (await repository.transport.request('GET', '/state'))['pending'],
++          before['pending'],
++        );
++
++        proxy = await _LostAckProxy.start(backend.uri);
++        await repository.close();
++        repository = await _repository(path, proxy.uri);
++        await expectLater(repository.sync(), throwsA(isA<HttpException>()));
++        // Peer committed both changes, but lost response cannot acknowledge outbox.
++        expect(repository.pending, 2);
++        expect(
++          (await repository.engine.pendingDelta()).changes
++              .map((c) => c.id)
++              .toSet(),
++          ids,
++        );
++        await repository.close();
++        repository = await _repository(path, proxy.uri);
++        expect(repository.pending, 2);
++        await repository.sync();
++        expect(proxy.deliveries, 2);
++        expect(repository.read(kBooking), 'peer concurrent');
++        expect(repository.pending, 0);
++        expect(repository.error, isNull);
++        expect(
++          (await repository.transport.request('GET', '/state'))['pending'],
++          isEmpty,
++        );
++        final peerSnapshot =
++            (await repository.transport.request('GET', '/state'))['snapshot']
++                as Map;
++        expect(
++          repository.engine.replica.toSnapshotJson()['lww'],
++          peerSnapshot['lww'],
++        );
++
++        await repository.edit(kBooking, 'after reconciliation');
++        final next = (await repository.engine.pendingDelta()).changes.single;
++        expect(ids, isNot(contains(next.id)));
++        await repository.sync();
++        await repository.close();
++        repository = await _repository(path, backend.uri);
++        expect(repository.read(kBooking), 'after reconciliation');
++        expect(repository.pending, 0);
++        await backend.close();
++        backend = await _Backend.start(
++          '${directory.path}/peer.sqlite',
++          port: port,
++        );
++        final finalState = await repository.transport.request('GET', '/state');
++        expect(finalState['pending'], isEmpty);
++        expect(
++          (finalState['snapshot'] as Map)['lww'],
++          repository.engine.replica.toSnapshotJson()['lww'],
++        );
++        // ACK from another peer cannot remove any of this fixed peer's changes.
++        await repository.transport.request('POST', '/notes', {
++          'key': key,
++          'text': 'kept',
++        });
++        await expectLater(
++          repository.transport.request('POST', '/sync/ack', {
++            'peerReplicaId': 'other-device',
++            'stage': 'applied-and-persisted',
++            'changeIds': ['compass-peer:delta:2'],
++          }),
++          throwsA(isA<HttpException>()),
++        );
++        expect(
++          (await repository.transport.request('GET', '/state'))['pending'],
++          hasLength(1),
++        );
++      } finally {
++        await repository?.close();
++        await proxy?.close();
++        await backend?.close();
++        await directory.delete(recursive: true);
++      }
++    },
++    timeout: const Timeout(Duration(minutes: 3)),
++  );
++
++  test('wrong peer HTTP ACK preserves local outbox', () async {
++    final directory = await Directory.systemTemp.createTemp(
++      'compass-wrong-ack-',
++    );
++    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
++    final listener = server.listen((request) async {
++      await utf8.decoder.bind(request).join();
++      request.response.headers.contentType = ContentType.json;
++      request.response.write(
++        jsonEncode({
++          'peerReplicaId': 'wrong-peer',
++          'stage': 'applied-and-persisted',
++          'changeIds': ['compass-device:delta:1'],
++        }),
++      );
++      await request.response.close();
++    });
++    final repository = await _repository(
++      '${directory.path}/device.sqlite',
++      Uri.parse('http://127.0.0.1:${server.port}'),
++    );
++    try {
++      await repository.edit(kBooking, 'pending');
++      await expectLater(repository.sync(), throwsStateError);
++      expect(repository.pending, 1);
++      expect(repository.read(kBooking), 'pending');
++    } finally {
++      await repository.close();
++      await listener.cancel();
++      await server.close(force: true);
++      await directory.delete(recursive: true);
++    }
++  });
++}
++
++Future<TripNotesRepository> _repository(String path, Uri endpoint) async {
++  final storage = SqfliteReplicaStorage(
++    databaseFactory: databaseFactoryFfi,
++    databasePath: path,
++  );
++  final transport = HttpNotesTransport(endpoint);
++  final repository = TripNotesRepository(
++    storage: storage,
++    transport: transport,
++    engine: SyncEngine.withStorage(
++      replica: Replica('compass-device'),
++      storage: storage,
++      transport: transport,
++    ),
++  );
++  await repository.start();
++  return repository;
++}
++
++class _Backend {
++  _Backend(this.process, this.port);
++  final Process process;
++  final int port;
++  bool closed = false;
++  Uri get uri => Uri.parse('http://127.0.0.1:$port');
++
++  static Future<_Backend> start(String path, {int port = 0}) async {
++    final process = await Process.start('dart', [
++      'run',
++      'bin/notes_server.dart',
++      '--port',
++      '$port',
++      '--db',
++      path,
++    ], workingDirectory: '../server');
++    final ready = Completer<int>();
++    final output = StringBuffer();
++    process.stdout
++        .transform(utf8.decoder)
++        .transform(const LineSplitter())
++        .listen((line) {
++          output.writeln(line);
++          if (line.startsWith('NOTES_READY '))
++            ready.complete(int.parse(line.split(' ').last));
++        });
++    process.stderr.transform(utf8.decoder).listen(output.write);
++    unawaited(
++      process.exitCode.then((code) {
++        if (!ready.isCompleted)
++          ready.completeError(StateError('Server exited $code: $output'));
++      }),
++    );
++    try {
++      return _Backend(
++        process,
++        await ready.future.timeout(const Duration(seconds: 60)),
++      );
++    } catch (_) {
++      process.kill(ProcessSignal.sigkill);
++      rethrow;
++    }
++  }
++
++  Future<void> close() async {
++    if (closed) return;
++    closed = true;
++    process.kill(ProcessSignal.sigterm);
++    await process.exitCode.timeout(const Duration(seconds: 10));
++  }
++}
++
++/// Forwards real HTTP to the separate server, then discards its first push ACK.
++class _LostAckProxy {
++  _LostAckProxy(this.server, this.destination);
++  final HttpServer server;
++  final Uri destination;
++  final client = HttpClient();
++  int deliveries = 0;
++  Uri get uri => Uri.parse('http://127.0.0.1:${server.port}');
++
++  static Future<_LostAckProxy> start(Uri destination) async {
++    final proxy = _LostAckProxy(
++      await HttpServer.bind(InternetAddress.loopbackIPv4, 0),
++      destination,
++    );
++    proxy.server.listen(proxy.handle);
++    return proxy;
++  }
++
++  Future<void> handle(HttpRequest incoming) async {
++    final body = await utf8.decoder.bind(incoming).join();
++    final outgoing = await client.openUrl(
++      incoming.method,
++      destination.resolve(incoming.uri.path),
++    );
++    outgoing.headers.contentType = ContentType.json;
++    outgoing.write(body);
++    final response = await outgoing.close();
++    final text = await utf8.decoder.bind(response).join();
++    final loseAck = incoming.uri.path == '/sync/push' && ++deliveries == 1;
++    incoming.response.statusCode = loseAck ? 502 : response.statusCode;
++    incoming.response.write(
++      loseAck ? 'Lost response after durable commit' : text,
++    );
++    await incoming.response.close();
++  }
++
++  Future<void> close() async {
++    client.close(force: true);
++    await server.close(force: true);
++  }
++}
+--- /dev/null
++++ b/compass_app/server/bin/notes_server.dart
+@@ -0,0 +1,141 @@
++import 'dart:convert';
++import 'dart:io';
++
++import 'package:args/args.dart';
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:sqflite_common_ffi/sqflite_ffi.dart';
++
++/// Development backend for the single-user Compass notes feature.
++/// Binds loopback; use adb reverse for the authorized Android consumer.
++Future<void> main(List<String> arguments) async {
++  final options =
++      (ArgParser()
++            ..addOption('port', defaultsTo: '8091')
++            ..addOption('db', defaultsTo: 'compass-peer.sqlite'))
++          .parse(arguments);
++  sqfliteFfiInit();
++  final storage = SqfliteReplicaStorage(
++    databaseFactory: databaseFactoryFfi,
++    databasePath: options['db'] as String,
++  );
++  final engine = SyncEngine.withStorage(
++    replica: Replica('compass-peer'),
++    storage: storage,
++    transport: _PullTransport(),
++  );
++  await engine.start();
++  final server = await HttpServer.bind(
++    InternetAddress.loopbackIPv4,
++    int.parse(options['port'] as String),
++  );
++  stdout.writeln('NOTES_READY ${server.port}');
++  Future<void> close() async {
++    await server.close(force: true);
++    await engine.dispose();
++    await storage.close();
++  }
++
++  ProcessSignal.sigterm.watch().listen((_) async {
++    await close();
++    exit(0);
++  });
++  ProcessSignal.sigint.watch().listen((_) async {
++    await close();
++    exit(0);
++  });
++
++  await for (final request in server) {
++    try {
++      var body = <String, Object?>{};
++      if (request.method == 'POST') {
++        final decoded = jsonDecode(await utf8.decoder.bind(request).join());
++        if (decoded is! Map<String, dynamic>)
++          throw const FormatException('JSON object required');
++        body = Map<String, Object?>.from(decoded);
++      }
++      Object result;
++      switch ((request.method, request.uri.path)) {
++        case ('POST', '/sync/push'):
++          final envelope = DeltaEnvelope.fromJson(body);
++          if (envelope.senderReplicaId != 'compass-device' ||
++              envelope.recipientReplicaId != 'compass-peer') {
++            throw const FormatException('Wrong notes peer');
++          }
++          await engine.applyRemote(envelope.delta);
++          result = {
++            'peerReplicaId': 'compass-peer',
++            'stage': DeltaAckStage.appliedAndPersisted.wireName,
++            'changeIds': [
++              for (final change in envelope.delta.changes) change.id,
++            ],
++          };
++        case ('GET', '/sync/pull'):
++          result = DeltaEnvelope(
++            senderReplicaId: 'compass-peer',
++            recipientReplicaId: 'compass-device',
++            delta: await engine.pendingDelta(),
++          ).toJson();
++        case ('POST', '/sync/ack'):
++          final ids = body['changeIds'];
++          if (body['peerReplicaId'] != 'compass-device' ||
++              body['stage'] != DeltaAckStage.appliedAndPersisted.wireName ||
++              ids is! List ||
++              ids.any((id) => id is! String)) {
++            throw const FormatException('Invalid durable ACK');
++          }
++          final pending = (await engine.pendingDelta()).changes
++              .map((c) => c.id)
++              .toSet();
++          await storage.acknowledge(
++            'compass-peer',
++            'compass-device',
++            ids.cast<String>().toSet().intersection(pending),
++          );
++          result = {'ok': true};
++        case ('POST', '/notes'):
++          final key = body['key'];
++          final text = body['text'];
++          if (key is! String ||
++              !key.startsWith('trip-notes:') ||
++              text is! String) {
++            throw const FormatException('Invalid trip note');
++          }
++          final change = await engine.setDelta(key, {'text': text});
++          result = {'id': change.id};
++        case ('GET', '/state'):
++          result = {
++            'snapshot': engine.replica.toSnapshotJson(),
++            'pending': [
++              for (final c in (await engine.pendingDelta()).changes) c.id,
++            ],
++          };
++        default:
++          request.response.statusCode = HttpStatus.notFound;
++          result = {'error': 'Not found'};
++      }
++      request.response.headers.contentType = ContentType.json;
++      request.response.write(jsonEncode(result));
++    } on FormatException catch (error) {
++      request.response.statusCode = HttpStatus.badRequest;
++      request.response.write(jsonEncode({'error': error.toString()}));
++    } catch (error, stack) {
++      stderr.writeln('$error\n$stack');
++      request.response.statusCode = HttpStatus.internalServerError;
++      request.response.write(jsonEncode({'error': 'Commit failed'}));
++    } finally {
++      await request.response.close();
++    }
++  }
++}
++
++/// Server outbox is delivered by GET /sync/pull, never cleared by local send.
++class _PullTransport implements DeltaTransport {
++  @override
++  String get peerReplicaId => 'compass-device';
++  @override
++  Stream<DeltaEnvelope> get incoming => const Stream.empty();
++  @override
++  Future<void> send(DeltaEnvelope envelope) =>
++      Future.error(UnsupportedError('Use HTTP pull and durable ACK'));
++}

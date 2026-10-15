@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-13",
+  "compassBase": "5541c59ab8e9d7e74c1a35ef22bd43a487fc596c",
+  "libraryRevision": "ebf88aa9db89325567977f87c9706410bfa5b9d3",
+  "android": {
+    "model": "Moto G52",
+    "release": "13",
+    "api": 33,
+    "pids": [
+      10237,
+      11946,
+      13626,
+      15128
+    ]
+  },
+  "apkSha256": "01e09127e9280b2ae02734c3b0b9700b053c48be26e875f475f396a597560bfc",
+  "channel": "HTTP/TCP over USB adb reverse, independent Android/Dart processes",
+  "deviceBefore": {
+    "schema": 1,
+    "snapshot": {
+      "version": 2,
+      "replicaId": "compass-device",
+      "snapshot": {
+        "version": 9,
+        "replicaId": "compass-device",
+        "clock": {
+          "compass-device": 2
+        },
+        "hlc": {
+          "physicalMilliseconds": 1791919868882,
+          "logical": 0
+        },
+        "deltaSequence": 2,
+        "lww": {
+          "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]": {
+            "winner": {
+              "type": "lww",
+              "key": "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]",
+              "id": "compass-device:delta:2",
+              "replicaId": "compass-device",
+              "timestamp": {
+                "physicalMilliseconds": 1791919868882,
+                "logical": 0
+              },
+              "value": {
+                "text": "Mobile_after_failure"
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "compass-device",
+                "counter": 2
+              }
+            }
+          }
+        },
+        "gCounters": {},
+        "pnCounters": {},
+        "gSets": {},
+        "twoPSets": {},
+        "mvRegisters": {},
+        "orSets": {},
+        "orMaps": {}
+      }
+    },
+    "outbox": [
+      {
+        "version": 2,
+        "recipientPeerId": "compass-peer",
+        "delta": {
+          "version": 4,
+          "delta": {
+            "changes": [
+              {
+                "type": "lww",
+                "key": "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]",
+                "id": "compass-device:delta:1",
+                "replicaId": "compass-device",
+                "timestamp": {
+                  "physicalMilliseconds": 1791919808102,
+                  "logical": 0
+                },
+                "value": {
+                  "text": "Mobile_offline"
+                },
+                "deleted": false,
+                "dot": {
+                  "replicaId": "compass-device",
+                  "counter": 1
+                }
+              }
+            ]
+          }
+        },
+        "status": "sent",
+        "attempts": 1,
+        "createdAt": "2026-10-13T19:30:08.118257Z",
+        "sentAt": "2026-10-13T19:30:09.219327Z"
+      },
+      {
+        "version": 2,
+        "recipientPeerId": "compass-peer",
+        "delta": {
+          "version": 4,
+          "delta": {
+            "changes": [
+              {
+                "type": "lww",
+                "key": "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]",
+                "id": "compass-device:delta:2",
+                "replicaId": "compass-device",
+                "timestamp": {
+                  "physicalMilliseconds": 1791919868882,
+                  "logical": 0
+                },
+                "value": {
+                  "text": "Mobile_after_failure"
+                },
+                "deleted": false,
+                "dot": {
+                  "replicaId": "compass-device",
+                  "counter": 2
+                }
+              }
+            ]
+          }
+        },
+        "status": "pending",
+        "attempts": 0,
+        "createdAt": "2026-10-13T19:31:08.883697Z"
+      }
+    ]
+  },
+  "deviceAfter": {
+    "schema": 1,
+    "snapshot": {
+      "version": 2,
+      "replicaId": "compass-device",
+      "snapshot": {
+        "version": 9,
+        "replicaId": "compass-device",
+        "clock": {
+          "compass-device": 3,
+          "compass-peer": 1
+        },
+        "hlc": {
+          "physicalMilliseconds": 1791920033606,
+          "logical": 0
+        },
+        "deltaSequence": 3,
+        "lww": {
+          "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]": {
+            "winner": {
+              "type": "lww",
+              "key": "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]",
+              "id": "compass-device:delta:3",
+              "replicaId": "compass-device",
+              "timestamp": {
+                "physicalMilliseconds": 1791920033606,
+                "logical": 0
+              },
+              "value": {
+                "text": "Mobile_final"
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "compass-device",
+                "counter": 3
+              }
+            }
+          }
+        },
+        "gCounters": {},
+        "pnCounters": {},
+        "gSets": {},
+        "twoPSets": {},
+        "mvRegisters": {},
+        "orSets": {},
+        "orMaps": {}
+      }
+    },
+    "outbox": []
+  },
+  "peerAfter": {
+    "schema": 1,
+    "snapshot": {
+      "version": 2,
+      "replicaId": "compass-peer",
+      "snapshot": {
+        "version": 9,
+        "replicaId": "compass-peer",
+        "clock": {
+          "compass-peer": 1,
+          "compass-device": 3
+        },
+        "hlc": {
+          "physicalMilliseconds": 1791920036197,
+          "logical": 0
+        },
+        "deltaSequence": 1,
+        "lww": {
+          "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]": {
+            "winner": {
+              "type": "lww",
+              "key": "trip-notes:[\"alaska\",\"2024-01-01\",\"2024-02-01\"]",
+              "id": "compass-device:delta:3",
+              "replicaId": "compass-device",
+              "timestamp": {
+                "physicalMilliseconds": 1791920033606,
+                "logical": 0
+              },
+              "value": {
+                "text": "Mobile_final"
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "compass-device",
+                "counter": 3
+              }
+            }
+          }
+        },
+        "gCounters": {},
+        "pnCounters": {},
+        "gSets": {},
+        "twoPSets": {},
+        "mvRegisters": {},
+        "orSets": {},
+        "orMaps": {}
+      }
+    },
+    "outbox": []
+  }
+}

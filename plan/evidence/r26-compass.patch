@@ -1,0 +1,67 @@
+--- a/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
++++ b/compass_app/app/lib/data/repositories/notes/trip_notes_repository.dart
+@@ -62,13 +62,8 @@
+     try {
+       final result = await engine.push(force: true);
+       final incoming = await transport.pull();
+-      if (incoming.senderReplicaId != transport.peerReplicaId ||
+-          incoming.recipientReplicaId != engine.replica.id) {
+-        throw const FormatException('Notes envelope addressed to wrong peer');
+-      }
+-      await engine.applyRemote(incoming.delta);
+       // ACK only after the local SQLite remote commit completes.
+-      await transport.acknowledge(incoming);
++      await engine.receiveEnvelope(incoming);
+       error = null;
+       confirmation =
+           '${result.acknowledgedIds.length} mudança(s) confirmada(s)';
+--- a/compass_app/app/lib/data/services/notes/http_notes_transport.dart
++++ b/compass_app/app/lib/data/services/notes/http_notes_transport.dart
+@@ -5,7 +5,10 @@
+ 
+ /// Development HTTP adapter for one durable Compass peer.
+ /// Incoming delivery is explicitly pulled by the repository, then acknowledged.
+-class HttpNotesTransport implements AcknowledgingDeltaTransport {
++class HttpNotesTransport
++    implements
++        AcknowledgingDeltaTransport,
++        IncomingAcknowledgingDeltaTransport {
+   HttpNotesTransport(this.baseUri, {this.peerReplicaId = 'compass-peer'});
+ 
+   final Uri baseUri;
+@@ -56,16 +59,9 @@
+   Future<DeltaEnvelope> pull() async =>
+       DeltaEnvelope.fromJson(await request('GET', '/sync/pull'));
+ 
+-  Future<void> acknowledge(DeltaEnvelope envelope) async {
+-    await request(
+-      'POST',
+-      '/sync/ack',
+-      DeltaAcknowledgement(
+-        peerReplicaId: envelope.recipientReplicaId,
+-        stage: DeltaAckStage.appliedAndPersisted,
+-        changeIds: envelope.delta.changes.map((change) => change.id),
+-      ).toJson(),
+-    );
++  @override
++  Future<void> acknowledge(DeltaAcknowledgement acknowledgement) async {
++    await request('POST', '/sync/ack', acknowledgement.toJson());
+   }
+ 
+   void close() => _client.close(force: true);
+--- a/compass_app/README_DELTASYNC.md
++++ b/compass_app/README_DELTASYNC.md
+@@ -80,8 +80,11 @@
+ `http_notes_transport.dart` contém HTTP e timeouts; o codec público
+ `DeltaAcknowledgement.toJson()/fromJson()` centraliza formato e validação do ACK.
+ O backend ainda valida peer e estágio durável antes de remover IDs pendentes; o
+-repositório controla push/pull, restauração e notificações/falhas. `trip_notes_card.dart`
+-apresenta valor, pendência e confirmação. A identidade da chave vive em
++repositório controla push/pull, restauração e notificações/falhas.
++Após pull, receiveEnvelope centraliza validação do par, commit e envio de ACK
++pelo contrato IncomingAcknowledgingDeltaTransport. HTTP permanece no adaptador.
++Falha ao enviar ACK não desfaz commit; retry pode repetir o envelope.
++`trip_notes_card.dart` apresenta valor, pendência e confirmação. A identidade da chave vive em
+ `tripNotesKey`; o card recebe key por viagem para não reutilizar rascunho de outra.
+ O repositório consulta notas com `engine.valueAt(chave)` após start, sem copiar
+ toda a réplica. A leitura devolve valor local comprometido, sem indicar ACK.

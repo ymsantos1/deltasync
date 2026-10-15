@@ -1,5 +1,53 @@
 # Instruções de contexto — TCC
 
+## Relação com a proposta acadêmica
+
+Este arquivo registra o contexto arquitetural atual; não é a transcrição integral
+da [proposta acadêmica em PDF](<referencia/Proposta TCC.pdf>). A revisão de
+2026-09-27, o estado da implementação e as entregas estão em
+[plan/README.md](plan/README.md). Correções técnicas estão na
+[fase 1](plan/01_PHASE1_CORRECOES.md); evidências em
+[TRACEABILITY.md](plan/TRACEABILITY.md).
+
+### Lista preparada para revisão do texto acadêmico
+
+A fonte editável não está neste checkout; o PDF de referência deve ser preservado.
+Ao receber o arquivo-fonte, aplicar e conferir estas alterações, sem reduzir o
+escopo já validado:
+
+1. **PDF §6.3 e diagrama:** atualizar três módulos para quatro subpacotes
+   (`deltasync_core`, `deltasync_storage`, `deltasync_sync`,
+   `deltasync_transport`) e facade `lib/deltasync.dart`. Explicar que transporte
+   define contratos/envelopes e que o core/sync/storage abstrato seguem Dart puro.
+2. **PDF §§6.3 e 6.6:** apresentar `ReplicaStorage` como contrato independente e
+   `SqfliteReplicaStorage` como adaptador persistente de referência previsto no TCC.
+   O consumidor fornece o backend/factory de plataforma; `MemoryStorage` é volátil,
+   não evidência de persistência durável.
+3. **PDF §§6.5 e 6.8:** substituir equivalência literal de `query()`,
+   `generateDelta()`, `merge()` e conversões JSON pela tabela
+   [conceito/API atual](README.md#percurso-de-integração-e-manutenção). Distinguir
+   codec de delta (`DeltaCodec`) de snapshot (`Replica.fromSnapshotJson`).
+4. **Diagrama e exemplo:** mostrar mutação local → delta → commit atômico de
+   snapshot/outbox → envio → aplicação/join remoto → commit remoto → restauração.
+   Registrar a semântica de falha antes da adoção local.
+5. **PDF §§6.7–6.9 e conclusão:** preservar os oito tipos priorizados e identificar
+   `ObjectCrdt`, codegen, política global add/update-wins e GC destrutivo como
+   extensões fora do recorte. Relatar evidências por unidade, integração,
+   recuperação SQLite e demonstração; limitar conclusões ao cenário medido, sem
+   alegar desempenho ou correção universal.
+6. **Compass:** só incluir se houver evidência de execução disponível; descrever
+   mapeamentos/adaptações no app separadamente dos resultados gerais da biblioteca.
+
+O guia de integração e manutenção implementado no README documenta os contratos,
+arquivos e testes atuais. A edição do texto final continua dependente de receber a
+fonte editável; esta lista e o PDF não a substituem.
+
+O PDF prevê SQLite/`sqflite` para persistência e três módulos internos. O contexto
+atual mantém SQLite como adaptador de referência previsto para o TCC, com contrato
+de storage independente de banco, quatro subpacotes e facade Dart. Essa evolução
+precisa ser refletida no texto e no diagrama finais do trabalho; não elimina a
+entrega de persistência durável em SQLite.
+
 Estou desenvolvendo um TCC cujo objetivo é criar uma **biblioteca em Dart voltada a aplicações offline-first**, utilizando **CRDTs e sincronização incremental baseada em deltas**.
 
 Ao me auxiliar neste projeto, considere os seguintes pontos como contexto principal.
@@ -35,7 +83,13 @@ A persistência **não deve estar diretamente acoplada ao SQLite ou ao `sqflite`
 
 A biblioteca deve fornecer uma **abstração de armazenamento**, permitindo que diferentes bancos ou mecanismos de persistência sejam integrados através de adaptadores.
 
-`sqflite` pode ser utilizado como uma implementação inicial, de referência ou na aplicação de demonstração, mas não deve ser uma dependência obrigatória da arquitetura.
+`sqflite` será o adaptador persistente de referência previsto pela proposta
+acadêmica, mas não deve ser dependência obrigatória do core, sync ou contrato de
+storage. Sua entrega e validação são previstas para o TCC; sua utilização é
+opcional para aplicações consumidoras que escolham outro adaptador.
+
+`MemoryStorage` serve a testes e protótipos. Restauração usando a mesma instância
+em memória não comprova durabilidade entre sessões ou recuperação de processo.
 
 A intenção é permitir que futuramente outros mecanismos de armazenamento possam ser utilizados sem alterar a lógica central da biblioteca.
 
@@ -78,6 +132,19 @@ A abstração de armazenamento também deve permitir testar a biblioteca sem dep
 
 ## Escopo
 
+O conjunto prioritário previsto no PDF é: `LWW-Register`, `MV-Register`,
+`G-Counter`, `PN-Counter`, `G-Set`, `2P-Set`, `OR-Set` e `OR-Map`. Reduzir esse
+conjunto exige alteração explícita do recorte acadêmico, não apenas do plano.
+
+OR-Map pode compor valores CRDT por API manual. `ObjectCrdt`, anotações, geração
+de código com `build_runner` e migração automática de modelos são extensões
+futuras, não requisitos da proposta. Política add/update-wins de objetos não é
+regra global obrigatória para todos os tipos.
+
+Reconciliação e recuperação de réplica offline precisam funcionar na topologia
+documentada. Anti-entropy para topologias arbitrárias e garbage collection
+destrutivo de tombstones podem permanecer fora da versão acadêmica.
+
 O projeto não pretende resolver de forma completa:
 
 * autenticação e autorização;
@@ -86,7 +153,7 @@ O projeto não pretende resolver de forma completa:
 * transações distribuídas;
 * invariantes globais complexas;
 * colaboração em tempo real em escala industrial;
-* todos os tipos existentes de CRDT.
+* CRDTs além dos oito tipos priorizados neste recorte.
 
 Esses pontos podem ser tratados como responsabilidades externas ou possíveis extensões futuras.
 
@@ -104,4 +171,3 @@ Ao responder perguntas sobre o TCC:
 * priorize uma solução tecnicamente correta, mas também implementável e justificável academicamente.
 
 O objetivo final é desenvolver uma **biblioteca Dart modular para sincronização offline-first com CRDTs e deltas**, mantendo detalhes de infraestrutura, como banco de dados e transporte, substituíveis e desacoplados do núcleo.
-
