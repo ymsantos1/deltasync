@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 - Provide reusable ReplicaStorage contract tests and fixture interfaces.
 - Exercise commits, rollback/failures, isolation, concurrent requests and peer ACKs.

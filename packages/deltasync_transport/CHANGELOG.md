@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 - Expose versioned envelopes with fixed sender/recipient identities.
 - Define acknowledging and incoming-acknowledging transport capabilities.

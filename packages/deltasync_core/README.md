@@ -4,7 +4,7 @@ Pure Dart CRDT state, deltas, clocks and replica identity for DeltaSync.
 Supports LWW-Register, MV-Register, G-Counter, PN-Counter, G-Set, 2P-Set, OR-Set
 and OR-Map. No Flutter, storage or network dependency.
 
-Add `deltasync_core: ^2.0.0` to your dependencies:
+Add `deltasync_core: ^1.0.0` to your dependencies:
 
 ```dart
 import 'package:deltasync_core/deltasync_core.dart';

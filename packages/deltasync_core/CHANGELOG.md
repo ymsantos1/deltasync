@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 - Integrate LWW/MV registers, G/PN counters, G/2P/OR sets and OR-Map.
 - Add scoped identities, causal contexts, ownership-safe state and versioned JSON.

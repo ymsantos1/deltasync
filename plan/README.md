@@ -125,6 +125,7 @@ R-27 e VAL-15 SHOULD concluídas; VAL-15 validou dois Androids físicos com hub 
 VAL-05 revalidou os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 R-28 concluiu preparação e validação isolada dos sete pacotes em 15/10.
+R-29 alinhou manifests e documentação para publicação como 1.0.0.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
@@ -223,6 +224,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | concluída | SHOULD | R-21, VAL-11, VAL-12 |
 | [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | concluída | MUST | R-21, VAL-13 |
 | [R-28](01_PHASE1_CORRECOES.md#r-28) | Corrigir distribuição dos sete pacotes e validar consumo isolado | concluída | SHOULD | VAL-16 |
+| [R-29](01_PHASE1_CORRECOES.md#r-29) | Ajustar versão de publicação para 1.0.0 | concluída | SHOULD | R-28 |
 | [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | concluída | MUST | R-08b, VAL-13 |
 | [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | concluída | SHOULD | R-24, VAL-13 |
 | [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | concluída | SHOULD | R-26, R-17 |

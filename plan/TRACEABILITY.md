@@ -4874,3 +4874,26 @@ Após o dry-run adicional da raiz, `dart pub get` restaurou registro/cache norma
 da worktree. Conferidos sete membros locais, sem URLs/paths temporários no
 lockfile/package_config. Format/analyze e os 243 testes passaram novamente nos
 sete pacotes após essa restauração, sem depender do servidor local encerrado.
+
+<a id="execucao-r-29-2026-10-15"></a>
+
+## Execução R-29 — Versão pública 1.0.0, 2026-10-15
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: autor confirmou alteração nos pubspec.yaml; R-28 concluída, worktree inicialmente limpa. Escopo limitado a versão/consumo/documentação de release; guia Dart consultado, SDK preservado.
+Implementação: sete version 1.0.0, 17 dependências internas ^1.0.0, seis READMEs e sete changelogs alinhados. Facade ficou com uma única seção 1.0.0, consolidando o placeholder Initial version nos detalhes entregues. Guia explica numeração atual e prova histórica de R-28.
+Review: aprovado
+Achados: diff revisado pelo mesmo agente, não independente. Removida linha vazia extra no fim do changelog, detectada por git diff --check; correção revista e conferida. Nenhum impeditivo restante. Formatos JSON, snapshots, schema, fontes e contratos não foram renumerados.
+Validação: aprovada
+Comandos: dart pub get --offline aprovado; dart pub deps --json > /tmp/deltasync-r29-deps.json confirmou sete membros em 1.0.0. python3 scripts/prepare_release.py > /tmp/deltasync-r29-release-path gerou sete releases novos; checks Python de manifests/exports/changelogs e git diff --check aprovados.
+Critérios: sete manifests diferem da base apenas pela troca literal 2.0.0 para 1.0.0, com SDK/dependências externas intactos; 17 constraints internas conferidas. Sete manifests exportados em 1.0.0 sem workspace/resolution, documentos/licenças iguais aos fontes e lib copiada byte a byte. Changelogs têm exatamente uma seção 1.0.0; sem diff em lib/test dos pacotes. Exemplo Flutter usa paths e permanece compatível com os manifests locais.
+Manutenção: índice/fase/checkboxes concluídos; DEC-51 substitui apenas numeração de DEC-17, OPEN-07 e nota de RISK-36 atualizadas. Evidências 2.0.0 anteriores preservadas. Nenhuma próxima tarefa pronta.
+Limitações: sem upload, commit, tag, merge, dry-run público ou novo teste de runtime. Testes Dart não repetidos para alteração de metadados/documentação. Disponibilidade/propriedade de nomes e versões no pub.dev continuam com o autor; prova hosted de R-28 conserva sua numeração histórica.
+
+Exportação final validada em `/tmp/deltasync-release-parent-ikhy2_g5/release`.
+Exports anteriores não são atualizados pela mudança dos fontes; gerar novos antes
+de publicar. A renumeração não torna formatos antigos compatíveis automaticamente;
+permanecem as migrações e limites documentados. Checks de manutenção:
+`python3 scripts/check_plan.py` aprovado com 56 tarefas e 345 links locais;
+`git diff --check` aprovado.

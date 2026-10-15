@@ -21,7 +21,7 @@ não significa implementação concluída.
 | DEC-14 | adotada | R-08d comprova fluxo dos três tipos atuais com duas engines antes de expandir tipos. Cada R-06 inclui integração; R-07a consolida oito tipos e SQLite. Exemplos curtos explicam responsabilidades e invariantes, sem quota de classes. |
 | DEC-15 | adotada | Uso real, integração e manutenção/forks são critérios transversais. Compass é exemplo de consumidor, sem direcionar core/gate. Consumidores adaptam modelos e fluxos usando API pública, composição e adaptadores; DeltaSync muda por necessidade geral prevista ou defeito de contrato. Não sobrescrever implementações internas nem criar plugins genéricos. R-08d testa consumidor simples; VAL-02 aceita demonstração sem Compass. |
 | DEC-16 | adotada | Usar recursos do Dart para reduzir duplicação, estados inválidos e esforço de manutenção. R-09a consolida tipos/metadados com serialização estável; R-09b alinha nulabilidade às invariantes. Enums, extensions, extension types, modificadores e pattern matching são ferramentas condicionadas a uso concreto, SDK e compatibilidade, sem quota de adoção ou hierarquias paralelas. Orientação canônica em AGENTS.md; aplicada no ciclo do RUNBOOK. |
-| DEC-17 | adotada | R-09a publica os pacotes core/storage/sync/transport e facade como 2.0.0 para alterações incompatíveis. `Delta` contém só `DeltaChange`; versões 1/2 e snapshots antigos migram explicitamente. Aliases `set/remove`, `Delta.crdt/crdtChanges` permanecem depreciados até próxima versão principal; tipos de operação e base antigos saem do caminho operacional. Consumidores externos não inventariados, portanto não há promessa de compatibilidade além dos formatos documentados. |
+| DEC-17 | adotada; numeração substituída por DEC-51 | R-09a definiu originalmente os pacotes core/storage/sync/transport e facade como 2.0.0 para alterações incompatíveis. `Delta` contém só `DeltaChange`; versões 1/2 e snapshots antigos migram explicitamente. Aliases `set/remove`, `Delta.crdt/crdtChanges` permanecem depreciados até próxima versão principal; tipos de operação e base antigos saem do caminho operacional. Consumidores externos não inventariados, portanto não há promessa de compatibilidade além dos formatos documentados. |
 | DEC-18 | adotada | R-09b remove histórico completo da `Replica`; `export()` é bootstrap compacto e snapshots internos v3 preservam tombstones, clocks e sequências conhecidas. Storage v2 mantém um payload canônico; v1 é migrado/rejeitado quando insuficiente. Outbox tem uma mudança por entrada e lote só no envio. Valores JSON são copiados/congelados; engine possui cópia da réplica. IDs antigos só podem ser comparados com estado vencedor/mais recente retido, sem deduplicação ilimitada. `PendingDeltaStore` fica depreciado como ponte. R-07b mantém `markSent` obrigatório para tentativa/horário e fornece suíte de contrato reutilizável aos adapters. |
 | DEC-19 | adotada | R-05 restaura antes da primeira operação (ou via `start()` idempotente); falha permite retry. Lifecycle é terminal após `dispose`. Commit e aplicação remota ficam serializados; I/O de push ocorre fora da fila e ACK volta à fila apenas para IDs do lote capturado. `pendingDelta()`, `SyncPushResult` e `errors` distinguem retenção, confirmação e falhas do listener. Storage legado pode reter mudança já confirmada remotamente. |
 | DEC-20 | adotada | `DeltaTransport` e `SyncEngine` usam `DeltaEnvelope` v2, com remetente/destinatário e payload `DeltaCodec`. `senderReplicaId` pode diferir das origens CRDT em mudanças encaminhadas. `send` confirma transmissão local; `DeltaAcknowledgement` distingue recebimento de incorporação/persistência. Serialização permanece neutra a protocolo; adapters antigos precisam migrar campos/assinaturas. |
@@ -295,13 +295,22 @@ dependências primeiro, repete dry-runs no registro público e instala em consum
 novo depois dos envios. Ver [guia](../docs/publicacao.md) e
 [execução R-28](TRACEABILITY.md#execucao-r-28-2026-10-15).
 
+DEC-51 — R-29, 2026-10-15: autor escolheu 1.0.0 para a publicação dos sete pacotes.
+Substituir a numeração 2.0.0 adotada durante o desenvolvimento, inclusive nas
+restrições internas, READMEs e changelogs. DEC-17 mantém suas escolhas técnicas;
+somente a versão pública foi substituída. APIs, versões de JSON/snapshot/outbox,
+schema SQLite e migrações não mudam por essa renumeração. Evidências anteriores
+permanecem com os números realmente verificados. Gerar diretórios de release
+novamente após a troca; os exports antigos continuam com os manifests antigos.
+Publicação e verificação de disponibilidade das versões permanecem com o autor.
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13, R-28 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
+| OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

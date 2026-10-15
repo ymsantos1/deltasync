@@ -1,7 +1,7 @@
 # deltasync_storage
 
 Pure Dart `ReplicaStorage` contract and volatile `MemoryStorage` implementation.
-Add `deltasync_storage: ^2.0.0` and `deltasync_core: ^2.0.0` to your dependencies.
+Add `deltasync_storage: ^1.0.0` and `deltasync_core: ^1.0.0` to your dependencies.
 
 ```dart
 import 'package:deltasync_core/deltasync_core.dart';

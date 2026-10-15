@@ -1,7 +1,7 @@
 # deltasync_transport
 
 Pure Dart transport contracts and versioned envelopes for DeltaSync.
-Add `deltasync_transport: ^2.0.0` to your dependencies.
+Add `deltasync_transport: ^1.0.0` to your dependencies.
 
 - Implement `DeltaTransport` to send envelopes and expose an incoming stream.
 - Implement `AcknowledgingDeltaTransport` when the protocol supports a response

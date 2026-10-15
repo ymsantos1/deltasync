@@ -3,7 +3,7 @@
 SQLite adapter for `ReplicaStorage`. Core, sync, and storage keep their Dart
 contracts and have no Flutter or SQL dependency.
 
-Add `deltasync_storage_sqflite: ^2.0.0`, `sqflite` and `path` to your Flutter
+Add `deltasync_storage_sqflite: ^1.0.0`, `sqflite` and `path` to your Flutter
 application dependencies. For Dart desktop, supply `sqflite_common_ffi` instead.
 
 Consumers pass a compatible sqflite `DatabaseFactory` and a database file path:

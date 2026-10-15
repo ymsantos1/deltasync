@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 - Implement atomic SQLite snapshot/outbox commits with peer-specific entries.
 - Reject divergent content for existing pending IDs without partial writes.

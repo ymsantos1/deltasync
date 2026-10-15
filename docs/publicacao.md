@@ -1,6 +1,6 @@
 # Preparação e publicação
 
-Os sete pacotes usam a versão 2.0.0. A publicação é manual, responsabilidade do
+Os sete pacotes usam a versão 1.0.0. A publicação é manual, responsabilidade do
 autor. Preparação e `--dry-run` não enviam pacotes nem reservam nomes no pub.dev.
 
 ## Preparar arquivos distribuíveis
@@ -53,8 +53,9 @@ dart pub publish --dry-run
 
 Confira a lista de arquivos, versão, licença e ausência de fontes do monorepo.
 Antes da primeira publicação, os dry-runs de dependentes podem falhar porque as
-versões 2.0.0 ainda não existem no pub.dev. A validação R-28 usa um registro local
-somente leitura com os sete artefatos e um consumidor externo sem overrides;
+versões 1.0.0 ainda não existem no pub.dev. A validação histórica R-28 usou um
+registro local somente leitura com os sete artefatos então numerados 2.0.0 e um
+consumidor externo sem overrides;
 essa prova não representa instalação do pub.dev. Após publicar cada dependência,
 repita a resolução/dry-run do próximo pacote usando o registro público padrão.
 Não use `PUB_HOSTED_URL` do teste local para uma publicação real.
@@ -68,7 +69,8 @@ Após os sete envios, teste um consumidor novo com as versões do pub.dev.
 
 Metadados apontam para `main`; faça os merges planejados antes de publicar para
 que README, arquivos e exemplos referidos estejam acessíveis nessa branch.
-O changelog 2.0.0 descreve os pacotes atuais; o histórico 1.0.0 da facade permanece.
+Os changelogs 1.0.0 descrevem os pacotes atuais. A numeração 2.0.0 usada durante
+o desenvolvimento foi substituída por 1.0.0 a pedido do autor, antes da publicação.
 IDs de counters e formatos compactos MV exigem leitores compatíveis; consulte
 as notas de migração no README principal antes de abrir dados antigos.
 

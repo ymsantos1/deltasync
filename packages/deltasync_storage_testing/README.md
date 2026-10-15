@@ -6,7 +6,7 @@ a development dependency, implements `ReplicaStorageContractFixture`, and calls
 snapshot, outbox, remote commit, peer ACK, isolation, concurrency, and failure
 checks against each adapter.
 
-Add `deltasync_storage_testing: ^2.0.0` to your adapter's `dev_dependencies`.
+Add `deltasync_storage_testing: ^1.0.0` to your adapter's `dev_dependencies`.
 The package depends on `test` intentionally: it registers tests for consumers.
 
 `createStorageWithCommitFailure` must arm a failure in the adapter commit path.

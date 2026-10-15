@@ -2,8 +2,8 @@
 
 Pure Dart coordination of local CRDT mutations, atomic storage commits, pending
 outbox entries, incoming deltas and remote acknowledgements.
-Add `deltasync_sync: ^2.0.0`, `deltasync_core: ^2.0.0`,
-`deltasync_storage: ^2.0.0` and your transport adapter's dependencies.
+Add `deltasync_sync: ^1.0.0`, `deltasync_core: ^1.0.0`,
+`deltasync_storage: ^1.0.0` and your transport adapter's dependencies.
 The `deltasync` facade re-exports the four public contracts for convenience.
 
 Construct `SyncEngine.withStorage` with a `Replica`, `ReplicaStorage` and

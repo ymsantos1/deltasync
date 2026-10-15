@@ -45,3 +45,6 @@ Não atribuir probabilidades numéricas sem dados.
 
 Atualizar situação quando evidência mudar. Risco resolvido mantém histórico e
 referência à tarefa/validação que demonstrou mitigação.
+
+R-29/DEC-51: após mudar versões, preparar novos diretórios de release. Os exports
+2.0.0 de R-28 são históricos; editar manifests no workspace não os atualiza.
