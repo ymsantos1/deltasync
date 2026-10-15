@@ -1,0 +1,177 @@
+diff --git a/pubspec.yaml b/pubspec.yaml
+new file mode 100644
+--- /dev/null
++++ b/pubspec.yaml
+@@ -0,0 +1,11 @@
++name: r28_release_consumer
++publish_to: none
++environment:
++  sdk: ^3.12.0
++dependencies:
++  deltasync: ^2.0.0
++  deltasync_storage_sqflite: ^2.0.0
++  sqflite_common_ffi: ^2.3.6
++dev_dependencies:
++  deltasync_storage_testing: ^2.0.0
++  test: ^1.25.6
+diff --git a/test/release_test.dart b/test/release_test.dart
+new file mode 100644
+--- /dev/null
++++ b/test/release_test.dart
+@@ -0,0 +1,156 @@
++import 'dart:async';
++import 'dart:io';
++
++import 'package:deltasync/deltasync.dart';
++import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
++import 'package:deltasync_storage_testing/deltasync_storage_testing.dart';
++import 'package:sqflite_common_ffi/sqflite_ffi.dart';
++import 'package:test/test.dart';
++
++void main() {
++  sqfliteFfiInit();
++  replicaStorageContractTests(
++    name: 'Release archive SQLite',
++    fixture: _Fixture(),
++  );
++
++  test(
++    'facade restores offline commits and persists remote ACK after reopen',
++    () async {
++      final directory = await Directory.systemTemp.createTemp(
++        'r28-consumer-db-',
++      );
++      addTearDown(() => directory.delete(recursive: true));
++      final path = '${directory.path}/replica.sqlite';
++      final localLink = _Link('device-b');
++      final remoteLink = _Link('device-a');
++      addTearDown(localLink.close);
++      addTearDown(remoteLink.close);
++      SqfliteReplicaStorage open() => SqfliteReplicaStorage(
++        databaseFactory: databaseFactoryFfi,
++        databasePath: path,
++      );
++      SyncEngine engine(SqfliteReplicaStorage storage) =>
++          SyncEngine.withStorage(
++            replica: Replica('device-a'),
++            storage: storage,
++            transport: localLink,
++          );
++      var storage = open();
++      var local = engine(storage);
++      await local.start();
++      await local.setDelta('title', 'offline');
++      await local.incrementGCounter('cart/items', 2);
++      expect((await local.pendingDelta()).changes, hasLength(2));
++      await local.dispose();
++      await storage.close();
++
++      storage = open();
++      local = engine(storage);
++      await local.start();
++      expect(local.valueAt('title'), 'offline');
++      expect(local.valueAt('cart/items'), 2);
++      expect((await local.pendingDelta()).changes, hasLength(2));
++      final remotePath = '${directory.path}/remote.sqlite';
++      final remoteStorage = SqfliteReplicaStorage(
++        databaseFactory: databaseFactoryFfi,
++        databasePath: remotePath,
++      );
++      final remote = SyncEngine.withStorage(
++        replica: Replica('device-b'),
++        storage: remoteStorage,
++        transport: remoteLink,
++      );
++      await remote.start();
++      localLink.deliver = remote.receiveEnvelope;
++      final result = await local.push(force: true);
++      expect(result.acknowledgedIds, hasLength(2));
++      expect(remote.valueAt('title'), 'offline');
++      expect(remote.valueAt('cart/items'), 2);
++      expect((await local.pendingDelta()).changes, isEmpty);
++      await remote.dispose();
++      await remoteStorage.close();
++      final reopenedRemote = SqfliteReplicaStorage(
++        databaseFactory: databaseFactoryFfi,
++        databasePath: remotePath,
++      );
++      final remoteSnapshot = (await reopenedRemote.loadReplica('device-b'))!;
++      final restoredRemote = Replica.fromSnapshotJson(remoteSnapshot.snapshot!);
++      expect(restoredRemote.valueAt('title'), 'offline');
++      expect(restoredRemote.valueAt('cart/items'), 2);
++      await reopenedRemote.close();
++      await local.dispose();
++      await storage.close();
++
++      storage = open();
++      local = engine(storage);
++      await local.start();
++      expect(local.valueAt('title'), 'offline');
++      expect(local.valueAt('cart/items'), 2);
++      expect((await local.pendingDelta()).changes, isEmpty);
++      await local.dispose();
++      await storage.close();
++    },
++  );
++}
++
++class _Link implements AcknowledgingDeltaTransport {
++  _Link(this.peerReplicaId);
++  @override
++  final String peerReplicaId;
++  final _incoming = StreamController<DeltaEnvelope>.broadcast();
++  Future<DeltaAcknowledgement> Function(DeltaEnvelope)? deliver;
++  @override
++  Stream<DeltaEnvelope> get incoming => _incoming.stream;
++  @override
++  Future<void> send(DeltaEnvelope envelope) async {
++    await sendAndAwaitAck(envelope);
++  }
++
++  @override
++  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) {
++    final handler = deliver;
++    if (handler == null) throw StateError('offline');
++    return handler(envelope);
++  }
++
++  Future<void> close() => _incoming.close();
++}
++
++class _Fixture implements ReplicaStorageContractFixture {
++  ReplicaStorage _create({bool fail = false}) {
++    final directory = Directory.systemTemp.createTempSync('r28-contract-db-');
++    addTearDown(() => directory.delete(recursive: true));
++    final path = '${directory.path}/contract.sqlite';
++    final storage = fail
++        ? _FailCommit(path)
++        : SqfliteReplicaStorage(
++            databaseFactory: databaseFactoryFfi,
++            databasePath: path,
++          );
++    addTearDown(storage.close);
++    return storage;
++  }
++
++  @override
++  ReplicaStorage createStorage() => _create();
++  @override
++  ReplicaStorage createStorageWithCommitFailure() => _create(fail: true);
++}
++
++class _FailCommit extends SqfliteReplicaStorage {
++  _FailCommit(String path)
++    : super(databaseFactory: databaseFactoryFfi, databasePath: path);
++  bool _armed = false;
++  @override
++  Future<void> enqueue(OutboxEntry entry) async {
++    await super.enqueue(entry);
++    if (_armed) return;
++    _armed = true;
++    final database = await databaseFactoryFfi.openDatabase(databasePath);
++    await database.execute('''
++      CREATE TRIGGER reject_release_commit BEFORE INSERT ON deltasync_outbox
++      BEGIN SELECT RAISE(ABORT, 'injected release contract failure'); END
++    ''');
++  }
++}

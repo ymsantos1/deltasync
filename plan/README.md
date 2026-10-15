@@ -124,14 +124,15 @@ R-22 COULD concluída com runtime Android do enlace compartilhado. Ampliação d
 R-27 e VAL-15 SHOULD concluídas; VAL-15 validou dois Androids físicos com hub HTTP/SQLite.
 VAL-05 revalidou os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
+R-28 concluiu preparação e validação isolada dos sete pacotes em 15/10.
 Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
 do autor e fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **nenhuma**. Todas as tarefas atuais concluídas, inclusive VAL-16
-com oito CRDTs em dois Androids; limites de histórias/plataforma permanecem registrados.
-R-22 COULD permanece opcional após os MUST.
+selecionável: **nenhuma**. R-28 corrigiu distribuição dos sete pacotes e validou
+artefatos em registro local somente leitura; VAL-16 e demais tarefas concluídas.
+Publicação real e instalação das versões do pub.dev permanecem com o autor.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
 concluíram. Publicação no pub.dev fica com o autor; este plano não autoriza upload.
@@ -221,6 +222,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-12](05_PHASE5_VALIDACAO.md#val-12) | Revalidar runtime Android após os ajustes estruturais | concluída | SHOULD | R-21, VAL-11 |
 | [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | concluída | SHOULD | R-21, VAL-11, VAL-12 |
 | [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | concluída | MUST | R-21, VAL-13 |
+| [R-28](01_PHASE1_CORRECOES.md#r-28) | Corrigir distribuição dos sete pacotes e validar consumo isolado | concluída | SHOULD | VAL-16 |
 | [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | concluída | MUST | R-08b, VAL-13 |
 | [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | concluída | SHOULD | R-24, VAL-13 |
 | [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | concluída | SHOULD | R-26, R-17 |

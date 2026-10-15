@@ -282,13 +282,26 @@ replay de envelopes antigos e novos reinícios não as ressuscitaram. Auditoria
 compara estado causal sem owner/sequence locais e normaliza componentes PN zero,
 sem exigir HLCs iguais. Ver [execução VAL-16](TRACEABILITY.md#execucao-val-16-2026-10-13).
 
+DEC-50 — R-28, 2026-10-15: preparar os sete releases em diretórios independentes,
+fora do Git, com `scripts/prepare_release.py`. Filtros locais dos subpacotes não
+recuperam diretórios excluídos pelo `.pubignore` ancestral. Manter o filtro enxuto
+da facade e o layout atual evita incluir todo o monorepo no pacote público.
+Exportar somente fontes/documentos públicos e exemplo mínimo, removendo apenas
+configuração de workspace dos manifests exportados. Restrições de dependência,
+nomes, versões, licença, APIs e formatos permanecem iguais. Inventário SHA-256 e
+consumo hosted em registro local somente leitura comprovam conteúdo e resolução
+sem overrides; isso não comprova publicação/autorização no pub.dev. Autor publica
+dependências primeiro, repete dry-runs no registro público e instala em consumidor
+novo depois dos envios. Ver [guia](../docs/publicacao.md) e
+[execução R-28](TRACEABILITY.md#execucao-r-28-2026-10-15).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Resolução local não comprova distribuição publicada; publicação permanece com o autor. |
+| OPEN-07 | R-09a, R-09b, VAL-13, R-28 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

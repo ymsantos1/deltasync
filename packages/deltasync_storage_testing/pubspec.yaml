@@ -1,6 +1,8 @@
 name: deltasync_storage_testing
 description: Reusable contract tests for DeltaSync storage adapters.
 version: 2.0.0
+repository: https://github.com/ymsantos1/deltasync/tree/main/packages/deltasync_storage_testing
+issue_tracker: https://github.com/ymsantos1/deltasync/issues
 resolution: workspace
 environment:
   sdk: ^3.12.0

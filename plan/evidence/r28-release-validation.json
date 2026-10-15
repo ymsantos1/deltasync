@@ -1,0 +1,275 @@
+{
+  "task": "R-28",
+  "date": "2026-10-15",
+  "environment": {
+    "dart": "3.13.5 stable linux_x64",
+    "python": "3.15.0",
+    "platform": "Linux x86_64",
+    "declared_sdk": "^3.12.0",
+    "minimum_sdk_executed": false
+  },
+  "initial_findings": {
+    "facade": "missing repository and current changelog entry",
+    "nested_packages": "six empty archives: ancestor .pubignore excludes pubspec/license and lib",
+    "local_ignore_attempt": "removed: per-package whitelist did not override ignored ancestor"
+  },
+  "implementation": {
+    "release_script": "scripts/prepare_release.py",
+    "destination": "/tmp/deltasync-r28-final",
+    "inventory_sha256": "c0aa20710bbd79cbbaefadc11ffc9c1f4c9a9b2bd80b5d35afed4e1e7ddd84c4",
+    "license_sha256": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+    "runtime_sources_changed": false,
+    "runtime_api_or_format_changed": false,
+    "workspace_environment_restored": true
+  },
+  "review": {
+    "independent": false,
+    "result": "approved after corrections",
+    "corrections": [
+      "Reject actual Git markers without rejecting an empty /tmp/.git directory",
+      "Replace nonexistent events stream with commits",
+      "Explain automatic ACK via IncomingAcknowledgingDeltaTransport",
+      "Fix public SQLite fixture URL",
+      "Clarify older-reader compatibility in 2.0.0 changelog"
+    ],
+    "fixture_corrections": [
+      "Format test name after label change; failing format gate rerun successfully",
+      "Use real SQLite on remote peer and verify its snapshot after reopening"
+    ]
+  },
+  "commands": {
+    "prepare": "python3 scripts/prepare_release.py --output /tmp/deltasync-r28-final",
+    "default_prepare": "python3 scripts/prepare_release.py",
+    "workspace": "for each of seven packages: dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded",
+    "dry_run": "for each prepared package: dart pub get && dart pub publish --dry-run",
+    "standalone": "for each prepared package: dart analyze",
+    "consumer": "dart pub get; dart format --output=none --set-exit-if-changed test && dart analyze && dart test --reporter expanded",
+    "example": "dart run example/deltasync_example.dart",
+    "local_registry": "PUB_HOSTED_URL=http://127.0.0.1:34061 PUB_CACHE=/tmp/r28-final-pub-cache",
+    "workspace_restore": "dart pub get with normal registry/cache; repeat format/analyze/test in seven workspace packages"
+  },
+  "script_checks": {
+    "destination_guards_passed": 3,
+    "manifest_cases_passed": 5,
+    "default_destination_passed": true,
+    "syntax_passed": true
+  },
+  "packages": {
+    "deltasync_core": {
+      "version": "2.0.0",
+      "workspace_tests": 122,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "31 KB.",
+      "release_files": 31,
+      "lib_files": 27,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_core-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 33948,
+        "sha256": "5ac1fea9cb9e6ab80eb88ba62d52841352008c0aebf6233c0cb76c4e60f351e5"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync_storage": {
+      "version": "2.0.0",
+      "workspace_tests": 12,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "6 KB.",
+      "release_files": 9,
+      "lib_files": 5,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_storage-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 6496,
+        "sha256": "34ebd4556dac1f42d01bdfed441a6450c9fa6e75445e9cd400aedda2351950ad"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync_transport": {
+      "version": "2.0.0",
+      "workspace_tests": 10,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "3 KB.",
+      "release_files": 8,
+      "lib_files": 4,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_transport-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 4324,
+        "sha256": "61165e5e7ab850407cb36f9867c015dbb7eb82bb35c984685f07c4833ec42a1c"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync_sync": {
+      "version": "2.0.0",
+      "workspace_tests": 51,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "9 KB.",
+      "release_files": 10,
+      "lib_files": 6,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_sync-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 10461,
+        "sha256": "911c659ebf21bca91bef43454e632b0ec878cb347d228a0e103f0095e190eac2"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync_storage_testing": {
+      "version": "2.0.0",
+      "workspace_tests": 8,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "4 KB.",
+      "release_files": 6,
+      "lib_files": 2,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_storage_testing-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 4742,
+        "sha256": "b2c4a636a73e13f2c35beddee78cf02459e815e626e5013ae36586868cb8a33b"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync_storage_sqflite": {
+      "version": "2.0.0",
+      "workspace_tests": 27,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "5 KB.",
+      "release_files": 6,
+      "lib_files": 2,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync_storage_sqflite-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 5428,
+        "sha256": "d90c510677b3c9788331dad4be276d014a26f9dcc8da9308a7048f76c5df5dc2"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    },
+    "deltasync": {
+      "version": "2.0.0",
+      "workspace_tests": 13,
+      "format": "passed",
+      "analyze": "passed",
+      "standalone_analyze": "passed",
+      "dry_run_exit": 0,
+      "dry_run_warnings": 0,
+      "dry_run_archive_size": "20 KB.",
+      "release_files": 7,
+      "lib_files": 1,
+      "required_files_present": true,
+      "license_matches_root": true,
+      "manifest_equals_original_except_workspace_resolution": true,
+      "installed_files_match_inventory": true,
+      "installed_library_bytes_match_original": true,
+      "installed_root_uri": "file:///tmp/r28-final-pub-cache/hosted/localhost%255834061/deltasync-2.0.0",
+      "local_fixture_archive": {
+        "bytes": 21068,
+        "sha256": "adb775527369029dd96048894c3b6f7809ee7b115fb8106c5132d8ddcaa7c249"
+      },
+      "lockfile_source": "hosted",
+      "lockfile_archive_hash_matches": true
+    }
+  },
+  "workspace_tests_total": 243,
+  "workspace_tests_repeated_after_environment_restore": 243,
+  "consumer": {
+    "directory": "/tmp/r28-consumer",
+    "fixture": "r28-consumer.patch",
+    "dependency_overrides": false,
+    "original_source_paths": false,
+    "tests_passed": 9,
+    "contract_tests": 8,
+    "integration_tests": 1,
+    "sqlite": "real SQLite through sqflite_common_ffi",
+    "integration": [
+      "local offline LWW and G-Counter commits",
+      "close/reopen restores snapshot and two pending changes",
+      "receiveEnvelope applies and ACKs on remote SQLite",
+      "reopen remote SQLite retains both values",
+      "push acknowledges two IDs; reopened local SQLite retains values and empty outbox"
+    ],
+    "limits": "In-process transport and database close/reopen; no new Android or process-kill test"
+  },
+  "example_result": {
+    "pending": 3,
+    "confirmed": 3,
+    "result": "passed"
+  },
+  "facade_worktree_dry_run": {
+    "exit": 65,
+    "archive_size": "20 KB",
+    "warnings": 1,
+    "reason": "CHANGELOG.md, README.md and pubspec.yaml modified in Git; no structural packaging error"
+  },
+  "registry": {
+    "read_only": true,
+    "post_requests": 0,
+    "local_archives_downloaded": 7,
+    "external_metadata": "GET proxy to pub.dev; third-party archive URLs unchanged",
+    "tar_format": "Python tar.gz of prepared distributable files excluding .pubignore; bytes differ from pub compression",
+    "file_inventory_verified_against_installed_cache": true
+  },
+  "repository_file_links_checked_locally": 6,
+  "limits": [
+    "No upload, tags, commit or merge",
+    "Direct nested publication remains excluded by root .pubignore; documented standalone release workflow required",
+    "Prepared directories are outside Git, so dry-run cannot warn about source worktree; author must review/commit final sources",
+    "No claim of public pub.dev installation, name ownership, authentication or server-side approval",
+    "No new Android/iOS validation; runtime sources unchanged",
+    "After publication, author must repeat public-registry resolution and install in a fresh consumer"
+  ]
+}

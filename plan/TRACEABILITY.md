@@ -4741,3 +4741,136 @@ conclusões técnicas anteriores preservadas, sem confundir filtros com pacote p
 
 Checks finais: python3 scripts/check_plan.py aprovado, 54 tarefas e 334 links
 locais; git diff --check aprovado. Status e critérios técnicos preservados.
+
+<a id="execucao-r-28-2026-10-15"></a>
+
+## Execução R-28 — Distribuição dos sete pacotes, 2026-10-15
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: VAL-16 concluída; critérios de R-28 e achados de distribuição verificados.
+Implementação: metadados/documentos/licenças e preparação independente dos sete releases, detalhados abaixo.
+Review: aprovado
+Achados: correções de filtros, referências e semântica documental revistas; nenhum impeditivo restante. Review não independente.
+Validação: aprovada
+Comandos: preparação, format/analyze/test, sete dry-runs, consumidor hosted e conferência de hashes detalhados abaixo e no JSON.
+Critérios: distribuição/licença provadas por arquivos/hashes; metadados/docs por review; sete dry-runs sem avisos; consumo externo com nove testes; workspace com 243 testes e manutenção registrada.
+Manutenção: critérios/índice/fase concluídos; DEC-50, OPEN-07 e RISK-36 atualizados; nenhuma próxima tarefa pronta.
+Limitações: sem upload/commits/merges/tags, sem instalação real do pub.dev ou runtime novo de plataforma; publicação pelo autor dos diretórios preparados.
+
+Autorização: autor pediu corrigir os achados de prontidão para pub.dev. Aplicados
+plan-reader, plan-implementer, code-reviewer, plan-validator e plan-maintainer no
+mesmo agente. Worktree inicialmente limpa, branch develop, base b3a6ed2. Publicação,
+commits, tags e merges continuam com o autor; nenhuma escrita do TCC executada.
+Tarefa SHOULD depende de VAL-16 concluída. Índice/fase percorreram andamento,
+revisão e validação antes da conclusão.
+
+### Leitura e diagnóstico
+
+Dry-runs iniciais: facade com arquivo válido de 19 KB, mas sem repository e sem
+entrada 2.0.0 no changelog. Seis subpacotes geravam arquivos vazios, pubspec oculto
+e licença ausente. README/changelog também faltavam em parte dos pacotes. Não era
+defeito nos CRDTs: o pub aplica filtros desde a raiz Git, onde `.pubignore` exclui
+`packages/`. Tentativa de whitelist local confirmou que ela não recupera o
+diretório ancestral ignorado; os filtros locais tentados foram removidos.
+
+### Implementação
+
+Sete manifests receberam repository/issue_tracker; sete changelogs descrevem
+2.0.0, preservando o histórico 1.0.0 da facade. Seis licenças são cópias idênticas
+do BSD existente, conferidas por bytes/SHA-256. Quatro READMEs novos explicam
+contratos/consumo/limites; READMEs SQLite e testing receberam dependências,
+import e links consultáveis fora do monorepo. Facade aponta para o
+[guia de publicação](../docs/publicacao.md), mantendo links de exemplos/Compass.
+
+`scripts/prepare_release.py` exporta sete diretórios fora do Git, sem sobrescrever
+destinos. Copia fontes/documentos públicos e apenas o exemplo Dart mínimo na
+facade; gera inventário SHA-256 e filtros de cache/build/lockfile. Remove somente
+workspace/resolution dos manifests exportados. Comparação por parsing YAML dos
+sete manifests confirma todos os outros campos preservados. Fontes `lib` e testes
+existentes não mudaram; nenhum formato persistido/API foi alterado.
+
+DEC-50 explica a escolha: preservar layout/filtro da facade e preparar releases
+independentes. Publicação direta de subpacotes dentro do Git continua excluída
+pelo filtro ancestral; o guia exige os diretórios preparados. Lista explícita de
+cópia deve ser atualizada quando houver novos recursos distribuíveis. Ordem:
+core; storage/transport; sync/storage_testing; storage_sqflite; facade.
+
+### Review e correções
+
+Review pelo próprio implementador, em etapa separada; não independente.
+Inspecionados diff e arquivos novos, filtros, manifests, licenças, documentação,
+script e fixture do consumidor. Corrigidos stream inexistente `events` para
+`commits`, ressalva do ACK automático via IncomingAcknowledgingDeltaTransport,
+link da fixture SQLite e clareza sobre leitores antigos no changelog. Guarda do
+script distingue marcador Git real de diretório `.git` vazio do host temporário.
+Correções revistas antes da rodada final. Fixture externa também foi formatada
+após alteração de rótulo; o gate de formato inicialmente falho passou na repetição.
+Peer remoto da integração final usa SQLite real e verifica snapshot reaberto.
+Sem achado impeditivo pendente; review não certifica produção ou plataformas novas.
+
+### Validação
+
+Ambiente: Dart 3.13.5 stable do PATH, Python 3.15.0, Linux x86_64. Constraint
+permanece ^3.12.0; o SDK mínimo não foi executado. Resultados detalhados e hashes:
+[registro R-28](evidence/r28-release-validation.json). Consumidor reproduzível:
+[fixture externa](evidence/r28-consumer.patch), aplicada em diretório vazio fora
+do workspace, com pubspec normal e sem overrides.
+
+- Script: sintaxe aprovada; três guardas de destino e cinco casos de manifesto
+  aprovados, além de preparação com destino explícito e destino padrão.
+- Nos sete pacotes do workspace: `dart format --output=none --set-exit-if-changed
+  lib test`, `dart analyze`, `dart test --reporter expanded`. Todos aprovados:
+  facade 13, core 122, storage 12, transport 10, sync 51, testing 8, SQLite 27.
+  Total **243 testes**. Não confundir suíte da raiz com workspace inteiro.
+- Preparação final: `python3 scripts/prepare_release.py --output
+  /tmp/deltasync-r28-final`. Sete dry-runs com exit 0 e **zero avisos**; tamanhos
+  comprimidos informados pelo pub: core 31 KB, storage 6 KB, transport 3 KB,
+  sync 9 KB, testing 4 KB, SQLite 5 KB, facade 20 KB. Todos incluem lib, pubspec,
+  README, changelog e licença. Facade só inclui seu exemplo mínimo, sem planos,
+  evidências, exemplos completos, testes ou fontes dos outros pacotes.
+- Registro hosted local somente leitura em loopback serviu sete tar.gz dos
+  arquivos preparados, sem `.pubignore`; metadados externos passaram por GET ao
+  pub.dev, mantendo URLs de download originais. Nenhum POST. Compressão/tar dessa
+  fixture difere do pub; conferência usa conteúdo dos arquivos e hashes do
+  artefato servido, sem alegar igualdade binária com upload do pub.
+- Cache novo em `/tmp/r28-final-pub-cache`; sete downloads locais registrados.
+  Consumer `/tmp/r28-consumer`: `dart pub get` resolveu sete versões 2.0.0 como
+  hosted, sem workspace, path ou dependency_overrides. Hashes dos sete archives
+  coincidem com pubspec.lock; package_config aponta apenas para cache temporário.
+  Todos os arquivos instalados conferem com o inventário e cada fonte lib com
+  seu original. Licença idêntica, sem mudança nas restrições de dependência.
+- Consumidor: format/analyze e **nove testes aprovados**. Oito da suíte pública
+  de contrato no SQLite FFI, incluindo falha transacional/rollback, isolamento,
+  concorrência e ACK por peer. Integração facade executa commit offline LWW/G,
+  fecha/reabre SQLite local, restaura duas pendências, recebe/confirma no peer
+  SQLite, reabre peer com valores preservados e reabre local com outbox vazia.
+  Transporte em processo; fechamento/reabertura não equivale a kill de processo.
+- `dart analyze` dos sete diretórios preparados aprovado. Exemplo mínimo
+  distribuído executado: três pendências e três confirmações, valor remoto certo.
+- Dry-run adicional da facade na worktree: arquivo válido de 20 KB, exit 65 por
+  **um aviso Git** dos três arquivos distribuídos modificados (README, changelog,
+  pubspec). Avisos anteriores de metadados/changelog desapareceram. Diretórios
+  preparados não possuem Git; isso não dispensa revisar/commitar fontes finais.
+- Seis links de arquivos GitHub dos READMEs/guia conferidos contra caminhos locais.
+  Disponibilidade remota em main depende dos merges/pushes do autor.
+
+### Manutenção e limites
+
+R-28 concluída; 55 tarefas concluídas, nenhuma próxima selecionável. Índice/fase,
+DEC-50, OPEN-07 e RISK-36 registram conteúdo, fluxo e limites. Não houve upload,
+tag, commit ou merge. Antes de publicar, autor confere propriedade/disponibilidade
+dos nomes, dependências já publicadas, autenticação e checks do servidor. Depois
+dos envios, repete instalação em consumidor novo contra pub.dev. Registro local
+não prova essa etapa. Novo Android/iOS não foi executado: fontes de runtime iguais
+às evidências anteriores. Não extrapolar para segurança/topologia de produção.
+
+Checks após manutenção: `python3 scripts/check_plan.py` aprovado, 55 tarefas e
+343 links locais; `git diff --check` aprovado. Campos obrigatórios do registro
+foram completados após a primeira checagem estrutural. JSON validado, patch do
+consumidor aprovado por `git apply --check` em diretório vazio e novos arquivos
+sem erros de whitespace. Servidor local de validação encerrado.
+Após o dry-run adicional da raiz, `dart pub get` restaurou registro/cache normais
+da worktree. Conferidos sete membros locais, sem URLs/paths temporários no
+lockfile/package_config. Format/analyze e os 243 testes passaram novamente nos
+sete pacotes após essa restauração, sem depender do servidor local encerrado.

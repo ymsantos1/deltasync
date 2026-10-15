@@ -775,6 +775,41 @@ regressões e compatibilidade são obrigatórias na própria tarefa.
 Evidência de motivação: [planejamento de ergonomia](TRACEABILITY.md#manutencao-ergonomia-2026-10-13).
 Evidência de conclusão: [execução R-25](TRACEABILITY.md#execucao-r-25-2026-10-13).
 
+<a id="r-28"></a>
+
+## R-28 — Corrigir distribuição dos sete pacotes e validar consumo isolado
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: VAL-16
+
+Origem: autor autorizou corrigir achados de prontidão para pub.dev em 2026-10-15.
+Áreas: filtros de publicação, manifests, licença/documentação por pacote e release.
+Escopo: preparar/validar distribuição; publicação, tags, commits e merges ficam com autor.
+
+Critérios:
+
+- [x] Garantir que facade e seis subpacotes incluam lib/pubspec/LICENSE/README/
+  CHANGELOG corretos; evitar exclusão por .pubignore ancestral na preparação
+  da publicação, sem incluir monorepo/exemplos
+  completos/evidências na facade. Preservar licença existente e APIs/formatos.
+- [x] Preencher repositório/issue tracker e changelogs 2.0.0 de cada pacote;
+  documentar ordem de publicação, exemplos externos e limites reais.
+- [x] Revisar deltas/correções e executar dry-run de todos os pacotes, sem erros
+  estruturais; distinguir avisos de worktree suja de falha de empacotamento.
+- [x] Validar arquivos empacotados em consumidor fora do workspace, com versões
+  dos sete resolvidas contra artefatos locais de publicação; provar facade e
+  SQLite/contrato sem caminhos para fontes originais nem overrides no consumidor.
+- [x] Revalidar análise/testes dos sete pacotes e registrar resultados/limites,
+  decisões/riscos/índice. Sem alegar instalação real do pub.dev antes de publicar.
+
+Validação: dry-run, inspeção de arquivos/arquivos tar, consumidor isolado e checks
+Dart do workspace. Mudança de configuração/documentação não exige novo Android
+quando fontes de execução permanecem iguais às provas anteriores.
+Evidência de conclusão: [execução R-28](TRACEABILITY.md#execucao-r-28-2026-10-15).
+Publicar dos diretórios preparados conforme [guia](../docs/publicacao.md);
+o filtro ancestral continua excluindo publicação direta dos subpacotes no Git.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes

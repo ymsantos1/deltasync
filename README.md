@@ -8,9 +8,19 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
   2P-Set, OR-Set, OR-Map, estado de réplicas e deltas.
 - `deltasync_sync`: coordenação de alterações locais, pendências e deltas remotos.
 - `deltasync_storage`: contrato de persistência, sem dependência de banco específico.
+- `deltasync_storage_sqflite`: adaptador SQLite persistente de referência.
 - `deltasync_storage_testing`: suíte reutilizável de contrato para adapters de storage.
 - `deltasync_transport`: contrato de transporte, sem dependência de HTTP ou WebSocket.
 - `deltasync`: facade que exporta APIs dos subpackages.
+
+## Releases
+
+Os sete pacotes devem ser preparados em diretórios independentes antes da
+publicação. Execute `python3 scripts/prepare_release.py` na raiz do repositório
+e use o destino informado. Consulte o
+[guia de publicação e ordem das dependências](https://github.com/ymsantos1/deltasync/blob/main/docs/publicacao.md).
+O `.pubignore` raiz é herdado pelo pub e exclui os subpacotes; não publique
+diretamente de `packages/`. A publicação no pub.dev fica com o autor.
 
 ## Exemplos
 

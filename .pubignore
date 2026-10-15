@@ -1,5 +1,7 @@
 # Publish only the library and its small public entry points.
 # This file replaces the root .gitignore rules for pub publication.
+# Pub inherits this filter into nested packages; prepare their independent
+# release directories with scripts/prepare_release.py before publication.
 /*
 !/lib/
 !/README.md

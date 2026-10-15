@@ -3,11 +3,15 @@
 SQLite adapter for `ReplicaStorage`. Core, sync, and storage keep their Dart
 contracts and have no Flutter or SQL dependency.
 
+Add `deltasync_storage_sqflite: ^2.0.0`, `sqflite` and `path` to your Flutter
+application dependencies. For Dart desktop, supply `sqflite_common_ffi` instead.
+
 Consumers pass a compatible sqflite `DatabaseFactory` and a database file path:
 
 ```dart
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
 
 final storage = SqfliteReplicaStorage(
   databaseFactory: databaseFactory,
@@ -47,7 +51,7 @@ Android/iOS plugin behavior is not exercised by these desktop tests. Other
 platforms can use any factory compatible with `sqflite_common` and supported by
 their runtime. `MemoryStorage` tests do not prove durability.
 
-The [Flutter Android consumer](../../example/flutter_mobile/README.md) was built
+The [Flutter Android consumer](https://github.com/ymsantos1/deltasync/blob/main/example/flutter_mobile/README.md) was built
 and run with the platform `sqflite` factory on a Moto G52, Android 13/API 33.
 VAL-07 verified offline commits, pending outbox after process termination,
 retry/reconciliation, and persisted acknowledgements after another restart.
