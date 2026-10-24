@@ -12,6 +12,14 @@ also await initialization. Use engine methods to edit, preserving atomic snapsho
 and outbox commits. `valueAt` reads one address; `observations`, `commits` and
 `errors` let the application refresh values and expose failures.
 
+Use `await engine.batch((batch) { ... })` for related local edits with one atomic
+snapshot/outbox commit. The scoped LocalBatch delegates native CRDT mutations and
+reads; its callback must finish synchronously without I/O or other engine calls.
+Empty/async/failed callbacks abort; the editor expires before storage is awaited.
+Storage failure preserves committed state/IDs. Batches still send/ACK per change,
+so local atomicity does not promise distributed transactions. See the
+[batch example](https://github.com/ymsantos1/deltasync/blob/main/example/local_batch_example.dart).
+
 Local mutation completion means local commit. `pendingDelta()` reports changes
 awaiting delivery. `push()` attempts delivery; only an `appliedAndPersisted` ACK
 from the expected peer confirms changes and removes their outbox entries.

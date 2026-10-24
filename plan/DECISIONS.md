@@ -442,6 +442,19 @@ nas cargas R-32 não prometem latência universal ou otimização de builds sem 
 Contrato externo novo é quebra de fonte autorizada para 1.0.1; formatos, joins,
 SDK e manifests permanecem. Ver [R-37](TRACEABILITY.md#execucao-r-37-2026-10-24).
 
+DEC-63 — Lote local R-38, 2026-10-24: SyncEngine.batch usa o pipeline existente
+de candidata/commit/adoção e retorna Delta após sucesso. Editor LocalBatch com
+construtor privado e final class, na mesma library via part, delega regras ao
+core, coleta mudanças e fecha antes do await do storage. Um contexto Zone impede
+operações reentrantes e acompanha continuações de callbacks async rejeitados.
+Future retornado, lote vazio, erro de callback/edição (mesmo capturado) ou commit
+falho abortam; não desfaz efeitos externos do app, proibidos pelo contrato.
+Preservar IDs, formatos, joins e uma entrada/ACK por mudança; lote não é transação
+distribuída. Sem contrato novo de storage/transport ou comandos de domínio.
+Extrator canônico de APIs passa a scripts/api_inventory.dart com suporte a parts;
+ferramenta/dados R-30 ficam intactos e inventários anteriores equivalem. Ver
+[R-38](TRACEABILITY.md#execucao-r-38-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

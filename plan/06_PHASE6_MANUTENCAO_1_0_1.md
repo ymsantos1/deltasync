@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-39 concluídas e nenhuma ativa.
-R-33/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39 concluídas e nenhuma ativa.
+R-33/R-41/R-42 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -407,7 +407,7 @@ e [contrato, migração e resultados](evidence/r37/README.md).
 
 ## R-38 — Implementar lote público com commit local atômico
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-39
 
@@ -415,20 +415,25 @@ Alvo: 1.0.1. Reusar o pipeline existente de candidata, mutação, delta e commit
 
 Critérios:
 
-- [ ] Expor operação pública para mutações relacionadas em vários endereços,
+- [x] Expor operação pública para mutações relacionadas em vários endereços,
   com uma candidata e commit único de snapshot/outbox. Não entregar Replica
   viva nem permitir mutação após o término do lote ou fora do pipeline.
-- [ ] Definir retorno, lote vazio, exceção na mutação, callback assíncrono e
+- [x] Definir retorno, lote vazio, exceção na mutação, callback assíncrono e
   limites de uso. Escolher API mínima sem comandos/schemas de domínio paralelos;
   documentar restrições que impedem I/O ou escrita fora da transação local.
-- [ ] Provar tudo-ou-nada em memória e SQLite quando falha qualquer mutação
+- [x] Provar tudo-ou-nada em memória e SQLite quando falha qualquer mutação
   ou commit; preservar sequência/identidade, oito tipos e edição concorrente.
-- [ ] Demonstrar consumo geral de múltiplos campos; explicar que envio/ACK
+- [x] Demonstrar consumo geral de múltiplos campos; explicar que envio/ACK
   continuam por mudança e que atomicidade local não é transação distribuída.
 
 Validação: core/sync/facade, contrato de storage e recuperação SQLite, incluindo
 rollback, campos relacionados, callbacks inválidos e falha durante o lote.
-Evidência de conclusão: ainda não registrada.
+Resultado: batch/LocalBatch com um commit local e editor fechado no fim do
+callback. Matriz de 278 testes, oito focados após reforço de rollback, dois
+externos e exemplo público aprovados. Trigger SQLite demonstra rollback após
+escritas parciais; oito tipos restauram e ACK continua parcial por mudança.
+Evidência de conclusão: [execução R-38](TRACEABILITY.md#execucao-r-38-2026-10-24)
+e [contrato, logs e reprodução](evidence/r38/README.md).
 
 <a id="r-39"></a>
 
@@ -494,7 +499,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-41 — Oferecer eventos seletivos e consolidar canais internos
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-37, R-38
 

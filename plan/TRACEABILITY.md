@@ -12,7 +12,8 @@ R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
 R-39 [concluiu remoções com migração e rollback](#execucao-r-39-2026-10-24).
 R-32 [concluiu medição de custos e encaminhamento](#execucao-r-32-2026-10-24).
 R-37 [concluiu consulta leve de pendências](#execucao-r-37-2026-10-24).
-R-33/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+R-38 [concluiu lote local atômico](#execucao-r-38-2026-10-24).
+R-33/R-41/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
 preservam as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
@@ -5578,3 +5579,83 @@ adaptador externo e limites de metadata/JSON. Após manutenção,
 `git diff --check` passou. Hashes, JSON, sintaxe do instrumento Python, whitespace
 e unicidade dos IDs de risco foram conferidos. Correções finais documentais
 revistas sem mudanças adicionais de código.
+
+<a id="execucao-r-38-2026-10-24"></a>
+
+## Execução R-38 — Lote local atômico, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em ae1eefe7321da59b9fb420d17eb233dda6903cdc; R-39 concluída e R-38 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, decisões/riscos, guia Dart (contratos, class modifiers e records) e pipeline de mutação/fork/adopt/commit. Confirmado que um editor de escopo limitado pode reutilizar candidata e commit sem expor Replica ou alterar joins.
+Implementação: SyncEngine.batch retorna Delta depois de um commit/adopção; LocalBatch final de construtor privado delega aos oito CRDTs, coleta mudanças e expira no fim do callback. Erros de edição invalidam o lote mesmo capturados; vazio/Future retornado abortam. Contexto Zone impede chamadas reentrantes e continuações async rejeitadas. Adicionados testes, exemplo público, documentação/changelog e extrator canônico de APIs com suporte a parts; sem novos contratos de storage/transport ou formatos.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Flag síncrona inicial foi substituída por contexto Zone para impedir chamadas diretas à engine em continuações de callbacks rejeitados. Matcher SQL foi restringido ao erro do trigger para comprovar falha após escrita parcial. Após matriz completa, reforçado teste de rollback para os oito tipos simultâneos e dots/IDs de retry; delta revisto e oito testes focados aprovados. Conferidos arquivos novos, lifetime do editor, eventos, reentrância, callback void nomeado e limites de I/O externo. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes; dart test test/local_batch_test.dart --reporter expanded no pacote sync após reforço; python3 -B plan/evidence/r38/validate_consumer.py --dart dart --report /tmp/deltasync-r38-consumer-smoke.json; dart run example/local_batch_example.dart. Comandos completos, diretórios e logs nos artefatos. Matriz 278 testes, oito focados adicionais sem somar ao total, dois checks externos e sete inventários aprovados; exemplo confirma três mudanças/pendências.
+Critérios: C1 pelo editor sem Replica, candidato/commit únicos, encerramento antes do await e teste com commit bloqueado; C2 por contrato explícito de retorno/vazio/throw/Future/reentrância e bloqueio de continuações, sem schemas/comandos de domínio; C3 por rollback dos oito tipos em memória, falha de segunda inserção em transação SQLite, preservação de snapshot/outbox/IDs, reabertura e edição concorrente; C4 por exemplo de perfil com campos relacionados e regressão de ACK parcial por mudança, com limites de transação distribuída documentados.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-63 e RISK-41 registram decisões/limites. R-41 liberada por R-37/R-38; próxima recomendada R-42 conforme sequência, com R-33 também pronta. Nenhuma ativa ou próxima implementação iniciada; fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5/Linux x86_64, SQLite FFI; sem runtime SDK 3.12.x, Android novo, kill de processo ou rede física. ACK controlado não prova persistência remota. Contrato proíbe I/O/trabalho async separado e chamadas fora do editor no callback; biblioteca não desfaz efeitos externos do app. Consumidor externo usa path, não hosted. Sem alteração de core/joins, contratos de adaptadores, JSON/schema/versões, Compass, commit ou publicação.
+
+### Leitura, implementação e review
+
+O [contrato e reprodução](evidence/r38/README.md) aponta código, guia e logs.
+LocalBatch justifica uma classe pelo lifetime/estado de falha do recurso; não é
+outro modelo de estado. Usa part na library de SyncEngine para compartilhar
+construtor/encerramento privados. final impede construção/implementação forjada
+por consumidor; métodos delegam validações/joins ao core e não criam regras
+paralelas. _record controla falha/coleta; _close libera a candidata. A engine
+continua usando _commitLocalResult, fila e commit local existentes.
+
+Review examinou código e testes novos, incluindo exceções capturadas e editor
+guardado para depois. A primeira flag protegia apenas o callback em execução;
+Zone foi adotado para que uma continuação async rejeitada também não possa
+chamar a engine diretamente. Teste específico aprovou rejeição sem erro órfão
+nem commit. Documentação explicita que efeitos externos iniciados pelo app não
+são transacionais. O exemplo usa dados preparados antes do callback.
+
+O [extrator atual](../scripts/api_inventory.dart) acrescenta parts ao algoritmo
+de inventário sem alterar a ferramenta congelada R-30. Contra as fontes da
+revisão inicial, seus sete inventários coincidem com os do extrator histórico;
+contra a árvore nova identifica somente LocalBatch e SyncEngine.batch como
+adições. Isso evita omitir API pública definida em part na manutenção seguinte.
+
+### Validação
+
+[validation.json](evidence/r38/validation.json) guarda hashes de código/testes/
+instrumentos, lock/versão do analyzer e logs da execução. Comando da matriz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r38-workspace.log 2>&1
+```
+
+Resultado: **278 testes**, respectivamente 15/122/70/14/37/10/10, com formato e
+sete análises limpas. Depois, só o teste de rollback em memória foi fortalecido
+para oito tipos simultâneos: arquivo formatado, delta revisto, análise e oito
+testes de lote aprovados. Checks não afetados da matriz foram preservados;
+produção não mudou após a matriz. Não somar essas repetições ao total.
+
+Cobertura específica: 22 mutações dos oito tipos com um commit/evento; valores
+isolados; callback vazio, inválido/capturado, throw e Future; editor fechado antes
+de await; engine reentrante e continuação rejeitada; commit falho preservando
+snapshot/IDs e retry com dots iniciais; edição concorrente na fila; rede falha e
+ACK parcial. SQLite injeta trigger no segundo INSERT, após snapshot/primeiro
+INSERT, verifica erro exato e reabre sem estado/outbox parcial. Outro lote dos
+oito tipos reabre intacto e ACK de uma mudança deixa sete entradas sent.
+
+[consumer-validation.json](evidence/r38/consumer-validation.json) registra dois
+testes externos por facade com callback nomeado void, três campos e rollback de
+validação do app. Compilação negativa rejeita construtor e implementação forjada
+do editor. Os sete inventários e a equivalência do extrator antigo também passam.
+O [exemplo](../example/local_batch_example.dart) verifica três mudanças e três
+pendências após commit; não envia dados nem sugere ACK automático.
+
+### Manutenção
+
+R-38 concluída, R-41 pronta por dependência e R-42 recomendada sem iniciar outra
+tarefa. DEC-63/RISK-41 distinguem escopo local, side effects externos e ACK por
+mudança. Gate integral continua VAL-17. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 463 links locais;
+`git diff --check` passou. Hashes, JSON, sintaxe Python, whitespace e unicidade
+dos IDs foram conferidos. Revisão documental final sem achados impeditivos.

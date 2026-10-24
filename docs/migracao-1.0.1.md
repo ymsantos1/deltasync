@@ -86,6 +86,72 @@ podendo mudar após o Future concluir. Chamada após dispose falha. Sem filtro,
 o escopo é global, como pendingDelta. Não substitua detalhes de payload por esse
 resumo quando precisar efetivamente enviar ou inspecionar mudanças.
 
+## Lote local atômico — R-38
+
+`SyncEngine.batch(FutureOr<void> Function(LocalBatch) mutate)` retorna
+`Future<Delta>` com todas as mudanças emitidas, somente após commit local e adoção.
+É uma API adicional; métodos individuais e contratos de adaptadores continuam
+iguais. Agrupe os campos relacionados pela API pública:
+
+```dart
+final changes = await engine.batch((batch) {
+  batch.setDelta('profile/name', 'Ada');
+  batch.setDelta('profile/preferences', {'theme': 'dark'});
+  batch.incrementGCounter('profile/revisions');
+});
+```
+
+LocalBatch oferece mutações de LWW, G/PN-Counter, G/2P/OR-Set, MV-Register e
+OR-Map, incluindo métodos de múltiplos elementos e valor OR-Map. valueAt lê a
+candidata com edições anteriores do lote; coleções são isoladas/read-only conforme
+o core. Métodos do editor retornam void; o Delta do Future concluído contém os
+IDs/deltas comprometidos. Não há schema de domínio, comandos paralelos ou Replica
+exposta. Regras de negócio continuam no consumidor.
+
+O callback deve terminar sincronamente, sem I/O, awaits ou outras operações da
+engine. Prepare dados externos antes; use batch.valueAt para ler a candidata.
+FutureOr<void> permite detectar e rejeitar um Future retornado; não autoriza
+callback assíncrono. Esse caso causa ArgumentError e rollback da candidata sem
+aguardar operação externa. Suas continuações não podem usar o editor fechado nem
+chamar operações da engine no contexto do lote rejeitado. Falhas posteriores
+desse Future são observadas internamente para não gerar erro órfão adicional;
+o chamador recebe a rejeição do callback assíncrono.
+
+Lote vazio falha com StateError sem commit/evento. Exceção no callback propaga;
+mutação inválida propaga seu erro e invalida o lote inteiro, mesmo capturada.
+Chamada reentrante a mutação/lote, start, push, consulta enfileirada ou dispose
+também invalida o lote com StateError. O editor fecha quando o callback termina,
+antes de aguardar storage; guardá-lo para depois ou usá-lo durante commit pendente
+gera StateError. Chamadas após dispose falham pelo lifecycle.
+
+Não agende trabalho assíncrono separado nem escreva diretamente no storage no
+callback. A biblioteca não desfaz I/O, alterações de variáveis do app ou outros
+efeitos externos iniciados pelo usuário. Essas restrições integram o contrato;
+o editor governa apenas as mutações nativas rastreadas no lote.
+
+Uma candidata passa pelo commit local existente, com snapshot e uma entrada por
+mudança para o peer configurado. Após sucesso, a engine adota a candidata e emite
+uma notificação de commit local. Falha preserva estado vivo, outbox e sequências;
+chamadas futuras continuam possíveis. Edições concorrentes usam a mesma fila e
+veem o resultado adotado completo; espera de rede permanece fora dessa fila.
+
+Atomicidade é local, não uma transação distribuída. Envelope/schema/ACK não
+mudam: peer pode confirmar apenas parte das mudanças e recebê-las em momentos
+diferentes. Não prometa invariantes de domínio atômicas em todos os dispositivos.
+MemoryStorage é volátil; persistência exige backend com commit atômico real.
+
+Manutenção: regras, mutações e joins ficam em Replica/CRDTs. LocalBatch delega e
+coleta mudanças; _record centraliza falha e _close encerra o recurso. É um final
+class com construtor privado na library de SyncEngine via part: consumidores não
+constroem nem implementam editores próprios. A engine controla contexto do
+callback, candidata, commit e adoção no pipeline existente. O inventário atual
+usa scripts/api_inventory.dart, que segue parts; ferramenta e fixtures congeladas
+de R-30 permanecem como evidência histórica.
+
+Execute `dart run example/local_batch_example.dart` para um perfil com nome,
+preferências e revisão. O exemplo verifica commit e pendência pela facade;
+não simula persistência remota. Ver [registro R-38](../plan/TRACEABILITY.md#execucao-r-38-2026-10-24).
+
 ## Migração do antigo pending store
 
 Antes de atualizar o código, interrompa novas edições e envios e aguarde operações

@@ -515,6 +515,13 @@ sucessos de commit ou falhas de chamadas aguardadas. O
 cada ação; o [exemplo CLI](example/offline_reconciliation.dart) chama
 `push(force: true)` explicitamente ao reconectar.
 
+Para editar campos relacionados com um commit local, use `engine.batch` com
+callback síncrono. O editor temporário oferece mutações nativas e valueAt, sem
+expor Replica. Lote vazio, erro de mutação (mesmo capturado), Future retornado
+ou falha de commit abortam o lote. Envio e ACK continuam por mudança. Veja o
+[exemplo executável](example/local_batch_example.dart) e
+[contrato de lote](docs/migracao-1.0.1.md#lote-local-atômico--r-38).
+
 `pendingSummary(recipientPeerId: engine.transport.peerReplicaId)` consulta
 quantidades `pendingCount`, `sentCount` e `totalCount` sem montar lote de deltas.
 Sem filtro, inclui todos os peers; sent ainda aguarda ACK. Falha nessa consulta

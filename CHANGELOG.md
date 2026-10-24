@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add scoped local batches with one atomic snapshot/outbox commit, rollback on
+  callback/edit/storage failure, and per-change delivery/ACK semantics.
 - Add pendingSummary and OutboxSummary for peer-scoped retained-entry counts.
   Custom ReplicaStorage implementations must implement the new query; see migration.
 - Remove pending-store APIs and deprecated mutation/delta/outbox aliases; require

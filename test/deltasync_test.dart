@@ -2,6 +2,21 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('facade exposes scoped batch with a single local commit', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-batch'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    addTearDown(engine.dispose);
+    final delta = await engine.batch((LocalBatch batch) {
+      batch.setDelta('name', 'Ada');
+      batch.incrementGCounter('revisions');
+    });
+    expect(delta.changes, hasLength(2));
+    expect(engine.valueAt('name'), 'Ada');
+    expect((await engine.pendingSummary()).totalCount, 2);
+  });
   test(
     'facade exposes summary counts without constructing a pending batch',
     () async {

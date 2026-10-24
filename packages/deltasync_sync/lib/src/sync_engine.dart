@@ -11,6 +11,8 @@ import 'sync/serial_commit_queue.dart';
 
 export 'sync_types.dart';
 
+part 'sync/local_batch.dart';
+
 /// Coordinates local CRDT changes, pending persistence, and remote deltas.
 class SyncEngine {
   SyncEngine({
@@ -91,6 +93,7 @@ class SyncEngine {
   Future<void>? _disposeFuture;
   Future<SyncPushResult>? _pushFuture;
   final SerialCommitQueue _queue = SerialCommitQueue();
+  static final Object _batchZoneKey = Object();
   late final ReplicaPersistence _persistence = ReplicaPersistence(
     storage: storage,
   );
@@ -113,6 +116,7 @@ class SyncEngine {
   /// Restores state and subscribes to remote changes. Repeated calls after
   /// success are harmless; failed starts can be retried.
   Future<void> start() {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }
@@ -214,6 +218,49 @@ class SyncEngine {
   Future<LwwDelta<Object?>> removeDelta(String key) =>
       _commitLocal((candidate) => candidate.removeDelta(key));
 
+  /// Commits related edits with one candidate and one snapshot/outbox commit.
+  ///
+  /// [mutate] must finish synchronously without I/O or other engine calls. Use
+  /// only the supplied [LocalBatch]; it expires as soon as the callback returns.
+  /// A returned Future, an empty batch, any failed edit (even if caught), or a
+  /// thrown callback aborts the batch. Storage failure leaves committed state,
+  /// pending entries and local IDs unchanged. Callback side effects outside this
+  /// API cannot be rolled back; prepare external data before calling batch.
+  ///
+  /// Returns all emitted changes after local commit/adoption, with one entry per
+  /// change for the configured peer. Sends/ACKs remain per change: this is not a
+  /// distributed transaction. Concurrent edits serialize through the same queue.
+  Future<Delta> batch(FutureOr<void> Function(LocalBatch batch) mutate) =>
+      _commitLocalResult((candidate) {
+        final editing = LocalBatch._(candidate);
+        try {
+          final result = runZoned(
+            () => mutate(editing),
+            zoneValues: {_batchZoneKey: editing},
+          );
+          if (result is Future) {
+            // An invalid async callback may resume later. The editor is closed
+            // below; observe its rejected continuation without an orphan error.
+            unawaited(
+              result.then<void>((_) {}, onError: (Object _, StackTrace _) {}),
+            );
+            throw ArgumentError('Batch callback must be synchronous');
+          }
+          return editing._finish();
+        } finally {
+          editing._close();
+        }
+      }, (delta) => delta.changes);
+
+  void _checkOutsideBatch() {
+    // The scope follows async continuations too, including rejected callbacks.
+    final editing = Zone.current[_batchZoneKey];
+    if (editing is LocalBatch) {
+      editing._failed = true;
+      throw StateError('Use LocalBatch methods inside the batch callback');
+    }
+  }
+
   /// Increments G-Counter at stable application-defined [crdtId].
   Future<GCounterDelta> incrementGCounter(String crdtId, [int amount = 1]) =>
       _commitLocal((candidate) => candidate.incrementGCounter(crdtId, amount));
@@ -291,6 +338,7 @@ class SyncEngine {
   /// those filters.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }
@@ -356,6 +404,7 @@ class SyncEngine {
       );
 
   Future<void> dispose() {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return _disposeFuture ?? Future.value();
     }
@@ -452,6 +501,7 @@ class SyncEngine {
   }
 
   Future<T> _withStarted<T>(Future<T> Function() action) {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }
