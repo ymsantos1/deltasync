@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39 concluídas e nenhuma ativa.
-R-33/R-41/R-42 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-42 concluídas.
+R-33/R-40/R-41 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -473,7 +473,7 @@ Evidência de conclusão: [execução R-39](TRACEABILITY.md#execucao-r-39-2026-1
 
 ## R-40 — Oferecer leitura com decoder opcional
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-42
 
@@ -529,7 +529,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-42 — Distinguir ausência, valor null e tombstone na consulta
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-39
 
@@ -537,19 +537,24 @@ Alvo: 1.0.1. Consulta explícita coexistindo com a conveniência valueAt atual.
 
 Critérios:
 
-- [ ] Expor resultado tipado para endereço ausente, valor presente inclusive
+- [x] Expor resultado tipado para endereço ausente, valor presente inclusive
   null e remoção LWW. Definir resultado dos outros sete tipos, inclusive
   coleção vazia/contador zero vinculados, sem expor estado mutável interno.
-- [ ] Reusar dono canônico do estado e consulta pontual. Não reconstruir
+- [x] Reusar dono canônico do estado e consulta pontual. Não reconstruir
   toda a réplica nem inferir remoção pela existência de ACK ou outbox vazia.
-- [ ] Manter semântica documentada de valueAt para consumidores que usam a
+- [x] Manter semântica documentada de valueAt para consumidores que usam a
   conveniência; identificar como a nova consulta e decoder se combinam.
-- [ ] Validar oito tipos, valores aninhados, concorrência, consulta durante
+- [x] Validar oito tipos, valores aninhados, concorrência, consulta durante
   commit, falha de commit, restauração SQLite e lifecycle da engine.
 
 Validação: core/sync/facade e recuperação SQLite com ausência, LWW null,
 tombstone e valores vazios existentes, usando somente contratos públicos.
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-42](TRACEABILITY.md#execucao-r-42-2026-10-24),
+[contrato e reprodução](evidence/r42/README.md),
+[matriz e falhas corrigidas](evidence/r42/validation.json) e
+[consumidor/inventários](evidence/r42/consumer-validation.json). 291 testes em
+sete pacotes, dois testes externos e exemplo aprovados; revisão própria após
+correções, sem revisão independente. R-40 pronta; fase 6/VAL-17 continuam abertos.
 
 ## Gate da fase
 

@@ -455,6 +455,22 @@ Extrator canônico de APIs passa a scripts/api_inventory.dart com suporte a part
 ferramenta/dados R-30 ficam intactos e inventários anteriores equivalem. Ver
 [R-38](TRACEABILITY.md#execucao-r-38-2026-10-24).
 
+DEC-64 — Consulta explícita R-42, 2026-10-24: Replica.query retorna FieldQuery
+sealed com AbsentField, PresentField(kind/value) e DeletedField para tombstone
+LWW. Construtores privados e variantes final em part da library de Replica
+preservam origem canônica e switches exaustivos, sem exigir modelo do app.
+Outros sete tipos vinculados continuam presentes com zero/coleção vazia.
+ReplicaState.kindAt/isDeletedAt consultam metadados; o segundo evita copiar o
+vencedor/payload só para verificar remoção. Um percurso privado de valor serve
+query e valueAt, sem reconstruir réplica ou manter cache paralelo. valueAt
+preserva sua ambiguidade null anterior e não aloca o resultado tipado.
+SyncEngine.query exige start e lê último commit adotado; LocalBatch.query lê
+candidata só no escopo do editor. ACK/outbox não determinam presença. R-40
+reutilizará esse contrato: decoder no ramo presente, inclusive null, sem ocultar
+erro como ausência. Nenhum formato, join ou contrato de adaptador mudou; colisão
+com método query em subclasses externas e futura expansão de variantes exigem
+atenção de migração. Ver [R-42](TRACEABILITY.md#execucao-r-42-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

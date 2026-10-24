@@ -23,6 +23,16 @@ void main() {
 for restoration. Keep a stable, unique replica ID per independent installation.
 Collections returned by public queries are detached from internal state.
 
+`query(address)` returns a closed `FieldQuery`: `AbsentField` for an unbound
+address, `PresentField` with kind/value for a bound value (including null),
+or `DeletedField` for the current LWW tombstone. Result constructors are private;
+use an exhaustive switch to handle the three cases. All seven other kinds remain
+present with zero/empty values. Nested collections are read-only and detached.
+`valueAt` keeps returning null for absence, LWW null and deletion. Querying does
+not mutate clocks or state and reads only the addressed field. Model conversion
+belongs in the application's `PresentField` branch; see the
+[field query example](https://github.com/ymsantos1/deltasync/blob/main/example/field_query_example.dart).
+
 This package does not persist or send changes. Use `deltasync` / `SyncEngine`
 for atomic local commits, an outbox and remote acknowledgement. Counter IDs and
 compact MV formats have compatibility limits described in the

@@ -1,0 +1,51 @@
+import 'package:deltasync/deltasync.dart';
+import 'package:test/test.dart';
+
+String describe(FieldQuery result) => switch (result) {
+  AbsentField() => 'absent',
+  DeletedField() => 'deleted',
+  PresentField(:final value) => value == null ? 'null' : 'present',
+};
+
+void main() {
+  test('external consumer handles all variants without internal imports', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('consumer'), storage: MemoryStorage(), transport: Offline(),
+    );
+    addTearDown(engine.dispose);
+    await engine.start();
+    expect(describe(engine.query('field')), 'absent');
+    await engine.batch((LocalBatch batch) {
+      batch.setDelta('field', null);
+      expect(describe(batch.query('field')), 'null');
+    });
+    expect(describe(engine.query('field')), 'null');
+    await engine.removeDelta('field');
+    expect(describe(engine.query('field')), 'deleted');
+    expect(engine.valueAt('field'), isNull);
+    expect((await engine.pendingSummary()).totalCount, 2);
+  });
+
+  test('typed values stay isolated and empty collections stay present', () {
+    final replica = Replica('consumer')
+      ..setDelta('nested', {'items': [1]})
+      ..addOrSet('empty', 'a')
+      ..removeOrSet('empty', 'a');
+    final result = replica.query('nested') as PresentField;
+    expect(result.kind, CrdtKind.lww);
+    expect(() => ((result.value as Map)['items'] as List).clear(), throwsUnsupportedError);
+    replica.setDelta('nested', 'new');
+    expect(result.value, {'items': [1]});
+    expect(describe(replica.query('empty')), 'present');
+    expect((replica.query('empty') as PresentField).value, isEmpty);
+  });
+}
+
+class Offline implements DeltaTransport {
+  @override
+  String get peerReplicaId => 'peer';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async => throw StateError('offline');
+}

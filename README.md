@@ -38,6 +38,15 @@ de notas usado nos exemplos de sincronização.
 
 ## Uso
 
+`Replica.query(address)` distingue endereço ausente (`AbsentField`), valor
+presente inclusive null (`PresentField`) e remoção LWW (`DeletedField`). Os outros
+sete CRDTs continuam presentes com zero ou coleção vazia. `SyncEngine.query`
+oferece a mesma leitura após `await start()`; `LocalBatch.query` consulta apenas
+a candidata durante o callback. `valueAt` mantém a conveniência anterior e retorna
+null para ausência, LWW null e tombstone. Consulte o
+[exemplo de consulta explícita](https://github.com/ymsantos1/deltasync/blob/main/example/field_query_example.dart)
+e o [contrato de leitura e migração](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md#consulta-explícita-de-campo--r-42).
+
 ```dart
 import 'package:deltasync/deltasync.dart';
 

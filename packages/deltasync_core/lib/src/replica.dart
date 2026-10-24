@@ -18,6 +18,8 @@ import 'replica/contents.dart';
 import 'replica/delta_validation.dart';
 import 'replica/snapshot_codec.dart';
 
+part 'replica/field_query.dart';
+
 /// Local CRDT replica. Storage and transport stay outside core.
 class Replica {
   Replica(String id, {VectorClock? initialClock, HlcClock? hlc})
@@ -41,8 +43,28 @@ class Replica {
   /// indexing [ReplicaState]. Bound counters return int, sets/registers
   /// return `Set<Object?>` (except LWW), and OR-Map returns `Map<String, Set<Object?>>`.
   /// Nested collections are read-only and detached from future mutations.
-  Object? valueAt(String address) => switch (_state.kindAt(address)) {
-    null => null,
+  Object? valueAt(String address) {
+    final kind = _state.kindAt(address);
+    return kind == null ? null : _valueAtBoundAddress(address, kind);
+  }
+
+  /// Distinguishes an unbound address, a present value (including null), and
+  /// a retained LWW deletion. Reads only the addressed materialized state;
+  /// storage/outbox/ACK do not determine presence or deletion.
+  ///
+  /// The seven other bound kinds always return PresentField, even for zero or
+  /// empty collections. Values follow [valueAt] types and are detached/read-only.
+  /// This query does not change clocks, identities or CRDT state.
+  FieldQuery query(String address) {
+    final kind = _state.kindAt(address);
+    if (kind == null) return const AbsentField._();
+    if (kind == CrdtKind.lww && _state.isDeletedAt(address)) {
+      return const DeletedField._();
+    }
+    return PresentField._(kind, _valueAtBoundAddress(address, kind));
+  }
+
+  Object? _valueAtBoundAddress(String address, CrdtKind kind) => switch (kind) {
     CrdtKind.lww => _state[address],
     CrdtKind.gCounter => gCounterValue(address),
     CrdtKind.pnCounter => pnCounterValue(address),

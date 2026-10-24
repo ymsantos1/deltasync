@@ -2,6 +2,32 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'facade exports exhaustive field query through engine and batch',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-fields'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.start();
+      String describe(FieldQuery result) => switch (result) {
+        AbsentField() => 'absent',
+        DeletedField() => 'deleted',
+        PresentField(:final kind, :final value) => '$kind:$value',
+      };
+      expect(describe(engine.query('field')), 'absent');
+      await engine.batch((batch) {
+        batch.setDelta('field', null);
+        expect(describe(batch.query('field')), '${CrdtKind.lww}:null');
+      });
+      expect(describe(engine.query('field')), '${CrdtKind.lww}:null');
+      await engine.removeDelta('field');
+      expect(describe(engine.query('field')), 'deleted');
+      expect(engine.valueAt('field'), isNull);
+    },
+  );
   test('facade exposes scoped batch with a single local commit', () async {
     final engine = SyncEngine.withStorage(
       replica: Replica('facade-batch'),

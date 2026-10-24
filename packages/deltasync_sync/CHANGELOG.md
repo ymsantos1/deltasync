@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Expose SyncEngine.query after start and LocalBatch.query during the callback;
+  distinguish absent/present/deleted without changing commit, outbox or ACK.
 - Add SyncEngine.batch and scoped LocalBatch for all eight CRDTs. Reject empty,
   async or failed callbacks; close escaped editors and preserve rollback.
 - Add queued pendingSummary queries with lifecycle and query-error propagation.

@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Add closed FieldQuery results and Replica.query for absence, present values
+  including null, and LWW tombstones. Preserve valueAt and persisted formats;
+  expose ReplicaState.isDeletedAt for payload-free LWW metadata inspection.
 - Remove Replica.set/remove and Delta.crdt/crdtChanges aliases. Use
   setDelta/removeDelta, Delta(changes) and changes.
 - Stop exporting Operation and migrateLegacyOperation; historical JSON readers

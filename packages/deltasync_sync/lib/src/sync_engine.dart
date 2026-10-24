@@ -58,10 +58,23 @@ class SyncEngine {
   /// Result types and null semantics follow [Replica.valueAt]. Collections are
   /// detached and read-only. This read does not imply remote acknowledgement.
   Object? valueAt(String address) {
+    _ensureQueryable();
+    return _replica.valueAt(address);
+  }
+
+  /// Reads a typed field result after [start], from the last adopted commit.
+  /// During storage/network waits, sees committed state without waiting for I/O.
+  /// Missing, null and LWW deletion semantics follow [Replica.query]. A present
+  /// value does not imply remote ACK. Rejects reads before start/after dispose.
+  FieldQuery query(String address) {
+    _ensureQueryable();
+    return _replica.query(address);
+  }
+
+  void _ensureQueryable() {
     if (_lifecycle != SyncEngineLifecycle.started) {
       throw StateError('SyncEngine query requires a started engine');
     }
-    return _replica.valueAt(address);
   }
 
   /// Current initialization, running or terminal lifecycle state.

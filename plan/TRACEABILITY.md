@@ -5659,3 +5659,68 @@ mudança. Gate integral continua VAL-17. Após manutenção,
 `python3 scripts/check_plan.py` aprovou 70 tarefas e 463 links locais;
 `git diff --check` passou. Hashes, JSON, sintaxe Python, whitespace e unicidade
 dos IDs foram conferidos. Revisão documental final sem achados impeditivos.
+
+<a id="execucao-r-42-2026-10-24"></a>
+
+## Execução R-42 — Consulta explícita de campo, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 754c763d5a90bdc95b10cc55fcf36b929890b47b; R-39 concluída, R-42 pronta e recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, decisões/riscos pertinentes e guia Dart sobre enums, null safety, sealed/final e library/part. Conferidos dono canônico, consultas dos oito tipos, pipeline de commit/adoção, lifecycle e lifetime do editor. Escopo limitado a R-42, sem antecipar R-40 ou adaptar Compass.
+Implementação: Replica.query, SyncEngine.query e LocalBatch.query retornam FieldQuery sealed com AbsentField, PresentField(kind/value) e DeletedField para tombstone LWW. Outros sete tipos vinculados são presentes com zero/coleção vazia. ReplicaState.isDeletedAt inspeciona metadados sem copiar payload; valor compartilha percurso com valueAt, que preserva semântica anterior. Resultados isolados/read-only, variantes final e construtores privados na library de Replica via part. Adicionados testes, exemplo, guia, READMEs/changelogs e prova de consumidor/inventários; nenhum schema, join ou contrato de adaptador mudou.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Evitada cópia de vencedor/valor LWW apenas para consultar tombstone por accessor canônico. Corrigidos fixture que tentava alterar snapshot imutável, getter inexistente label no exemplo e comparação de inventário que incluía Dartdoc no offset do AST. Após correções, revistos código, testes, novos arquivos e instrumento; preservados semântica de valueAt, lifecycle, isolamento e compatibilidade de dados. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop completo de dart format/analyze/test nos sete pacotes; python3 -B plan/evidence/r42/validate_consumer.py --dart dart --report /tmp/deltasync-r42-consumer.json; dart run example/field_query_example.dart. Matriz: 291 testes, respectivamente 16/128/73/14/40/10/10, sete formatos sem alterações e sete análises limpas. Dois testes externos, compilação negativa e sete inventários aprovados. Comandos completos, diretórios, saídas, falhas corrigidas e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 por três variantes fechadas, oito tipos, sete tipos vinculados vazios/zero, MV {null} e coleções aninhadas imutáveis; C2 por kindAt/isDeletedAt canônicos, percurso pontual sem fork/snapshot/state e tombstone preservado após outbox esvaziada; C3 por valueAt inalterado, exemplo e guia indicando decoder somente no ramo presente inclusive null, sem implementar R-40; C4 por ordens concorrentes/replay LWW, consulta durante commit bloqueado, candidata no editor, falha de commit, lifecycle, facade e três testes SQLite de reabertura/rollback.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-64 e RISK-41 registram contrato e limites. R-40 liberada e recomendada; R-33/R-41 também prontas. Nenhuma tarefa ativa ou próxima implementação iniciada; fase 6/VAL-17 permanecem abertos. Conferência estrutural e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI; sem runtime SDK 3.12.x, Android novo, kill de processo ou rede física. ACK controlado não prova persistência remota; consumidor externo usa path, não hosted. Query não valida modelos do app; conveniência de decoder permanece em R-40. Sem mudanças de formatos, SDK, versões, Compass, commit ou publicação. Variantes são fechadas; futura expansão exige migrar switches e subclasses externas devem conferir conflito com método próprio chamado query.
+
+### Evidências e recuperação
+
+O [contrato e reprodução](evidence/r42/README.md) liga APIs, testes e caminhos de
+manutenção. [validation.json](evidence/r42/validation.json) contém logs e hashes
+de produção, testes, exemplo, guia e instrumentos. A falha inicial da fixture
+permanece registrada: toSnapshotJson é imutável; Map.of cria o mapa externo para
+preenchê-lo com snapshots públicos dos sete CRDTs. O exemplo passou após usar
+CrdtKind.wireName. O comparador aceita Dartdoc no prefixo da assinatura sem
+relaxar a lista de símbolos/membros esperados; extrator canônico não mudou.
+
+Core verifica ausência/null/remoção/ressurreição, tipos vazios e preenchidos,
+isolamento profundo e estabilidade; duas ordens de chegada de eventos LWW
+concorrentes e replay antigo preservam o vencedor. Guarda de teste numa réplica
+de 500 campos rejeita acesso aos caminhos públicos de cópia completa. Consulta
+usa somente metadados/valor do endereço e mantém snapshot/clocks intactos.
+Sync confronta candidata visível no editor com estado adotado enquanto commit
+aguarda, rejeita editor fechado e mantém estado anterior após falha. Consultas
+antes/durante start, após falha de carga e após dispose respeitam lifecycle.
+
+SQLite fecha e reabre banco real com os oito tipos, ausência, null, tombstone,
+sete tipos vazios/zero e coleções aninhadas. Um trigger aborta inserção da outbox
+depois da tentativa de snapshot; erro exato é exigido. Engine/banco mantêm
+snapshot/outbox/null anteriores; reabertura preserva null, retry remove e outra
+reabertura mantém tombstone. ACK controlado esvazia pendências sem apagar estado.
+MemoryStorage é evidência complementar volátil, não prova durável.
+
+O [consumidor externo](evidence/r42/consumer_test.dart.txt) compila switch
+exaustivo pela facade e consulta engine/editor sem importar internos. Dois testes
+aprovados; compilação negativa rejeita construtor e implementações de resultados
+sealed/final. [consumer-validation.json](evidence/r42/consumer-validation.json)
+confirma sete inventários contra HEAD inicial: quatro tipos adicionados no
+core/facade, query em Replica/SyncEngine/LocalBatch e isDeletedAt em ReplicaState.
+Nenhuma assinatura antiga removida/modificada, nem mudança em storage/transport.
+Evidências congeladas R-30 a R-38 permanecem intactas.
+
+### Manutenção
+
+R-42 concluída; próxima recomendada R-40 sem iniciá-la. Leitura/commit/ACK
+continuam separados; aplicação mantém modelos e conversões. O
+[guia de migração](../docs/migracao-1.0.1.md#consulta-explícita-de-campo--r-42)
+documenta os três casos, coleções vazias, decoder futuro, classes fechadas e
+pontos únicos de manutenção. Gate da release continua VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 478 links
+locais; `git diff --check` passou. Conferidos 20 hashes, lock inalterado, dois
+relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
+âncora da execução. Evidências anteriores preservadas. Revisão documental final
+sem achados impeditivos; nenhum código mudou após a matriz aprovada.

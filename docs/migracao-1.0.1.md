@@ -25,6 +25,66 @@ de `deltasync_storage_testing`, além de provas de rollback/reabertura no seu ba
 O [consumidor migrado](../plan/evidence/r39/consumer_test.dart.txt) implementa os
 contratos públicos por composição, sem herdar ou importar implementação interna.
 
+## Consulta explícita de campo — R-42
+
+`Replica.query(String address)`, `SyncEngine.query(String address)` e
+`LocalBatch.query(String address)` retornam `FieldQuery`, uma hierarquia sealed
+com três variantes construídas pela biblioteca. O consumidor lê por pattern
+matching; não cria nem implementa variantes ou importa arquivos `src`.
+
+```dart
+String describe(FieldQuery result) => switch (result) {
+  AbsentField() => 'Endereço sem CRDT vinculado',
+  DeletedField() => 'Removido; tombstone LWW preservado',
+  PresentField(:final kind, :final value) => '${kind.wireName}: $value',
+};
+```
+
+| Resultado | Semântica |
+|---|---|
+| `AbsentField` | Endereço sem tipo vinculado; não equivale a coleção vazia |
+| `PresentField` | `kind` é `CrdtKind`; `value` é o valor isolado, inclusive null legítimo de LWW |
+| `DeletedField` | Vencedor LWW atual é tombstone; não expõe valor nem executa GC |
+
+Nos outros sete CRDTs, todo endereço vinculado é presente, mesmo com zero ou
+coleção vazia. Counters retornam int; G/2P/OR-Set e MV-Register retornam
+`Set<Object?>`; OR-Map retorna `Map<String, Set<Object?>>`. MV escrito com null
+retorna `{null}`, um conjunto presente. Remover elemento de set ou chave de
+OR-Map não remove o campo inteiro. Coleções, inclusive aninhadas, são somente
+leitura, isoladas do estado e estáveis após edições posteriores.
+
+`valueAt` não muda: ausência, LWW null e tombstone continuam retornando null.
+Adote `query` apenas onde a distinção importa. `PresentField.value` continua
+`Object?`; o resultado tipado descreve presença, não o schema do aplicativo.
+Conversão e validação do modelo pertencem ao consumidor. Execute o decoder
+apenas no ramo presente, passando também null legítimo; trate ausência e remoção
+nos próprios ramos e propague falhas do decoder, sem convertê-las em ausência ou
+sucesso. A conveniência de decoder opcional será entregue em R-40; esta tarefa
+oferece o contrato que ela deve reutilizar, sem antecipar API ou schema.
+
+Na engine, aguarde `start()` antes da consulta síncrona; antes disso, durante
+inicialização ou após `dispose`, a leitura lança `StateError`. Durante await de
+storage/rede, a consulta lê o último estado adotado; uma candidata só aparece
+após commit local bem-sucedido. No callback de lote, `batch.query` lê edições
+provisórias; seu editor expira antes do await do commit. Um resultado presente
+não confirma envio ou ACK. Outbox vazia não significa ausência nem remove
+tombstones. Leituras não alteram clocks, snapshot, outbox ou formatos.
+
+Para manutenção, `ReplicaState.kindAt/isDeletedAt` consultam metadados canônicos;
+`Replica` centraliza os valores dos oito tipos no mesmo percurso de `valueAt`.
+`isDeletedAt` retorna false para endereço ausente ou tipo não LWW, sem copiar
+payload; aplicações devem preferir `query` para distinguir todos os casos.
+As variantes ficam em part da mesma library de Replica para manter construtores
+privados; não há cache de presença nem segundo modelo de estado. A engine e o
+editor delegam a consulta ao core. Não mudaram joins, mutações, commit,
+restauração, contratos de adaptadores ou formatos persistidos. API adicionada;
+quem herda Replica/SyncEngine deve conferir conflitos com um método próprio
+chamado `query`. Adicionar uma variante futura exigirá migrar switches exaustivos.
+
+Veja o [exemplo executável](../example/field_query_example.dart). As provas de
+core, facade, commit falho e reabertura SQLite ficam no
+[registro R-42](../plan/TRACEABILITY.md#execucao-r-42-2026-10-24).
+
 ## Resumo de pendências em adaptadores — R-37
 
 `ReplicaStorage` ganha um membro obrigatório; implementações externas devem

@@ -22,6 +22,9 @@ final class LocalBatch {
 
   Object? valueAt(String address) => _open.valueAt(address);
 
+  /// Reads this batch's candidate; the result is isolated and not yet committed.
+  FieldQuery query(String address) => _open.query(address);
+
   void _record(Iterable<DeltaChange> Function(Replica) mutate) {
     final candidate = _open;
     try {

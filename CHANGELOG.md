@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add typed field queries distinguishing absence, present null and retained LWW
+  deletion in Replica, SyncEngine and LocalBatch; preserve valueAt semantics.
 - Add scoped local batches with one atomic snapshot/outbox commit, rollback on
   callback/edit/storage failure, and per-change delivery/ACK semantics.
 - Add pendingSummary and OutboxSummary for peer-scoped retained-entry counts.

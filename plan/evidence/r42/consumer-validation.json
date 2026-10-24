@@ -1,0 +1,153 @@
+{
+  "task": "R-42",
+  "beforeRevision": "754c763d5a90bdc95b10cc55fcf36b929890b47b",
+  "sdk": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n",
+  "isolatedDirectory": "/tmp/deltasync-r42-consumer-k3fg6ej3",
+  "records": [
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "/tmp/deltasync-r42-consumer-k3fg6ej3",
+      "exitCode": 0,
+      "output": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ deltasync 2.0.0 from path /projetos/tcc/deltasync\n! deltasync_core 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage (overridden)\n! deltasync_sync 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_transport (overridden)\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ pool 1.5.3\n+ pub_semver 2.2.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 50 dependencies!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-r42-consumer-k3fg6ej3",
+      "exitCode": 0,
+      "output": "Analyzing test...\nNo issues found!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r42-consumer-k3fg6ej3",
+      "exitCode": 0,
+      "output": "00:00 +0: loading test/consumer_test.dart\n00:00 +0: test/consumer_test.dart: external consumer handles all variants without internal imports\n00:00 +1: test/consumer_test.dart: typed values stay isolated and empty collections stay present\n00:00 +2: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "/tmp/deltasync-r42-consumer-k3fg6ej3/forged.dart"
+      ],
+      "cwd": "/tmp/deltasync-r42-consumer-k3fg6ej3",
+      "exitCode": 3,
+      "output": "Analyzing forged.dart...\n\n  error - forged.dart:2:20 - The class 'AbsentField' doesn't have an unnamed constructor. Try using one of the named constructors defined in 'AbsentField'. - new_with_undefined_constructor_default\n  error - forged.dart:3:25 - The class 'FieldQuery' can't be extended, implemented, or mixed in outside of its library because it's a sealed class. - invalid_use_of_type_outside_library\n  error - forged.dart:4:32 - The class 'PresentField' can't be implemented outside of its library because it's a final class. - invalid_use_of_type_outside_library\n\n3 issues found.\n"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/tmp/deltasync-r42-before-khi5vko8"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/projetos/tcc/deltasync"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    }
+  ],
+  "apiDifferences": {
+    "deltasync": {
+      "addedSymbols": [
+        "AbsentField",
+        "DeletedField",
+        "FieldQuery",
+        "PresentField"
+      ],
+      "addedMembers": {
+        "Replica": [
+          "/// Distinguishes an unbound address, a present value (including null), and /// a retained LWW deletion. Reads only the addressed materialized state; /// storage/outbox/ACK do not determine presence or deletion. /// /// The seven other bound kinds always return PresentField, even for zero or /// empty collections. Values follow [valueAt] types and are detached/read-only. /// This query does not change clocks, identities or CRDT state. FieldQuery query(String address)"
+        ],
+        "ReplicaState": [
+          "/// True only for a retained LWW tombstone; reads no value or delta payload. /// For presence and values across all kinds, use Replica.query. bool isDeletedAt(String address)"
+        ],
+        "SyncEngine": [
+          "/// Reads a typed field result after [start], from the last adopted commit. /// During storage/network waits, sees committed state without waiting for I/O. /// Missing, null and LWW deletion semantics follow [Replica.query]. A present /// value does not imply remote ACK. Rejects reads before start/after dispose. FieldQuery query(String address)"
+        ],
+        "LocalBatch": [
+          "/// Reads this batch's candidate; the result is isolated and not yet committed. FieldQuery query(String address)"
+        ]
+      }
+    },
+    "deltasync_core": {
+      "addedSymbols": [
+        "AbsentField",
+        "DeletedField",
+        "FieldQuery",
+        "PresentField"
+      ],
+      "addedMembers": {
+        "Replica": [
+          "/// Distinguishes an unbound address, a present value (including null), and /// a retained LWW deletion. Reads only the addressed materialized state; /// storage/outbox/ACK do not determine presence or deletion. /// /// The seven other bound kinds always return PresentField, even for zero or /// empty collections. Values follow [valueAt] types and are detached/read-only. /// This query does not change clocks, identities or CRDT state. FieldQuery query(String address)"
+        ],
+        "ReplicaState": [
+          "/// True only for a retained LWW tombstone; reads no value or delta payload. /// For presence and values across all kinds, use Replica.query. bool isDeletedAt(String address)"
+        ]
+      }
+    },
+    "deltasync_storage": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_transport": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_sync": {
+      "addedSymbols": [],
+      "addedMembers": {
+        "SyncEngine": [
+          "/// Reads a typed field result after [start], from the last adopted commit. /// During storage/network waits, sees committed state without waiting for I/O. /// Missing, null and LWW deletion semantics follow [Replica.query]. A present /// value does not imply remote ACK. Rejects reads before start/after dispose. FieldQuery query(String address)"
+        ],
+        "LocalBatch": [
+          "/// Reads this batch's candidate; the result is isolated and not yet committed. FieldQuery query(String address)"
+        ]
+      }
+    },
+    "deltasync_storage_sqflite": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_storage_testing": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    }
+  },
+  "sourceSha256": "72a0ab858060ec01a09e0659a7539bc79638df3e9d3ceb45e7c74ea3f6bf0e0b",
+  "limits": [
+    "Independent path dependencies, not hosted artifacts",
+    "Language 3.12; reference SDK shown above, not minimum runtime proof"
+  ]
+}

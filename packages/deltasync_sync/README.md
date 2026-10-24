@@ -12,6 +12,13 @@ also await initialization. Use engine methods to edit, preserving atomic snapsho
 and outbox commits. `valueAt` reads one address; `observations`, `commits` and
 `errors` let the application refresh values and expose failures.
 
+`query(address)` distinguishes `AbsentField`, `PresentField` (including null)
+and `DeletedField` (retained LWW tombstone). Like `valueAt`, this synchronous
+query requires a started engine and rejects reads after disposal. During storage
+or network waits, it reads the last adopted commit; failed commits never expose
+their candidate. `LocalBatch.query` instead reads provisional edits and expires
+with the editor. Presence/deletion does not depend on outbox entries or ACK.
+
 Use `await engine.batch((batch) { ... })` for related local edits with one atomic
 snapshot/outbox commit. The scoped LocalBatch delegates native CRDT mutations and
 reads; its callback must finish synchronously without I/O or other engine calls.
