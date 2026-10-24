@@ -1,0 +1,419 @@
+// @dart=3.12
+// Migrated application-owned implementations, compiled outside the workspace.
+
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:deltasync/deltasync.dart';
+import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
+import 'package:deltasync_storage_testing/deltasync_storage_testing.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:test/test.dart';
+
+import 'import_pending.dart';
+
+/// Delegation exercises every member; no inheritance from library internals.
+class ConsumerStorage implements ReplicaStorage {
+  ConsumerStorage({this.failCommit = false});
+  final bool failCommit;
+  final _memory = MemoryStorage();
+  @override
+  Future<ReplicaSnapshot?> loadReplica(String replicaId) =>
+      _memory.loadReplica(replicaId);
+  @override
+  Future<void> saveReplica(ReplicaSnapshot snapshot) =>
+      _memory.saveReplica(snapshot);
+  @override
+  Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries) {
+    if (failCommit) return Future.error(StateError('fixture commit failure'));
+    return _memory.commit(snapshot, entries);
+  }
+
+  @override
+  Future<void> commitRemote(ReplicaSnapshot snapshot) =>
+      _memory.commitRemote(snapshot);
+  @override
+  Future<void> enqueue(OutboxEntry entry) => _memory.enqueue(entry);
+  @override
+  Future<List<OutboxEntry>> pending(
+    String replicaId, {
+    String? recipientPeerId,
+  }) => _memory.pending(replicaId, recipientPeerId: recipientPeerId);
+  @override
+  Future<OutboxSummary> pendingSummary(String replicaId, {String? recipientPeerId}) =>
+      _memory.pendingSummary(replicaId, recipientPeerId: recipientPeerId);
+
+  @override
+  Future<void> markSent(String replicaId, String peer, Iterable<String> ids) =>
+      _memory.markSent(replicaId, peer, ids);
+  @override
+  Future<void> acknowledge(
+    String replicaId,
+    String peer,
+    Iterable<String> ids,
+  ) => _memory.acknowledge(replicaId, peer, ids);
+}
+
+class ConsumerStorageFixture implements ReplicaStorageContractFixture {
+  @override
+  ReplicaStorage createStorage() => ConsumerStorage();
+  @override
+  ReplicaStorage createStorageWithCommitFailure() =>
+      ConsumerStorage(failCommit: true);
+}
+
+/// ACK here is a controlled fixture response, not proof of remote durability.
+class ConsumerTransport
+    implements
+        AcknowledgingDeltaTransport,
+        IncomingAcknowledgingDeltaTransport {
+  DeltaAcknowledgement? lastIncomingAck;
+  @override
+  String get peerReplicaId => 'peer-a';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async =>
+      DeltaAcknowledgement(
+        peerReplicaId: peerReplicaId,
+        stage: DeltaAckStage.appliedAndPersisted,
+        changeIds: envelope.delta.changes.take(3).map((change) => change.id),
+      );
+  @override
+  Future<void> acknowledge(DeltaAcknowledgement acknowledgement) async {
+    lastIncomingAck = acknowledgement;
+  }
+}
+
+void main() {
+  final fixture =
+      jsonDecode(
+            File('plan/evidence/r30/fixture_1_0_0.json').readAsStringSync(),
+          )
+          as Map<String, dynamic>;
+  Map<String, Object?> map(Object? value) =>
+      Map<String, Object?>.from(value as Map);
+  ReplicaSnapshot snapshot() =>
+      ReplicaSnapshot.fromJson(map(fixture['snapshot']));
+  List<OutboxEntry> outbox() => [
+    for (final entry in fixture['outbox'] as List)
+      OutboxEntry.fromJson(map(entry)),
+  ];
+
+  test('consumer resolves the explicitly expected source tree', () async {
+    final expected = Platform.environment['R37_EXPECT_SOURCE'];
+    expect(expected, isNotNull, reason: 'Set R37_EXPECT_SOURCE for provenance');
+    final actual = await Isolate.resolvePackageUri(
+      Uri.parse('package:deltasync/deltasync.dart'),
+    );
+    expect(
+      actual!.toFilePath(),
+      '${Directory(expected!).absolute.path}/lib/deltasync.dart',
+    );
+  });
+
+  replicaStorageContractTests(
+    name: 'R-37 external implementation',
+    fixture: ConsumerStorageFixture(),
+  );
+
+  test('frozen 1.0.0 snapshot retains eight kinds and causal metadata', () {
+    final encoded = snapshot();
+    final replica = Replica.fromSnapshotJson(encoded.snapshot!);
+    expect(replica.toSnapshotJson(), encoded.snapshot);
+    expect(normalizedValues(replica), fixture['values']);
+    expect(
+      replica.state.addresses.map(replica.state.kindAt).toSet(),
+      CrdtKind.values.toSet(),
+    );
+    final ids = outbox().map((entry) => entry.entryId).toSet();
+    final next = replica.incrementGCounter('g');
+    expect(next.value, 4);
+    expect(ids, isNot(contains(next.id)));
+    replica.apply(DeltaCodec.decode(map(fixture['delayed'])));
+    expect(replica.orSetValue('gap'), {'unseen-1', 'unseen-2'});
+  });
+
+  test(
+    'frozen wire/outbox payloads preserve IDs, status and legacy readers',
+    () {
+      final entries = outbox();
+      expect(
+        entries.map((entry) => entry.toJson()).toList(),
+        fixture['outbox'],
+      );
+      final envelope = DeltaEnvelope.fromJson(map(fixture['envelope']));
+      expect(envelope.toJson(), fixture['envelope']);
+      expect(DeltaCodec.encode(envelope.delta), fixture['delta']);
+      expect(
+        DeltaAcknowledgement.fromJson(map(fixture['ack'])).toJson(),
+        fixture['ack'],
+      );
+      final legacy = Replica('migrated');
+      legacy.apply(DeltaCodec.decode(map(fixture['legacyCodecV2'])));
+      expect(legacy.valueAt('legacy-title'), 'retained');
+      final oldOutbox = entries.first.toJson()
+        ..['version'] = 1
+        ..remove('recipientPeerId');
+      expect(
+        OutboxEntry.fromJson(
+          oldOutbox,
+          legacyRecipientPeerId: 'peer-a',
+        ).entryId,
+        entries.first.entryId,
+      );
+      expect(() => OutboxEntry.fromJson(oldOutbox), throwsFormatException);
+      final oldEnvelope = envelope.toJson()
+        ..['version'] = 1
+        ..remove('recipientReplicaId');
+      expect(
+        DeltaEnvelope.fromJson(
+          oldEnvelope,
+          legacyRecipientReplicaId: 'peer-a',
+        ).toJson(),
+        fixture['envelope'],
+      );
+    },
+  );
+
+  test('external adapter exposes scoped summary with partial ACK', () async {
+    final storage = ConsumerStorage();
+    final engine = SyncEngine.withStorage(replica: Replica('summary-external'),
+        storage: storage, transport: ConsumerTransport());
+    try {
+      for (var i = 0; i < 4; i++) { await engine.setDelta('field/$i', i); }
+      expect((await engine.pendingSummary()).pendingCount, 4);
+      expect((await engine.pendingSummary(recipientPeerId: 'other')).totalCount, 0);
+      await engine.push();
+      final summary = await engine.pendingSummary(recipientPeerId: 'peer-a');
+      expect([summary.pendingCount, summary.sentCount, summary.totalCount], [0, 1, 1]);
+    } finally { await engine.dispose(); }
+  });
+
+  test(
+    'migrated public calls commit, retain pending IDs and apply deletes',
+    () async {
+      final storage = ConsumerStorage();
+      final engine = SyncEngine.withStorage(
+        replica: Replica('aliases'),
+        storage: storage,
+        transport: ConsumerTransport(),
+      );
+      try {
+        final change = await engine.setDelta('title', 'new-call');
+        await engine.removeDelta('title');
+        final delta = Delta([change]);
+        expect(delta.changes.single, change);
+        final entry = OutboxEntry(delta: delta, recipientPeerId: 'peer-a');
+        expect(entry.entryId, change.id);
+        expect(entry.changeIds, [change.id]);
+        expect(await storage.pending('aliases'), hasLength(2));
+        final replica = Replica('alias-replica')
+          ..setDelta('a', 1)
+          ..removeDelta('a');
+        expect(replica.valueAt('a'), isNull);
+        expect(
+          (await storage.loadReplica('aliases'))!.snapshot,
+          engine.replica.toSnapshotJson(),
+        );
+      } finally {
+        await engine.dispose();
+      }
+    },
+  );
+
+  test(
+    'exported pending batch imports with checkpoint and explicit peer',
+    () async {
+      final exported = map(fixture['delta']);
+      final pending = DeltaCodec.decode(exported);
+      final checkpoint = snapshot();
+      final failed = ConsumerStorage(failCommit: true);
+      await expectLater(
+        importPending(
+          target: failed,
+          checkpoint: checkpoint.snapshot!,
+          encodedPending: exported,
+          recipientPeerId: 'peer-a',
+        ),
+        throwsStateError,
+      );
+      expect(await failed.loadReplica(checkpoint.replicaId), isNull);
+      expect(await failed.pending(checkpoint.replicaId), isEmpty);
+      expect(exported, fixture['delta']);
+
+      final storage = ConsumerStorage();
+      await expectLater(
+        importPending(
+          target: storage,
+          checkpoint: Replica('another-owner').toSnapshotJson(),
+          encodedPending: exported,
+          recipientPeerId: 'peer-a',
+        ),
+        throwsFormatException,
+      );
+      expect(await storage.loadReplica(checkpoint.replicaId), isNull);
+      await importPending(
+        target: storage,
+        checkpoint: checkpoint.snapshot!,
+        encodedPending: exported,
+        recipientPeerId: 'peer-a',
+      );
+      await expectLater(
+        importPending(
+          target: storage,
+          checkpoint: checkpoint.snapshot!,
+          encodedPending: exported,
+          recipientPeerId: 'peer-a',
+        ),
+        throwsStateError,
+      );
+      final engine = SyncEngine.withStorage(
+        replica: Replica(checkpoint.replicaId),
+        storage: storage,
+        transport: ConsumerTransport(),
+      );
+      try {
+        await engine.start();
+        expect(normalizedValues(engine.replica), fixture['values']);
+        expect((await engine.pendingDelta()).toJson(), pending.toJson());
+        final result = await engine.push(force: true);
+        expect(result.acknowledgedIds, hasLength(3));
+        expect(
+          await storage.pending(checkpoint.replicaId),
+          hasLength(pending.changes.length - 3),
+        );
+      } finally {
+        await engine.dispose();
+      }
+    },
+  );
+
+  test(
+    'SQLite restores frozen state/outbox, new edits and peer-isolated ACK',
+    () async {
+      sqfliteFfiInit();
+      final directory = await Directory.systemTemp.createTemp('deltasync-r30-');
+      final path = '${directory.path}/fixture.sqlite';
+      SqfliteReplicaStorage open() => SqfliteReplicaStorage(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: path,
+      );
+      var storage = open();
+      SyncEngine? engine;
+      try {
+        final frozen = snapshot();
+        final entries = outbox();
+        await storage.commit(frozen, entries);
+        await storage.close();
+        storage = open();
+        expect(
+          (await storage.loadReplica(frozen.replicaId))!.toJson(),
+          frozen.toJson(),
+        );
+        expect(
+          (await storage.pending(
+            frozen.replicaId,
+          )).map((entry) => entry.toJson()).toSet(),
+          entries.map((entry) => entry.toJson()).toSet(),
+        );
+        engine = SyncEngine.withStorage(
+          replica: Replica(frozen.replicaId),
+          storage: storage,
+          transport: ConsumerTransport(),
+        );
+        await engine.start();
+        expect(normalizedValues(engine.replica), fixture['values']);
+        final oldIds = entries.map((entry) => entry.entryId).toSet();
+        final change = await engine.incrementGCounter('g');
+        expect(oldIds, isNot(contains(change.id)));
+        final otherPeer = (await storage.pending(
+          frozen.replicaId,
+          recipientPeerId: 'peer-b',
+        )).map((entry) => entry.entryId).toSet();
+        final result = await engine.push(force: true);
+        expect(result.acknowledgedIds, hasLength(3));
+        expect(
+          (await storage.pending(
+            frozen.replicaId,
+            recipientPeerId: 'peer-b',
+          )).map((entry) => entry.entryId).toSet(),
+          otherPeer,
+        );
+        await engine.dispose();
+        engine = null;
+        await storage.close();
+        storage = open();
+        final persisted = (await storage.loadReplica(frozen.replicaId))!;
+        expect(
+          Replica.fromSnapshotJson(persisted.snapshot!).gCounterValue('g'),
+          4,
+        );
+        expect(
+          await storage.pending(frozen.replicaId),
+          hasLength(entries.length + 1 - 3),
+        );
+      } finally {
+        await engine?.dispose();
+        await storage.close();
+        await directory.delete(recursive: true);
+      }
+    },
+  );
+
+  test(
+    'legacy snapshot wrapper restores through the public engine boundary',
+    () async {
+      final store = ConsumerStorage();
+      final old = ReplicaSnapshot.fromJson(map(fixture['legacyStorageV1']));
+      await store.saveReplica(old);
+      final engine = SyncEngine.withStorage(
+        replica: Replica(old.replicaId),
+        storage: store,
+        transport: ConsumerTransport(),
+      );
+      try {
+        await engine.start();
+        expect(normalizedValues(engine.replica), fixture['values']);
+        expect(normalize(engine.valueAt('mv')), ['concurrent', 'local']);
+      } finally {
+        await engine.dispose();
+      }
+    },
+  );
+}
+
+Map<String, Object?> normalizedValues(Replica replica) => {
+  for (final address in [
+    'lww',
+    'g',
+    'pn',
+    'g-set',
+    '2p-set',
+    'mv',
+    'or-set',
+    'or-map',
+    'deleted',
+    'null',
+    'gap',
+    'mv/compact',
+  ])
+    address: normalize(replica.valueAt(address)),
+};
+
+Object? normalize(Object? value) {
+  if (value is Set) {
+    final values = value.map(normalize).toList()
+      ..sort((a, b) => jsonEncode(a).compareTo(jsonEncode(b)));
+    return values;
+  }
+  if (value is Map) {
+    final keys = value.keys.cast<String>().toList()..sort();
+    return {for (final key in keys) key: normalize(value[key])};
+  }
+  if (value is List) return value.map(normalize).toList();
+  return value;
+}

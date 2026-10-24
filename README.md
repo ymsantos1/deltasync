@@ -515,6 +515,12 @@ sucessos de commit ou falhas de chamadas aguardadas. O
 cada ação; o [exemplo CLI](example/offline_reconciliation.dart) chama
 `push(force: true)` explicitamente ao reconectar.
 
+`pendingSummary(recipientPeerId: engine.transport.peerReplicaId)` consulta
+quantidades `pendingCount`, `sentCount` e `totalCount` sem montar lote de deltas.
+Sem filtro, inclui todos os peers; sent ainda aguarda ACK. Falha nessa consulta
+não desfaz commit anterior. Adaptadores próprios devem implementar o novo membro
+de `ReplicaStorage`: veja [migração](docs/migracao-1.0.1.md#resumo-de-pendências-em-adaptadores--r-37).
+
 `pendingDelta()` consulta alterações ainda retidas localmente; `push()` retorna
 `SyncPushResult` com delta enviado, estágio do ACK (quando existe) e IDs
 incorporados/persistidos. `fullyAcknowledged` é falso quando um lote enviado não

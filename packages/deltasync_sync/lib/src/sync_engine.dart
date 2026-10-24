@@ -337,6 +337,24 @@ class SyncEngine {
     () => _queue.run(() => _persistence.pendingDelta(_replica.id)),
   );
 
+  /// Counts retained pending/sent entries, without constructing a delta batch.
+  ///
+  /// Null [recipientPeerId] includes all peers, like [pendingDelta]. Pass
+  /// transport.peerReplicaId to query only this engine's configured peer.
+  /// Initialization and the commit queue serialize this read with local writes
+  /// and ACK persistence. Storage errors propagate; an error does not undo an
+  /// earlier successful local commit. Network waits do not hold this queue.
+  /// Counts can change after this Future completes. Disposal rejects new reads.
+  Future<OutboxSummary> pendingSummary({String? recipientPeerId}) =>
+      _withStarted(
+        () => _queue.run(
+          () => storage.pendingSummary(
+            _replica.id,
+            recipientPeerId: recipientPeerId,
+          ),
+        ),
+      );
+
   Future<void> dispose() {
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return _disposeFuture ?? Future.value();

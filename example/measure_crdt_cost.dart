@@ -585,6 +585,29 @@ Future<Map<String, Object?>> _pathSample({
             .length;
       }
     });
+    var summaryGlobal = OutboxSummary(pendingCount: 0, sentCount: 0);
+    var summaryPeer = OutboxSummary(pendingCount: 0, sentCount: 0);
+    await measureAsync('summaryGlobalBatch', () async {
+      for (var i = 0; i < _queryRepetitions; i++) {
+        summaryGlobal = await engine.pendingSummary();
+      }
+    });
+    await measureAsync('summaryPeerBatch', () async {
+      for (var i = 0; i < _queryRepetitions; i++) {
+        summaryPeer = await engine.pendingSummary(recipientPeerId: _peerId);
+      }
+    });
+    _require(
+      summaryGlobal.totalCount * _queryRepetitions == totalCount &&
+          summaryGlobal.sentCount ==
+              entries.where((e) => e.status == OutboxStatus.sent).length,
+      'global summary matches materialized entries',
+    );
+    _require(
+      summaryPeer.pendingCount * _queryRepetitions == pendingCount &&
+          summaryPeer.sentCount * _queryRepetitions == sentCount,
+      'peer summary matches materialized entries',
+    );
     Object? queried;
     measure('valueAtBatch', () {
       for (var i = 0; i < _queryRepetitions; i++) {

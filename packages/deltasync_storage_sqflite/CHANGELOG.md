@@ -1,3 +1,8 @@
+## Unreleased
+
+- Aggregate pending/sent counts in SQLite without materializing deltas in Dart.
+  Keep schema v1; builds without JSON functions use a metadata-reading fallback.
+
 ## 2.0.0
 
 - Implement atomic SQLite snapshot/outbox commits with peer-specific entries.

@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-39 concluídas e nenhuma ativa.
-R-33/R-37/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-39 concluídas e nenhuma ativa.
+R-33/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -375,7 +375,7 @@ O pedido atual planeja sua execução; nenhuma implementação foi iniciada.
 
 ## R-37 — Oferecer consulta leve de pendências
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-32, R-39
 
@@ -383,19 +383,25 @@ Alvo: 1.0.1.
 
 Critérios:
 
-- [ ] Definir consulta pública de quantidade/resumo por peer com a outbox como
+- [x] Definir consulta pública de quantidade/resumo por peer com a outbox como
   fonte; evitar cache paralelo e materialização de todos os deltas quando o
   adaptador suportar consulta leve. Usar evidências de R-32 para desenho mínimo.
-- [ ] Escolher o menor contrato que suporte consulta eficiente e documentar
+- [x] Escolher o menor contrato que suporte consulta eficiente e documentar
   impacto em implementadores externos. Se houver capacidade opcional/fallback,
   justificá-los pelo caso concreto; se houver membro obrigatório novo, fornecer
   implementação de referência, suíte de contrato e instrução de migração.
-- [ ] Validar pendentes/enviados, ACK parcial, falha de consulta, concorrência,
+- [x] Validar pendentes/enviados, ACK parcial, falha de consulta, concorrência,
   restauração e equivalência MemoryStorage/SQLite, com documentação de consumo.
 
 Validação: contrato opcional/adaptadores externos, integração sync/facade e
 recuperação SQLite, além de demonstração do custo evitado.
-Evidência de conclusão: ainda não registrada.
+Resultado: pendingSummary obrigatório no storage e público na engine/facade;
+266 testes, 18 checks externos e sete inventários aprovados. Em SQLite, cinco
+contagens globais de 256 entradas passaram de 31537 a 3157 µs na mesma execução.
+Sem schema novo; fallback para SQLite sem JSON1 documentado/testado, sem prometer
+custo constante ou ganho universal.
+Evidência de conclusão: [execução R-37](TRACEABILITY.md#execucao-r-37-2026-10-24)
+e [contrato, migração e resultados](evidence/r37/README.md).
 
 <a id="r-38"></a>
 

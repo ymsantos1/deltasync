@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add pendingSummary and OutboxSummary for peer-scoped retained-entry counts.
+  Custom ReplicaStorage implementations must implement the new query; see migration.
 - Remove pending-store APIs and deprecated mutation/delta/outbox aliases; require
   ReplicaStorage in SyncEngine. Source migration is required for 1.0.1.
 - Keep historical data readers and serialized formats; Operation conversion is

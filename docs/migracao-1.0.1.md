@@ -20,10 +20,71 @@ ajustados em R-36; esta mudança não publica nem renumera pacotes ou dados.
 `DeltaChange`, `ReplicaStorage` e os contratos de transporte continuam
 implementáveis pelos consumidores. Seus membros não mudaram nesta tarefa.
 Adaptadores de storage devem implementar `loadReplica`, `saveReplica`, `commit`,
-`commitRemote`, `enqueue`, `pending`, `markSent` e `acknowledge`. Execute a suíte
+`commitRemote`, `enqueue`, `pending`, `pendingSummary`, `markSent` e `acknowledge`. Execute a suíte
 de `deltasync_storage_testing`, além de provas de rollback/reabertura no seu banco.
 O [consumidor migrado](../plan/evidence/r39/consumer_test.dart.txt) implementa os
 contratos públicos por composição, sem herdar ou importar implementação interna.
+
+## Resumo de pendências em adaptadores — R-37
+
+`ReplicaStorage` ganha um membro obrigatório; implementações externas devem
+adicioná-lo antes de compilar com esta versão:
+
+```dart
+Future<OutboxSummary> pendingSummary(
+  String replicaId, {
+  String? recipientPeerId,
+});
+```
+
+Retorne `OutboxSummary(pendingCount: ..., sentCount: ...)`, com inteiros não
+negativos obtidos em uma leitura consistente da outbox. `totalCount` soma os
+dois grupos. `sent` continua sem confirmação; ignore `confirmed` histórico.
+Filtro null inclui todos os peers; um mesmo ID para dois peers conta duas vezes.
+Consulta não marca envio, não remove registros e não confirma entrega.
+Erros devem ser lançados, nunca convertidos em contagem zero.
+
+Use agregação/metadata do backend quando disponível. Um adaptador pode começar
+contando os status de `await pending(replicaId, recipientPeerId: ...)`, mas isso
+mantém o custo de materializar payloads; não cria uma contagem eficiente. A suíte
+de contrato verifica filtros, pending/sent, ACK parcial, concorrência e rollback.
+Não é necessário implementar outra interface opcional nem manter cache de status.
+O [consumidor migrado R-37](../plan/evidence/r37/consumer_test.dart.txt) demonstra
+o membro novo por delegação e continua usando somente imports públicos.
+
+MemoryStorage lê somente status/destino das entradas existentes. SQLite agrupa
+status no SQL e devolve pequenos grupos de contagem, sem instanciar deltas em
+Dart; ainda lê/processa o texto JSON no banco, sem promessa de custo constante.
+Não há mudança de schema nem cópia de status para outra coluna. Como funções
+JSON podem faltar em uma build SQLite, o adaptador usa leitura de metadata JSON
+em Dart somente ao receber `no such function: json_extract`; outros erros
+propagam. Esse fallback preserva compatibilidade, com custo maior. A disponibilidade
+das funções depende da [compilação SQLite](https://www.sqlite.org/json1.html#compiling_in_json_support).
+Resumo consulta metadata e não valida o corpo do delta: uma contagem positiva
+não certifica que payload corrompido possa ser enviado. A validação continua nos
+readers/mutações/envio existentes. Limites de parsing SQL também podem causar
+falha de consulta, mesmo após commit local bem-sucedido.
+
+Na aplicação:
+
+```dart
+await engine.setDelta('title', 'Salvo localmente');
+try {
+  final summary = await engine.pendingSummary(
+    recipientPeerId: engine.transport.peerReplicaId,
+  );
+  print('${summary.totalCount} mudanças aguardando ACK');
+} catch (error) {
+  // A edição já foi salva; a consulta de status falhou. Permita novas edições.
+  print('Status indisponível: $error');
+}
+```
+
+A consulta pela engine aguarda restauração e a fila de commits, incluindo ACK
+local; não aguarda rede em andamento. O resultado descreve o instante da leitura,
+podendo mudar após o Future concluir. Chamada após dispose falha. Sem filtro,
+o escopo é global, como pendingDelta. Não substitua detalhes de payload por esse
+resumo quando precisar efetivamente enviar ou inspecionar mudanças.
 
 ## Migração do antigo pending store
 

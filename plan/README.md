@@ -135,13 +135,13 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-32 mediu custos de mutação, restauração e pendências
-após R-31/R-39. Escrita e revisão do TCC ficam com o autor, fora deste plano.
+Tarefa ativa: **nenhuma**. R-37 entregou consulta de resumo por peer sem montar
+lote de deltas. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-37**, para oferecer consulta leve de pendências com a baseline
-R-32. R-33/R-38/R-42 também estão prontas; esta execução encerra em R-32.
+selecionável: **R-38**, para entregar lote público com commit local atômico.
+R-33/R-42 também estão prontas; esta execução encerra em R-37.
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
@@ -250,7 +250,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | planejada | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
 | [R-36](06_PHASE6_MANUTENCAO_1_0_1.md#r-36) | Preparar metadados da release 1.0.1 | planejada | SHOULD | R-35 |
 | [VAL-17](06_PHASE6_MANUTENCAO_1_0_1.md#val-17) | Validar migração e artefatos da 1.0.1 | planejada | SHOULD | R-36 |
-| [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | pronta | SHOULD | R-32, R-39 |
+| [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | concluída | SHOULD | R-32, R-39 |
 | [R-38](06_PHASE6_MANUTENCAO_1_0_1.md#r-38) | Implementar lote público com commit local atômico | pronta | SHOULD | R-39 |
 | [R-39](06_PHASE6_MANUTENCAO_1_0_1.md#r-39) | Remover superfície legada preservando migração de dados | concluída | SHOULD | R-30, R-31 |
 | [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | planejada | SHOULD | R-42 |

@@ -213,6 +213,63 @@ class SqfliteReplicaStorage implements ReplicaStorage {
   }
 
   @override
+  Future<OutboxSummary> pendingSummary(
+    String replicaId, {
+    String? recipientPeerId,
+  }) async {
+    final database = await _database();
+    final where = recipientPeerId == null
+        ? 'replica_id = ?'
+        : 'replica_id = ? AND recipient_peer_id = ?';
+    final arguments = <Object?>[replicaId, ?recipientPeerId];
+    List<Map<String, Object?>> rows;
+    try {
+      // Keep schema v1 and return only status/count groups to Dart. SQLite
+      // still reads JSON text; this is not an indexed, constant-time count.
+      rows = await database.rawQuery('''
+        SELECT json_extract(payload, '\$.status') AS status,
+               COUNT(*) AS entry_count
+        FROM $_outboxTable WHERE $where
+        GROUP BY json_extract(payload, '\$.status')
+      ''', arguments);
+    } on DatabaseException catch (error) {
+      if (!error.toString().contains('no such function: json_extract')) rethrow;
+      // JSON support is optional in some SQLite builds. Keep those adapters
+      // working without schema changes; only this path loads JSON into Dart.
+      final records = await database.query(
+        _outboxTable,
+        columns: const ['payload'],
+        where: where,
+        whereArgs: arguments,
+      );
+      rows = [
+        for (final record in records)
+          {'status': _decodeMap(record['payload'])['status'], 'entry_count': 1},
+      ];
+    }
+    var pending = 0;
+    var sent = 0;
+    for (final row in rows) {
+      final status = row['status'];
+      final count = row['entry_count'];
+      if (status is! String || count is! int || count < 0) {
+        throw const FormatException('Invalid outbox summary metadata');
+      }
+      switch (OutboxStatus.fromWire(status)) {
+        case OutboxStatus.pending:
+          pending += count;
+        case OutboxStatus.sent:
+          sent += count;
+        // Retained only for historical rows; no deletion during a read.
+        // ignore: deprecated_member_use
+        case OutboxStatus.confirmed:
+          break;
+      }
+    }
+    return OutboxSummary(pendingCount: pending, sentCount: sent);
+  }
+
+  @override
   Future<void> acknowledge(
     String replicaId,
     String recipientPeerId,

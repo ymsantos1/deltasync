@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Add queued pendingSummary queries with lifecycle and query-error propagation.
 - Require ReplicaStorage in SyncEngine and remove store, set and remove aliases.
   Keep withStorage and historical restoration; commit and ACK use one storage path.
 - Assemble outbox changes in one pass, preserving ID conflict checks and order

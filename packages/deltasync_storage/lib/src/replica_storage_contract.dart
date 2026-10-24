@@ -234,6 +234,24 @@ class OutboxEntry {
   }
 }
 
+/// Counts of retained, unacknowledged outbox entries for one query scope.
+///
+/// Sent entries still await durable ACK. Legacy confirmed records are excluded.
+/// Counts refer to peer/ID entries, so one change addressed to two peers counts
+/// twice in a query across all peers. This is not a count of visible edits,
+/// eligible retries, in-flight requests, or remotely committed values.
+class OutboxSummary {
+  OutboxSummary({required this.pendingCount, required this.sentCount}) {
+    if (pendingCount < 0 || sentCount < 0) {
+      throw ArgumentError('Outbox counts must be non-negative');
+    }
+  }
+
+  final int pendingCount;
+  final int sentCount;
+  int get totalCount => pendingCount + sentCount;
+}
+
 /// Domain-oriented persistence contract. Implementations may use any backend.
 abstract interface class ReplicaStorage {
   Future<ReplicaSnapshot?> loadReplica(String replicaId);
@@ -260,6 +278,16 @@ abstract interface class ReplicaStorage {
 
   /// Lists all peers' entries, or only entries addressed to [recipientPeerId].
   Future<List<OutboxEntry>> pending(
+    String replicaId, {
+    String? recipientPeerId,
+  });
+
+  /// Reads one consistent summary from the outbox without changing its entries.
+  /// Null [recipientPeerId] includes all peers; otherwise filter that peer only.
+  /// Prefer backend metadata/aggregation over loading and decoding CRDT payloads.
+  /// This does not validate delta contents or imply remote acknowledgement.
+  /// Query failures must propagate, never masquerade as an empty outbox.
+  Future<OutboxSummary> pendingSummary(
     String replicaId, {
     String? recipientPeerId,
   });

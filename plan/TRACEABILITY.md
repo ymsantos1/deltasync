@@ -11,7 +11,8 @@ R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
 R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
 R-39 [concluiu remoções com migração e rollback](#execucao-r-39-2026-10-24).
 R-32 [concluiu medição de custos e encaminhamento](#execucao-r-32-2026-10-24).
-R-33/R-37/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+R-37 [concluiu consulta leve de pendências](#execucao-r-37-2026-10-24).
+R-33/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
 preservam as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
@@ -5518,3 +5519,62 @@ outra implementação. Registro de performance preserva garantias e todo o escop
 de 1.0.1. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e
 431 links locais; `git diff --check` passou. JSON, hashes e whitespace dos
 artefatos novos foram conferidos.
+
+<a id="execucao-r-37-2026-10-24"></a>
+
+## Execução R-37 — Resumo público de pendências, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em f2edf0f4da878dd785c1240536b4537aa081e9d4; R-32/R-39 concluídas e R-37 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, DEC-61, riscos, contrato/storage/sync e guia Dart sobre contratos, null safety e records. Confirmado custo de materialização nas evidências R-32 e status dentro do payload SQLite schema v1.
+Implementação: pendingSummary obrigatório em ReplicaStorage, referências MemoryStorage/SQLite e consulta enfileirada pela SyncEngine/facade. OutboxSummary contém pendingCount/sentCount e total derivado, sem cache. SQLite agrega status, com fallback restrito à ausência da função JSON; nenhuma mudança de schema/formato. Suíte pública de contrato ampliada; regressões de storage, sync, SQLite e facade; migração, changelogs, consumidor externo e medidor estendido com duas consultas adicionais.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Primeira análise/compilação SQLite detectou getResultCode ausente no helper DatabaseException; implementado e revisto. Corrigidos infos/formatação. Conferidos escopo global por peer/ID, confirmed excluído, ausência de payload no caminho otimizado, limites do fallback, propagação de erro e fila sem bloqueio por rede. Review repetido após correções, incluindo arquivos novos e documentos; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes; python3 -B plan/evidence/r37/validate_consumer.py --dart dart --report /tmp/deltasync-r37-consumer-smoke.json; dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r37-paths.json 2> /tmp/deltasync-r37-paths.err. Execuções da raiz, comandos/logs completos nos artefatos. Benchmark sem suítes Dart paralelas disparadas pelo agente.
+Critérios: C1 demonstrado pela API sem cache e provas estruturais de ausência de decodificação de deltas, com 14 cargas/70 amostras equivalentes; C2 pelo membro obrigatório mínimo, implementações de referência, suíte de contrato, guia e adaptador externo antigo rejeitado/migrado aprovado; C3 por filtros/status/ACK parcial, falha de consulta, edição durante rede, leitura concorrente com commit/rollback, lifecycle e SQLite fechado/reaberto preservando estado/outbox. 266 testes do workspace, 18 checks externos e sete inventários aprovados.
+Manutenção: três critérios marcados, índice/fase/trace atualizados, DEC-62 e RISK-37 revisados. Nenhuma ativa; próxima recomendada R-38, com R-33/R-42 também prontas. Fase 6/VAL-17 seguem abertas; nenhuma próxima implementação iniciada.
+Limitações: Dart 3.13.5/Linux x86_64, SQLite FFI; sem SDK 3.12.x, Android novo ou hosted artifacts. Ausência de JSON1 simulada em wrapper sobre banco real; fallback funcional, não benchmarkado. Agregação ainda processa JSON no SQLite, sem custo constante ou validação do corpo dos deltas. Heap/alocações não medidos. Sem alteração de core/joins/formatos/manifests, Compass, publicação ou commit.
+
+### Evidências por etapa
+
+[Contrato, migração, resultados e reprodução](evidence/r37/README.md) descrevem
+o consumo público e os limites. A leitura selecionou um único membro obrigatório,
+evitando capacidade opcional mais dispatch na engine. DTO valida contagens e
+deriva total; o estado continua no core, commit/adoção/restauração no sync e a
+outbox no backend. Resumo lê essa fonte, sem outra representação mutável.
+
+[validation.json](evidence/r37/validation.json) contém hashes, análise/review,
+falha inicial do helper e log completo do workspace: 14/122/62/14/34/10/10 testes,
+total **266**, sete análises limpas e formato aprovado. Novos testes cobrem
+metadata sem ler delta, empty/peer/réplica/status, ACK parcial, erros sem zero
+falso, fila durante commit/rollback, rede que não bloqueia edição/consulta,
+retry de inicialização e disposal. SQLite reabre após commit/envio/ACK e mantém
+snapshot/contagens; agregação não transfere payloads para Dart. O fallback também
+evita instanciar deltas, mas carrega JSON; erros distintos não ativam fallback.
+
+[consumer-validation.json](evidence/r37/consumer-validation.json) registra
+**18 checks** em projeto externo com resolução por path e origem conferida.
+O adaptador antigo não compila por pendingSummary ausente. O
+[migrado](evidence/r37/consumer_test.dart.txt) implementa o membro por delegação,
+sem src/herança interna. Dados congelados dos oito tipos, readers e contrato
+continuam exercitados. Sete inventários contra a revisão inicial confirmam
+somente OutboxSummary e pendingSummary como adições; R-30/R-39 permanecem intactos.
+
+[measurements.json](evidence/r37/measurements.json) reutiliza cargas R-32 com
+semente/aquecimentos e mede caminhos antigos/novos na mesma execução. Em SQLite,
+cinco contagens globais de 256 entradas levaram 31537 µs via pendingDelta e
+3157 µs via resumo; por peer, 12977/1552 µs para 128 entradas. Cada amostra
+verifica equivalência dos resultados. Em memória, a carga pequena por peer teve
+40/73 µs: fila/DTO têm custo fixo e não há promessa de ganho em todo cenário.
+Não extrapolar para redes, heap, outras plataformas ou fallback sem JSON1.
+
+### Manutenção
+
+R-37 concluída com critérios e evidências; R-38 recomendada e não iniciada.
+Guia separa falha de consulta de sucesso do commit local, descreve quebra do
+adaptador externo e limites de metadata/JSON. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 446 links locais;
+`git diff --check` passou. Hashes, JSON, sintaxe do instrumento Python, whitespace
+e unicidade dos IDs de risco foram conferidos. Correções finais documentais
+revistas sem mudanças adicionais de código.

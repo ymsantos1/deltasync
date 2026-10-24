@@ -2,6 +2,25 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'facade exposes summary counts without constructing a pending batch',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-summary'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.setDelta('field', true);
+      final OutboxSummary summary = await engine.pendingSummary(
+        recipientPeerId: engine.transport.peerReplicaId,
+      );
+      expect(
+        [summary.pendingCount, summary.sentCount, summary.totalCount],
+        [1, 0, 1],
+      );
+    },
+  );
   test('facade exposes restoration observation without implying ACK', () async {
     final engine = SyncEngine.withStorage(
       replica: Replica('facade-observer'),

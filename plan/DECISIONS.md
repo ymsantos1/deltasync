@@ -428,6 +428,20 @@ por documentação/gate completo; não alegar latência universal ou suporte mí
 executado. Ver [R-32](TRACEABILITY.md#execucao-r-32-2026-10-24) e
 [resultados](evidence/r32/README.md).
 
+DEC-62 — Resumo de pendências R-37, 2026-10-24: adicionar pendingSummary
+obrigatório em ReplicaStorage e expor a leitura pela engine, na fila existente.
+OutboxSummary valida contagens não negativas e deriva total, sem cache paralelo.
+Filtro null inclui todos os peers; entradas peer/ID contam separadamente e
+sent permanece sem ACK. Confirmed legado é excluído, sem remoção durante resumo.
+Um membro obrigatório com referências/suíte/migração é menor que capacidade
+opcional mais dispatch/fallback na engine. MemoryStorage lê metadata; SQLite
+agrega JSON no SQL mantendo schema v1, com fallback de metadata em Dart apenas
+para ausência de json_extract. Outros erros propagam; consulta não certifica
+payload, envio ou sucesso remoto, nem desfaz commit anterior. Ganhos medidos
+nas cargas R-32 não prometem latência universal ou otimização de builds sem JSON1.
+Contrato externo novo é quebra de fonte autorizada para 1.0.1; formatos, joins,
+SDK e manifests permanecem. Ver [R-37](TRACEABILITY.md#execucao-r-37-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

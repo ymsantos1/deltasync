@@ -1,3 +1,8 @@
+## Unreleased
+
+- Extend the storage contract suite with required pendingSummary behavior,
+  peer/status filters, legacy confirmed exclusion, concurrency and commit failure.
+
 ## 2.0.0
 
 - Provide reusable ReplicaStorage contract tests and fixture interfaces.

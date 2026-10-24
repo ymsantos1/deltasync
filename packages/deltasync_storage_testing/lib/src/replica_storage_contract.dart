@@ -23,6 +23,66 @@ void replicaStorageContractTests({
   required ReplicaStorageContractFixture fixture,
 }) {
   group('$name ReplicaStorage contract', () {
+    test(
+      'summary scopes pending and sent entries by replica and peer',
+      () async {
+        final storage = fixture.createStorage();
+        final replica = Replica('summary-device');
+        final first = replica.setDelta('first', 1);
+        final second = replica.setDelta('second', 2);
+        Future<List<int>> counts(String owner, [String? peer]) async {
+          final summary = await storage.pendingSummary(
+            owner,
+            recipientPeerId: peer,
+          );
+          return [summary.pendingCount, summary.sentCount, summary.totalCount];
+        }
+
+        expect(await counts(replica.id), [0, 0, 0]);
+        for (final peer in ['peer-a', 'peer-b']) {
+          await storage.commit(ReplicaSnapshot.fromReplica(replica), [
+            for (final change in [first, second])
+              OutboxEntry(delta: Delta([change]), recipientPeerId: peer),
+          ]);
+        }
+        await storage.markSent(replica.id, 'peer-a', [first.id]);
+        final before = (await storage.pending(
+          replica.id,
+        )).map((e) => e.toJson()).toList();
+        expect(await counts(replica.id), [3, 1, 4]);
+        expect(await counts(replica.id, 'peer-a'), [1, 1, 2]);
+        expect(await counts(replica.id, 'peer-b'), [2, 0, 2]);
+        expect(await counts(replica.id, 'missing'), [0, 0, 0]);
+        expect(await counts('another-replica'), [0, 0, 0]);
+        expect(
+          (await storage.pending(replica.id)).map((e) => e.toJson()).toList(),
+          before,
+        );
+        await storage.acknowledge(replica.id, 'peer-a', [first.id]);
+        expect(await counts(replica.id), [3, 0, 3]);
+        expect(await counts(replica.id, 'peer-a'), [1, 0, 1]);
+        expect(await counts(replica.id, 'peer-b'), [2, 0, 2]);
+      },
+    );
+
+    test(
+      'summary excludes legacy confirmed entries without sending them',
+      () async {
+        final storage = fixture.createStorage();
+        final change = Replica('legacy-summary').setDelta('old', true);
+        await storage.enqueue(
+          OutboxEntry(
+            delta: Delta([change]),
+            recipientPeerId: 'peer-a',
+            // ignore: deprecated_member_use
+            status: OutboxStatus.confirmed,
+          ),
+        );
+        final summary = await storage.pendingSummary('legacy-summary');
+        expect(summary.totalCount, 0);
+      },
+    );
+
     test('stores canonical snapshot and opaque outbox changes', () async {
       final storage = fixture.createStorage();
       final replica = Replica('contract-device')
@@ -191,6 +251,7 @@ void replicaStorageContractTests({
         {first.id, second.id},
       );
       final persisted = await storage.loadReplica('contract-device');
+      expect((await storage.pendingSummary('contract-device')).pendingCount, 2);
       expect(persisted, isNotNull);
       expect(persisted!.snapshot!['replicaId'], 'contract-device');
     });
@@ -316,6 +377,7 @@ void replicaStorageContractTests({
           (await storage.loadReplica('contract-device'))!.snapshot!,
         );
         expect(persisted.state.values, {'base': true});
+        expect((await storage.pendingSummary('contract-device')).totalCount, 1);
         expect(
           (await storage.pending(
             'contract-device',
