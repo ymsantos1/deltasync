@@ -135,13 +135,13 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-30 concluiu a baseline e o mapa de migração com o
-ciclo completo. Escrita e revisão do TCC ficam com o autor, fora deste plano.
+Tarefa ativa: **nenhuma**. R-31 corrigiu a montagem da outbox e preservou a
+baseline de API/dados. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-31**, para corrigir a montagem quadrática usando a baseline
-preservada. R-33 também está pronta; o pedido de próxima tarefa encerra em R-30.
+selecionável: **R-39**, conforme sequência da fase, para remover o legado com
+migração de dados. R-32/R-33 também estão prontas; esta execução encerra em R-31.
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
@@ -243,8 +243,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | concluída | SHOULD | R-26, R-27, VAL-13 |
 | [VAL-16](05_PHASE5_VALIDACAO.md#val-16) | Exercitar oito CRDTs entre dois Androids com peers diretos | concluída | SHOULD | VAL-15, R-07a, R-26 |
 | [R-30](06_PHASE6_MANUTENCAO_1_0_1.md#r-30) | Fixar baseline e mapa de migração da 1.0.1 | concluída | SHOULD | R-29 |
-| [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | pronta | SHOULD | R-30 |
-| [R-32](06_PHASE6_MANUTENCAO_1_0_1.md#r-32) | Medir custos de mutação, restauração e pendências | planejada | SHOULD | R-31 |
+| [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | concluída | SHOULD | R-30 |
+| [R-32](06_PHASE6_MANUTENCAO_1_0_1.md#r-32) | Medir custos de mutação, restauração e pendências | pronta | SHOULD | R-31 |
 | [R-33](06_PHASE6_MANUTENCAO_1_0_1.md#r-33) | Automatizar verificações e advisories em CI | pronta | SHOULD | R-30 |
 | [R-34](06_PHASE6_MANUTENCAO_1_0_1.md#r-34) | Avaliar Saropa e lint proporcional | planejada | SHOULD | R-33 |
 | [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | planejada | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
@@ -252,7 +252,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-17](06_PHASE6_MANUTENCAO_1_0_1.md#val-17) | Validar migração e artefatos da 1.0.1 | planejada | SHOULD | R-36 |
 | [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | planejada | SHOULD | R-32, R-39 |
 | [R-38](06_PHASE6_MANUTENCAO_1_0_1.md#r-38) | Implementar lote público com commit local atômico | planejada | SHOULD | R-39 |
-| [R-39](06_PHASE6_MANUTENCAO_1_0_1.md#r-39) | Remover superfície legada preservando migração de dados | planejada | SHOULD | R-30, R-31 |
+| [R-39](06_PHASE6_MANUTENCAO_1_0_1.md#r-39) | Remover superfície legada preservando migração de dados | pronta | SHOULD | R-30, R-31 |
 | [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | planejada | SHOULD | R-42 |
 | [R-41](06_PHASE6_MANUTENCAO_1_0_1.md#r-41) | Oferecer eventos seletivos e consolidar canais internos | planejada | SHOULD | R-37, R-38 |
 | [R-42](06_PHASE6_MANUTENCAO_1_0_1.md#r-42) | Distinguir ausência, valor null e tombstone na consulta | planejada | SHOULD | R-39 |

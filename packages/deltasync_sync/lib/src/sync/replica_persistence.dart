@@ -118,9 +118,9 @@ class ReplicaPersistence {
 }
 
 Delta mergeOutbox(Iterable<OutboxEntry> entries) {
-  var pending = const Delta.empty();
-  for (final entry in entries) {
-    pending = pending.merge(entry.delta);
-  }
-  return pending;
+  // Validate IDs once after collecting changes; repeated prefix merges make
+  // reading a long offline outbox quadratic. Delta.merge keeps its ID/order rules.
+  return Delta(
+    entries.expand((entry) => entry.delta.changes),
+  ).merge(const Delta.empty());
 }

@@ -381,6 +381,17 @@ R-31 usa a carga fixada; R-39 conserva referência antiga e acrescenta consumido
 migrado, sem regenerar expectativas. O SDK 3.12.x teve execução definida em
 R-30, sem alegação de execução; R-33 e VAL-17 devem efetivamente realizá-la.
 
+DEC-59 — Consolidação da outbox R-31, 2026-10-24: coletar mudanças uma vez no
+helper interno de sync e usar uma única Delta.merge para checar IDs. Manter
+validação profunda do core, posição do primeiro ID, payload da última duplicata
+equivalente e todos os IDs de componentes cumulativos; não compactar por campo,
+dot máximo ou dominância. Seleção por peer e metadata/ACK continuam em seus donos.
+Nenhuma classe/API/formato de produção foi adicionada ou alterada. Medidor R-30
+foi reutilizado sem modificar sua baseline. A regressão mede crescimento de
+leituras de ID, sem limiar temporal; resultado do host não garante latência em
+outras plataformas. Dados, exports e consumidores antigos seguem validados em
+[R-31](TRACEABILITY.md#execucao-r-31-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

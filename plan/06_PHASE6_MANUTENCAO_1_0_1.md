@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30 concluída, R-31/R-33 prontas.
-Demais tarefas ainda não iniciadas; nenhuma tarefa ativa.
+Estado: em andamento em 2026-10-24; R-30/R-31 concluídas e nenhuma tarefa ativa.
+R-32/R-33/R-39 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -109,7 +109,7 @@ Evidência de conclusão: [execução R-30](TRACEABILITY.md#execucao-r-30-2026-1
 
 ## R-31 — Corrigir montagem quadrática da outbox
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-30
 
@@ -118,28 +118,33 @@ de pendências/push/recuperação. Corrigir no menor ponto responsável.
 
 Critérios:
 
-- [ ] Reunir mudanças numa passagem e validar IDs em uma consolidação, evitando
+- [x] Reunir mudanças numa passagem e validar IDs em uma consolidação, evitando
   reprocessar todo o prefixo para cada entrada. Custo de montagem deve ser linear
   no número de mudanças, além da leitura/validação de seus payloads.
-- [ ] Preservar ordem observável atual, outbox vazia, duplicatas equivalentes,
+- [x] Preservar ordem observável atual, outbox vazia, duplicatas equivalentes,
   rejeição de mesmo ID com payload divergente e seleção por peer. Não agregar
   mudanças por dominância, descartar IDs, limpar pendências ou fazer GC.
-- [ ] Cobrir os oito tipos, ACK parcial/perdido, retry, entrada inválida,
+- [x] Cobrir os oito tipos, ACK parcial/perdido, retry, entrada inválida,
   falha de commit, concorrência com edição e restauração SQLite. Falha de
   preparação/envio não pode remover mudanças sem confirmação durável.
-- [ ] Comparar cargas de R-30 antes/depois com prova estrutural de travessias
+- [x] Comparar cargas de R-30 antes/depois com prova estrutural de travessias
   e amostras de tempo/memória disponíveis. Evitar limiar temporal frágil em teste;
   distinguir complexidade comprovada de ganho observado na máquina de medição.
 
 Validação: sync, core/facade se afetados, suíte de storage e recuperação SQLite;
 formato/análise/testes dos pacotes alterados e consumidores internos pertinentes.
-Evidência de conclusão: ainda não registrada.
+Resultado: 249 testes nos sete pacotes e 14 checks por consumidor histórico/
+atual aprovados. Regressão estrutural falha no código anterior e passa com a
+correção; medianas de 1024 entradas no host caíram de 58646 para 8834 µs.
+Sem mudança de API, formato, joins ou regras de ACK; heap não medido.
+Evidência de conclusão: [execução R-31](TRACEABILITY.md#execucao-r-31-2026-10-24),
+com [resultados e comparação](evidence/r31-validation.json).
 
 <a id="r-32"></a>
 
 ## R-32 — Medir custos de mutação, restauração e pendências
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-31
 
@@ -414,7 +419,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-39 — Remover superfície legada preservando migração de dados
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-30, R-31
 

@@ -8,8 +8,9 @@ Planejamento inicial de 1.0.1: [registro de 2026-10-24](#planejamento-1-0-1-2026
 Escopo vigente: [todos os pontos na mesma 1.0.1](#escopo-integral-1-0-1-2026-10-24),
 conforme esclarecimento posterior do autor que substituiu o adiamento por versões.
 R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
-R-31/R-33 estão prontas; nenhuma tarefa ativa. Os registros abaixo preservam
-as baselines e conclusões nas datas em que foram obtidas.
+R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
+R-32/R-33/R-39 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+preservam as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
 confirmou três defeitos apesar de 155 testes aprovados.
@@ -5202,3 +5203,137 @@ R-31 é a próxima recomendada, R-33 também pronta; nenhuma iniciada. A fase 6 
 o gate VAL-17 seguem abertos. Após manutenção, `python3 scripts/check_plan.py`
 e `git diff --check` foram aprovados; conferidos também arquivos novos,
 hashes/JSONs e ausência de alterações em produção.
+
+<a id="execucao-r-31-2026-10-24"></a>
+
+## Execução R-31 — Montagem linear da outbox, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-30 concluída, R-31 recomendada e pronta, worktree limpa em b792dc5e8312202e7a981c941d30d585b64e771b. Conferidos critérios completos, DEC-58, RISK-37 e guia Dart. Scope restrito ao helper sync e regressões; manter core/joins, contratos, formatos, filas e ACK.
+Implementação: mergeOutbox agora coleta mudanças uma vez e executa uma única Delta.merge; regras de conflito/ordem permanecem no core. Adicionadas seis regressões em sync e nota Unreleased no changelog; nenhuma classe ou dependência de produção nova. R-30 e suas fixtures foram preservadas.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Confirmados equivalência das duplicatas com ordem de chaves JSON diferente, rejeição de listas divergentes e preservação dos IDs cumulativos. Ajustados teste para conflito entre peers, acesso nullable local e formato do helper de falha; revisão do delta repetida após correção do gate de formato. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: dart test test/outbox_merge_test.dart --reporter expanded antes/depois no pacote sync; loop de dart format/analyze/test nos sete pacotes, retomado de sync após ajuste de formato; dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart antes/depois; python3 plan/evidence/r30/capture.py --dart dart --prepare-only --test-consumers; extrator API da R-30 contra a árvore atual. Logs, contagens e amostras reais em r31-validation.json; comandos completos abaixo.
+Critérios: C1 demonstrado pelo percurso único e regressão estrutural que falhou no código antigo; C2 pelas seis regressões, suíte de contrato/ACK e inventário público idêntico; C3 por 249 testes dos sete pacotes e 14 checks em cada consumidor, incluindo SQLite reaberto, oito tipos, falhas, concorrência e ACK parcial/perdido; C4 pelo mesmo medidor/cargas R-30 antes/depois no mesmo host, com limites explícitos.
+Manutenção: quatro critérios marcados, índice/fase/decisão/risco atualizados e evidência ligada; R-32/R-33/R-39 prontas, próxima recomendada R-39 pela ordem da fase. Nenhuma iniciada; gate VAL-17 e fase 6 continuam abertos.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI; sem SDK 3.12.x, novo runtime Android ou medição de heap. Tempos medem helper sem construção das entradas, I/O de storage ou rede; não certificam latência universal. Sem mudança de API/formatos/versões, publicação, commit ou próxima tarefa executada.
+
+### Leitura e implementação
+
+As cinco skills foram lidas integralmente e aplicadas por um agente em etapas
+distintas. A causa era o loop de mergeOutbox: cada entrada reconstruía o prefixo
+completo por Delta.merge. A correção fica em
+[replica_persistence.dart](../packages/deltasync_sync/lib/src/sync/replica_persistence.dart),
+sem duplicar comparação JSON, mexer em estado/join ou expor outro contrato.
+
+A implementação percorre entries.expand uma vez, materializa o lote isolado e
+consolida IDs por uma Delta.merge. Ordem de primeira aparição e substituição
+pela última duplicata equivalente seguem o Map do core. Deltas cumulativos com
+IDs distintos permanecem no lote; não foi implementado GC ou agregação de ACK.
+O snapshot e a outbox continuam nos mesmos contratos; seleção por peer e
+markSent permanecem em OutboundSync, e rede continua fora da fila de commits.
+
+### Regressão antes da correção
+
+[outbox_merge_test.dart](../packages/deltasync_sync/test/outbox_merge_test.dart)
+foi executado com o código antigo. Cinco casos funcionais passaram e a prova de
+crescimento falhou: para 64 entradas, observadas 4160 leituras de ID, acima do
+limite 3168 correspondente a três vezes o caso de 32 entradas. Não foi usado
+limiar de tempo. Após a correção, observadas 64 leituras para 32 entradas e
+128 para 64; leitura de cada entrada ocorre uma vez.
+
+Os seis casos cobrem lote vazio; iterable de consumo único com oito tipos e
+duas mudanças cumulativas do mesmo counter; duplicata equivalente entre peers
+com ordem JSON diferente; conflito aninhado entre peers sem mutação da entrada;
+crescimento estrutural; e falha de preparação que não marca enviado, não envia
+nem remove o commit/outbox existentes. O wrapper contador pertence somente ao
+teste interno, sem alterar o codec ou ser oferecido como padrão de consumidor.
+
+### Review e correções
+
+Review após implementação verificou diff de produção e arquivo de teste novo,
+incluindo impacto em consumidor/mantenedor. Nenhuma API pública mudou; o
+inventário AST dos sete entry points coincide semanticamente com api_1_0_0.json.
+Dados e fontes de fixture R-30 não foram regenerados. Foram mantidas as mesmas
+regras profundas de comparação, incluindo ordem de listas e equivalência de mapas.
+
+Depois de remover um null assertion no helper de falha do teste, o gate de
+formato detectou uma linha em branco pendente. A tarefa voltou a implementação;
+o arquivo foi formatado, o delta revisado e a validação retomada do pacote sync.
+Raiz/core já estavam aprovados e não foram repetidos por alteração apenas de
+formato no teste. A seleção de peer do teste de conflito foi revisada antes da
+rodada final. Changelog registra a correção sem antecipar a renumeração R-36.
+
+### Validação e comparação
+
+Evidência: [r31-validation.json](evidence/r31-validation.json), com logs do
+vermelho/verde, execuções dos pacotes, consumers e amostras brutas antes/depois.
+Ambiente: Dart 3.13.5 stable, Linux x86_64; comandos usam `dart` pelo PATH.
+
+Primeira rodada, na raiz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r31-workspace.log 2>&1
+```
+
+Raiz: 13 testes; core: 122. Formato do teste novo interrompeu a rodada ao entrar
+em sync. Após a correção e revisão do delta, retomada real:
+
+```sh
+for package in packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r31-workspace-resumed.log 2>&1
+```
+
+Sync 57, storage 12, SQLite 27, testing 8 e transport 10 testes aprovados;
+total **249 testes**, com formato e análise sem issues nos sete pacotes.
+Suítes existentes cobrem ACK parcial, timeout/perda de ACK, retry, edição durante
+envio, falha transacional local/remota, três histórias duráveis geradas e
+restauração dos oito CRDTs antes de entrega SQLite. Testes novos cobrem falha
+antes de markSent; testes de storage garantem retenção/rollback no backend real.
+
+Consumidores e dados congelados:
+
+```sh
+python3 plan/evidence/r30/capture.py --dart dart --prepare-only --test-consumers > /tmp/deltasync-r31-consumers.json
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/api_inventory.dart /projetos/tcc/deltasync > /tmp/deltasync-r31-api.json
+```
+
+**14 checks por árvore**, histórica e atual, aprovados. Mantidas origem dos
+imports, snapshot/outbox/IDs, tentativas, readers legados, reabertura SQLite,
+escrita posterior e ACK parcial por peer. Esses são os mesmos cenários em duas
+árvores, não 28 cenários distintos. Superfícies públicas coincidem com a baseline.
+
+O medidor R-30 foi executado antes de editar produção e depois da correção,
+sem mudar seu código ou o JSON histórico. Duas rodadas de aquecimento e cinco
+amostras por carga, oito tipos e dois peers, usando:
+
+```sh
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart
+```
+
+| Entradas | Mediana antes (µs) | Mediana depois (µs) | Razão observada |
+|---|---:|---:|---:|
+| 32 | 1990 | 1818 | 1,09 |
+| 128 | 3931 | 3512 | 1,12 |
+| 512 | 17946 | 5954 | 3,01 |
+| 1024 | 58646 | 8834 | 6,64 |
+
+Razão é mediana anterior dividida pela posterior, específica destas execuções.
+Ganhos pequenos nas menores cargas não sustentam promessa. A prova estrutural
+é o percurso e o crescimento das leituras de ID; tempos incluem validação/cópia
+do payload de cada entry, mas excluem sua construção inicial, SQLite e rede.
+Heap não medido; nenhuma conclusão de redução de memória foi anunciada.
+
+### Manutenção
+
+R-31 concluída com os quatro critérios demonstrados; DEC-59 e RISK-37 registram
+implementação/limites. R-32/R-33/R-39 prontas e nenhuma ativa. Próxima recomendada
+R-39 pela sequência autorizada da fase. Não iniciada; esta autorização executa
+uma tarefa. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas
+e 402 links locais; `git diff --check` passou. Artefatos novos também tiveram
+JSON, whitespace e hashes de fonte/teste conferidos.
