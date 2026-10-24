@@ -4,6 +4,12 @@ Baseline histórica: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>)
 [contexto](../proposta.md) e inspeção/testes da revisão anterior.
 A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
+Planejamento inicial de 1.0.1: [registro de 2026-10-24](#planejamento-1-0-1-2026-10-24).
+Escopo vigente: [todos os pontos na mesma 1.0.1](#escopo-integral-1-0-1-2026-10-24),
+conforme esclarecimento posterior do autor que substituiu o adiamento por versões.
+R-30 está pronta; nenhuma tarefa da nova fase foi executada. Os registros abaixo
+preservam as baselines e conclusões nas datas em que foram obtidas.
+
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
 confirmou três defeitos apesar de 155 testes aprovados.
 [R-10](#execucao-r-10-2026-10-12),
@@ -4874,3 +4880,190 @@ Após o dry-run adicional da raiz, `dart pub get` restaurou registro/cache norma
 da worktree. Conferidos sete membros locais, sem URLs/paths temporários no
 lockfile/package_config. Format/analyze e os 243 testes passaram novamente nos
 sete pacotes após essa restauração, sem depender do servidor local encerrado.
+
+<a id="execucao-r-29-2026-10-15"></a>
+
+## Execução R-29 — Versão pública 1.0.0, 2026-10-15
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: autor confirmou alteração nos pubspec.yaml; R-28 concluída, worktree inicialmente limpa. Escopo limitado a versão/consumo/documentação de release; guia Dart consultado, SDK preservado.
+Implementação: sete version 1.0.0, 17 dependências internas ^1.0.0, seis READMEs e sete changelogs alinhados. Facade ficou com uma única seção 1.0.0, consolidando o placeholder Initial version nos detalhes entregues. Guia explica numeração atual e prova histórica de R-28.
+Review: aprovado
+Achados: diff revisado pelo mesmo agente, não independente. Removida linha vazia extra no fim do changelog, detectada por git diff --check; correção revista e conferida. Nenhum impeditivo restante. Formatos JSON, snapshots, schema, fontes e contratos não foram renumerados.
+Validação: aprovada
+Comandos: dart pub get --offline aprovado; dart pub deps --json > /tmp/deltasync-r29-deps.json confirmou sete membros em 1.0.0. python3 scripts/prepare_release.py > /tmp/deltasync-r29-release-path gerou sete releases novos; checks Python de manifests/exports/changelogs e git diff --check aprovados.
+Critérios: sete manifests diferem da base apenas pela troca literal 2.0.0 para 1.0.0, com SDK/dependências externas intactos; 17 constraints internas conferidas. Sete manifests exportados em 1.0.0 sem workspace/resolution, documentos/licenças iguais aos fontes e lib copiada byte a byte. Changelogs têm exatamente uma seção 1.0.0; sem diff em lib/test dos pacotes. Exemplo Flutter usa paths e permanece compatível com os manifests locais.
+Manutenção: índice/fase/checkboxes concluídos; DEC-51 substitui apenas numeração de DEC-17, OPEN-07 e nota de RISK-36 atualizadas. Evidências 2.0.0 anteriores preservadas. Nenhuma próxima tarefa pronta.
+Limitações: sem upload, commit, tag, merge, dry-run público ou novo teste de runtime. Testes Dart não repetidos para alteração de metadados/documentação. Disponibilidade/propriedade de nomes e versões no pub.dev continuam com o autor; prova hosted de R-28 conserva sua numeração histórica.
+
+Exportação final validada em `/tmp/deltasync-release-parent-ikhy2_g5/release`.
+Exports anteriores não são atualizados pela mudança dos fontes; gerar novos antes
+de publicar. A renumeração não torna formatos antigos compatíveis automaticamente;
+permanecem as migrações e limites documentados. Checks de manutenção:
+`python3 scripts/check_plan.py` aprovado com 56 tarefas e 345 links locais;
+`git diff --check` aprovado.
+
+<a id="planejamento-1-0-1-2026-10-24"></a>
+
+## Planejamento de manutenção 1.0.1 — 2026-10-24
+
+Tipo: manutenção documental autorizada; nenhuma tarefa nova implementada.
+Skills aplicadas: plan-reader e plan-maintainer, com leitura integral e consulta
+ao RUNBOOK e aos trechos pertinentes do guia Dart sobre contratos e enums.
+Pedido: autor solicitou planejar todos os encaminhamentos da análise geral
+para 1.0.1, mantendo foco exclusivo na biblioteca. Não pediu alterações no app.
+
+### Origem e evidências disponíveis
+
+Antes desta edição documental, HEAD era
+`1e969182e8e172a8858a48ecf83a1feb2c21a455`, com worktree limpa. Sete pacotes em
+1.0.0. Na revisão da mesma sessão, Dart 3.13.5 stable/Linux x86_64 executou
+análise sem issues e 243 testes: facade 13, core 122, sync 51, storage 12,
+SQLite 27, storage_testing 8 e transport 10. Comando na raiz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-general-review-20261024.log 2>&1
+```
+
+A primeira tentativa encontrou cache Flutter fora da área gravável; execução
+autorizada posterior terminou com exit 0. Esse log é temporário e não é fixture
+de release. R-30 exige baseline reexecutável; esses resultados não concluem
+nenhuma tarefa da fase 6 nem validam código 1.0.1 ainda inexistente.
+
+Inspeção de [mergeOutbox](../packages/deltasync_sync/lib/src/sync/replica_persistence.dart)
+e [Delta.merge](../packages/deltasync_core/lib/src/delta.dart) confirma remontagem
+de prefixos, com trabalho quadrático para entradas distintas. Impacto temporal
+não medido nesta revisão. Cópias de candidata/adoção e snapshots protegem
+isolamento e precisam de medição antes de outras mudanças.
+
+O consumidor externo em `/projetos/tcc/samples_test_lib/compass_app` confirmou
+uso público de valueAt, observations, receiveEnvelope e ReplicaStorage. Dez
+testes focados passaram, incluindo HTTP com servidor separado e SQLite FFI.
+Três diagnósticos temporários, fora dos repositórios, reproduziram: tipo de nota
+incompatível com JSON válido, edição que lança erro de consulta após commit
+durável e duas consultas de pendências por edição. São evidências de fronteira
+de consumo e custo, não três defeitos novos dos joins/commits da biblioteca.
+Sem nova execução Android e sem alterações no app. A fase nova exige exemplos
+e regressões gerais na própria lib, sem depender de caminhos externos.
+
+### Decisões de planejamento
+
+- Criada [fase 6](06_PHASE6_MANUTENCAO_1_0_1.md), integrada ao índice canônico,
+  com R-30 a R-36 e VAL-17 para 1.0.1. Cada tarefa tem áreas, critérios,
+  dependências e verificações; nenhuma está em execução ou concluída.
+- R-30 está pronta e é a próxima selecionável. Demais tarefas de release
+  aguardam dependências. R-37/R-38/R-39 são WON'T-YET, fora do gate 1.0.1,
+  sem autorização de execução mesmo após suas dependências serem concluídas.
+- A análise previa funcionalidades novas e remoções públicas. DEC-52 aplica
+  [SemVer](https://semver.org/): consulta leve e ampliações compatíveis pertencem
+  à linha minor; remoções/quebras à major. Novos métodos obrigatórios em
+  interfaces também podem quebrar adaptadores e não entram como minor compatível.
+- DEC-53 preserva VAL-05 histórico e cria gate específico VAL-17 para os
+  artefatos novos. SHOULD expressa prioridade acadêmica; completar a release
+  planejada exige todas as dependências de VAL-17, inclusive avaliar o piloto.
+- DEC-54 mantém papéis de core/sync/storage/transport, mede custos e separa
+  ferramentas de segurança/correção. Saropa será avaliado isoladamente; adoção
+  não foi decidida. Conferidas referências oficiais de
+  [Saropa](https://pub.dev/packages/saropa_lints),
+  [advisories Dart](https://dart.dev/tools/pub/security-advisories) e
+  [versionamento Dart](https://dart.dev/tools/pub/versioning).
+- Índice, decisões abertas e RISK-37 a RISK-40 registram os encaminhamentos.
+  Não alterados manifests, fontes, testes de produto ou contratos. Nenhum
+  pacote renumerado/publicado e nenhuma ferramenta instalada neste planejamento.
+
+### Review e validação documental
+
+Review: realizado pelo próprio agente, em etapa distinta; não independente.
+Verificados cobertura da análise, compatibilidade patch/minor/major, prioridades
+relativas ao TCC, dependências e separação entre planejar e executar.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 67
+tarefas, 367 links locais e somente R-30 pronta; `git diff --check` aprovado.
+Índice/fase, status, anchors, dependências sem ciclos e metadados das skills
+foram conferidos. A fase 6 não altera os critérios concluídos das fases antigas.
+Testes Dart/Flutter não repetidos nesta edição somente documental; resultados
+anteriores acima são baseline contextual, não aprovação de implementação futura.
+Limitações: duração/esforço não estimados; publicação e ativação externa de CI
+permanecem fora deste pedido. R-30 define baseline e a execução posterior exige
+o ciclo completo de cinco skills por tarefa, sem subagentes.
+
+<a id="escopo-integral-1-0-1-2026-10-24"></a>
+
+## Ajuste de escopo integral para 1.0.1 — 2026-10-24
+
+Tipo: revisão documental do planejamento por direção explícita do autor.
+Skills: plan-reader e plan-maintainer, lidas integralmente; sem implementação.
+Pedido: autor reconhece que parte das mudanças deveria chegar a outra versão,
+mas deseja todos os pontos planejados na mesma 1.0.1. Isso resolve a escolha
+de versão e substitui a separação anterior entre patch/minor/major. O registro
+anterior permanece histórico; suas restrições de adiamento não são vigentes.
+
+### Alterações de planejamento
+
+- R-37/R-38/R-39 passam de WON'T-YET a SHOULD, integrando o gate 1.0.1.
+  R-37 entrega pendências leves; R-38 passa de avaliação a lote público atômico;
+  R-39 remove storage/aliases legados com readers e migração de dados preservados.
+- Criadas R-40, R-41 e R-42 para decoder opcional, eventos seletivos com emissão
+  consolidada e consulta de ausente/null/tombstone. Todas têm critérios próprios
+  de implementação, falhas, isolamento, consumo e validação; não apenas avaliação.
+- R-30 fixa baseline e mapa de migração. R-35 documenta todas as APIs e quebras;
+  R-36 exige os sete artefatos em 1.0.1 com aviso de upgrade incompatível;
+  VAL-17 verifica dados 1.0.0, consumidores migrados e toda a entrega nova.
+- Dependências foram reordenadas para retirar legado antes das novas APIs e
+  alcançar R-30 a R-42 pela VAL-17, sem ciclos. Nenhum desses itens fica para
+  outra versão. R-30 permanece a única tarefa pronta e nenhuma está iniciada.
+- DEC-55/56 substituem as restrições de DEC-52/53, preservando seu histórico.
+  OPEN-08, RISK-38/40/41, índice e gate refletem a decisão do autor.
+- Manter oito CRDTs, invariantes, SDK, formatos/readers e foco exclusivo na lib.
+  A decisão não autoriza descartar dados, publicar pacotes ou editar o Compass.
+  Saropa continua com piloto e decisão fundamentada, conforme pedido de análise.
+
+### Review e validação
+
+Review: realizado pelo mesmo agente em etapa distinta, sem revisão independente.
+Conferidos direção do autor, cobertura de todos os pontos, quebras de API,
+preservação dos dados, dependências e limites entre planejar e implementar.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 70
+tarefas, 372 links locais e somente R-30 pronta; `git diff --check` aprovado.
+Conferência adicional da árvore de dependências demonstrou que VAL-17 alcança
+todas as tarefas R-30 a R-42, sem itens WON'T-YET. Fase nova conferida quanto
+a whitespace e newline final. Índice, títulos, prioridades e dependências
+espelham as definições da fase, sem ciclos nem tarefa nova marcada concluída.
+Nenhuma mudança em fontes, manifests ou testes de produto; os manifests continuam
+1.0.0 até a tarefa de release. Testes Dart/Flutter não repetidos para estas edições
+documentais. Nenhuma implementação, instalação de ferramenta ou publicação feita.
+
+<a id="recuperacao-stash-2026-10-24"></a>
+
+## Recuperação de conflitos do stash — 2026-10-24
+
+Pedido: resolver conflitos sem perder análise e planejamento da 1.0.1.
+Procedimento: plan-maintainer; inspeção dos três estágios Git e do stash,
+resolução manual por apply_patch e validação documental. Nenhuma implementação.
+
+O stash foi aplicado sobre HEAD 6b7016a, cuja árvore mantém manifests 2.0.0.
+A base do stash, 1e969182e8e172a8858a48ecf83a1feb2c21a455, já tinha R-29 e
+manifests 1.0.0. Os conflitos atingiam README, DECISIONS e TRACEABILITY; RISKS
+foi recuperado sem conflito e a fase 6 permaneceu como arquivo novo fora do índice.
+
+Preservados integralmente escopo 1.0.1, R-30 a R-42, VAL-17, decisões, riscos e
+evidências das análises anteriores. Reposto o registro histórico R-29 na fase 1
+e no índice, pois dependências/links recuperados o referenciam. Sua conclusão é
+histórica; não afirma que a branch atual já foi renumerada. DEC-57 e a entrada
+da fase 6 deixam essa diferença explícita. Manifests, código e alterações da
+branch atual foram preservados; a resolução não reaplica renumeração de pacotes.
+
+Backup dos documentos antes da resolução e referências do índice/stash:
+`/tmp/deltasync-stash-recovery-hanaswca`. Stash original conservado. A fase 6
+também foi incluída no índice para que sua preservação não dependa de um arquivo
+não rastreado ao repetir stash/commit. Nenhum commit ou descarte de stash realizado.
+
+Review: realizado pelo mesmo agente, em etapa distinta, sem revisão independente.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 70
+tarefas, 372 links locais e R-30 pronta; `git diff --check` e
+`git diff --cached --check` aprovados. `git ls-files -u` e lista de arquivos
+em conflito vazios. Conferidos alcance R-30 a R-42 pela VAL-17, identidade do
+stash original e alterações restritas a plan/. Testes Dart não repetidos;
+resolução limitada a documentos de planejamento e ao índice de conflitos Git.

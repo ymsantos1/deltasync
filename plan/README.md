@@ -1,6 +1,6 @@
 # Planejamento — DeltaSync
 
-Revisão: 2026-10-13. Fonte principal de tarefas, escopo e andamento.
+Revisão: 2026-10-24. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
@@ -10,6 +10,7 @@ Revisão: 2026-10-13. Fonte principal de tarefas, escopo e andamento.
 - [Fase 3: persistência](03_PHASE3_PERSISTENCIA.md).
 - [Fase 4: sync](04_PHASE4_SYNC.md).
 - [Fase 5: validação](05_PHASE5_VALIDACAO.md).
+- [Fase 6: consolidação completa para 1.0.1](06_PHASE6_MANUTENCAO_1_0_1.md).
 - [Rastreabilidade e evidências](TRACEABILITY.md).
 - [Decisões e invariantes](DECISIONS.md).
 - [Riscos](RISKS.md).
@@ -125,13 +126,23 @@ R-27 e VAL-15 SHOULD concluídas; VAL-15 validou dois Androids físicos com hub 
 VAL-05 revalidou os novos MUST, preservando conclusões históricas.
 Fases 2, 3 e 4 mantêm conclusões históricas.
 R-28 concluiu preparação e validação isolada dos sete pacotes em 15/10.
-Tarefa ativa: **nenhuma**. Escrita e revisão do TCC ficam sob responsabilidade
-do autor e fora deste plano.
+R-29 alinhou manifests e documentação para publicação como 1.0.0 no histórico
+recuperado. A branch atual 6b7016a mantém manifests 2.0.0; a resolução do stash
+preserva esse estado e o planejamento 1.0.1, sem renumerar pacotes.
+Em 24/10, autor pediu planejamento da análise geral para 1.0.1 e esclareceu que
+todos os itens devem integrar essa versão, inclusive novas APIs e remoções que
+normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remoção
+de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
+O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
+integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
+Tarefa ativa: **nenhuma**. O pedido atual autoriza planejamento, não início de
+implementação. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **nenhuma**. R-28 corrigiu distribuição dos sete pacotes e validou
-artefatos em registro local somente leitura; VAL-16 e demais tarefas concluídas.
+selecionável: **R-30**, para fixar baseline e mapa de migração antes das mudanças.
+R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
+somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
@@ -223,12 +234,53 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-13](05_PHASE5_VALIDACAO.md#val-13) | Validar integração de consumidor externo com SQLite e rede real | concluída | SHOULD | R-21, VAL-11, VAL-12 |
 | [R-25](01_PHASE1_CORRECOES.md#r-25) | Consultar valores pela engine sem copiar todo o estado | concluída | MUST | R-21, VAL-13 |
 | [R-28](01_PHASE1_CORRECOES.md#r-28) | Corrigir distribuição dos sete pacotes e validar consumo isolado | concluída | SHOULD | VAL-16 |
+| [R-29](01_PHASE1_CORRECOES.md#r-29) | Ajustar versão de publicação para 1.0.0 | concluída | SHOULD | R-28 |
 | [R-24](04_PHASE4_SYNC.md#r-24) | Centralizar codec público de confirmação remota | concluída | MUST | R-08b, VAL-13 |
 | [R-26](04_PHASE4_SYNC.md#r-26) | Simplificar recepção e confirmação durável no consumidor | concluída | SHOULD | R-24, VAL-13 |
 | [R-27](04_PHASE4_SYNC.md#r-27) | Facilitar acompanhamento público da sincronização | concluída | SHOULD | R-26, R-17 |
 | [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | concluída | MUST | R-24, R-25, VAL-13 |
 | [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | concluída | SHOULD | R-26, R-27, VAL-13 |
 | [VAL-16](05_PHASE5_VALIDACAO.md#val-16) | Exercitar oito CRDTs entre dois Androids com peers diretos | concluída | SHOULD | VAL-15, R-07a, R-26 |
+| [R-30](06_PHASE6_MANUTENCAO_1_0_1.md#r-30) | Fixar baseline e mapa de migração da 1.0.1 | pronta | SHOULD | R-29 |
+| [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | planejada | SHOULD | R-30 |
+| [R-32](06_PHASE6_MANUTENCAO_1_0_1.md#r-32) | Medir custos de mutação, restauração e pendências | planejada | SHOULD | R-31 |
+| [R-33](06_PHASE6_MANUTENCAO_1_0_1.md#r-33) | Automatizar verificações e advisories em CI | planejada | SHOULD | R-30 |
+| [R-34](06_PHASE6_MANUTENCAO_1_0_1.md#r-34) | Avaliar Saropa e lint proporcional | planejada | SHOULD | R-33 |
+| [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | planejada | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
+| [R-36](06_PHASE6_MANUTENCAO_1_0_1.md#r-36) | Preparar metadados da release 1.0.1 | planejada | SHOULD | R-35 |
+| [VAL-17](06_PHASE6_MANUTENCAO_1_0_1.md#val-17) | Validar migração e artefatos da 1.0.1 | planejada | SHOULD | R-36 |
+| [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | planejada | SHOULD | R-32, R-39 |
+| [R-38](06_PHASE6_MANUTENCAO_1_0_1.md#r-38) | Implementar lote público com commit local atômico | planejada | SHOULD | R-39 |
+| [R-39](06_PHASE6_MANUTENCAO_1_0_1.md#r-39) | Remover superfície legada preservando migração de dados | planejada | SHOULD | R-30, R-31 |
+| [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | planejada | SHOULD | R-42 |
+| [R-41](06_PHASE6_MANUTENCAO_1_0_1.md#r-41) | Oferecer eventos seletivos e consolidar canais internos | planejada | SHOULD | R-37, R-38 |
+| [R-42](06_PHASE6_MANUTENCAO_1_0_1.md#r-42) | Distinguir ausência, valor null e tombstone na consulta | planejada | SHOULD | R-39 |
+
+## Consolidação 1.0.1
+
+Escopo autorizado em 24/10: planejar a aplicação da análise geral à biblioteca,
+sem editar Compass. Os critérios ficam na [fase 6](06_PHASE6_MANUTENCAO_1_0_1.md);
+a [rastreabilidade](TRACEABILITY.md#planejamento-1-0-1-2026-10-24) registra origem,
+baseline e limitações. O [esclarecimento do autor](TRACEABILITY.md#escopo-integral-1-0-1-2026-10-24)
+e DEC-55/56 substituem o adiamento por versões e atualizam o gate; DEC-54
+mantém os limites das ferramentas e responsabilidades.
+
+Ordem recomendada para um agente: R-30, R-31, R-39, R-32, R-37, R-38, R-42,
+R-40, R-41, R-33, R-34, R-35, R-36 e VAL-17. R-33 pode ser antecipada após
+R-30, respeitando dependências; isso não autoriza delegação nem duas implementações
+simultâneas. Todos esses itens pertencem à mesma release, sem reserva a versões futuras.
+
+1.0.1 conterá quebras intencionais de API, por escolha expressa do autor,
+afastando-se da convenção SemVer. O upgrade exige guia, adaptação de fonte e
+testes de migração; não anunciar atualização compatível apenas pela numeração.
+Oito CRDTs, garantias, readers legados e formatos persistidos permanecem preservados.
+Após recuperar o stash nesta branch, os manifests atuais são 2.0.0; R-30 deve
+confrontá-los com a baseline histórica 1.0.0. O alvo continua 1.0.1 e a troca de
+versão ocorre somente em R-36. Publicação permanece com o autor.
+
+As prioridades SHOULD desta fase se referem ao recorte acadêmico; a release
+planejada depende de todas as tarefas alcançadas por VAL-17. O gate acadêmico
+VAL-05 permanece histórico e concluído. Nenhuma data de publicação foi prometida.
 
 ## Prazo e sequência até 16/11/2026
 
@@ -298,6 +350,8 @@ engenharia desta ampliação, não novos requisitos atribuídos à proposta acad
 | Integração Flutter/sqflite e recuperação em plataforma mobile declarada | SHOULD | Lacuna de plataforma; evidência atual Linux/FFI |
 | Codec público de ACK, consulta pontual pela engine e guia revalidado | MUST | Análise Compass e autorização do autor em 13/10; R-24/R-25/VAL-14 |
 | Apoio ao fluxo remoto, acompanhamento e duas instalações físicas | SHOULD | Ergonomia e evidência de consumo; R-26/R-27/VAL-15 |
+| Consolidação, custos da outbox, CI e avaliação de lint | SHOULD | Release 1.0.1 planejada em 24/10, com gate próprio VAL-17 |
+| APIs de pendências, lote, decoder, eventos/leitura e remoções legadas | SHOULD | R-37 a R-42 incluídas em 1.0.1 por esclarecimento do autor, com migração explícita |
 | Adaptador HTTP separado e conveniências de mapeamento com repetição comprovada | COULD | Avaliar depois; sem tarefa executável nem dependência do gate atual |
 | ObjectCrdt, anotações, build_runner, codegen e migração de modelos | WON'T-YET | Autor retirou codegen do escopo atual em 13/10; não criar tarefa de gerador |
 | Anti-entropy genérico, ACK por participante e GC destrutivo de tombstones | WON'T-YET | Extensões além do cenário mínimo |
@@ -351,6 +405,11 @@ R-16 e VAL-06 a VAL-10 são SHOULD, com adiamento justificado permitido;
 R-17/R-19 são COULD. Não bloqueiam o fechamento técnico. Codegen, ObjectCrdt,
 backend próprio, GC destrutivo e anti-entropy genérico não são gates do TCC.
 Prazo e esforço acadêmicos não são gates técnicos desta biblioteca.
+
+A consolidação pós-1.0.0 tem gate próprio [VAL-17](06_PHASE6_MANUTENCAO_1_0_1.md#val-17).
+Seu fechamento exige todos os itens da release, migração de fonte e dados de
+1.0.0 verificada e artefatos finais validados. Não reclassificar VAL-05 nem usar
+evidência antiga como aprovação automática da release.
 
 ## Evidência e validação
 

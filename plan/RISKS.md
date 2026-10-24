@@ -1,6 +1,6 @@
 # Riscos — DeltaSync
 
-Revisão: 2026-10-12. Responsável pelas correções: autor/implementador da tarefa.
+Revisão: 2026-10-24. Responsável pelas correções: autor/implementador da tarefa.
 Não atribuir probabilidades numéricas sem dados.
 
 | ID | Situação/probabilidade | Impacto e gatilho | Mitigação/tarefas |
@@ -43,5 +43,16 @@ Não atribuir probabilidades numéricas sem dados.
 
 | RISK-36 | mitigado nos artefatos de R-28; registro público depende do autor | `.pubignore` ancestral gera subpacotes vazios; workspace esconde versões não publicadas; exportação pode omitir novos recursos | DEC-50: sete releases independentes com licença/docs/metadados, sete dry-runs sem avisos, hashes instalados conferidos e consumidor hosted sem overrides. Script usa lista explícita: novos recursos exigem atualização/revalidação. Publicar dos diretórios preparados; confirmar nomes, versões e instalação no pub.dev após envios. Ver [R-28](TRACEABILITY.md#execucao-r-28-2026-10-15) |
 
+| RISK-37 | identificado por inspeção em 24/10; impacto temporal não medido | mergeOutbox refaz o merge de todos os prefixos; muitas pendências causam trabalho quadrático em consulta/preparação | R-30 conserva baseline; R-31 consolida uma vez com validação de IDs; R-32 mede cargas e custos restantes; preservar ACK/isolamento/recuperação |
+| RISK-38 | exceção de numeração aceita pelo autor; migração ainda planejada | 1.0.1 com APIs removidas/novas pode quebrar consumidores que confiam em SemVer; mudanças em interfaces/switches também exigem adaptação | DEC-55/56 incluem todo o escopo; R-30 inventaria quebras, R-35/R-36 destacam upgrade incompatível e VAL-17 testa consumidores/adaptadores migrados e dados preservados. Não prometer compatibilidade pelo número nem adiar as entregas a outra versão |
+| RISK-39 | piloto/CI ainda não executados | Lint gera ruído, muda resolução ou aparenta provar segurança; advisory imprime aviso com exit 0; falha de rede pode ficar verde | R-33 valida advisories e falhas com fixtures; R-34 mede Saropa isolado e decide adoção/adiamento; não substituir testes nem incluir ferramenta no runtime |
+| RISK-40 | necessidade de documentação confirmada no consumo; nenhum defeito novo de commit da lib comprovado | Falha de consulta após commit pode ser apresentada pelo app como edição não salva; JSON válido pode ser inválido para o modelo; quantidade exige materializar deltas | R-35 exemplifica resultados separados; R-37 entrega consulta leve e R-40 decoder opcional na 1.0.1; R-41 evita trabalho redundante de observação. Modelo continua no app e outbox permanece fonte única |
+| RISK-41 | ampliação expressamente incluída; implementação ainda não iniciada | Lote/novas consultas/eventos podem vazar estado, prometer transação distribuída ou emitir sucesso antes de commit | R-38/R-40/R-41/R-42 exigem isolamento, falhas, concorrência e recuperação; VAL-17 só conclui após todas as APIs e migrações verificadas. Preservar oito joins e leitores; registrar esforço sem prometer prazo |
+
 Atualizar situação quando evidência mudar. Risco resolvido mantém histórico e
 referência à tarefa/validação que demonstrou mitigação.
+
+Recuperação do stash, DEC-57: a branch atual conserva manifests 2.0.0, enquanto
+R-29/DEC-51 registram a renumeração histórica para 1.0.0. R-30 compara esses
+estados antes de implementar o alvo 1.0.1. Os diretórios exportados não são
+atualizados por editar o workspace; R-36 deve sempre preparar artefatos novos.

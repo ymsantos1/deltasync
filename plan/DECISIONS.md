@@ -295,13 +295,86 @@ dependências primeiro, repete dry-runs no registro público e instala em consum
 novo depois dos envios. Ver [guia](../docs/publicacao.md) e
 [execução R-28](TRACEABILITY.md#execucao-r-28-2026-10-15).
 
+DEC-51 — R-29, 2026-10-15: autor escolheu 1.0.0 para a publicação dos sete pacotes.
+Substituir a numeração 2.0.0 adotada durante o desenvolvimento, inclusive nas
+restrições internas, READMEs e changelogs. DEC-17 mantém suas escolhas técnicas;
+somente a versão pública foi substituída. APIs, versões de JSON/snapshot/outbox,
+schema SQLite e migrações não mudam por essa renumeração. Evidências anteriores
+permanecem com os números realmente verificados. Gerar diretórios de release
+novamente após a troca; os exports antigos continuam com os manifests antigos.
+Publicação e verificação de disponibilidade das versões permanecem com o autor.
+
+DEC-52 — Substituída por DEC-55 após esclarecimento do autor em 2026-10-24.
+Registro da primeira interpretação: o pedido do autor abrange os pontos da
+análise geral, com foco exclusivo na biblioteca. 1.0.1 preserva a API pública
+1.0.0, interfaces implementáveis, variantes fechadas, aliases já depreciados,
+SDK e formatos persistidos. Correções internas, medições, CI e documentação
+cabem no patch. Consulta leve de pendências é funcionalidade pública para 1.1.0;
+outras ampliações exigem caso/compatibilidade comprovados. Remoções de
+PendingDeltaStore, aliases e export público de Operation ficam para 2.0.0.
+Novos membros obrigatórios em interfaces ou variantes que quebram switches
+externos também exigem major. Depreciações novas exigem minor. Referências:
+[SemVer](https://semver.org/) e [versionamento Dart](https://dart.dev/tools/pub/versioning).
+O plano futuro não autoriza implementar/publicar essas releases antecipadamente.
+
+DEC-53 — Substituída por DEC-56 após ampliação expressa em 2026-10-24.
+Registro do primeiro gate de manutenção: a [fase 6](06_PHASE6_MANUTENCAO_1_0_1.md)
+integra o plano canônico, sem reabrir artificialmente as conclusões acadêmicas
+das fases 1–5. Seus SHOULD são relativos à entrega do TCC; R-30 a R-36 e VAL-17
+compõem a release planejada e devem ser concluídos antes de prepará-la como
+validada. VAL-05 não substitui VAL-17. R-30 começa pela baseline 1.0.0;
+R-36 só renumera após o trabalho de produto; VAL-17 verifica SDK, API, dados,
+adaptadores externos e consumidor isolado. Publicação continua manual com o autor.
+
+DEC-54 — Ferramentas e limites de consumo, 2026-10-24: medir e corrigir outbox
+sem eliminar IDs ou contexto causal. Cópias/snapshots mantêm garantias até haver
+evidência que justifique outra tarefa. CI deve distinguir testes, advisories,
+lint e runtime; aviso de advisory não equivale a falha automática do pub get.
+R-34 executa piloto Saropa essential isolado e pode concluir por adiamento
+fundamentado. Não tornar a ferramenta dependência runtime, requisito acadêmico
+ou atestado de segurança. Modelo, identidade, UI, autenticação/TLS e agendamento
+pertencem ao consumidor. R-35 demonstra tratamento de falha de status após commit
+sem alterar Compass nem introduzir schema de domínio ou framework genérico.
+
+DEC-55 — Escopo integral na versão 1.0.1, 2026-10-24: autor esclareceu que deseja
+todos os pontos da análise nesta versão, inclusive mudanças que deveriam ser
+minor/major. Essa direção substitui DEC-52 e o adiamento de R-37/R-38/R-39.
+Manter número 1.0.1, com novas APIs e remoção de legado, documentando expressamente
+a incompatibilidade de fonte com 1.0.0 e a exceção à convenção SemVer. Não exigir
+outra aprovação apenas pela quebra já incluída no escopo. O pedido autoriza
+planejar toda a entrega; implementação continua dependendo de pedido de execução.
+Preservar dados, readers e formatos existentes; mudanças de API não autorizam
+descarte, GC, retirada de leitores ou renumeração automática de JSON/schema.
+
+DEC-56 — Gate integral 1.0.1, 2026-10-24: substitui DEC-53 quanto ao alcance.
+R-30 a R-42 e VAL-17 compõem a mesma entrega. R-38 entrega lote público;
+R-40 decoder opcional; R-41 eventos seletivos e consolidação de emissão;
+R-42 consulta explícita de ausente/null/tombstone. R-37 entrega consulta leve e
+R-39 retira a superfície legada preservando conversão de dados interna. Esses
+itens não podem ser concluídos apenas por avaliação ou adiamento por SemVer.
+R-35 documenta o resultado e upgrade; R-36 prepara a numeração depois do produto;
+VAL-17 valida consumidores migrados, dados anteriores e artefatos finais.
+SHOULD continua prioridade relativa ao TCC; todos os itens são obrigatórios
+para esta release. VAL-05 histórico e decisão fundamentada do piloto R-34
+permanecem; não incluir ORM, codegen, app externo ou publicação automática.
+
+DEC-57 — Recuperação do stash em 2026-10-24: conflitos em README, DECISIONS e
+TRACEABILITY ocorreram ao recuperar o planejamento sobre a branch 6b7016a, que
+mantém versões 2.0.0 e não contém a alteração histórica R-29 para 1.0.0.
+Preservar decisões/evidências R-29 e todo o escopo R-30 a R-42/VAL-17, mantendo
+intactos manifests e alterações da branch atual. R-29 permanece conclusão
+histórica vinculada à revisão original, não comprovação das versões desta branch.
+R-30 deve inventariar a divergência; o alvo 1.0.1 de DEC-55/56 não muda.
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13, R-28 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
+| OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
+| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42 | Todas as APIs entram na 1.0.1; resta definir o contrato mínimo de cada uma durante execução. Quebras de interface/switches devem ser inventariadas e migradas; decisão de versão já resolvida em DEC-55, sem adiamento por SemVer. |
+| OPEN-09 | R-34 | Adoção Saropa depende de resolução, alertas úteis, falsos positivos e custo medidos no piloto; preset/versionamento/configuração final ainda não escolhidos. Decisão de adiar pode satisfazer a tarefa de avaliação, com evidência. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

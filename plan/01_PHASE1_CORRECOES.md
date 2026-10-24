@@ -810,6 +810,33 @@ Evidência de conclusão: [execução R-28](TRACEABILITY.md#execucao-r-28-2026-1
 Publicar dos diretórios preparados conforme [guia](../docs/publicacao.md);
 o filtro ancestral continua excluindo publicação direta dos subpacotes no Git.
 
+<a id="r-29"></a>
+
+## R-29 — Ajustar versão de publicação para 1.0.0
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: R-28
+
+Origem: autor autorizou ajustar pubspec.yaml para 1.0.0 antes da publicação.
+
+Critérios:
+
+- [x] Sete manifests com version 1.0.0 e dependências internas ^1.0.0,
+  preservando dependências externas, SDK, fontes e formatos persistidos.
+- [x] READMEs, changelogs e guia coerentes; sem entrada 1.0.0 duplicada.
+  Preservar evidências históricas e registrar decisão vigente.
+- [x] Revisar diff, conferir resolução do workspace e manifests exportados;
+  validar consistência do plano e diff. Sem publicação ou novos testes de runtime.
+
+Validação: configuração/documentação, resolução local e preparação de release.
+Evidência de conclusão: [execução R-29](TRACEABILITY.md#execucao-r-29-2026-10-15).
+
+Nota de recuperação do stash, 2026-10-24: conclusão histórica obtida em
+1e969182e8e172a8858a48ecf83a1feb2c21a455. A branch atual 6b7016a mantém os
+manifests em 2.0.0 e não incluía esse registro. Preservar a evidência não reaplica
+a alteração de versão; R-30 deve conferir a divergência antes de implementar 1.0.1.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes
