@@ -10,7 +10,8 @@ conforme esclarecimento posterior do autor que substituiu o adiamento por versõ
 R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
 R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
 R-39 [concluiu remoções com migração e rollback](#execucao-r-39-2026-10-24).
-R-32/R-33/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+R-32 [concluiu medição de custos e encaminhamento](#execucao-r-32-2026-10-24).
+R-33/R-37/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
 preservam as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
@@ -5439,3 +5440,81 @@ R-36; gate integral continua VAL-17. Após manutenção,
 `python3 scripts/check_plan.py` aprovou 70 tarefas e 416 links locais;
 `git diff --check` passou. JSON, hashes e whitespace dos artefatos novos também
 foram conferidos.
+
+<a id="execucao-r-32-2026-10-24"></a>
+
+## Execução R-32 — Custos de mutação, restauração e pendências, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 2e1b9f5a97cb99b50c6ec770b2b12c19914afab6; R-31 e R-39 concluídas, R-32 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, instrumentos existentes, DEC-58/59/60, RISK-25/37 e guia Dart (SDK, simplicidade, records, contratos). Conferidos fork/adopt, snapshots, replay e preparação real com os limites core/sync/storage.
+Implementação: estendido example/measure_crdt_cost.dart com --paths, preservando modo anterior e reutilizando factories, transporte controlado e helpers existentes. Cargas independentes de campos, valores e pendências, oito tipos, dois peers e statuses pending/sent; MemoryStorage e SQLite FFI. Acrescentados medição de 12 percursos, verificações runtime, bytes JSON separados, RSS de processo e arquivos fechados SQLite. Nenhuma fonte de produção, API, dependência, manifesto ou formato mudou.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigidos dois avisos de estilo e comparação de valores que dependia da ordem de mapas/sets; listas preservam ordem. Conferidas exclusão de setup/checks dos cronômetros, HLC monotônico na restauração, scopes global/peer distintos e limites de RSS/JSON/SQLite. Explicados overwrite do mesmo valor, caches/JIT, etapas isoladas e ausência de rede no preparo. Review repetido após correções e nos artefatos/documentação; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r32-paths.json 2> /tmp/deltasync-r32-paths.err; dart format --output=none --set-exit-if-changed example/measure_crdt_cost.dart lib test && dart analyze && dart test --reporter expanded; dart run example/measure_crdt_cost.dart > /tmp/deltasync-r32-legacy.log 2>&1, todos da raiz. JSON conferido por Python para contagens, medianas, métricas, equivalência entre backends e tamanhos; hashes/outputs preservados nos artefatos.
+Critérios: C1 pelas sete configurações por backend e 12 métricas, incluindo mutação, snapshot, restauração/outbox, preparo e consultas repetidas; C2 pela equivalência de estado/IDs/metadados, projeções separadas e fechamento/reabertura SQLite, sem confundir memória/arquivo; C3 por seed, ambiente, dois aquecimentos e cinco amostras por carga, RSS identificado como processo e ausência explícita de heap/alocações; C4 por gargalos/encaminhamentos no README da evidência e DEC-61: R-37 antes da release, novas otimizações de replay/cópias/SQL para avaliação posterior, sem relaxar isolamento ou retirar requisitos da fase.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-61, RISK-37 e novo RISK-43 registram custos e decisão. R-37 liberada por R-32/R-39 e próxima recomendada; R-33/R-38/R-42 seguem prontas. Nenhuma ativa, nenhuma próxima iniciada; fase 6 e VAL-17 continuam abertos.
+Limitações: Dart 3.13.5 stable/Linux x86_64, SQLite FFI e payload ASCII compartilhado por carga. Sem SDK 3.12.x, novo Android, rede real, profiling de heap/alocações ou SLA universal. Timings não são monotônicos em todas as cargas; JIT/GC/caches e ordem fixa permanecem. RSS não mede alocação por operação; bytes SQLite pós-escrita não são JSON pré-operação ou espaço recuperável. Sem mudança de lib, Compass, commit ou publicação.
+
+### Implementação e revisão após correções
+
+O [medidor](../example/measure_crdt_cost.dart) ganhou um modo de análise, sem
+alterar APIs ou introduzir camadas em produção. Records privados descrevem
+cargas; o preparo chama OutboundSync.prepare real. Modelos, regras de negócio e
+adaptação do app continuam no consumidor; estes imports internos são instrumentos,
+não um mecanismo de extensão sugerido aos aplicativos.
+
+Primeira análise encontrou dois infos de chaves em fluxo, corrigidos. A primeira
+execução de --paths saiu com 255 em `restored values`: snapshot equivalente, mas
+ordem do mapa de valores mudou na restauração. Corrigida a normalização de
+Map/Set, mantendo ordem de List, o instrumento passou. HLC pode avançar no replay;
+a prova exige monotonicidade e preserva comparação dos demais metadados. Nenhum
+achado exigiu mudar a biblioteca. Correções e limites dos cronômetros foram
+revistos antes da execução final; review não independente.
+
+### Validação e resultados
+
+[Método/resultados](evidence/r32/README.md) detalha comandos, parâmetros,
+escopos, tabelas e encaminhamentos. [Amostras](evidence/r32/measurements.json)
+registram 14 cargas, 28 aquecimentos e 70 amostras medidas. Cada execução verifica
+fork/adopt, snapshot, valores, IDs/clocks/contextos, outbox, seleção/ordem por peer,
+tentativas e commit final. Seed 20261024 e relógio fixo; 16/64/256 campos,
+64/256/1024 B ASCII e 16/64/256 pendências, variando um parâmetro por eixo.
+
+O JSON foi conferido separadamente: sete configurações com os dois backends,
+cinco amostras e 12 métricas por carga, oito tipos, todas as verificações
+aprovadas, medianas recalculadas e tamanhos/contagens de fixture iguais entre
+MemoryStorage/SQLite. Main/WAL/SHM foram registrados após fechar cada SQLite;
+todo main existia com tamanho positivo. RSS e máximo são do processo inteiro,
+incluindo runtime/SQLite; não contam heap, alocações ou cópias por operação.
+
+[validation.json](evidence/r32/validation.json) guarda revisão base, hashes do
+instrumento/dados/lock, falha inicial, execução final e modo anterior. Este último
+manteve quatro cargas MV com ACK esvaziando pendências, 253 itens no estado grande
+e 17 eventos retidos OR-Set. Seus tempos não foram comparados aos do modo novo.
+[Checks da raiz](evidence/r32/root-checks.json): formato sem mudanças, análise
+sem issues e **13 testes da facade** aprovados. Não reapresentar 249 testes de
+R-39 como execução desta tarefa; nenhuma fonte em lib/packages foi modificada.
+
+Com 256 entradas, cinco contagens pela engine levaram 5110 µs em memória e
+28681 µs no SQLite; start com outbox, 153115/168325 µs. Preparar 128 entradas do
+peer levou 1610/28568 µs. Código confirma payloads materializados para contagem,
+replay por entrada com fork/adopt e markSent com consulta/escrita por ID.
+As etapas e escopos diferem: não somar cronômetros nem atribuir toda diferença
+ao SQL. SQLite fechado de pending-256 tinha 233472 B, versus 106950 B de outbox
+JSON inicial; não são o mesmo objeto/instante nem medida de espaço recuperável.
+
+R-37 segue antes da release. Novas otimizações de replay/cópias/SQL ficam para
+avaliação posterior por DEC-61; não foi demonstrado defeito de dados ou definido
+SLA que imponha outra refatoração agora. Orçamento de consumidor mais estrito
+exige reavaliar essa decisão. Consulta pontual de string não mostrou crescimento
+consistente com campos/backlog; isso não se estende a coleções/modelos arbitrários.
+
+### Manutenção
+
+R-32 concluída com critérios demonstrados; R-37 pronta e recomendada, sem iniciar
+outra implementação. Registro de performance preserva garantias e todo o escopo
+de 1.0.1. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e
+431 links locais; `git diff --check` passou. JSON, hashes e whitespace dos
+artefatos novos foram conferidos.

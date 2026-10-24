@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-39 concluídas e nenhuma ativa.
-R-32/R-33/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-39 concluídas e nenhuma ativa.
+R-33/R-37/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -144,7 +144,7 @@ com [resultados e comparação](evidence/r31-validation.json).
 
 ## R-32 — Medir custos de mutação, restauração e pendências
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-31
 
@@ -153,23 +153,32 @@ consultas de estado/outbox. Entrega é evidência, sem refatoração especulativ
 
 Critérios:
 
-- [ ] Reusar/estender os medidores existentes com cargas fixas crescentes de
+- [x] Reusar/estender os medidores existentes com cargas fixas crescentes de
   campos, tamanho de valores e pendências. Medir mutação, snapshot, restauração
   com outbox, preparação de push e consultas repetidas de quantidade/status.
-- [ ] Distinguir estado materializado, metadados causais e outbox. Incluir
+- [x] Distinguir estado materializado, metadados causais e outbox. Incluir
   MemoryStorage e SQLite FFI onde pertinentes; não confundir memória com
   durabilidade nem bytes JSON com tamanho recuperável do arquivo SQLite.
-- [ ] Registrar aquecimento, repetições, sementes, ambiente, tempos e medida
+- [x] Registrar aquecimento, repetições, sementes, ambiente, tempos e medida
   de memória explicitamente suportada. Se heap/alocações não forem medidos,
   declarar a ausência; leituras contadas não equivalem a bytes alocados.
-- [ ] Identificar gargalos restantes e decidir se exigem correção
+- [x] Identificar gargalos restantes e decidir se exigem correção
   antes da release ou tarefa posterior. Medição não autoriza remover isolamento,
   mudar checkpoints/formatos ou reestruturar todos os CRDTs. Registrar também
   resultado sem gargalo relevante e os limites das conclusões.
 
 Validação: execução reproduzível dos medidores e verificação de resultados
 equivalentes, sem transformar desempenho específico do host em garantia pública.
-Evidência de conclusão: ainda não registrada.
+Resultado: medidor existente estendido com --paths; 14 cargas Memory/SQLite,
+70 amostras medidas e 28 aquecimentos com verificações equivalentes; modo antigo
+preservado. Formato/análise e 13 testes da facade aprovados. Medidos RSS do
+processo, JSON e arquivos fechados SQLite separadamente; heap/alocações ausentes.
+R-37 segue antes da release; novas otimizações de replay/cópias/SQL ficam para
+avaliação posterior (DEC-61), sem alterar a lib ou retirar critérios da fase.
+Evidência de conclusão: [execução R-32](TRACEABILITY.md#execucao-r-32-2026-10-24),
+[método/resultados](evidence/r32/README.md),
+[amostras](evidence/r32/measurements.json) e
+[validação/review](evidence/r32/validation.json).
 
 <a id="r-33"></a>
 
@@ -366,7 +375,7 @@ O pedido atual planeja sua execução; nenhuma implementação foi iniciada.
 
 ## R-37 — Oferecer consulta leve de pendências
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-32, R-39
 

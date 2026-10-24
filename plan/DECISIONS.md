@@ -409,6 +409,25 @@ automática de um app de volta ao pending store. Ver
 [R-39](TRACEABILITY.md#execucao-r-39-2026-10-24) e
 [guia](../docs/migracao-1.0.1.md).
 
+DEC-61 — Medição de custos R-32, 2026-10-24: estender o medidor existente por
+--paths, com parâmetros independentes de campos/valor/pendências, dois backends,
+dois aquecimentos e cinco amostras por carga. Usar records privados para cargas
+e o fluxo real de preparação, sem outra implementação de join ou alteração de
+produção. Verificar valores sem depender da ordem de mapas/sets; listas mantêm
+ordem. Na restauração, exigir HLC monotônico e os demais metadados iguais.
+RSS é do processo inteiro; não mede heap/alocações. Projeções JSON de valores e
+causalidade não somam um backup, e bytes do SQLite fechado não são recuperáveis.
+R-37 permanece necessária antes de 1.0.1: contagem/status ainda materializam
+payloads. Replay por entrada com fork/adopt e markSent por ID explicam custos
+restantes observados, mas esta tarefa não demonstra defeito de dados nem dispõe
+de SLA para impor outra refatoração. Avaliar otimizações novas de replay/cópias/
+SQL após a release, com esta baseline e provas de isolamento, causalidade e
+rollback; orçamento de consumidor mais estrito exige reavaliar a decisão.
+Nenhum item já planejado foi adiado ou retirado. R-35/VAL-17 continuam responsáveis
+por documentação/gate completo; não alegar latência universal ou suporte mínimo
+executado. Ver [R-32](TRACEABILITY.md#execucao-r-32-2026-10-24) e
+[resultados](evidence/r32/README.md).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
