@@ -1,3 +1,9 @@
+## Unreleased
+
+- Remove PendingDeltaStore, MemoryPendingDeltaStore and OutboxEntry.operationId.
+  Use ReplicaStorage and entryId/changeIds; export old pending data before upgrade.
+- Preserve snapshot/outbox readers and formats, including legacy status labels.
+
 ## 2.0.0
 
 - Expose the ReplicaStorage contract with atomic snapshot/outbox commits.

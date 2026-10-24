@@ -75,8 +75,7 @@ class SyncPushResult extends SyncObservation {
 /// The caller schedules retries; this policy does not start a timer. New pending
 /// entries are eligible on the next push. Sent entries wait for the exponential
 /// delay and stop being selected once [maxAttempts] is reached, if configured.
-/// `push(force: true)` bypasses both filters. The legacy [PendingDeltaStore]
-/// path has no attempt metadata; every push retries its retained delta.
+/// `push(force: true)` bypasses both filters.
 class SyncRetryPolicy {
   const SyncRetryPolicy({
     this.baseDelay = const Duration(seconds: 1),

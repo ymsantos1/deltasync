@@ -9,7 +9,8 @@ Escopo vigente: [todos os pontos na mesma 1.0.1](#escopo-integral-1-0-1-2026-10-
 conforme esclarecimento posterior do autor que substituiu o adiamento por versões.
 R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
 R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
-R-32/R-33/R-39 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+R-39 [concluiu remoções com migração e rollback](#execucao-r-39-2026-10-24).
+R-32/R-33/R-38/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
 preservam as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
@@ -5337,3 +5338,104 @@ R-39 pela sequência autorizada da fase. Não iniciada; esta autorização execu
 uma tarefa. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas
 e 402 links locais; `git diff --check` passou. Artefatos novos também tiveram
 JSON, whitespace e hashes de fonte/teste conferidos.
+
+<a id="execucao-r-39-2026-10-24"></a>
+
+## Execução R-39 — Remoção de APIs legadas com migração, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 97f8f45, R-30/R-31 concluídas e R-39 pronta/recomendada. Lidos AGENTS, RUNBOOK, cinco skills completas, fase, baseline/mapa R-30, DEC-55 a DEC-59, RISK-26/38 e trechos de SDK, contratos e null safety do guia Dart. Confirmados consumidores públicos, readers e ramos legados antes de editar.
+Implementação: removidos PendingDeltaStore/MemoryPendingDeltaStore, parâmetro/campo store e ramificações de persistência/envio; storage obrigatório e não nullable nos dois construtores da engine. Removidos aliases set/remove de Replica/SyncEngine, Delta.crdt/crdtChanges e OutboxEntry.operationId. Retirados Operation/migrateLegacyOperation dos exports; DTO/parser e readers continuam. Migrados sete testes de sync; testes do reader no próprio core usam seu arquivo interno explicitamente. Acrescentados guia, changelogs e provas isoladas de migração/rollback, sem classe ou dependência nova em produção.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigida fixture de restauração com dono da outbox errado; documentado entryId após retirar operationId; mantidas regressões de envio sem ACK/falha e descarte. A prova negativa passou a exigir diagnósticos do analyzer por linha porque o compilador parava antes de todas as mensagens; comparação de inventário separa mudanças documentais exatas das assinaturas. Review repetido após correções/formatação, incluindo arquivos novos. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes e python3 plan/evidence/r39/validate.py --dart dart --report /tmp/deltasync-r39-consumers.json, executados da raiz; comandos completos e subprocessos nos artefatos abaixo. 249 testes do workspace, 14 checks históricos e 15 migrados aprovados; falha esperada de compilação do consumidor antigo na árvore atual e 12 probes negativos de API. Inventário dos sete exports restringe diferenças às previstas. SQLite executado em três processos, antigo/atual/antigo, sobre o mesmo banco.
+Critérios: C1 demonstrado por diff, inventário externo e rejeição estática das APIs removidas; C2 pelos dados congelados R-30 intactos, readers legados, oito tipos e recuperação SQLite; C3 por guia de fonte/dados/rollback, exemplo do guia compilado/testado, contratos implementados externamente, suíte de storage e rollback com escritas novas/ACK parcial. Nenhum join, versão de formato, schema ou manifesto alterado.
+Manutenção: três critérios marcados, índice/fase/trace atualizados, DEC-60 e RISK-26/38 revisados. R-38/R-42 liberadas; R-32/R-33 seguem prontas. Nenhuma ativa, próxima recomendada R-32; fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5 stable/Linux x86_64, SQLite FFI e dependências por path no consumidor isolado. Sem SDK 3.12.x, Android novo, publicação hosted ou compilação de Compass; SDK mínimo fica em R-33/VAL-17. Rollback cobre apenas a revisão 1.0.0 fixada e mudanças de R-39, sem prometer versões anteriores ou APIs futuras. MemoryStorage não comprova durabilidade. Sem commit/publicação ou início de outra tarefa.
+
+### Leitura e implementação
+
+[workspace.json](evidence/r39/workspace.json) registra revisão inicial, hashes de
+fontes/testes/guia/ferramentas, review e testes. Todos os arquivos R-30 permanecem
+intactos. A remoção elimina o segundo contrato de persistência e a escolha
+inválida de nenhum/dois stores. Storage obrigatório expressa a invariante no tipo,
+sem enum, wrapper, plugin ou camada nova. withStorage usa o mesmo construtor.
+
+Estado, mutação, delta e join continuam no core; candidata, commit, adoção e
+restauração no sync; atomicidade no backend; seleção por peer/tentativas no
+outbound. Rede fica fora da fila de commits. Operation e seu conversor permanecem
+em src/operation.dart, fora dos exports públicos, usados pelos readers de delta
+e snapshot. ReplicaSnapshot.legacy e OutboxStatus.confirmed foram mantidos por
+compatibilidade de dados/adaptadores; nenhum join ou formato mudou.
+
+O [guia](../docs/migracao-1.0.1.md) mapeia remoções/substitutos, pontos de
+manutenção, importação e rollback. O exemplo de importação exige checkpoint
+completo e peer explícito: pendências não recuperam estado já confirmado. A prova
+extrai esse exemplo do Markdown, compila e testa commit falho, dono incorreto,
+destino ocupado, importação correta e ACK parcial. Não impõe importador ao core.
+
+### Review e correções
+
+Primeira rodada de sync: 56 testes passaram e uma fixture migrada falhou.
+Enfileirava uma mudança de source e restaurava device-a; o storage suportado
+separa por origem. Corrigidos dono/destino da fixture, a regressão focada passou.
+Diff revisto após correções; rodada completa posterior aprovada. Log inicial e
+final permanecem em workspace.json. Envio sem ACK, falha de envio, restauração
+antes do uso e descarte continuam testados no caminho suportado.
+
+A primeira prova negativa exigia todas as mensagens do compilador; ele parou
+nas primeiras. Corrigida para incluir 12 linhas independentes com diagnósticos
+machine do analyzer. A comparação AST inicial também sinalizou comentários de
+retry/pending/entryId. O comparador agora verifica exatamente essas três mudanças
+documentais, separadas das assinaturas, sem alterar a baseline. Fixtures e
+comparador foram revistos após correção e reexecutados com sucesso.
+
+### Validação
+
+Na raiz, comando completo dos sete pacotes:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r39-workspace.log 2>&1
+python3 plan/evidence/r39/validate.py --dart dart --report /tmp/deltasync-r39-consumers.json
+```
+
+Resultado do workspace: **249 testes**, respectivamente 13/122/57/12/27/8/10;
+sete análises sem issues e sete gates de formato sem mudanças. Inclui oito tipos,
+falhas transacionais, rollback, ACK parcial/perdido, retries, edição concorrente,
+contextos causais e recuperação SQLite. Logs completos estão em workspace.json.
+
+[validation.json](evidence/r39/validation.json) conserva comandos, diretórios,
+resolução offline própria, SDK, logs, diferenças de API e hashes de R-30.
+Consumidor antigo: **14 checks** na revisão histórica. O
+[migrado](evidence/r39/consumer_test.dart.txt): **15 checks**, análise limpa e
+origem dos imports conferida, em projeto fora do workspace. São cenários
+correspondentes e um adicional, não 29 cenários inteiramente distintos. Os
+consumers implementam contratos por composição, sem imports de src.
+
+Consumidor antigo falha na árvore atual por APIs removidas, como esperado.
+Doze probes também falham com erros nas linhas esperadas; isso é prova de remoção,
+não reprovação do gate. Inventário dos sete entry points não encontrou mudanças
+fora das remoções/assinaturas previstas e dos ajustes documentais conferidos.
+Contratos de adaptadores/transporte e suíte de storage permaneceram iguais.
+
+O [programa de rollback](evidence/r39/rollback.dart.txt) rodou em três processos:
+1.0.0 gravou SQLite; atual reabriu, escreveu LWW/counter e recebeu ACK de três
+IDs; 1.0.0 reabriu e verificou novas escritas, 45 pendências e 23 entradas do
+outro peer com payload/metadados preservados. Consumer migrado também reabre
+SQLite após novos commits/ACK. Prova vale para essa referência e FFI/Linux,
+sem extrapolar a Android ou readers anteriores à revisão fixada.
+
+### Manutenção
+
+R-39 concluída com três critérios demonstrados; R-38/R-42 prontas por dependência.
+R-32 recomendada conforme sequência vigente; nenhuma próxima tarefa iniciada.
+DEC-60 registra internalização dos leitores e limite do rollback; RISK-26/38
+distinguem remoções verificadas do restante da release. Numeração intacta até
+R-36; gate integral continua VAL-17. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 416 links locais;
+`git diff --check` passou. JSON, hashes e whitespace dos artefatos novos também
+foram conferidos.

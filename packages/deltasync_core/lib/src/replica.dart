@@ -205,15 +205,9 @@ class Replica {
   LwwDelta<Object?> setDelta(String key, Object? value) =>
       _recordDelta(key, value);
 
-  @Deprecated('Use setDelta; returned change is a native LwwDelta.')
-  LwwDelta<Object?> set(String key, Object? value) => setDelta(key, value);
-
   /// Creates and applies native LWW delete tombstone.
   LwwDelta<Object?> removeDelta(String key) =>
       _recordDelta(key, null, deleted: true);
-
-  @Deprecated('Use removeDelta; returned change is a native LwwDelta.')
-  LwwDelta<Object?> remove(String key) => removeDelta(key);
 
   /// Increments G-Counter at stable application-defined [crdtId].
   GCounterDelta incrementGCounter(String crdtId, [int amount = 1]) {

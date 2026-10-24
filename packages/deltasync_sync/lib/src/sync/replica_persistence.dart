@@ -1,22 +1,14 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 
 /// Internal storage boundary. The engine adopts candidates and emits events
 /// only after these methods succeed; this object never mutates live state.
 class ReplicaPersistence {
-  ReplicaPersistence({required this.storage, required this.store});
-  final ReplicaStorage? storage;
-  final PendingDeltaStore? store;
+  ReplicaPersistence({required this.storage});
+  final ReplicaStorage storage;
 
   Future<void> restoreInto(Replica candidate) async {
-    final durable = storage;
-    if (durable == null) {
-      candidate.apply(await store!.read(candidate.id));
-      return;
-    }
-    final snapshot = await durable.loadReplica(candidate.id);
+    final snapshot = await storage.loadReplica(candidate.id);
     if (snapshot != null) {
       if (snapshot.version == 2) {
         final encodedState = snapshot.snapshot;
@@ -30,13 +22,13 @@ class ReplicaPersistence {
         throw FormatException('Unsupported storage snapshot version');
       }
     }
-    for (final entry in await durable.pending(candidate.id)) {
+    for (final entry in await storage.pending(candidate.id)) {
       candidate.apply(entry.delta);
     }
   }
 
   Future<void> save(Replica candidate) async {
-    await storage?.saveReplica(ReplicaSnapshot.fromReplica(candidate));
+    await storage.saveReplica(ReplicaSnapshot.fromReplica(candidate));
   }
 
   Future<void> commitLocal(
@@ -44,27 +36,18 @@ class ReplicaPersistence {
     List<DeltaChange> changes,
     String peer,
   ) async {
-    final delta = Delta(changes);
-    final durable = storage;
-    if (durable != null) {
-      await durable.commit(ReplicaSnapshot.fromReplica(candidate), [
-        for (final change in changes)
-          OutboxEntry(delta: Delta([change]), recipientPeerId: peer),
-      ]);
-    } else {
-      final pending = await store!.read(candidate.id);
-      await store!.write(candidate.id, pending.merge(delta));
-    }
+    await storage.commit(ReplicaSnapshot.fromReplica(candidate), [
+      for (final change in changes)
+        OutboxEntry(delta: Delta([change]), recipientPeerId: peer),
+    ]);
   }
 
   Future<void> commitRemote(Replica candidate) async {
-    await storage?.commitRemote(ReplicaSnapshot.fromReplica(candidate));
+    await storage.commitRemote(ReplicaSnapshot.fromReplica(candidate));
   }
 
   Future<Delta> pendingDelta(String replicaId) async {
-    final durable = storage;
-    if (durable == null) return store!.read(replicaId);
-    return mergeOutbox(await durable.pending(replicaId));
+    return mergeOutbox(await storage.pending(replicaId));
   }
 
   Future<void> acknowledge(
@@ -72,7 +55,7 @@ class ReplicaPersistence {
     String peer,
     Set<String> ids,
   ) async {
-    if (ids.isNotEmpty) await storage?.acknowledge(replicaId, peer, ids);
+    if (ids.isNotEmpty) await storage.acknowledge(replicaId, peer, ids);
   }
 
   void _restoreLegacySnapshot(Replica target, ReplicaSnapshot snapshot) {

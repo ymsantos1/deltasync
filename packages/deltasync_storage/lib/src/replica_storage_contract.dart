@@ -168,10 +168,7 @@ class OutboxEntry {
 
   List<String> get changeIds => [_delta.changes.single.id];
 
-  /// Legacy singular alias. New code should use [changeIds].
-  @Deprecated('Use changeIds for native CRDT changes.')
-  String get operationId => changeIds.first;
-
+  /// Stable ID of the single change in this entry.
   String get entryId => _delta.changes.single.id;
 
   Map<String, Object?> toJson() => {

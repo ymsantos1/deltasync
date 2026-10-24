@@ -105,11 +105,11 @@ sequenceDiagram
 O fluxo integrado de `Replica`/`SyncEngine` suporta LWW, G-Counter, PN-Counter,
 G-Set, 2P-Set, MV-Register, OR-Set e OR-Map com valores G-Set. Testes de
 recuperação SQLite via FFI cobrem estado e outbox dos oito tipos.
-`setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. `Replica.set/remove`,
-`SyncEngine.set/remove` e `Delta.crdt/crdtChanges` são wrappers depreciados que encaminham ao lote nativo;
-podem ser removidos na próxima versão principal. `Operation`, `Crdt`,
-`CrdtOperation` e `OperationCrdt` não formam mais caminho operacional. `Operation`
-fica como DTO depreciado para migração versionada.
+`setDelta/removeDelta` produzem `LwwDelta` ordenado por HLC. Os aliases
+`Replica.set/remove`, `SyncEngine.set/remove` e `Delta.crdt/crdtChanges` foram
+removidos na consolidação para 1.0.1. `Operation` e seu conversor são internos
+aos leitores históricos; aplicativos usam mudanças nativas e `DeltaCodec`.
+Veja [upgrade de fonte, dados e rollback](docs/migracao-1.0.1.md).
 
 G-Counter e PN-Counter agora entram em `Replica`/`SyncEngine` por métodos de
 mutação com `crdtId` estável, como `incrementGCounter('cart/apples')` e
@@ -201,32 +201,32 @@ mudam; consumidores de coleções tipadas adicionam a conversão nos pontos acim
 
 Esta consolidação altera APIs públicas. `Delta` agora recebe somente
 `Iterable<DeltaChange>`; `Delta.changes` contém todas as mudanças nativas. Código
-que lia `crdtChanges` pode usar o alias depreciado ou migrar para `changes`.
+que lia `crdtChanges` deve usar `changes`.
 Adapters próprios de `ReplicaStorage` devem implementar consulta, `markSent` e
 confirmação por peer. `OutboxEntry` exige exatamente uma mudança em `delta` e
 registra destino;
 lotes são montados no envio. Outbox v2 substitui formato v1. Migração v1 exige
 informar explicitamente `legacyRecipientPeerId`; alvo desconhecido nunca é
 atribuído silenciosamente. `operation:` foi removido. `Replica.set`
-e `Replica.remove` continuam como aliases depreciados, mas retornam `LwwDelta`;
+e `Replica.remove` foram removidos; use `setDelta` e `removeDelta`;
 código tipado como `Operation` deve migrar para `LwwDelta<Object?>`. `Crdt`,
-`CrdtOperation` e `OperationCrdt` foram removidos. Consumidores externos não foram
-inventariados; devem compilar contra os contratos públicos acima e adaptar
+`CrdtOperation` e `OperationCrdt` foram removidos. Consumidores devem
+compilar contra os contratos públicos acima e adaptar
 subclasses próprias de `DeltaChange` para metadados `kind`, `crdtId` e `replicaId`.
 `ReplicaSnapshot` atual recebe payload canônico; adaptadores leem objeto antigo
 com `ReplicaSnapshot.fromJson` e convertem antes de escrever. Outboxes antigas com
 várias mudanças por entrada devem ser divididas em uma entrada por mudança na
-migração. `PendingDeltaStore` e `MemoryPendingDeltaStore` seguem depreciados como
-ponte; API nova usa `SyncEngine.withStorage`.
+migração. `PendingDeltaStore`, `MemoryPendingDeltaStore` e o parâmetro `store:`
+foram removidos. Use `SyncEngine.withStorage` com `ReplicaStorage` obrigatório;
+`MemoryStorage` é volátil. Exporte dados do store antigo antes de atualizar,
+conforme [procedimento de migração](docs/migracao-1.0.1.md).
 
 Inventário público após consolidação: `deltasync_core` exporta contratos e tipos
 de mudança (`DeltaChange`, `CrdtKind`, `Delta`, `DeltaCodec`, `DeltaCrdt`),
-`Replica`/`ReplicaState`, LWW/counters, HLC, identidade e clocks; `Operation` e
-`migrateLegacyOperation` existem só para converter dados antigos. `deltasync_storage`
+`Replica`/`ReplicaState`, LWW/counters, HLC, identidade e clocks. `Operation` e
+`migrateLegacyOperation` não são exportados. `deltasync_storage`
 exporta `ReplicaStorage`, `ReplicaSnapshot`, `OutboxEntry`, `OutboxStatus`,
-`MemoryStorage`, `PendingDeltaStore` e `MemoryPendingDeltaStore`. Os dois últimos
-permanecem depreciados como adaptador de migração; fluxo novo usa
-`SyncEngine.withStorage` e `ReplicaStorage`. `deltasync_sync`
+`MemoryStorage`. O fluxo usa `SyncEngine.withStorage` e `ReplicaStorage`. `deltasync_sync`
 exporta `SyncEngine` e `SyncRetryPolicy`; `deltasync_transport` exporta
 `DeltaTransport`, `AcknowledgingDeltaTransport`, `DeltaEnvelope`,
 `DeltaAcknowledgement` e `DeltaAckStage`. A facade `deltasync` reexporta esses
@@ -487,9 +487,7 @@ limita o atraso a 1 min;
 `maxAttempts: null` não impõe limite, mas ainda exige nova chamada do consumidor.
 `push(force: true)` ignora atraso e limite para retransmissão manual.
 `SyncEngine` aceita ACK somente
-para IDs do lote enviado, peer configurado e outbox da réplica local. O legado `PendingDeltaStore`
-não armazena tentativas nem ACKs: mudanças enviadas ficam pendentes e cada `push`
-pode reenviá-las sem limite; `force` não altera esse comportamento. ACK confirma
+para IDs do lote enviado, peer configurado e outbox da réplica local. ACK confirma
 entrega, nunca autoriza coleta de tombstones. Topologia coberta é enlace ponto a
 ponto de peer fixo; garantias não se estendem a peers além dele. Se o adaptador
 remoto não puder provar commit durável, não deve reportar `appliedAndPersisted`.
@@ -526,10 +524,6 @@ pendências filtradas. Falhas chamadas
 diretamente são lançadas ao chamador; `errors` expõe falhas de processamento do
 stream remoto e erros emitidos pelo stream de transporte. `dispose()` é terminal,
 cancela recepção, aguarda operações já iniciadas e rejeita novas operações.
-`PendingDeltaStore` não consegue remover uma mudança, mesmo após ACK remoto;
-resultado de push confirma transporte, enquanto `pendingDelta()` revela retenção
-local e possível reenvio. Esse adaptador legado não grava destino por peer e serve
-somente à migração de um enlace fixo; garantias por peer exigem `ReplicaStorage`.
 
 ```dart
 final engine = SyncEngine.withStorage(

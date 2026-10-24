@@ -392,6 +392,23 @@ leituras de ID, sem limiar temporal; resultado do host não garante latência em
 outras plataformas. Dados, exports e consumidores antigos seguem validados em
 [R-31](TRACEABILITY.md#execucao-r-31-2026-10-24).
 
+DEC-60 — Remoção de legado R-39, 2026-10-24: SyncEngine exige ReplicaStorage
+não nullable nos dois construtores e mantém withStorage. Removidos contrato e
+implementação PendingDeltaStore, seus ramos, aliases de mutação/lote e
+OutboxEntry.operationId. Operation e migrateLegacyOperation deixam os exports;
+o mesmo DTO/parser em src/operation.dart continua atendendo readers de delta e
+snapshot, sem outra implementação ou protocolo. ReplicaSnapshot.legacy e
+OutboxStatus.confirmed permanecem para dados/adaptadores históricos. Nenhum join,
+formato, schema, SDK ou manifesto foi alterado. Inventário dos sete entry points
+confere somente remoções/assinaturas previstas e mudanças documentais explícitas.
+Consumidor isolado usa contratos por composição; exemplo de importação pertence
+ao app e exige checkpoint completo, peer explícito e commit atômico. Rollback foi
+executado para a revisão 1.0.0 fixada sobre o mesmo SQLite, incluindo escritas
+novas e ACK parcial; não garante downgrade a readers anteriores ou migração
+automática de um app de volta ao pending store. Ver
+[R-39](TRACEABILITY.md#execucao-r-39-2026-10-24) e
+[guia](../docs/migracao-1.0.1.md).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

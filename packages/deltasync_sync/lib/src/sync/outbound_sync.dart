@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 import 'package:deltasync_transport/deltasync_transport.dart';
@@ -53,14 +51,7 @@ class OutboundSync {
   Future<({Delta delta, List<String> ids})> prepare({
     required bool force,
   }) async {
-    if (persistence.storage == null) {
-      final pending = await persistence.store!.read(replicaId);
-      return (
-        delta: pending,
-        ids: pending.changes.map((change) => change.id).toList(),
-      );
-    }
-    final allEntries = await persistence.storage!.pending(
+    final allEntries = await persistence.storage.pending(
       replicaId,
       recipientPeerId: transport.peerReplicaId,
     );
@@ -78,11 +69,7 @@ class OutboundSync {
     }
     final pending = mergeOutbox(entries);
     final ids = entries.expand((entry) => entry.changeIds).toList();
-    await persistence.storage!.markSent(
-      replicaId,
-      transport.peerReplicaId,
-      ids,
-    );
+    await persistence.storage.markSent(replicaId, transport.peerReplicaId, ids);
     return (delta: pending, ids: ids);
   }
 

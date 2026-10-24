@@ -1,3 +1,10 @@
+## Unreleased
+
+- Remove pending-store APIs and deprecated mutation/delta/outbox aliases; require
+  ReplicaStorage in SyncEngine. Source migration is required for 1.0.1.
+- Keep historical data readers and serialized formats; Operation conversion is
+  internal. See docs/migracao-1.0.1.md for upgrade and rollback limits.
+
 ## 2.0.0
 
 - Integrate eight CRDTs with typed deltas, versioned codecs and replica snapshots.

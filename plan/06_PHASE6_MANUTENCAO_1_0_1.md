@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31 concluídas e nenhuma tarefa ativa.
-R-32/R-33/R-39 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-39 concluídas e nenhuma ativa.
+R-32/R-33/R-38/R-42 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -392,7 +392,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-38 — Implementar lote público com commit local atômico
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-39
 
@@ -419,7 +419,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-39 — Remover superfície legada preservando migração de dados
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-30, R-31
 
@@ -427,20 +427,27 @@ Alvo: 1.0.1, com quebra de fonte expressamente incluída pelo autor.
 
 Critérios:
 
-- [ ] Migrar/remover PendingDeltaStore e MemoryPendingDeltaStore, seus ramos
+- [x] Migrar/remover PendingDeltaStore e MemoryPendingDeltaStore, seus ramos
   na engine/persistência, aliases set/remove, Delta.crdt/crdtChanges e
   OutboxEntry.operationId; retirar Operation da superfície principal.
-- [ ] Separar remoção de API da política de dados: preservar readers e conversão
+- [x] Separar remoção de API da política de dados: preservar readers e conversão
   históricos necessários aos dados 1.0.0 e anteriores já suportados, mantendo
   DTO/parser legado interno quando necessário. Não apagar snapshots/outbox nem
   renumerar dados por conveniência; leitor histórico não é API operacional nova.
-- [ ] Documentar upgrade dos consumidores/adaptadores, rollback e ponto único de
+- [x] Documentar upgrade dos consumidores/adaptadores, rollback e ponto único de
   manutenção de cada regra; verificar inventário externo, testes de compilação,
   migração e recuperação durável. Remover legado não autoriza mudar os oito joins.
 
 Validação: provas de migração de fonte/dados, suíte geral/contrato/SQLite,
 consumidor isolado e revisão dos imports/exports que passam a ser internos.
-Evidência de conclusão: ainda não registrada.
+Resultado: 249 testes nos sete pacotes; consumidor histórico com 14 checks e
+migrado isolado com 15 checks, incluindo exemplo extraído do guia. Doze probes
+rejeitam APIs removidas; inventário limita quebras às previstas. Três processos
+antigo/atual/antigo verificam o mesmo SQLite após edições e ACK parcial.
+Evidência de conclusão: [execução R-39](TRACEABILITY.md#execucao-r-39-2026-10-24),
+[provas de consumo/dados](evidence/r39/validation.json),
+[workspace/review](evidence/r39/workspace.json) e
+[guia de upgrade](../docs/migracao-1.0.1.md).
 
 <a id="r-40"></a>
 
@@ -502,7 +509,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-42 — Distinguir ausência, valor null e tombstone na consulta
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-39
 

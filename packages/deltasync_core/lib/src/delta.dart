@@ -13,15 +13,9 @@ import 'or_map.dart';
 class Delta {
   Delta(Iterable<DeltaChange> changes) : changes = List.unmodifiable(changes);
 
-  @Deprecated('Use Delta(changes) for native changes.')
-  Delta.crdt(Iterable<DeltaChange> changes) : this(changes);
-
   const Delta.empty() : changes = const [];
 
   final List<DeltaChange> changes;
-
-  @Deprecated('Delta.changes now contains native CRDT changes.')
-  List<DeltaChange> get crdtChanges => changes;
 
   bool get isEmpty => changes.isEmpty;
 

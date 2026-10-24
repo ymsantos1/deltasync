@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 
 import 'package:deltasync_core/deltasync_core.dart';
@@ -17,14 +15,10 @@ export 'sync_types.dart';
 class SyncEngine {
   SyncEngine({
     required Replica replica,
-    @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store,
-    this.storage,
+    required this.storage,
     required this.transport,
     this.retryPolicy = const SyncRetryPolicy(),
   }) : _replica = replica.fork() {
-    if ((store != null) == (storage != null)) {
-      throw ArgumentError('Provide exactly one of storage or store');
-    }
     if (transport.peerReplicaId.isEmpty ||
         transport.peerReplicaId.trim() != transport.peerReplicaId) {
       throw ArgumentError.value(transport.peerReplicaId, 'peerReplicaId');
@@ -89,9 +83,7 @@ class SyncEngine {
   /// before dispose if paused; the stream closes after accepted work drains.
   Stream<SyncObservation> get observations => _observations.stream;
 
-  @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
-  final PendingDeltaStore? store;
-  final ReplicaStorage? storage;
+  final ReplicaStorage storage;
   final DeltaTransport transport;
   StreamSubscription<DeltaEnvelope>? _subscription;
   SyncEngineLifecycle _lifecycle = SyncEngineLifecycle.created;
@@ -101,7 +93,6 @@ class SyncEngine {
   final SerialCommitQueue _queue = SerialCommitQueue();
   late final ReplicaPersistence _persistence = ReplicaPersistence(
     storage: storage,
-    store: store,
   );
   late final OutboundSync _outbound = OutboundSync(
     replicaId: _replica.id,
@@ -165,10 +156,6 @@ class SyncEngine {
     }
   }
 
-  @Deprecated('Use setDelta; returns native LwwDelta.')
-  Future<LwwDelta<Object?>> set(String key, Object? value) =>
-      setDelta(key, value);
-
   /// Applies remote changes after a serialized snapshot commit succeeds.
   Future<void> applyRemote(Delta delta) =>
       _withStarted(() => _applyRemoteReady(delta));
@@ -220,9 +207,6 @@ class SyncEngine {
         _replica.adopt(candidate);
         _notifyCommit(SyncCommitOrigin.remote);
       });
-
-  @Deprecated('Use removeDelta; returns native LwwDelta.')
-  Future<LwwDelta<Object?>> remove(String key) => removeDelta(key);
 
   Future<LwwDelta<Object?>> setDelta(String key, Object? value) =>
       _commitLocal((candidate) => candidate.setDelta(key, value));
@@ -336,7 +320,7 @@ class SyncEngine {
     final batch = await _queue.run(() => _outbound.prepare(force: force));
     if (batch.delta.isEmpty) return SyncPushResult.empty;
     final result = await _outbound.send(batch);
-    if (storage != null && result.acknowledgedIds.isNotEmpty) {
+    if (result.acknowledgedIds.isNotEmpty) {
       await _queue.run(
         () => _persistence.acknowledge(
           _replica.id,
@@ -348,8 +332,7 @@ class SyncEngine {
     return result;
   }
 
-  /// Locally retained changes, including sent but unacknowledged changes. The
-  /// deprecated store cannot remove entries even after a remote ACK.
+  /// Locally retained changes, including sent but unacknowledged changes.
   Future<Delta> pendingDelta() => _withStarted(
     () => _queue.run(() => _persistence.pendingDelta(_replica.id)),
   );

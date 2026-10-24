@@ -1,4 +1,6 @@
 import 'package:deltasync_core/deltasync_core.dart';
+// Reader implementation tests; applications migrate through DeltaCodec.
+import 'package:deltasync_core/src/operation.dart';
 import 'package:test/test.dart';
 
 void main() {

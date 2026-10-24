@@ -613,33 +613,42 @@ void main() {
     expect(receiver.pnCounterValue('account/balance'), 2);
   });
 
-  test('set persists local operation in outbox', () async {
-    final store = TestPendingDeltaStore();
+  test('set commits snapshot and local change in outbox', () async {
+    final storage = MemoryStorage();
     final transport = TestDeltaTransport();
     final engine = SyncEngine(
       replica: Replica('device-a'),
-      store: store,
+      storage: storage,
       transport: transport,
     );
 
     final operation = await engine.setDelta('title', 'draft');
 
-    expect(store.readCount, 2);
-    expect(store.deltaFor('device-a').changes, [operation]);
+    expect(
+      (await storage.loadReplica('device-a'))!.snapshot,
+      engine.replica.toSnapshotJson(),
+    );
+    expect((await storage.pending('device-a')).single.entryId, operation.id);
     expect(engine.replica.state.values['title'], 'draft');
+    await engine.dispose();
   });
 
   test(
     'start restores pending operations and listens for remote deltas',
     () async {
-      final store = TestPendingDeltaStore();
+      final storage = MemoryStorage();
       final transport = TestDeltaTransport();
-      final source = Replica('source');
+      final source = Replica('device-a');
       final pending = source.setDelta('title', 'recovered');
-      store.seed('device-a', Delta([pending]));
+      await storage.enqueue(
+        OutboxEntry(
+          delta: Delta([pending]),
+          recipientPeerId: transport.peerReplicaId,
+        ),
+      );
       final engine = SyncEngine(
         replica: Replica('device-a'),
-        store: store,
+        storage: storage,
         transport: transport,
       );
 
@@ -655,83 +664,83 @@ void main() {
     },
   );
 
-  test('legacy store retains sent delta because send is not an ACK', () async {
-    final store = TestPendingDeltaStore();
+  test('storage retains sent delta because send is not an ACK', () async {
+    final storage = MemoryStorage();
     final transport = TestDeltaTransport();
     final engine = SyncEngine(
       replica: Replica('device-a'),
-      store: store,
+      storage: storage,
       transport: transport,
     );
     await engine.setDelta('title', 'draft');
 
     await engine.push();
-    await engine.push();
+    await engine.push(force: true);
 
     expect(transport.sent, hasLength(2));
     expect(
       transport.sent.map((message) => message.delta.changes.single.id).toSet(),
-      {store.deltaFor('device-a').changes.single.id},
+      {(await storage.pending('device-a')).single.entryId},
     );
-    expect(store.deltaFor('device-a').changes, hasLength(1));
+    expect(await storage.pending('device-a'), hasLength(1));
+    await engine.dispose();
   });
 
-  test('legacy store retains delta when send fails', () async {
-    final store = TestPendingDeltaStore();
+  test('storage retains delta when send fails', () async {
+    final storage = MemoryStorage();
     final transport = FailOnceDeltaTransport();
     final engine = SyncEngine(
       replica: Replica('device-a'),
-      store: store,
+      storage: storage,
       transport: transport,
     );
     await engine.setDelta('title', 'draft');
 
     await expectLater(engine.push(), throwsA(isA<StateError>()));
-    expect(store.deltaFor('device-a').changes, hasLength(1));
+    expect(await storage.pending('device-a'), hasLength(1));
 
-    await engine.push();
+    await engine.push(force: true);
     expect(transport.sent, hasLength(1));
-    expect(store.deltaFor('device-a').changes, hasLength(1));
+    expect(await storage.pending('device-a'), hasLength(1));
+    await engine.dispose();
   });
 
   test('native delta mutation persists and pushes through outbox', () async {
-    final store = TestPendingDeltaStore();
+    final storage = MemoryStorage();
     final transport = TestDeltaTransport();
     final engine = SyncEngine(
       replica: Replica('device-a'),
-      store: store,
+      storage: storage,
       transport: transport,
     );
 
     final change = await engine.setDelta('title', 'draft');
 
-    expect(store.deltaFor('device-a').changes, [change]);
+    expect((await storage.pending('device-a')).single.delta.changes, [change]);
     await engine.push();
 
     expect(transport.sent.single.delta.changes, [change]);
     expect(transport.sent.single.senderReplicaId, 'device-a');
-    expect(store.deltaFor('device-a').changes, [change]);
+    expect((await storage.pending('device-a')).single.delta.changes, [change]);
+    await engine.dispose();
   });
 
-  test(
-    'legacy storage exposes remote ACK but retains its pending delta',
-    () async {
-      final store = TestPendingDeltaStore();
-      final engine = SyncEngine(
-        replica: Replica('device-a'),
-        store: store,
-        transport: AcknowledgingTestDeltaTransport(),
-      );
-      final change = await engine.setDelta('title', 'draft');
+  test('migrated storage removes only durably acknowledged changes', () async {
+    final storage = MemoryStorage();
+    final engine = SyncEngine(
+      replica: Replica('device-a'),
+      storage: storage,
+      transport: AcknowledgingTestDeltaTransport(),
+    );
+    final change = await engine.setDelta('title', 'draft');
 
-      final result = await engine.push();
+    final result = await engine.push();
 
-      expect(result.acknowledgedIds, {change.id});
-      expect(result.fullyAcknowledged, isTrue);
-      expect((await engine.pendingDelta()).changes.single.id, change.id);
-      await engine.dispose();
-    },
-  );
+    expect(result.acknowledgedIds, {change.id});
+    expect(result.fullyAcknowledged, isTrue);
+    expect((await engine.pendingDelta()).isEmpty, isTrue);
+    await engine.dispose();
+  });
 
   test(
     'SyncEngine routes mixed addressed counters and restores sequences',
@@ -1288,11 +1297,11 @@ void main() {
   });
 
   test('dispose stops applying incoming deltas', () async {
-    final store = TestPendingDeltaStore();
+    final storage = MemoryStorage();
     final transport = TestDeltaTransport();
     final engine = SyncEngine(
       replica: Replica('device-a'),
-      store: store,
+      storage: storage,
       transport: transport,
     );
     await engine.start();
@@ -1443,26 +1452,6 @@ void main() {
     expect(await storage.pending('device-a'), isEmpty);
     await expectLater(engine.push(), throwsStateError);
   });
-}
-
-class TestPendingDeltaStore implements PendingDeltaStore {
-  final Map<String, Delta> _data = {};
-  int readCount = 0;
-
-  void seed(String replicaId, Delta delta) => _data[replicaId] = delta;
-
-  Delta deltaFor(String replicaId) => _data[replicaId] ?? const Delta.empty();
-
-  @override
-  Future<Delta> read(String replicaId) async {
-    readCount++;
-    return deltaFor(replicaId);
-  }
-
-  @override
-  Future<void> write(String replicaId, Delta delta) async {
-    _data[replicaId] = delta;
-  }
 }
 
 class FailOnceCommitStorage extends MemoryStorage {
