@@ -135,12 +135,13 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. O pedido atual autoriza planejamento, não início de
-implementação. Escrita e revisão do TCC ficam com o autor, fora deste plano.
+Tarefa ativa: **nenhuma**. R-30 concluiu a baseline e o mapa de migração com o
+ciclo completo. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-30**, para fixar baseline e mapa de migração antes das mudanças.
+selecionável: **R-31**, para corrigir a montagem quadrática usando a baseline
+preservada. R-33 também está pronta; o pedido de próxima tarefa encerra em R-30.
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
@@ -241,10 +242,10 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [VAL-14](05_PHASE5_VALIDACAO.md#val-14) | Documentar e revalidar integração com APIs simplificadas | concluída | MUST | R-24, R-25, VAL-13 |
 | [VAL-15](05_PHASE5_VALIDACAO.md#val-15) | Validar duas instalações em dispositivos físicos distintos | concluída | SHOULD | R-26, R-27, VAL-13 |
 | [VAL-16](05_PHASE5_VALIDACAO.md#val-16) | Exercitar oito CRDTs entre dois Androids com peers diretos | concluída | SHOULD | VAL-15, R-07a, R-26 |
-| [R-30](06_PHASE6_MANUTENCAO_1_0_1.md#r-30) | Fixar baseline e mapa de migração da 1.0.1 | pronta | SHOULD | R-29 |
-| [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | planejada | SHOULD | R-30 |
+| [R-30](06_PHASE6_MANUTENCAO_1_0_1.md#r-30) | Fixar baseline e mapa de migração da 1.0.1 | concluída | SHOULD | R-29 |
+| [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | pronta | SHOULD | R-30 |
 | [R-32](06_PHASE6_MANUTENCAO_1_0_1.md#r-32) | Medir custos de mutação, restauração e pendências | planejada | SHOULD | R-31 |
-| [R-33](06_PHASE6_MANUTENCAO_1_0_1.md#r-33) | Automatizar verificações e advisories em CI | planejada | SHOULD | R-30 |
+| [R-33](06_PHASE6_MANUTENCAO_1_0_1.md#r-33) | Automatizar verificações e advisories em CI | pronta | SHOULD | R-30 |
 | [R-34](06_PHASE6_MANUTENCAO_1_0_1.md#r-34) | Avaliar Saropa e lint proporcional | planejada | SHOULD | R-33 |
 | [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | planejada | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
 | [R-36](06_PHASE6_MANUTENCAO_1_0_1.md#r-36) | Preparar metadados da release 1.0.1 | planejada | SHOULD | R-35 |
@@ -274,9 +275,11 @@ simultâneas. Todos esses itens pertencem à mesma release, sem reserva a versõ
 afastando-se da convenção SemVer. O upgrade exige guia, adaptação de fonte e
 testes de migração; não anunciar atualização compatível apenas pela numeração.
 Oito CRDTs, garantias, readers legados e formatos persistidos permanecem preservados.
-Após recuperar o stash nesta branch, os manifests atuais são 2.0.0; R-30 deve
-confrontá-los com a baseline histórica 1.0.0. O alvo continua 1.0.1 e a troca de
-versão ocorre somente em R-36. Publicação permanece com o autor.
+Após recuperar o stash nesta branch, os manifests atuais são 2.0.0. R-30
+confirmou 47 fontes de lib e superfícies públicas idênticas à revisão histórica
+1.0.0, com fixtures e [mapa de migração](evidence/r30/README.md) preservados.
+O alvo continua 1.0.1 e a troca de versão ocorre somente em R-36.
+Publicação permanece com o autor.
 
 As prioridades SHOULD desta fase se referem ao recorte acadêmico; a release
 planejada depende de todas as tarefas alcançadas por VAL-17. O gate acadêmico

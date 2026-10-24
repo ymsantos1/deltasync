@@ -366,6 +366,21 @@ intactos manifests e alterações da branch atual. R-29 permanece conclusão
 histórica vinculada à revisão original, não comprovação das versões desta branch.
 R-30 deve inventariar a divergência; o alvo 1.0.1 de DEC-55/56 não muda.
 
+DEC-58 — Baseline R-30, 2026-10-24: fontes de lib e superfícies públicas de
+400161283e741d62dddf01cfc314629968a93828 coincidem com a revisão histórica
+1e969182e8e172a8858a48ecf83a1feb2c21a455: 47 arquivos, hashes em
+[baseline.json](evidence/r30/baseline.json). Manifests atuais 2.0.0 e históricos
+1.0.0 divergem; nenhum foi alterado nesta tarefa. A comparação é de fonte/API,
+não prova publicação ou resolução hosted. Alvo 1.0.1 de DEC-55 permanece.
+Fixados inventário de exports/assinaturas e dados dos oito tipos com writer
+histórico, independente do futuro writer 1.0.1. Guardar consumidor e gerador
+como fontes de fixture `.dart.txt`, com @dart=3.12 e materialização explícita;
+assim remoções futuras não tornam código antigo parte da análise recursiva.
+Dados e inventário não podem ser sobrescritos pelo argumento de relatório.
+R-31 usa a carga fixada; R-39 conserva referência antiga e acrescenta consumidor
+migrado, sem regenerar expectativas. O SDK 3.12.x teve execução definida em
+R-30, sem alegação de execução; R-33 e VAL-17 devem efetivamente realizá-la.
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
@@ -373,7 +388,7 @@ R-30 deve inventariar a divergência; o alvo 1.0.1 de DEC-55/56 não muda.
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
 | OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
-| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42 | Todas as APIs entram na 1.0.1; resta definir o contrato mínimo de cada uma durante execução. Quebras de interface/switches devem ser inventariadas e migradas; decisão de versão já resolvida em DEC-55, sem adiamento por SemVer. |
+| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42 | Todas as APIs entram na 1.0.1. R-30 fixou superfícies e mapa de impacto/substitutos existentes; nomes/assinaturas das conveniências novas serão fechados nas tarefas responsáveis e atualizados no mapa. Quebras de interface/switches exigem fixture migrada; decisão de versão resolvida em DEC-55. |
 | OPEN-09 | R-34 | Adoção Saropa depende de resolução, alertas úteis, falsos positivos e custo medidos no piloto; preset/versionamento/configuração final ainda não escolhidos. Decisão de adiar pode satisfazer a tarefa de avaliação, com evidência. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas

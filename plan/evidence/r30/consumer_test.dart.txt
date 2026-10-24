@@ -1,0 +1,306 @@
+// @dart=3.12
+// Fixture of application-owned implementations in a different Dart library.
+// storage_testing is a workspace member, used only by this maintenance fixture.
+// ignore_for_file: depend_on_referenced_packages, deprecated_member_use
+
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:deltasync/deltasync.dart';
+import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
+import 'package:deltasync_storage_testing/deltasync_storage_testing.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:test/test.dart';
+
+import 'fixture.dart' show normalize, normalizedValues;
+
+/// Delegation exercises every member; no inheritance from library internals.
+class ConsumerStorage implements ReplicaStorage {
+  ConsumerStorage({this.failCommit = false});
+  final bool failCommit;
+  final _memory = MemoryStorage();
+  @override
+  Future<ReplicaSnapshot?> loadReplica(String replicaId) =>
+      _memory.loadReplica(replicaId);
+  @override
+  Future<void> saveReplica(ReplicaSnapshot snapshot) =>
+      _memory.saveReplica(snapshot);
+  @override
+  Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries) {
+    if (failCommit) return Future.error(StateError('fixture commit failure'));
+    return _memory.commit(snapshot, entries);
+  }
+
+  @override
+  Future<void> commitRemote(ReplicaSnapshot snapshot) =>
+      _memory.commitRemote(snapshot);
+  @override
+  Future<void> enqueue(OutboxEntry entry) => _memory.enqueue(entry);
+  @override
+  Future<List<OutboxEntry>> pending(
+    String replicaId, {
+    String? recipientPeerId,
+  }) => _memory.pending(replicaId, recipientPeerId: recipientPeerId);
+  @override
+  Future<void> markSent(String replicaId, String peer, Iterable<String> ids) =>
+      _memory.markSent(replicaId, peer, ids);
+  @override
+  Future<void> acknowledge(
+    String replicaId,
+    String peer,
+    Iterable<String> ids,
+  ) => _memory.acknowledge(replicaId, peer, ids);
+}
+
+class ConsumerStorageFixture implements ReplicaStorageContractFixture {
+  @override
+  ReplicaStorage createStorage() => ConsumerStorage();
+  @override
+  ReplicaStorage createStorageWithCommitFailure() =>
+      ConsumerStorage(failCommit: true);
+}
+
+class ConsumerLegacyStore implements PendingDeltaStore {
+  Delta retained = const Delta.empty();
+  @override
+  Future<Delta> read(String replicaId) async => retained;
+  @override
+  Future<void> write(String replicaId, Delta delta) async => retained = delta;
+}
+
+/// ACK here is a controlled fixture response, not proof of remote durability.
+class ConsumerTransport
+    implements
+        AcknowledgingDeltaTransport,
+        IncomingAcknowledgingDeltaTransport {
+  DeltaAcknowledgement? lastIncomingAck;
+  @override
+  String get peerReplicaId => 'peer-a';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async =>
+      DeltaAcknowledgement(
+        peerReplicaId: peerReplicaId,
+        stage: DeltaAckStage.appliedAndPersisted,
+        changeIds: envelope.delta.changes.take(3).map((change) => change.id),
+      );
+  @override
+  Future<void> acknowledge(DeltaAcknowledgement acknowledgement) async {
+    lastIncomingAck = acknowledgement;
+  }
+}
+
+void main() {
+  final fixture =
+      jsonDecode(
+            File('plan/evidence/r30/fixture_1_0_0.json').readAsStringSync(),
+          )
+          as Map<String, dynamic>;
+  Map<String, Object?> map(Object? value) =>
+      Map<String, Object?>.from(value as Map);
+  ReplicaSnapshot snapshot() =>
+      ReplicaSnapshot.fromJson(map(fixture['snapshot']));
+  List<OutboxEntry> outbox() => [
+    for (final entry in fixture['outbox'] as List)
+      OutboxEntry.fromJson(map(entry)),
+  ];
+
+  test('consumer resolves the explicitly expected source tree', () async {
+    final expected = Platform.environment['R30_EXPECT_SOURCE'];
+    expect(expected, isNotNull, reason: 'Set R30_EXPECT_SOURCE for provenance');
+    final actual = await Isolate.resolvePackageUri(
+      Uri.parse('package:deltasync/deltasync.dart'),
+    );
+    expect(
+      actual!.toFilePath(),
+      '${Directory(expected!).absolute.path}/lib/deltasync.dart',
+    );
+  });
+
+  replicaStorageContractTests(
+    name: 'R-30 external implementation',
+    fixture: ConsumerStorageFixture(),
+  );
+
+  test('frozen 1.0.0 snapshot retains eight kinds and causal metadata', () {
+    final encoded = snapshot();
+    final replica = Replica.fromSnapshotJson(encoded.snapshot!);
+    expect(replica.toSnapshotJson(), encoded.snapshot);
+    expect(normalizedValues(replica), fixture['values']);
+    expect(
+      replica.state.addresses.map(replica.state.kindAt).toSet(),
+      CrdtKind.values.toSet(),
+    );
+    final ids = outbox().map((entry) => entry.entryId).toSet();
+    final next = replica.incrementGCounter('g');
+    expect(next.value, 4);
+    expect(ids, isNot(contains(next.id)));
+    replica.apply(DeltaCodec.decode(map(fixture['delayed'])));
+    expect(replica.orSetValue('gap'), {'unseen-1', 'unseen-2'});
+  });
+
+  test(
+    'frozen wire/outbox payloads preserve IDs, status and legacy readers',
+    () {
+      final entries = outbox();
+      expect(
+        entries.map((entry) => entry.toJson()).toList(),
+        fixture['outbox'],
+      );
+      final envelope = DeltaEnvelope.fromJson(map(fixture['envelope']));
+      expect(envelope.toJson(), fixture['envelope']);
+      expect(DeltaCodec.encode(envelope.delta), fixture['delta']);
+      expect(
+        DeltaAcknowledgement.fromJson(map(fixture['ack'])).toJson(),
+        fixture['ack'],
+      );
+      final legacy = Replica('migrated');
+      legacy.apply(DeltaCodec.decode(map(fixture['legacyCodecV2'])));
+      expect(legacy.valueAt('legacy-title'), 'retained');
+      final oldOutbox = entries.first.toJson()
+        ..['version'] = 1
+        ..remove('recipientPeerId');
+      expect(
+        OutboxEntry.fromJson(
+          oldOutbox,
+          legacyRecipientPeerId: 'peer-a',
+        ).entryId,
+        entries.first.entryId,
+      );
+      expect(() => OutboxEntry.fromJson(oldOutbox), throwsFormatException);
+      final oldEnvelope = envelope.toJson()
+        ..['version'] = 1
+        ..remove('recipientReplicaId');
+      expect(
+        DeltaEnvelope.fromJson(
+          oldEnvelope,
+          legacyRecipientReplicaId: 'peer-a',
+        ).toJson(),
+        fixture['envelope'],
+      );
+    },
+  );
+
+  test(
+    'legacy public aliases remain compilable before their planned removal',
+    () async {
+      final store = ConsumerLegacyStore();
+      final engine = SyncEngine(
+        replica: Replica('aliases'),
+        store: store,
+        transport: ConsumerTransport(),
+      );
+      try {
+        final change = await engine.set('title', 'old-call');
+        await engine.remove('title');
+        final delta = Delta.crdt([change]);
+        expect(delta.crdtChanges.single, change);
+        final entry = OutboxEntry(delta: delta, recipientPeerId: 'peer-a');
+        expect(entry.operationId, change.id);
+        final replica = Replica('alias-replica')
+          ..set('a', 1)
+          ..remove('a');
+        expect(replica.valueAt('a'), isNull);
+      } finally {
+        await engine.dispose();
+      }
+    },
+  );
+
+  test(
+    'SQLite restores frozen state/outbox, new edits and peer-isolated ACK',
+    () async {
+      sqfliteFfiInit();
+      final directory = await Directory.systemTemp.createTemp('deltasync-r30-');
+      final path = '${directory.path}/fixture.sqlite';
+      SqfliteReplicaStorage open() => SqfliteReplicaStorage(
+        databaseFactory: databaseFactoryFfi,
+        databasePath: path,
+      );
+      var storage = open();
+      SyncEngine? engine;
+      try {
+        final frozen = snapshot();
+        final entries = outbox();
+        await storage.commit(frozen, entries);
+        await storage.close();
+        storage = open();
+        expect(
+          (await storage.loadReplica(frozen.replicaId))!.toJson(),
+          frozen.toJson(),
+        );
+        expect(
+          (await storage.pending(
+            frozen.replicaId,
+          )).map((entry) => entry.toJson()).toSet(),
+          entries.map((entry) => entry.toJson()).toSet(),
+        );
+        engine = SyncEngine.withStorage(
+          replica: Replica(frozen.replicaId),
+          storage: storage,
+          transport: ConsumerTransport(),
+        );
+        await engine.start();
+        expect(normalizedValues(engine.replica), fixture['values']);
+        final oldIds = entries.map((entry) => entry.entryId).toSet();
+        final change = await engine.incrementGCounter('g');
+        expect(oldIds, isNot(contains(change.id)));
+        final otherPeer = (await storage.pending(
+          frozen.replicaId,
+          recipientPeerId: 'peer-b',
+        )).map((entry) => entry.entryId).toSet();
+        final result = await engine.push(force: true);
+        expect(result.acknowledgedIds, hasLength(3));
+        expect(
+          (await storage.pending(
+            frozen.replicaId,
+            recipientPeerId: 'peer-b',
+          )).map((entry) => entry.entryId).toSet(),
+          otherPeer,
+        );
+        await engine.dispose();
+        engine = null;
+        await storage.close();
+        storage = open();
+        final persisted = (await storage.loadReplica(frozen.replicaId))!;
+        expect(
+          Replica.fromSnapshotJson(persisted.snapshot!).gCounterValue('g'),
+          4,
+        );
+        expect(
+          await storage.pending(frozen.replicaId),
+          hasLength(entries.length + 1 - 3),
+        );
+      } finally {
+        await engine?.dispose();
+        await storage.close();
+        await directory.delete(recursive: true);
+      }
+    },
+  );
+
+  test(
+    'legacy snapshot wrapper restores through the public engine boundary',
+    () async {
+      final store = ConsumerStorage();
+      final old = ReplicaSnapshot.fromJson(map(fixture['legacyStorageV1']));
+      await store.saveReplica(old);
+      final engine = SyncEngine.withStorage(
+        replica: Replica(old.replicaId),
+        storage: store,
+        transport: ConsumerTransport(),
+      );
+      try {
+        await engine.start();
+        expect(normalizedValues(engine.replica), fixture['values']);
+        expect(normalize(engine.valueAt('mv')), ['concurrent', 'local']);
+      } finally {
+        await engine.dispose();
+      }
+    },
+  );
+}

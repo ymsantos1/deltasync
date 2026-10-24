@@ -7,8 +7,9 @@ A reorganização documental não reexecutou testes Dart nem corrigiu código.
 Planejamento inicial de 1.0.1: [registro de 2026-10-24](#planejamento-1-0-1-2026-10-24).
 Escopo vigente: [todos os pontos na mesma 1.0.1](#escopo-integral-1-0-1-2026-10-24),
 conforme esclarecimento posterior do autor que substituiu o adiamento por versões.
-R-30 está pronta; nenhuma tarefa da nova fase foi executada. Os registros abaixo
-preservam as baselines e conclusões nas datas em que foram obtidas.
+R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
+R-31/R-33 estão prontas; nenhuma tarefa ativa. Os registros abaixo preservam
+as baselines e conclusões nas datas em que foram obtidas.
 
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
 confirmou três defeitos apesar de 155 testes aprovados.
@@ -5067,3 +5068,137 @@ tarefas, 372 links locais e R-30 pronta; `git diff --check` e
 em conflito vazios. Conferidos alcance R-30 a R-42 pela VAL-17, identidade do
 stash original e alterações restritas a plan/. Testes Dart não repetidos;
 resolução limitada a documentos de planejamento e ao índice de conflitos Git.
+
+<a id="execucao-r-30-2026-10-24"></a>
+
+## Execução R-30 — Baseline e mapa de migração, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-30 era a única pronta, dependente de R-29 histórica concluída; worktree inicialmente limpa em 400161283e741d62dddf01cfc314629968a93828. Conferidos cinco critérios, DEC-55/56/57, riscos e guia Dart sobre contratos/enums. Identificada divergência apenas de versões/documentação entre baseline 1.0.0 e manifests atuais 2.0.0; execução limitada a R-30.
+Implementação: adicionados inventário público, captura reproduzível, fixture JSON dos oito tipos, consumidor independente, medidor da outbox e mapa de migração em plan/evidence/r30. Captura exporta o Git histórico e resolve suas dependências offline, sem alterar produção, SDK ou manifests. Tarefa/índice passaram por em andamento, em revisão e em validação, com retornos para correção.
+Review: aprovado
+Achados: revisão do próprio implementador, não independente. Corrigidos lint no extrator, fonte antiga sob análise recursiva, possibilidade de sobrescrever fixtures via --report, flags contraditórias, registro fixo de SDK e variação de formato fora do workspace. Fontes históricas viraram .dart.txt com @dart=3.12; guardas, correções e delta final foram revisados antes de repetir os checks afetados. Nenhum impeditivo restante para os critérios de R-30.
+Validação: aprovada
+Comandos: loop de analyze/test dos sete pacotes no SDK Dart 3.13.5; após pedido de usar dart no PATH, python3 plan/evidence/r30/capture.py --dart dart --test-consumers --report plan/evidence/r30/baseline.json; dart format --output=none --set-exit-if-changed lib test packages plan/evidence/r30; dart analyze; dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart; formato dos dois fontes materializados; cinco casos negativos da CLI. Resultados/logs e detalhes abaixo e em validation.json/baseline.json.
+Critérios: C1 coberto por 47 hashes de fontes, inventário das sete superfícies, 243 testes e fixtures do writer histórico; C2 por matriz de versões, igualdade completa de snapshot/outbox e readers de fronteira; C3 pelas quatro cargas com oito tipos/dois peers; C4 pelo mapa de substitutos e impacto nas interfaces/eventos; C5 pela matriz executável de SDK mínimo/referência e consumidores históricos/atuais. Definir a execução mínima não equivale a executá-la.
+Manutenção: cinco critérios marcados, evidência ligada à fase, índice/fase atualizados, DEC-58 e RISK-37/42 registrados; R-31 e R-33 prontas, próxima recomendada R-31, nenhuma tarefa ativa. Fase 6 permanece aberta; não executadas tarefas seguintes.
+Limitações: SDK 3.12.x não executado, apenas execução definida conforme o critério; R-33/VAL-17 devem realizá-la. SQLite FFI/Linux com fechamento/reabertura, sem kill de processo, novo Android, rede real ou instalação hosted. ACK do consumidor é controlado. API nova e remoções ainda não implementadas; versões atuais permanecem 2.0.0, alvo futuro 1.0.1. Sem commit, tag, push ou publicação.
+
+### Leitura e delimitação
+
+As cinco skills foram lidas integralmente antes da implementação e aplicadas
+nas etapas correspondentes pelo mesmo agente. Dependência histórica R-29 e
+direção de incluir tudo na 1.0.1 foram preservadas; não reaplicada renumeração.
+O [mapa de migração](evidence/r30/README.md#mapa-de-migração-para-a-101)
+distingue substitutos públicos existentes das assinaturas que as tarefas
+R-37/R-38/R-40/R-41/R-42 ainda devem definir. Uso/manutenção continuam locais:
+estado e join no core, commit/restauração em sync/storage, SQL no adaptador e
+domínio/rede/UI no consumidor. Nenhuma abstração adicionada ao fluxo de produto.
+
+### Implementação e proveniência
+
+- [baseline.json](evidence/r30/baseline.json) conserva revisões, hashes dos
+  47 arquivos lib, versões/SDK dos sete manifests, resolução histórica real
+  por `dart pub get --offline` e origem dos imports nos consumidores.
+- [api_1_0_0.json](evidence/r30/api_1_0_0.json) fixa assinaturas públicas
+  alcançadas pelos exports, incluindo construtores, membros, enums e aliases.
+  O extrator respeita show/hide; validateJsonValue e tabelas internas não vazam
+  pelo inventário. A facade alcança 62 símbolos, com sobreposição de reexports.
+- [fixture_1_0_0.json](evidence/r30/fixture_1_0_0.json) foi gerada exclusivamente
+  com package_config das fontes 1e969182e8e172a8858a48ecf83a1feb2c21a455.
+  Contém 23 mudanças locais, 46 entradas para dois peers, snapshot dos oito
+  tipos, LWW null/tombstone, MV concorrente/compacto, lacuna OR-Set e recriação
+  OR-Map. Hash SHA-256 dos dados:
+  `088e79d45c05bc2e8f2da0fb99981333f2dcf4fb3a2a036bd58fe6a3ea737325`.
+  Regeneração determinística pelo writer antigo conferida byte a byte;
+  regressões futuras leem a fixture congelada, sem gerar expectativas no writer novo.
+- Fontes de consumidor/gerador são assets explícitos, para que remoção de API
+  não quebre análise recursiva de um arquivo antigo. O consumidor implementa
+  ReplicaStorage, PendingDeltaStore, contratos de transporte/ACK e a fixture
+  da suíte pública sem importar src; somente o medidor acessa mergeOutbox interno.
+- [outbox_baseline.json](evidence/r30/outbox_baseline.json) registra 32/128/512/
+  1024 entradas, oito tipos e dois peers. Cinco amostras após dois aquecimentos;
+  construção das entradas fora do cronômetro, heap não medido. Visitas aos
+  prefixos são estimativa analítica do algoritmo histórico, não instrumentação.
+
+### Review, correções e revalidação
+
+O review verificou independência entre writer histórico e leitura atual,
+imutabilidade das expectativas, publicação dos contratos e preservação da
+causalidade, IDs, tentativas e destinos após restauração. O script não altera
+fontes de produto para satisfazer o procedimento. O SDK de referência é
+3.13.5 stable/Linux x86_64; instrumentos usam a dependência analyzer 14.5.0
+já selecionada no desenvolvimento, sem adicioná-la ao runtime.
+
+Correções proporcionais verificadas depois de cada delta:
+
+1. `use_null_aware_elements` no novo instrumento foi corrigido; a análise final
+   da raiz ficou sem issues. Os testes de produto não foram repetidos porque
+   nenhuma fonte de produto ou teste desses pacotes mudou.
+2. Fontes antigos ficaram como assets materializados; o consumidor ganhou
+   verificação de Isolate.resolvePackageUri para demonstrar qual árvore usa.
+3. Cinco guardas rejeitam saída de relatório sobre dados/API/fontes congelados
+   e flags incompatíveis com exit 2, mantendo hashes intactos.
+4. O registro de SDK mínimo passou a depender do SDK real e checks executados;
+   não registra resultado de runtime inexistente.
+5. O check de formato do consumidor isolado inicialmente variou pela linguagem
+   padrão fora do workspace. `@dart=3.12` fixa a linguagem declarada da biblioteca;
+   os dois assets passaram no formato e os 14 checks por árvore foram repetidos.
+   Isso não substitui executar um binário SDK 3.12.x.
+
+### Validação executada
+
+[validation.json](evidence/r30/validation.json) retém saídas e contagens reais.
+O loop inicial dos sete pacotes usou o executável do SDK já disponível, antes
+do pedido posterior de usar o comando `dart`. Comando efetivamente executado:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart analyze && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r30-workspace.log 2>&1
+```
+
+Resultado: **243 testes** aprovados, facade 13, core 122, sync 51, storage 12,
+SQLite 27, testing 8 e transport 10. A análise inicial apontou um info do
+instrumento novo, corrigido antes da análise final. Tentativas em sandbox
+encontraram gravação de telemetria/cache fora da área gravável; execução
+autorizada posterior passou. A interrupção do usuário não foi tratada como falha
+de produto; conferidos logs/processos antes de retomar usando `dart`.
+
+Comandos finais com `dart`:
+
+```sh
+python3 plan/evidence/r30/capture.py --dart dart --test-consumers --report plan/evidence/r30/baseline.json
+dart format --output=none --set-exit-if-changed lib test packages plan/evidence/r30
+dart analyze
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart
+```
+
+- Formato: 76 arquivos, nenhuma alteração necessária; dois fontes históricos
+  materializados também aprovados com linguagem 3.12.
+- Análise final da raiz: sem issues; demais seis análises do loop aprovadas.
+- Consumidor histórico: **14 checks** aprovados; consumidor atual: os mesmos
+  **14 checks**, total de 28 execuções de cenários, não 28 cenários diferentes.
+  Incluem 8 checks da suíte de contrato, origem real dos imports, snapshots/
+  outbox/envelope/ACK, readers legados, aliases, SQLite reaberto e ACK parcial
+  que preserva o peer não confirmado. Próxima escrita usa ID novo; dots 1/2
+  entregues depois do 3 continuam visíveis quando não foram observados/removidos.
+- Baseline de custo: faixas 1816–2974 µs (32), 3783–6719 µs (128),
+  19779–25048 µs (512) e 67486–82999 µs (1024) nas cinco amostras do host.
+  Fórmula do percurso histórico: 528, 8256, 131328 e 524800 visitas a prefixos.
+  Sem afirmação de ganho universal ou comparação de heap/I/O.
+- Sintaxe Python e cinco guardas CLI aprovadas; fixture/API e os fontes
+  conferidos por SHA-256. JSONs e escopo dos arquivos revisados.
+
+### Manutenção
+
+R-30 satisfaz os cinco critérios: baseline reproduzível; dados/API/formato
+preservados; cargas de custo; mapa de migração; matriz de execução por SDK.
+O último critério exige definir a execução mínima, não alegar tê-la realizado:
+[matriz e comandos](evidence/r30/README.md#matriz-de-sdk) ficam com execução real
+pendente de R-33/VAL-17. DEC-58 e RISK-42 tornam esse limite explícito.
+R-31 é a próxima recomendada, R-33 também pronta; nenhuma iniciada. A fase 6 e
+o gate VAL-17 seguem abertos. Após manutenção, `python3 scripts/check_plan.py`
+e `git diff --check` foram aprovados; conferidos também arquivos novos,
+hashes/JSONs e ausência de alterações em produção.

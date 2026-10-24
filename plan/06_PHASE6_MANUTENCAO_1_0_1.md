@@ -1,6 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: planejada em 2026-10-24; nenhuma implementação iniciada.
+Estado: em andamento em 2026-10-24; R-30 concluída, R-31/R-33 prontas.
+Demais tarefas ainda não iniciadas; nenhuma tarefa ativa.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -64,7 +65,7 @@ e a validação da biblioteca usa fixtures próprias reproduzíveis.
 
 ## R-30 — Fixar baseline e mapa de migração da 1.0.1
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-29
 
@@ -75,34 +76,40 @@ produção. Não tratar a revisão anterior como execução desta tarefa.
 
 Critérios:
 
-- [ ] Registrar baseline reproduzível de fontes/revisão, SDK, ambiente e testes;
+- [x] Registrar baseline reproduzível de fontes/revisão, SDK, ambiente e testes;
   inventariar construtores, membros exportados, aliases depreciados, contratos
   externos e readers legados necessários. Guardar fixtures 1.0.0 independentes
   do writer novo, incluindo estado/outbox dos oito tipos e adaptadores externos.
-- [ ] Fixar preservação de SDK e formatos: SDK ^3.12.0, DeltaCodec v4,
+- [x] Fixar preservação de SDK e formatos: SDK ^3.12.0, DeltaCodec v4,
   snapshot interno v9, ReplicaSnapshot/outbox/envelope v2 e schema SQLite v1,
   com os readers anteriores documentados. Verificar números no código antes
   de registrar a fixture; não renumerar JSON junto com a versão dos pacotes.
-- [ ] Identificar o custo de mergeOutbox e conservar uma baseline de carga para
+- [x] Identificar o custo de mergeOutbox e conservar uma baseline de carga para
   R-31: quantidades crescentes de entradas, peers distintos e conteúdo misto.
   Instrumentos não devem manter outra implementação de join em produção.
-- [ ] Mapear cada quebra intencional de fonte, substituto público e adaptação
+- [x] Mapear cada quebra intencional de fonte, substituto público e adaptação
   necessária: storage legado, aliases, Operation, capacidades de storage e
   eventos/leitura que mudarem. Não usar compatibilidade integral 1.0.0 como gate;
   exigir preservação fora das quebras previstas e migração verificável.
-- [ ] Definir execução no SDK mínimo 3.12.x e no SDK de referência disponível,
+- [x] Definir execução no SDK mínimo 3.12.x e no SDK de referência disponível,
   incluindo implementações externas dos contratos e consumidores antes/depois.
   Registrar limites sem elevar SDK silenciosamente ou criar framework de migração.
 
 Validação: análise/testes dos sete pacotes, fixtures de API/formato e baseline
 de custos. Registros identificam comando, diretório, SDK e conteúdo comparado.
-Evidência de conclusão: ainda não registrada.
+Execução: 243 testes do workspace e 14 checks do consumidor em cada árvore,
+histórica/atual, aprovados no Dart 3.13.5/Linux; 47 fontes de lib idênticas.
+SDK 3.12.x teve execução definida, conforme critério, mas não foi executado;
+R-33/VAL-17 devem executar a matriz mínima antes do gate final da release.
+Artefatos: [baseline e mapa](evidence/r30/README.md), incluindo fixtures
+congeladas, origem dos imports, hashes e cargas para R-31.
+Evidência de conclusão: [execução R-30](TRACEABILITY.md#execucao-r-30-2026-10-24).
 
 <a id="r-31"></a>
 
 ## R-31 — Corrigir montagem quadrática da outbox
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-30
 
@@ -163,7 +170,7 @@ Evidência de conclusão: ainda não registrada.
 
 ## R-33 — Automatizar verificações e advisories em CI
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-30
 
