@@ -141,6 +141,91 @@ manutenção, a conversão vive em `PresentField.decode` na library de Replica;
 estado, delta/join, commit e restauração mantêm seus donos anteriores. Veja as
 [evidências R-40](../plan/TRACEABILITY.md#execucao-r-40-2026-10-24).
 
+## Eventos seletivos e fonte comum — R-41
+
+`SyncCommitEvent.addresses` é um `Set<String>` isolado e somente leitura com os
+endereços processados pelo input de um commit adotado. Não é uma comparação de
+valores visíveis: replay, escrita LWW perdedora e remoção também podem notificar.
+Um lote gera um evento com endereços únicos dos seus deltas, inclusive quando
+edita o mesmo campo mais de uma vez. Delta remoto vazio pode gerar commit com
+conjunto vazio. Em snapshot remoto, são os endereços vinculados do peer,
+incluindo tombstones e CRDTs vazios/zero; endereços apenas locais ficam de fora.
+
+```dart
+final subscription = engine.commitsFor('profile/name').listen((event) {
+  final current = engine.query('profile/name');
+  // Atualize a apresentação usando current e os ramos de FieldQuery.
+});
+await engine.start();
+final initial = engine.query('profile/name'); // Hidratação inicial explícita.
+// Ao encerrar a tela, cancele a subscription antes do dispose da engine.
+```
+
+`commitsFor(address)` filtra `commits`; não consulta estado, faz polling, copia
+réplica ou dispara sync. O [exemplo executável](../example/selective_observation_example.dart)
+mostra uma atualização por lote, ignora endereço não observado e mantém
+pendências locais sem iniciar envio. Leia query/valueAt para o valor atual: um
+evento atrasado/pausado não guarda o valor histórico daquele commit.
+Filtro compara endereço exato, sem prefixo; OR-Map informa seu endereço CRDT,
+não o nome de uma chave interna.
+
+Internamente há uma fonte broadcast assíncrona de `SyncObservation` e um emissor.
+`observations` expõe essa fonte; `commits` e `errors` são filtros tipados que
+preservam as mesmas instâncias de evento. Não há novo registro persistido nem
+cache de pendências. Eventos de commit são emitidos somente após persistência
+e adoção; rollback não emite sucesso. Falha de envio de ACK após commit remoto
+não desfaz o estado nem seu evento. Push/ACK continuam eventos distintos de
+commit; falha de método aguardado pertence ao Future, e falhas de callbacks
+incoming também aparecem como `SyncFailure` em observations/errors.
+
+Canais são broadcast, sem replay. Assine antes de start para observar restore
+em observations; um listener tardio faz sua consulta inicial. Ordem é preservada
+por subscription, sem garantia de ordem relativa de execução entre listeners de
+canais diferentes. Listeners são assíncronos, não governam a transação e suas
+exceções seguem a Zone do consumidor. Dispose drena trabalho aceito e fecha
+todos os canais derivados; novos trabalhos são rejeitados.
+
+Pausa não bloqueia commits, mas pode acumular eventos na subscription. Como os
+filtros compartilham a fonte, uma subscription pausada pode reter também eventos
+que depois serão descartados pelo filtro. Cancele ou retome subscriptions
+pausadas antes de aguardar dispose; o fechamento aguarda a entrega de done aos
+listeners ativos. Não pause indefinidamente uma subscription de longa duração.
+
+### Migração de fonte e switches
+
+`SyncCommitEvent` passa a exigir `addresses` e deixa de ter construtor const:
+
+```dart
+final event = SyncCommitEvent(
+  origin: SyncCommitOrigin.local,
+  addresses: {'profile/name'},
+);
+```
+
+Implementações externas de SyncCommitEvent devem fornecer também
+`Set<String> get addresses`. Não retornar um conjunto mutável compartilhado.
+Subclasses devem passar addresses ao super e adaptar construtores const.
+Nenhuma variante de SyncObservation foi adicionada/removida: switches exaustivos
+existentes mantêm seus casos. Para consumir metadados, amplie o padrão de commit
+para `SyncCommitEvent(:final origin, :final addresses)`; os outros quatro casos
+continuam iguais. A [fixture migrada](../plan/evidence/r41/consumer_test.dart.txt)
+compila os cinco casos e uma implementação externa do evento.
+
+`Replica.mergeSnapshotJson` agora retorna `Set<String>` dos endereços do snapshot
+processado, em vez de void. Chamadas que ignoram o retorno continuam válidas.
+Quem implementa Replica ou sobrescreve esse método deve atualizar o retorno e
+preservar a semântica dos endereços processados. A engine usa esse resultado do parse
+canônico, sem decodificar o snapshot outra vez ou manter parser de endereços.
+Construtor antigo const, implementação sem addresses e override com retorno void
+exigem adaptação de fonte; a versão 1.0.1 não implica compatibilidade SemVer.
+
+Estado/delta/join continuam no core; commit/adoção em SyncEngine; formato e
+transações nos adaptadores. Endereços de deltas usam DeltaChange.crdtId;
+snapshots retornam metadados do estado remoto já restaurado. Emissão passa por
+`_emit` em SyncEngine; seleção é um filtro público. Não mudaram variantes,
+envelopes, snapshot/outbox JSON, SQL, ACK ou clocks. Veja as
+[evidências R-41](../plan/TRACEABILITY.md#execucao-r-41-2026-10-24).
+
 ## Resumo de pendências em adaptadores — R-37
 
 `ReplicaStorage` ganha um membro obrigatório; implementações externas devem

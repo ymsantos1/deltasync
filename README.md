@@ -53,6 +53,13 @@ propaga erros; `field.value` mantém acesso ao valor bruto. Ausência e remoçã
 continuam em ramos próprios. Veja o
 [exemplo de modelo e tratamento de erro](https://github.com/ymsantos1/deltasync/blob/main/example/field_decoder_example.dart).
 
+`engine.commitsFor(address)` permite atualizar apenas campos observados.
+`SyncCommitEvent.addresses` informa endereços processados, inclusive replay ou
+mudança sem efeito visível; leia `query` para o valor atual. Canais são
+assíncronos e não repetem histórico. Veja o
+[exemplo seletivo](https://github.com/ymsantos1/deltasync/blob/main/example/selective_observation_example.dart)
+e a [migração de eventos](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md#eventos-seletivos-e-fonte-comum--r-41).
+
 ```dart
 import 'package:deltasync/deltasync.dart';
 

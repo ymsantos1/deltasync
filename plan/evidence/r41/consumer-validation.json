@@ -1,0 +1,165 @@
+{
+  "task": "R-41",
+  "beforeRevision": "bc65f4a2658b75141953477c6281c12eebf11f07",
+  "sdk": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n",
+  "isolatedDirectory": "/tmp/deltasync-r41-consumer-kjvlpgbs",
+  "records": [
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "/tmp/deltasync-r41-consumer-kjvlpgbs",
+      "exitCode": 0,
+      "output": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ deltasync 2.0.0 from path /projetos/tcc/deltasync\n! deltasync_core 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage (overridden)\n! deltasync_sync 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_transport (overridden)\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ pool 1.5.3\n+ pub_semver 2.2.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 50 dependencies!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-r41-consumer-kjvlpgbs",
+      "exitCode": 0,
+      "output": "Analyzing test...\nNo issues found!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r41-consumer-kjvlpgbs",
+      "exitCode": 0,
+      "output": "00:00 +0: loading test/consumer_test.dart\n00:00 +0: test/consumer_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +1: test/consumer_test.dart: migrated constructor, event implementation and exhaustive switch compile\n00:00 +2: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "/tmp/deltasync-r41-consumer-kjvlpgbs/old_api.dart"
+      ],
+      "cwd": "/tmp/deltasync-r41-consumer-kjvlpgbs",
+      "exitCode": 3,
+      "output": "Analyzing old_api.dart...\n\n  error - old_api.dart:2:13 - Const variables must be initialized with a constant value. Try changing the initializer to be a constant expression. - const_initialized_with_non_constant_value\n  error - old_api.dart:2:13 - The constructor being called isn't a const constructor. Try removing 'const' from the constructor invocation. - const_with_non_const\n  error - old_api.dart:2:13 - The named parameter 'addresses' is required, but there's no corresponding argument. Try adding the required argument. - missing_required_argument\n  error - old_api.dart:3:7 - Missing concrete implementation of 'getter SyncCommitEvent.addresses'. Try implementing the missing method, or make the class abstract. - non_abstract_class_inherits_abstract_member\n  error - old_api.dart:8:18 - 'OldReplica.mergeSnapshotJson' ('void Function(Map<String, Object?>)') isn't a valid override of 'Replica.mergeSnapshotJson' ('Set<String> Function(Map<String, Object?>)'). - invalid_override\n           - The member being overridden at /projetos/tcc/deltasync/packages/deltasync_core/lib/src/replica.dart:216:15.\n\n5 issues found.\n"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/tmp/deltasync-r41-before-lx3xw0zg"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/projetos/tcc/deltasync"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    }
+  ],
+  "apiDifferences": {
+    "deltasync": {
+      "addedSymbols": [],
+      "changedMembers": {
+        "Replica": {
+          "removed": [
+            "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. void mergeSnapshotJson(Map<String, Object?> json)"
+          ],
+          "added": [
+            "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. /// Returns the peer snapshot's bound addresses, including tombstones and /// empty CRDTs, as a detached read-only set. These are processed addresses, /// not a comparison of visible values; local-only addresses are not included. Set<String> mergeSnapshotJson(Map<String, Object?> json)"
+          ]
+        },
+        "SyncEngine": {
+          "removed": [],
+          "added": [
+            "/// Non-replaying commits whose processed input includes [address]. /// A filter over [commits], with no reads, polling, cache or automatic sync. /// Read query/valueAt for current state; a delayed event is not a value snapshot. /// Matches the exact CRDT address, not a prefix or a nested OR-Map key. /// Cancel or resume paused subscriptions before awaiting [dispose]. Stream<SyncCommitEvent> commitsFor(String address)"
+          ]
+        },
+        "SyncCommitEvent": {
+          "removed": [
+            "const SyncCommitEvent({required this.origin})"
+          ],
+          "added": [
+            "SyncCommitEvent({required this.origin, required Iterable<String> addresses})",
+            "final Set<String> addresses;"
+          ]
+        }
+      }
+    },
+    "deltasync_core": {
+      "addedSymbols": [],
+      "changedMembers": {
+        "Replica": {
+          "removed": [
+            "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. void mergeSnapshotJson(Map<String, Object?> json)"
+          ],
+          "added": [
+            "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. /// Returns the peer snapshot's bound addresses, including tombstones and /// empty CRDTs, as a detached read-only set. These are processed addresses, /// not a comparison of visible values; local-only addresses are not included. Set<String> mergeSnapshotJson(Map<String, Object?> json)"
+          ]
+        }
+      }
+    },
+    "deltasync_storage": {
+      "addedSymbols": [],
+      "changedMembers": {}
+    },
+    "deltasync_transport": {
+      "addedSymbols": [],
+      "changedMembers": {}
+    },
+    "deltasync_sync": {
+      "addedSymbols": [],
+      "changedMembers": {
+        "SyncEngine": {
+          "removed": [],
+          "added": [
+            "/// Non-replaying commits whose processed input includes [address]. /// A filter over [commits], with no reads, polling, cache or automatic sync. /// Read query/valueAt for current state; a delayed event is not a value snapshot. /// Matches the exact CRDT address, not a prefix or a nested OR-Map key. /// Cancel or resume paused subscriptions before awaiting [dispose]. Stream<SyncCommitEvent> commitsFor(String address)"
+          ]
+        },
+        "SyncCommitEvent": {
+          "removed": [
+            "const SyncCommitEvent({required this.origin})"
+          ],
+          "added": [
+            "SyncCommitEvent({required this.origin, required Iterable<String> addresses})",
+            "final Set<String> addresses;"
+          ]
+        }
+      }
+    },
+    "deltasync_storage_sqflite": {
+      "addedSymbols": [],
+      "changedMembers": {}
+    },
+    "deltasync_storage_testing": {
+      "addedSymbols": [],
+      "changedMembers": {}
+    }
+  },
+  "sourceSha256": "80eebe6261ca8a54f6425fcfe378daa094bab3c11edbdea90ba61a927a7910bb",
+  "limits": [
+    "Independent path dependencies, not hosted artifacts",
+    "Language 3.12; reference SDK shown above, not minimum runtime proof"
+  ]
+}

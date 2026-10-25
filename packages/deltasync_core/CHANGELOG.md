@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Return processed peer bindings from mergeSnapshotJson, including empty CRDTs
+  and tombstones; overrides must return Set<String> instead of void.
 - Add PresentField.decode<T> over the existing isolated query value. Pass null
   to consumer decoders and propagate failures without defaults or state writes.
 - Add closed FieldQuery results and Replica.query for absence, present values

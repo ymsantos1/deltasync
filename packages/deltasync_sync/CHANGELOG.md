@@ -1,5 +1,9 @@
 ## Unreleased
 
+- Add commitsFor and isolated processed-address metadata for local/batch/remote
+  commits. Require addresses in non-const SyncCommitEvent; external event
+  implementations must add its getter. Keep existing observation variants and
+  derive commits/errors from the same asynchronous broadcast source.
 - Expose SyncEngine.query after start and LocalBatch.query during the callback;
   distinguish absent/present/deleted without changing commit, outbox or ACK.
 - Add SyncEngine.batch and scoped LocalBatch for all eight CRDTs. Reject empty,

@@ -1,0 +1,76 @@
+import 'dart:async';
+import 'package:deltasync/deltasync.dart';
+import 'package:test/test.dart';
+
+String describe(SyncObservation event) => switch (event) {
+  SyncRestoredEvent() => 'restored',
+  SyncCommitEvent(:final origin, :final addresses) => '${origin.name}:${addresses.join(',')}',
+  SyncFailure(:final source) => 'incoming:$source',
+  SyncPushFailure() => 'push failed',
+  SyncPushResult() => 'push finished',
+};
+
+void main() {
+  test('consumer refreshes selected field without automatic sync or full reads', () async {
+    final transport = Offline();
+    final engine = SyncEngine.withStorage(
+      replica: Replica('consumer'), storage: MemoryStorage(), transport: transport,
+    );
+    final refreshed = Completer<void>();
+    final names = <String>[];
+    final subscription = engine.commitsFor('profile/name').listen((event) {
+      final field = engine.query('profile/name') as PresentField;
+      names.add(field.decode((value) => value as String));
+      expect(event.addresses, {'profile/name', 'revisions'});
+      refreshed.complete();
+    });
+    try {
+      await engine.start();
+      expect(engine.query('profile/name'), isA<AbsentField>());
+      await engine.setDelta('unrelated', true);
+      await engine.batch((batch) {
+        batch.setDelta('profile/name', 'Ada');
+        batch.incrementGCounter('revisions');
+      });
+      await refreshed.future;
+      expect(names, ['Ada']);
+      expect(transport.sends, 0);
+      expect((await engine.pendingSummary()).totalCount, 3);
+    } finally {
+      await subscription.cancel();
+      await engine.dispose();
+    }
+  });
+
+  test('migrated constructor, event implementation and exhaustive switch compile', () {
+    final source = {'name'};
+    final event = SyncCommitEvent(origin: SyncCommitOrigin.local, addresses: source);
+    source.clear();
+    expect(describe(event), 'local:name');
+    expect(() => event.addresses.clear(), throwsUnsupportedError);
+    expect(describe(ExternalCommit()), 'local:name');
+    expect(describe(const SyncRestoredEvent()), 'restored');
+    final peer = Replica('peer')..setDelta('name', null)..removeDelta('deleted');
+    final target = Replica('target');
+    final Set<String> processed = target.mergeSnapshotJson(peer.toSnapshotJson());
+    expect(processed, {'name', 'deleted'});
+    target.mergeSnapshotJson(peer.toSnapshotJson()); // Old callers may ignore return.
+  });
+}
+
+class ExternalCommit implements SyncCommitEvent {
+  @override
+  SyncCommitOrigin get origin => SyncCommitOrigin.local;
+  @override
+  Set<String> get addresses => const {'name'};
+}
+
+class Offline implements DeltaTransport {
+  int sends = 0;
+  @override
+  String get peerReplicaId => 'peer';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async { sends++; throw StateError('offline'); }
+}

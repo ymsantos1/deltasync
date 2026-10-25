@@ -5788,3 +5788,71 @@ locais; `git diff --check` passou. Conferidos 14 hashes, lock/HEAD inalterados,
 dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
 âncora da execução. Evidências anteriores preservadas. Revisão documental final
 sem achados impeditivos; produção/testes não mudaram após a matriz aprovada.
+
+<a id="execucao-r-41-2026-10-24"></a>
+
+## Execução R-41 — Eventos seletivos, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em bc65f4a2658b75141953477c6281c12eebf11f07; R-37/R-38 concluídas e R-41 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-63/64/65, riscos de integração/eventos e guia Dart sobre class modifiers, padrões e extensions. Inspecionados DeltaChange.crdtId, parse/join canônico de snapshot, pipelines de commit/adoção/ACK e os três controllers/listeners existentes. Escopo limitado a R-41.
+Implementação: SyncCommitEvent.addresses guarda conjunto isolado/read-only de endereços processados; commitsFor filtra endereço exato. Lote deduplica, replay/perdedor pode notificar; snapshot usa bindings remotos, inclusive vazios/zero/tombstone. Replica.mergeSnapshotJson retorna Set<String> do parse existente. Um controller assíncrono de SyncObservation e _emit produzem observações; commits/errors são filtros tipados. Eventos preparados antes do I/O só são emitidos após adoção. Adicionados testes core/sync/facade, exemplo, guia, fixture/inventários e migração de construtor/implementação/retorno; variantes e formatos preservados.
+Review: aprovado
+Achados: revisão do próprio agente, não independente, incluindo arquivos novos e instrumento. Identificada lacuna de teste do filtro errors pausado após unificação; teste adicionado. Preparação do evento movida para antes do await, eliminando cópia intermediária de metadados remotos; emissão continua após adoção. Documentados matching exato/OR-Map, buffering de pausa e ordem por subscription. Após correções, revistos deltas e dez testes focados aprovados; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop completo de dart format/analyze/test dos sete pacotes; python3 -B plan/evidence/r41/validate_consumer.py --dart dart --report /tmp/deltasync-r41-consumer-final.json; dart run example/selective_observation_example.dart. Matriz: 309 testes, respectivamente 18/134/83/14/40/10/10, sete formatos sem alterações e sete análises limpas. Dois testes externos, prova negativa das APIs antigas e sete inventários aprovados. Exemplo confirma uma atualização e três pendências sem push. Comandos, diretórios, saídas, correções operacionais e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 por metadados dos oito tipos, lote deduplicado, replay/perdedor LWW, delta vazio e snapshot com bindings vazios/tombstone isolados; C2 por commitsFor, query pontual no exemplo/consumidor e nenhum envio disparado pelo listener; C3 por um controller e _emit, filtros com identidade comum e outbox como fonte única; C4 por commit bloqueado/adoção, rollback local/remoto sem sucesso, ACK parcial/falho, listeners tardios/pausados/com erro, ordem e drenagem/done no dispose; C5 por guia/fixture de cinco casos exaustivos, construtor não const com addresses obrigatório, getter externo e retorno Set<String> de mergeSnapshotJson, inventariados contra HEAD inicial.
+Manutenção: cinco critérios marcados, índice/fase/trace atualizados; DEC-66 e RISK-40/41 registram semântica e limites. R-33 próxima pronta; nenhuma ativa ou próxima implementação iniciada. Fase 6/VAL-17 permanecem abertos. Checker e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI real nas suítes existentes; sem SDK mínimo 3.12.x ou Android novo. ACKs controlados não provam rede/persistência remota real. Endereços processados não são diff visível ou valor histórico; pausa pode reter eventos não selecionados e atrasar dispose. Ordem é por subscription; consumidor retoma/cancela pausadas. Fixture externa usa path/resolução própria offline, não hosted. Sem novos formatos, joins, contratos de adaptadores, SDK/versões, Compass, CI/serviços externos, commit ou publicação.
+
+### Metadados, revisão e validação
+
+O [contrato e reprodução](evidence/r41/README.md) liga APIs, testes e pontos de
+manutenção. [validation.json](evidence/r41/validation.json) guarda logs reais e
+hashes. Endereços de deltas vêm do contrato comum; snapshot devolve bindings do
+peer já decodificado, sem segundo parser ou cópia completa de valores para
+metadados. Isso inclui CRDTs vazios que export de deltas pode não representar.
+Snapshots inválidos preservam estado/clocks; somente inputs adotados notificam.
+
+Revisão viu buffering como limite relevante da fonte unificada: errors pausado
+agora pode reter eventos comuns que descartará ao retomar. Teste novo confere
+que só falhas chegam, na ordem e com identidade preservada. Commit seletivo
+pausado não impede escritas; sua retomada entrega eventos/done e permite dispose.
+Listener com erro usa Zone e não desfaz commit; tardio consulta estado sem replay.
+Commit aceito e bloqueado é drenado antes do fechamento; trabalho novo é rejeitado.
+
+Memória verifica lote dos oito tipos, inputs remotos repetidos/perdedores,
+snapshot com binding vazio, falhas local/remota e ACK. Erro no storage de ACK
+preserva pendências; retry parcial não gera commit novo. Falha de envio de ACK
+após merge mantém estado/evento; callback incoming também produz SyncFailure
+com a mesma instância em errors/observations. Matriz completa reexecutou SQLite
+FFI, histórias duráveis, rollback e reabertura existentes; não extrapolar a Android.
+
+### Consumo e compatibilidade
+
+O [exemplo seletivo](../example/selective_observation_example.dart) hidrata estado
+após start, reage por query a um endereço e não inicia push. O
+[consumidor externo](evidence/r41/consumer_test.dart.txt) passa dois testes com
+nenhum envio automático, contador de pendências, evento externo e switch
+exaustivo dos cinco tipos existentes. Metadados são somente leitura e isolados.
+[consumer-validation.json](evidence/r41/consumer-validation.json) confirma sete
+inventários: commitsFor novo; addresses e construtor obrigatório não const em
+SyncCommitEvent; retorno Set<String> de mergeSnapshotJson. Nenhum símbolo ou
+variante novo/removido. Prova negativa rejeita construtor const anterior,
+implementação sem addresses e override void. Evidências anteriores congeladas
+permanecem intactas; quebras de fonte estão no
+[guia](../docs/migracao-1.0.1.md#eventos-seletivos-e-fonte-comum--r-41).
+
+### Manutenção
+
+R-41 concluída, R-33 recomendada sem iniciar CI ou ativar serviços externos.
+DEC-66/RISK-40/41 distinguem input processado, estado atual, commit e ACK.
+Emissão tem um ponto comum; variantes, dados e joins mantêm contratos anteriores.
+Gate integral da release permanece VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 510 links
+locais; `git diff --check` passou. Conferidos 18 hashes, lock/HEAD inalterados,
+dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos,
+âncora da execução e uma única fonte/emissão interna. Evidências anteriores
+preservadas. Revisão documental final sem achados impeditivos; produção/testes
+não mudaram após a matriz aprovada.

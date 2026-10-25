@@ -488,6 +488,25 @@ seu rollback existente. Novo membro pode sombrear extension decode do consumidor
 guia orienta migração. Sem mudanças de query/valueAt, variantes, joins, commit,
 ACK ou formatos. Ver [R-40](TRACEABILITY.md#execucao-r-40-2026-10-24).
 
+DEC-66 — Eventos seletivos R-41, 2026-10-24: SyncCommitEvent.addresses informa
+endereços processados, não diferenças visíveis. Deltas usam DeltaChange.crdtId;
+lotes deduplicam; snapshot usa bindings do peer já decodificado, incluindo
+vazios/zero/tombstones e excluindo endereços apenas locais. Replica.mergeSnapshotJson
+retorna esse Set<String> isolado/read-only, evitando segundo parse ou cópia de
+valores para metadados. Evento copia seus endereços antes de I/O e só é emitido
+após commit/adoção; input repetido/perdedor ainda pode notificar, e input vazio
+pode ter conjunto vazio. Um controller broadcast assíncrono de SyncObservation e
+_emit centralizam produção; commits/errors são filtros tipados e commitsFor usa
+endereço exato, sem polling, estado em cache ou sync automático. Ordem é por
+subscription, sem replay ou garantia de ordem relativa entre listeners distintos.
+Pausa pode bufferizar eventos não selecionados e atrasar dispose; consumidor
+retoma/cancela subscriptions antes de encerrá-lo. Listeners não governam commit;
+ACK e suas falhas permanecem separados. SyncCommitEvent exige addresses e perde
+const; implementadores/subclasses e overrides de mergeSnapshotJson precisam
+migrar. Nenhuma variante de SyncObservation ou formato mudou; fixture cobre
+cinco casos exaustivos, implementação externa e quebras anteriores. Ver
+[R-41](TRACEABILITY.md#execucao-r-41-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

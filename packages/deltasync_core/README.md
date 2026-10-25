@@ -45,3 +45,8 @@ for atomic local commits, an outbox and remote acknowledgement. Counter IDs and
 compact MV formats have compatibility limits described in the
 [integration and migration documentation](https://github.com/ymsantos1/deltasync#readme).
 Destructive garbage collection and code generation are outside this release.
+
+`mergeSnapshotJson` returns the peer snapshot's processed bound addresses as a
+detached/read-only set, including empty CRDTs and tombstones. It does not report
+visible-value differences or local-only fields. Existing callers can ignore the
+result; overrides must change their return type from void to `Set<String>`.

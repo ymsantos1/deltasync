@@ -3,6 +3,28 @@ import 'package:test/test.dart';
 
 void main() {
   test(
+    'facade selects commits by processed address without replay or sync',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-selective'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      final received = engine.commitsFor('field').first;
+      await engine.setDelta('other', true);
+      await engine.batch((batch) {
+        batch.setDelta('field', null);
+        batch.incrementGCounter('counter');
+      });
+      final event = await received;
+      expect(event.addresses, {'field', 'counter'});
+      expect((engine.query('field') as PresentField).value, isNull);
+      expect((await engine.pendingSummary()).totalCount, 3);
+      expect(() => event.addresses.add('forged'), throwsUnsupportedError);
+    },
+  );
+  test(
     'facade exposes typed decoder while preserving presence branches',
     () async {
       final engine = SyncEngine.withStorage(

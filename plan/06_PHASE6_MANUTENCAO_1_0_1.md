@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-40/R-42 concluídas.
-R-33/R-41 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
+R-33 pronta; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -505,7 +505,7 @@ Próxima recomendada R-41; fase 6/VAL-17 continuam abertos.
 
 ## R-41 — Oferecer eventos seletivos e consolidar canais internos
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-37, R-38
 
@@ -513,23 +513,29 @@ Alvo: 1.0.1. Permitir reação aos endereços afetados sem cache paralelo de est
 
 Critérios:
 
-- [ ] Informar endereços afetados em commits locais, lotes e merges remotos;
+- [x] Informar endereços afetados em commits locais, lotes e merges remotos;
   definir se significam endereços processados ou valores visíveis alterados.
   Snapshot remoto deve seguir a mesma semântica, com metadados isolados.
-- [ ] Demonstrar observação seletiva por endereço usando APIs públicas,
+- [x] Demonstrar observação seletiva por endereço usando APIs públicas,
   sem polling, réplica inteira copiada ou sincronização disparada por listener.
-- [ ] Consolidar emissão interna de observations/commits/errors numa fonte
+- [x] Consolidar emissão interna de observations/commits/errors numa fonte
   comum, preservando canais existentes quando útil e documentando qualquer
   ajuste intencional. Evitar múltiplas representações persistidas de pendências.
-- [ ] Testar emissão somente após adoção, rollback sem evento de sucesso,
+- [x] Testar emissão somente após adoção, rollback sem evento de sucesso,
   ausência de replay, listeners tardios/pausados/com erro, ordem e dispose.
   Commit continua distinto de ACK; listeners não governam a transação.
-- [ ] Inventariar mudança em construtores/variantes fechadas e demonstrar
+- [x] Inventariar mudança em construtores/variantes fechadas e demonstrar
   adaptação de switches externos quando necessária no guia de migração.
 
 Validação: observações/concorrência sync/facade, lote e snapshot remoto, com
 falhas de commit/ACK e fixture de consumidor seletivo.
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-41](TRACEABILITY.md#execucao-r-41-2026-10-24),
+[contrato/reprodução](evidence/r41/README.md),
+[matriz e revisão](evidence/r41/validation.json) e
+[consumidor/inventários](evidence/r41/consumer-validation.json). 309 testes em
+sete pacotes e dois externos aprovados; exemplo seletivo e prova negativa das
+quebras de fonte conferidos. Revisão própria após correções, sem revisão
+independente. Próxima R-33; fase 6/VAL-17 continuam abertos.
 
 <a id="r-42"></a>
 

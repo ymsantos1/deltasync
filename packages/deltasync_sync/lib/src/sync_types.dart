@@ -30,9 +30,15 @@ class SyncPushFailure extends SyncObservation {
 /// Notification after a local mutation or remote merge is committed and adopted.
 /// It signals state availability, not remote acknowledgement.
 class SyncCommitEvent extends SyncObservation {
-  const SyncCommitEvent({required this.origin});
+  SyncCommitEvent({required this.origin, required Iterable<String> addresses})
+    : addresses = Set.unmodifiable(addresses);
 
   final SyncCommitOrigin origin;
+
+  /// Unique addresses processed by this committed input, not visible changes.
+  /// Includes replay/losing LWW input, tombstones and empty bound snapshot CRDTs.
+  /// Snapshot metadata includes peer addresses only. Detached and read-only.
+  final Set<String> addresses;
 }
 
 /// Failure delivered by `SyncEngine.errors` from an incoming transport callback.

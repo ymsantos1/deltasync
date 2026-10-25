@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Add processed commit addresses and commitsFor filters over one observation
+  source. SyncCommitEvent now requires addresses and is no longer const;
+  Replica.mergeSnapshotJson returns processed snapshot addresses instead of void.
 - Add optional PresentField.decode<T> for consumer model conversion, preserving
   raw values, explicit absent/deleted branches and unwrapped decoder failures.
 - Add typed field queries distinguishing absence, present null and retained LWW

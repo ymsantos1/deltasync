@@ -82,12 +82,24 @@ class SyncEngine {
 
   /// Failures from transport stream callbacks; awaited methods throw to callers.
   /// This stream does not report successful commits or push progress.
-  Stream<SyncFailure> get errors => _errors.stream;
+  Stream<SyncFailure> get errors => _observations.stream
+      .where((event) => event is SyncFailure)
+      .cast<SyncFailure>();
 
   /// Non-replaying notifications after a local or remote commit is adopted.
   /// Read [replica] for the latest state; this event does not imply remote ACK.
   /// The stream closes when [dispose] completes.
-  Stream<SyncCommitEvent> get commits => _commits.stream;
+  Stream<SyncCommitEvent> get commits => _observations.stream
+      .where((event) => event is SyncCommitEvent)
+      .cast<SyncCommitEvent>();
+
+  /// Non-replaying commits whose processed input includes [address].
+  /// A filter over [commits], with no reads, polling, cache or automatic sync.
+  /// Read query/valueAt for current state; a delayed event is not a value snapshot.
+  /// Matches the exact CRDT address, not a prefix or a nested OR-Map key.
+  /// Cancel or resume paused subscriptions before awaiting [dispose].
+  Stream<SyncCommitEvent> commitsFor(String address) =>
+      commits.where((event) => event.addresses.contains(address));
 
   /// Non-replaying session events: restored, committed, push result/failure and
   /// incoming failure. Existing commits/errors streams retain their contracts.
@@ -118,10 +130,6 @@ class SyncEngine {
   );
   int _activeRequests = 0;
   Completer<void>? _activeRequestsDrained;
-  final StreamController<SyncFailure> _errors =
-      StreamController<SyncFailure>.broadcast();
-  final StreamController<SyncCommitEvent> _commits =
-      StreamController<SyncCommitEvent>.broadcast(sync: false);
   final StreamController<SyncObservation> _observations =
       StreamController<SyncObservation>.broadcast(sync: false);
   final SyncRetryPolicy retryPolicy;
@@ -164,7 +172,7 @@ class SyncEngine {
         _receiveRemote,
         onError: _receiveStreamError,
       );
-      _observations.add(const SyncRestoredEvent());
+      _emit(const SyncRestoredEvent());
     } catch (_) {
       if (_lifecycle != SyncEngineLifecycle.disposed) {
         _lifecycle = SyncEngineLifecycle.created;
@@ -206,8 +214,10 @@ class SyncEngine {
         return ack;
       });
 
-  Future<void> _applyRemoteReady(Delta delta) =>
-      _commitRemote((candidate) => candidate.apply(delta));
+  Future<void> _applyRemoteReady(Delta delta) => _commitRemote((candidate) {
+    candidate.apply(delta);
+    return delta.changes.map((change) => change.crdtId);
+  });
 
   /// Merges a peer's materialized snapshot for bootstrap or recovery.
   Future<void> applyRemoteSnapshot(Map<String, Object?> snapshot) =>
@@ -216,13 +226,16 @@ class SyncEngine {
             _commitRemote((candidate) => candidate.mergeSnapshotJson(snapshot)),
       );
 
-  Future<void> _commitRemote(void Function(Replica) mutate) =>
+  Future<void> _commitRemote(Iterable<String> Function(Replica) mutate) =>
       _queue.run(() async {
         final candidate = _replica.fork();
-        mutate(candidate);
+        final event = SyncCommitEvent(
+          origin: SyncCommitOrigin.remote,
+          addresses: mutate(candidate),
+        );
         await _persistence.commitRemote(candidate);
         _replica.adopt(candidate);
-        _notifyCommit(SyncCommitOrigin.remote);
+        _emit(event);
       });
 
   Future<LwwDelta<Object?>> setDelta(String key, Object? value) =>
@@ -361,13 +374,11 @@ class SyncEngine {
     pushing = start()
         .then((_) => _pushReady(force: force))
         .then((result) {
-          _observations.add(result);
+          _emit(result);
           return result;
         })
         .catchError((Object error, StackTrace stackTrace) {
-          _observations.add(
-            SyncPushFailure(error: error, stackTrace: stackTrace),
-          );
+          _emit(SyncPushFailure(error: error, stackTrace: stackTrace));
           Error.throwWithStackTrace(error, stackTrace);
         })
         .whenComplete(() {
@@ -446,8 +457,6 @@ class SyncEngine {
       await drained.future;
     }
     await _queue.drained;
-    await _errors.close();
-    await _commits.close();
     await _observations.close();
   }
 
@@ -467,13 +476,17 @@ class SyncEngine {
       final result = mutate(candidate);
       final changes = changesOf(result).toList();
       if (changes.isEmpty) throw StateError('Local change batch is empty');
+      final event = SyncCommitEvent(
+        origin: SyncCommitOrigin.local,
+        addresses: changes.map((change) => change.crdtId),
+      );
       await _persistence.commitLocal(
         candidate,
         changes,
         transport.peerReplicaId,
       );
       _replica.adopt(candidate);
-      _notifyCommit(SyncCommitOrigin.local);
+      _emit(event);
       return result;
     }),
   );
@@ -489,9 +502,7 @@ class SyncEngine {
     );
   }
 
-  void _notifyCommit(SyncCommitOrigin origin) {
-    final event = SyncCommitEvent(origin: origin);
-    if (!_commits.isClosed) _commits.add(event);
+  void _emit(SyncObservation event) {
     if (!_observations.isClosed) _observations.add(event);
   }
 
@@ -509,8 +520,7 @@ class SyncEngine {
       error: error,
       stackTrace: stackTrace,
     );
-    if (!_errors.isClosed) _errors.add(failure);
-    if (!_observations.isClosed) _observations.add(failure);
+    _emit(failure);
   }
 
   Future<T> _withStarted<T>(Future<T> Function() action) {

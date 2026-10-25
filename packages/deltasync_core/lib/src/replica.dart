@@ -210,7 +210,10 @@ class Replica {
   ///
   /// Useful for initial bootstrap when a peer lacks deltas. The merge is
   /// isolated: malformed or conflicting state leaves this replica unchanged.
-  void mergeSnapshotJson(Map<String, Object?> json) {
+  /// Returns the peer snapshot's bound addresses, including tombstones and
+  /// empty CRDTs, as a detached read-only set. These are processed addresses,
+  /// not a comparison of visible values; local-only addresses are not included.
+  Set<String> mergeSnapshotJson(Map<String, Object?> json) {
     final remote = Replica.fromSnapshotJson(json);
     final candidate = fork();
     candidate._contents.merge(remote._contents);
@@ -221,6 +224,7 @@ class Replica {
       candidate._deltaSequence = remote._deltaSequence;
     }
     adopt(candidate);
+    return remote._state.addresses;
   }
 
   /// Creates and applies native LWW delta.

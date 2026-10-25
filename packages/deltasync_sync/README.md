@@ -25,6 +25,18 @@ write/I/O, and propagates failures to the caller without emitting an engine
 error or undoing a prior commit. Handle absent/deleted cases explicitly. A saved
 result can still be converted after dispose; obtaining a new query cannot.
 
+Use `commitsFor(address)` to refresh selected fields after a commit. Its events
+carry a detached/read-only `addresses` set of processed input bindings, including
+replay/losing writes, tombstones and bound empty snapshot CRDTs. This is not a
+visible-value diff. Read `query` for current state; hydrate initially because
+streams do not replay. Filters never poll, copy the replica or trigger push.
+`observations`, `commits` and `errors` now share one asynchronous broadcast source;
+ordering is per subscription. Resume/cancel paused subscriptions before awaiting
+dispose; paused filters may buffer unrelated source events. Constructors of
+`SyncCommitEvent` now require addresses and are no longer const; external
+implementations must supply the getter. See the
+[selective example](https://github.com/ymsantos1/deltasync/blob/main/example/selective_observation_example.dart).
+
 Use `await engine.batch((batch) { ... })` for related local edits with one atomic
 snapshot/outbox commit. The scoped LocalBatch delegates native CRDT mutations and
 reads; its callback must finish synchronously without I/O or other engine calls.
