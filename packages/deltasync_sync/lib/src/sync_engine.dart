@@ -493,12 +493,11 @@ class SyncEngine {
 
   void _receiveRemote(DeltaEnvelope envelope) {
     unawaited(
-      receiveEnvelope(envelope).then<void>((_) {}).catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
-      }),
+      receiveEnvelope(envelope)
+          .then<void>((_) {})
+          .catchError((Object error, StackTrace stackTrace) {
+            _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
+          }),
     );
   }
 

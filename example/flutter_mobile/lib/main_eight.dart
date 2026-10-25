@@ -75,9 +75,8 @@ class _EightPageState extends State<EightPage> {
       if (mounted) {
         setState(() {
           _pending = ((report['pending'] as Map)['changes'] as List).length;
-          _values = const JsonEncoder.withIndent(
-            '  ',
-          ).convert(report['values']);
+          _values = const JsonEncoder.withIndent('  ')
+              .convert(report['values']);
         });
       }
     } catch (error) {

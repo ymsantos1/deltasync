@@ -137,9 +137,8 @@ void main() {
         transport: _FacadeTransport(),
       );
       addTearDown(engine.dispose);
-      final change = Replica(
-        engine.transport.peerReplicaId,
-      ).setDelta('remote', 'value');
+      final change = Replica(engine.transport.peerReplicaId)
+          .setDelta('remote', 'value');
       final ack = await engine.receiveEnvelope(
         DeltaEnvelope(
           senderReplicaId: engine.transport.peerReplicaId,

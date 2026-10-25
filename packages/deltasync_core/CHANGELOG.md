@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Require Dart ^3.13.0; align formatter with the declared language version.
 - Return processed peer bindings from mergeSnapshotJson, including empty CRDTs
   and tombstones; overrides must return Set<String> instead of void.
 - Add PresentField.decode<T> over the existing isolated query value. Pass null

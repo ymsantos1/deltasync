@@ -43,42 +43,39 @@ void main() {
     expect(merged.changes.whereType<GCounterDelta>(), hasLength(2));
   });
 
-  test(
-    'equivalent duplicate keeps first ID position and latest equivalent payload',
-    () {
-      final replica = _replica();
-      final first = replica.setDelta('json', {
+  test('equivalent duplicate keeps first ID position and latest equivalent payload', () {
+    final replica = _replica();
+    final first = replica.setDelta('json', {
+      'a': [
+        1,
+        {'flag': true},
+      ],
+      'b': 2,
+    });
+    final middle = replica.incrementGCounter('g');
+    final equivalent = LwwDelta<Object?>.fromJson({
+      ...first.toJson(),
+      'value': {
+        'b': 2,
         'a': [
           1,
           {'flag': true},
         ],
-        'b': 2,
-      });
-      final middle = replica.incrementGCounter('g');
-      final equivalent = LwwDelta<Object?>.fromJson({
-        ...first.toJson(),
-        'value': {
-          'b': 2,
-          'a': [
-            1,
-            {'flag': true},
-          ],
-        },
-      });
-      final entries = [
-        _entry(first),
-        _entry(middle),
-        _entry(equivalent, peer: 'other-peer'),
-      ];
-      final merged = mergeOutbox(entries);
+      },
+    });
+    final entries = [
+      _entry(first),
+      _entry(middle),
+      _entry(equivalent, peer: 'other-peer'),
+    ];
+    final merged = mergeOutbox(entries);
 
-      expect(merged.changes.map((change) => change.id), [first.id, middle.id]);
-      final value = (merged.changes.first as LwwDelta<Object?>).value as Map;
-      expect(value.keys.toList(), ['b', 'a']);
-      expect(entries, hasLength(3));
-      expect(entries.last.recipientPeerId, 'other-peer');
-    },
-  );
+    expect(merged.changes.map((change) => change.id), [first.id, middle.id]);
+    final value = (merged.changes.first as LwwDelta<Object?>).value as Map;
+    expect(value.keys.toList(), ['b', 'a']);
+    expect(entries, hasLength(3));
+    expect(entries.last.recipientPeerId, 'other-peer');
+  });
 
   test('conflicting nested payload is rejected without changing input', () {
     final first = _replica().setDelta('json', {
@@ -117,43 +114,40 @@ void main() {
     expect(large, lessThanOrEqualTo(small * 3));
   });
 
-  test(
-    'invalid prepared batch cannot mark sent, send, or discard committed outbox',
-    () async {
-      final storage = _PreparationStorage();
-      final transport = _RecordingTransport();
-      final engine = SyncEngine.withStorage(
-        replica: _replica(),
-        storage: storage,
-        transport: transport,
-      );
-      try {
-        final first = await engine.setDelta('json', {
-          'items': [1, 2],
-        });
-        final before = engine.replica.toSnapshotJson();
-        final retained = (await storage.pending('writer')).single.toJson();
-        final divergent = LwwDelta<Object?>.fromJson({
-          ...first.toJson(),
-          'value': {
-            'items': [2, 1],
-          },
-        });
-        storage.invalidEntries = [_entry(first), _entry(divergent)];
+  test('invalid prepared batch cannot mark sent, send, or discard committed outbox', () async {
+    final storage = _PreparationStorage();
+    final transport = _RecordingTransport();
+    final engine = SyncEngine.withStorage(
+      replica: _replica(),
+      storage: storage,
+      transport: transport,
+    );
+    try {
+      final first = await engine.setDelta('json', {
+        'items': [1, 2],
+      });
+      final before = engine.replica.toSnapshotJson();
+      final retained = (await storage.pending('writer')).single.toJson();
+      final divergent = LwwDelta<Object?>.fromJson({
+        ...first.toJson(),
+        'value': {
+          'items': [2, 1],
+        },
+      });
+      storage.invalidEntries = [_entry(first), _entry(divergent)];
 
-        await expectLater(engine.pendingDelta(), throwsFormatException);
-        await expectLater(engine.push(force: true), throwsFormatException);
-        expect(storage.markSentCalls, 0);
-        expect(transport.sendCalls, 0);
-        expect(engine.replica.toSnapshotJson(), before);
-        storage.invalidEntries = null;
-        expect((await storage.pending('writer')).single.toJson(), retained);
-        expect((await engine.pendingDelta()).changes.single.id, first.id);
-      } finally {
-        await engine.dispose();
-      }
-    },
-  );
+      await expectLater(engine.pendingDelta(), throwsFormatException);
+      await expectLater(engine.push(force: true), throwsFormatException);
+      expect(storage.markSentCalls, 0);
+      expect(transport.sendCalls, 0);
+      expect(engine.replica.toSnapshotJson(), before);
+      storage.invalidEntries = null;
+      expect((await storage.pending('writer')).single.toJson(), retained);
+      expect((await engine.pendingDelta()).changes.single.id, first.id);
+    } finally {
+      await engine.dispose();
+    }
+  });
 }
 
 Replica _replica() =>

@@ -19,9 +19,8 @@ void main() {
     'Memory summary reads metadata without decoding delta payloads',
     () async {
       final storage = MemoryStorage();
-      final change = Replica(
-        'summary',
-      ).setDelta('payload', List.filled(1000, 'data'));
+      final change = Replica('summary')
+          .setDelta('payload', List.filled(1000, 'data'));
       await storage.enqueue(_MetadataEntry(change));
       final summary = await storage.pendingSummary(
         'summary',

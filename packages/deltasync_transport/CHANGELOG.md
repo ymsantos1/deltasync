@@ -1,3 +1,7 @@
+## Unreleased
+
+- Require Dart ^3.13.0.
+
 ## 2.0.0
 
 - Expose versioned envelopes with fixed sender/recipient identities.

@@ -64,33 +64,29 @@ void main() {
     },
   );
 
-  test(
-    'query lifecycle is enforced before decoder; detached result survives dispose',
-    () async {
-      final storage = _GatedStorage();
-      final engine = open(storage);
-      var calls = 0;
-      String read() =>
-          (engine.query('profile') as PresentField).decode((value) {
-            calls++;
-            return _name(value);
-          });
-      expect(read, throwsStateError);
-      final starting = engine.start();
-      expect(read, throwsStateError);
-      expect(calls, 0);
-      storage.gate.complete();
-      await starting;
-      await engine.setDelta('profile', {'name': 'Ada'});
-      expect(read(), 'Ada');
-      expect(calls, 1);
-      final retained = engine.query('profile') as PresentField;
-      await engine.dispose();
-      expect(read, throwsStateError);
-      expect(calls, 1);
-      expect(retained.decode(_name), 'Ada');
-    },
-  );
+  test('query lifecycle is enforced before decoder; detached result survives dispose', () async {
+    final storage = _GatedStorage();
+    final engine = open(storage);
+    var calls = 0;
+    String read() => (engine.query('profile') as PresentField).decode((value) {
+      calls++;
+      return _name(value);
+    });
+    expect(read, throwsStateError);
+    final starting = engine.start();
+    expect(read, throwsStateError);
+    expect(calls, 0);
+    storage.gate.complete();
+    await starting;
+    await engine.setDelta('profile', {'name': 'Ada'});
+    expect(read(), 'Ada');
+    expect(calls, 1);
+    final retained = engine.query('profile') as PresentField;
+    await engine.dispose();
+    expect(read, throwsStateError);
+    expect(calls, 1);
+    expect(retained.decode(_name), 'Ada');
+  });
 
   test(
     'batch conversion reads candidate; uncaught decoder error aborts batch',

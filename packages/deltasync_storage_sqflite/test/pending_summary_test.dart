@@ -114,12 +114,9 @@ void main() {
         OutboxEntry(delta: Delta([change]), recipientPeerId: 'peer'),
       );
       final database = await databaseFactoryFfi.openDatabase(file);
-      final json =
-          jsonDecode(
-                (await database.query('deltasync_outbox')).single['payload']!
-                    as String,
-              )
-              as Map;
+      final json = jsonDecode(
+        (await database.query('deltasync_outbox')).single['payload']! as String,
+      ) as Map;
       json['status'] = 'confirmed';
       await database.update('deltasync_outbox', {'payload': jsonEncode(json)});
       expect((await storage.pendingSummary('metadata')).totalCount, 0);

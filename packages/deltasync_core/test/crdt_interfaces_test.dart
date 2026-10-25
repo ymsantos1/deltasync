@@ -232,9 +232,9 @@ void main() {
       final decoded = [first, second, third]
           .map(
             (change) =>
-                DeltaCodec.decode(
-                      DeltaCodec.encode(Delta([change])),
-                    ).changes.single
+                DeltaCodec.decode(DeltaCodec.encode(Delta([change])))
+                        .changes
+                        .single
                     as GSetDelta,
           )
           .toList();

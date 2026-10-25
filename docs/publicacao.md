@@ -5,7 +5,7 @@ autor. Preparação e `--dry-run` não enviam pacotes nem reservam nomes no pub.
 
 ## Preparar arquivos distribuíveis
 
-Requisitos: Python 3 e Dart compatível com `sdk: ^3.12.0`, disponíveis no PATH.
+Requisitos: Python 3 e Dart compatível com `sdk: ^3.13.0`, disponíveis no PATH.
 Execute na raiz do repositório:
 
 ```sh

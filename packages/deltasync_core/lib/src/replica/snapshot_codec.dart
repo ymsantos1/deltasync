@@ -14,16 +14,14 @@ class ReplicaSnapshotCodec {
     required HlcTimestamp hlc,
     required int deltaSequence,
     required ReplicaContents contents,
-  }) =>
-      copyJsonValue({
-            'version': currentVersion,
-            'replicaId': replicaId,
-            'clock': clock.toJson(),
-            'hlc': hlc.toJson(),
-            'deltaSequence': deltaSequence,
-            ...contents.toSnapshotJson(),
-          }, freeze: true)
-          as Map<String, Object?>;
+  }) => copyJsonValue({
+    'version': currentVersion,
+    'replicaId': replicaId,
+    'clock': clock.toJson(),
+    'hlc': hlc.toJson(),
+    'deltaSequence': deltaSequence,
+    ...contents.toSnapshotJson(),
+  }, freeze: true) as Map<String, Object?>;
 
   static DecodedReplicaSnapshot decode(Map<String, Object?> json) {
     final encodedVersion = json['version'];

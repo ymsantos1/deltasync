@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
-R-33 pronta; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-33/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
+R-34 pronta; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -184,7 +184,7 @@ Evidência de conclusão: [execução R-32](TRACEABILITY.md#execucao-r-32-2026-1
 
 ## R-33 — Automatizar verificações e advisories em CI
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-30
 
@@ -194,33 +194,44 @@ autorizado por este plano.
 
 Critérios:
 
-- [ ] Automatizar formatação, análise e testes da facade e dos seis subpacotes,
-  com SQLite FFI real, SDK mínimo 3.12.x e SDK estável selecionado/documentado.
+- [x] Automatizar formatação, análise e testes da facade e dos seis subpacotes,
+  com SQLite FFI real e SDK da faixa mínima 3.13.x, selecionado/documentado
+  em versão stable. Orientação posterior do autor: não executar 3.12 e alinhar
+  o mínimo declarado para ^3.13.0; baseline R-30 permanece histórica.
   Falha de qualquer pacote deve falhar o job; cache não pode esconder resolução.
-- [ ] Executar check_plan.py e git diff --check em mudanças pertinentes;
+- [x] Executar check_plan.py e git diff --check em mudanças pertinentes;
   validar exemplo Dart e exemplo Flutter com análise/testes/build proporcionais.
   Separar jobs Flutter dos pacotes Dart e registrar que build não prova runtime.
-- [ ] Consultar advisories das dependências na resolução e definir tratamento
+- [x] Consultar advisories das dependências na resolução e definir tratamento
   verificável para achado, exceção justificada e falha de rede. Não presumir
   que dart pub get retorna erro quando apenas imprime aviso, nem usar pub
   outdated como scanner de vulnerabilidades. Documentar atualização periódica.
-- [ ] Validar a configuração e seus comandos localmente; demonstrar detecção
+- [x] Validar a configuração e seus comandos localmente; demonstrar detecção
   de falha de teste/pacote e advisory por fixture adequada sem introduzir
   dependência vulnerável nos manifests de produção. Usar permissões mínimas,
   sem credenciais de publicação, uploads ou autofix de produto no workflow.
-- [ ] Registrar separadamente checks locais e execução remota. Se não houver
+- [x] Registrar separadamente checks locais e execução remota. Se não houver
   execução remota autorizada/disponível, manter essa limitação explícita;
   não afirmar que GitHub Actions passou sem resultado real.
 
 Validação: workflow/configuração e comandos dos jobs, cenários negativos
 controlados e matriz de pacotes. Referência: [advisories Dart](https://dart.dev/tools/pub/security-advisories).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-33](TRACEABILITY.md#execucao-r-33-2026-10-24),
+[contrato/reprodução](evidence/r33/README.md),
+[validação/falhas/revisão](evidence/r33/validation.json),
+[resoluções independentes](evidence/r33/resolutions.json) e
+[política de CI](../docs/ci.md). Jobs locais em checkouts/caches distintos:
+309 testes dos sete pacotes, dois do enlace, sete Flutter, onze da política,
+análise/formato e dois builds Android aprovados. actionlint aprovado. Revisão
+própria após correções; workflow remoto não acionado. SDK ^3.13.0 por orientação
+posterior do autor, executado 3.13.5; sem runtime 3.12 ou 3.13.0. R-34 pronta;
+fase 6/VAL-17 permanecem abertos.
 
 <a id="r-34"></a>
 
 ## R-34 — Avaliar Saropa e lint proporcional
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-33
 

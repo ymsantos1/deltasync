@@ -7,6 +7,13 @@ ajustados em R-36; esta mudança não publica nem renumera pacotes ou dados.
 
 ## Substituições de fonte
 
+R-33 eleva o SDK mínimo dos sete pacotes e do exemplo Flutter de ^3.12.0 para
+^3.13.0 por orientação do autor. Atualize o Dart/Flutter antes de resolver as
+dependências; a referência validada é Dart 3.13.5 e Flutter 3.47.7. Não há prova
+nova de runtime em 3.12 ou no patch 3.13.0. O formato exigido pela nova language
+version foi aplicado sem mudar as árvores sintáticas. Dados/joins não mudaram.
+Consulte a [política de CI e advisories](ci.md).
+
 | Antes | Depois | Adaptação |
 |---|---|---|
 | `PendingDeltaStore`, `MemoryPendingDeltaStore` | `ReplicaStorage`, `MemoryStorage` ou SQLite | Snapshot e outbox devem participar do mesmo commit; memória continua volátil |

@@ -15,6 +15,10 @@ Biblioteca Dart modular para aplicações offline-first com CRDTs e sincronizaç
 
 ## Releases
 
+Os checks locais e os jobs CI estão descritos no
+[guia de CI](https://github.com/ymsantos1/deltasync/blob/main/docs/ci.md).
+O mínimo Dart declarado é `^3.13.0`; a referência executada é Dart 3.13.5.
+
 Os sete pacotes devem ser preparados em diretórios independentes antes da
 publicação. Execute `python3 scripts/prepare_release.py` na raiz do repositório
 e use o destino informado. Consulte o

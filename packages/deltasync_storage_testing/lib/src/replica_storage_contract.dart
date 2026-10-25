@@ -46,9 +46,9 @@ void replicaStorageContractTests({
           ]);
         }
         await storage.markSent(replica.id, 'peer-a', [first.id]);
-        final before = (await storage.pending(
-          replica.id,
-        )).map((e) => e.toJson()).toList();
+        final before = (await storage.pending(replica.id))
+            .map((e) => e.toJson())
+            .toList();
         expect(await counts(replica.id), [3, 1, 4]);
         expect(await counts(replica.id, 'peer-a'), [1, 1, 2]);
         expect(await counts(replica.id, 'peer-b'), [2, 0, 2]);
@@ -245,9 +245,9 @@ void replicaStorageContractTests({
       ]);
 
       expect(
-        (await storage.pending(
-          'contract-device',
-        )).map((entry) => entry.entryId).toSet(),
+        (await storage.pending('contract-device'))
+            .map((entry) => entry.entryId)
+            .toSet(),
         {first.id, second.id},
       );
       final persisted = await storage.loadReplica('contract-device');
@@ -379,9 +379,8 @@ void replicaStorageContractTests({
         expect(persisted.state.values, {'base': true});
         expect((await storage.pendingSummary('contract-device')).totalCount, 1);
         expect(
-          (await storage.pending(
-            'contract-device',
-          )).map((entry) => entry.entryId),
+          (await storage.pending('contract-device'))
+              .map((entry) => entry.entryId),
           [baselineChange.id],
         );
       },

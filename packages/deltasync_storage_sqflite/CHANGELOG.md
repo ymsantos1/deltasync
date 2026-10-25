@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Require Dart ^3.13.0; align formatter with the declared language version.
 - Aggregate pending/sent counts in SQLite without materializing deltas in Dart.
   Keep schema v1; builds without JSON functions use a metadata-reading fallback.
 

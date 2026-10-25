@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Require Dart ^3.13.0; align formatter with the declared language version.
 - Add required ReplicaStorage.pendingSummary and immutable OutboxSummary counts.
   MemoryStorage queries entry metadata without decoding delta payloads.
 - Remove PendingDeltaStore, MemoryPendingDeltaStore and OutboxEntry.operationId.

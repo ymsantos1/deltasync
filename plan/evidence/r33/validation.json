@@ -1,0 +1,398 @@
+{
+  "task": "R-33",
+  "date": "2026-10-24",
+  "validatedAtUtc": "2026-10-25T01:11:39.998557+00:00",
+  "beforeRevision": "c803825f98c7e05c7770c1d287187fe2c91fdb9b",
+  "initialWorktree": "clean",
+  "skills": [
+    "plan-reader",
+    "plan-implementer",
+    "code-reviewer",
+    "plan-validator",
+    "plan-maintainer"
+  ],
+  "reading": {
+    "dependencies": [
+      "R-30"
+    ],
+    "references": [
+      "AGENTS.md",
+      "plan/RUNBOOK.md",
+      "five complete skills",
+      "phase 6 R-33",
+      "R-30 baseline and SDK matrix",
+      "RISK-39/42",
+      "Dart guide supported SDK and canonical ownership",
+      "official Dart/OSV/action metadata"
+    ]
+  },
+  "sdkPolicy": {
+    "original": "^3.12.0",
+    "authorSteering": "Avoid 3.12; allow change to 3.13",
+    "declared": "^3.13.0",
+    "executed": "3.13.5 stable",
+    "flutter": {
+      "frameworkVersion": "3.47.7",
+      "channel": "stable",
+      "repositoryUrl": "https://github.com/flutter/flutter.git",
+      "frameworkRevision": "abaf9c523780a608bd46686fd5e53740a07077f8",
+      "frameworkCommitDate": "2026-10-08 09:51:21 -0700",
+      "engineRevision": "deb287481e3ce9468f3434937ced4240a70539ca",
+      "engineCommitDate": "2026-10-07 17:09:12.000Z",
+      "engineContentHash": "d8a2d6c768c334d53e16277f837970ffa1e2de81",
+      "engineBuildDate": "2026-10-07 14:51:44.552",
+      "dartSdkVersion": "3.13.5",
+      "devToolsVersion": "2.60.0",
+      "flutterVersion": "3.47.7",
+      "flutterRoot": "/home/yago/.cache/flutter_sdk"
+    },
+    "didNotExecute": [
+      "3.12.x",
+      "3.13.0"
+    ],
+    "manifestsChangedOnlySdk": [
+      "pubspec.yaml",
+      "packages/deltasync_core/pubspec.yaml",
+      "packages/deltasync_sync/pubspec.yaml",
+      "packages/deltasync_storage/pubspec.yaml",
+      "packages/deltasync_storage_sqflite/pubspec.yaml",
+      "packages/deltasync_storage_testing/pubspec.yaml",
+      "packages/deltasync_transport/pubspec.yaml",
+      "example/flutter_mobile/pubspec.yaml"
+    ]
+  },
+  "implementation": {
+    "workflow": ".github/workflows/ci.yml",
+    "runner": "scripts/ci.py",
+    "jobs": [
+      "dart",
+      "flutter",
+      "policy"
+    ],
+    "permissions": "contents: read",
+    "checkoutCredentialsPersisted": false,
+    "uploads": false,
+    "autofix": false,
+    "remoteServicesActivated": false,
+    "packages": "Canonical dart pub workspace list --json, not duplicated in workflow",
+    "advisories": "Online OSV/Pub exact resolved versions with pagination; exception must match package/version/ID with reason and UTC expiry; no cached report or outdated scanner",
+    "flutterResolution": "Separate workspace, enforced tracked lockfile, full analysis/tests and two debug APK builds",
+    "dartAnalysis": "Only independent Flutter app excluded from root analysis; no library package excluded"
+  },
+  "review": {
+    "approved": true,
+    "independent": false,
+    "afterCorrections": true,
+    "corrections": [
+      "Accepted valid Pub names beginning with underscore and added regression",
+      "Used canonical workspace list and validated malformed/duplicate/outside paths",
+      "Rejected contradictory/incomplete/unknown advisory response fields, pagination cycles and network failures",
+      "Fixed offline CLI arguments and used a new temporary database directory",
+      "Aligned 19 files to Dart 3.13 formatter; canonical parsed programs preserved",
+      "Clean checkout exposed cross-workspace analysis; corrected root exclusion and repeated jobs in separate clean checkouts/caches"
+    ],
+    "checked": [
+      "All tracked diff and new workflow/runner/tests/docs",
+      "Read-only permissions, exact action SHAs and actionlint checksum",
+      "No vulnerable production manifest addition or scanner bypass via pub get exit 0",
+      "Schema/exception handling and fail-fast package/build exit propagation",
+      "SDK support change authorized by user, immutable historical evidence",
+      "Independent Dart/Flutter execution and no remote CI claim"
+    ],
+    "remainingBlockingFindings": []
+  },
+  "dartJob": {
+    "command": [
+      "python3",
+      "-B",
+      "scripts/ci.py",
+      "dart"
+    ],
+    "cwd": "/tmp/deltasync-r33-dart-clean-u9cipbqn",
+    "pubCache": "/tmp/deltasync-r33-dart-clean-u9cipbqn-pub-cache",
+    "initialRootLock": false,
+    "initialPackageConfig": false,
+    "exitCode": 0,
+    "libraryTestCounts": [
+      18,
+      134,
+      83,
+      14,
+      40,
+      10,
+      10
+    ],
+    "libraryTests": 309,
+    "sharedLinkTests": 2,
+    "formatChecks": 7,
+    "cleanAnalyses": 7,
+    "output": "[.] dart --version\nDart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n[.] dart pub get\nResolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 110.0.0\n+ analyzer 14.6.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ code_assets 2.1.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.2.0\n+ glob 2.2.0\n+ hooks 2.2.0\n+ http_multi_server 3.2.3\n+ http_parser 4.1.2\n+ io 1.1.0\n+ lints 6.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ native_toolchain_c 0.19.5\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ platform 3.2.0\n+ pool 1.5.3\n+ process 5.0.6\n+ pub_semver 2.2.1\n+ record_use 1.1.1\n+ shelf 1.4.3\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.2.0\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ sqflite_common 2.5.14\n+ sqflite_common_ffi 2.4.5\n+ sqlite3 3.8.0\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ synchronized 3.5.0\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.4.0\n+ watcher 1.2.1\n+ web 1.1.2\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 60 dependencies!\n[.] dart pub deps --json\n{\"findings\": [], \"hostedPackages\": 60}\n[.] dart pub workspace list --json\n[.] dart format --output=none --set-exit-if-changed lib test\nFormatted 4 files (0 changed) in 0.01 seconds.\n[.] dart analyze\nAnalyzing deltasync-r33-dart-clean-u9cipbqn...\nNo issues found!\n[.] dart test --reporter expanded\nRunning build hooks...Running build hooks...00:00 +0: loading test/import_compatibility_test.dart\n00:00 +0: test/import_compatibility_test.dart: original import paths retain type identity after internal separation\n00:00 +1: test/deltasync_test.dart: facade selects commits by processed address without replay or sync\n00:00 +2: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +3: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +4: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +5: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +6: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +7: test/ack_codec_integration_test.dart: public ACK codec preserves pending IDs through failed and partial ACKs\n00:00 +8: test/deltasync_test.dart: facade exposes received-envelope ACK without optional sender\n00:00 +9: test/deltasync_test.dart: facade exposes isolated point query after start\n00:00 +10: test/deltasync_test.dart: replicas converge after exchanging deltas\n00:00 +11: test/deltasync_test.dart: facade exposes SyncEngine commit notifications\n00:00 +12: test/deltasync_test.dart: export keeps the tombstone winner and duplicate is idempotent\n00:00 +13: test/deltasync_test.dart: facade exposes G-Set incremental delta API\n00:00 +14: test/deltasync_test.dart: facade exposes permanent 2P-Set removals\n00:00 +15: test/deltasync_test.dart: facade exposes causal MV-Register writes\n00:00 +16: test/deltasync_test.dart: facade exposes observed-remove OR-Set operations\n00:00 +17: test/deltasync_test.dart: facade exposes OR-Map with a composed G-Set value\n00:00 +18: All tests passed!\n[packages/deltasync_core] dart format --output=none --set-exit-if-changed lib test\nFormatted 44 files (0 changed) in 0.18 seconds.\n[packages/deltasync_core] dart analyze\nAnalyzing deltasync_core...\nNo issues found!\n[packages/deltasync_core] dart test --reporter expanded\n00:00 +0: loading test/vector_clock_test.dart\n00:00 +0: test/vector_clock_test.dart: missing and zero components obey equality and hash in collections\n00:00 +1: test/two_p_set_test.dart: 2P-Set removal tombstone defeats old and later additions\n00:00 +2: test/two_p_set_test.dart: 2P-Set removal tombstone defeats old and later additions\n00:00 +3: test/two_p_set_test.dart: 2P-Set removal tombstone defeats old and later additions\n00:00 +4: test/snapshot_addresses_test.dart: snapshot merge reports peer bindings including empty kinds and tombstone\n00:00 +5: test/snapshot_addresses_test.dart: snapshot merge reports peer bindings including empty kinds and tombstone\n00:00 +6: test/snapshot_addresses_test.dart: snapshot merge reports peer bindings including empty kinds and tombstone\n00:00 +7: test/two_p_set_test.dart: 2P-Set deltas codec and Replica snapshot retain tombstones\n00:00 +8: test/two_p_set_test.dart: 2P-Set deltas codec and Replica snapshot retain tombstones\n00:00 +9: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +10: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +11: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +12: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +13: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +14: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +15: test/replica_query_test.dart: point reads cover eight kinds and survive snapshot restore\n00:00 +16: test/replica_ownership_test.dart: all eight snapshot sections match the pre-refactor fixture\n00:00 +17: test/replica_ownership_test.dart: all eight snapshot sections match the pre-refactor fixture\n00:00 +18: test/replica_ownership_test.dart: all eight snapshot sections match the pre-refactor fixture\n00:00 +19: test/replica_ownership_test.dart: all eight snapshot sections match the pre-refactor fixture\n00:00 +20: test/or_map_test.dart: observed removal preserves concurrent key add; recreation is fresh\n00:00 +21: test/replica_ownership_test.dart: fork and adopt isolate every kind and preserve local sequences\n00:00 +22: test/replica_ownership_test.dart: fork and adopt isolate every kind and preserve local sequences\n00:00 +23: test/replica_ownership_test.dart: fork and adopt isolate every kind and preserve local sequences\n00:00 +24: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +25: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +26: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +27: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +28: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +29: test/mv_register_test.dart: concurrent writes remain visible and observed write dominates\n00:00 +30: test/lww_typed_json_test.dart: typed list keeps input and consulted values isolated\n00:00 +31: test/or_map_test.dart: rejects cross-key removal and nested conflicts atomically\n00:00 +32: test/mv_register_test.dart: causal context survives delta and state JSON with missing earlier dot\n00:00 +33: test/lww_typed_json_test.dart: typed nested map survives JSON and join with independent children\n00:00 +34: test/lww_typed_json_test.dart: typed nested map survives JSON and join with independent children\n00:00 +35: test/mv_register_test.dart: compact contexts preserve prefixes, gaps and namespace\n00:00 +36: test/lww_typed_json_test.dart: typed contract rejects missing conversion and invalid JSON\n00:00 +37: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +38: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +39: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +40: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +41: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +42: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +43: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +44: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +45: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +46: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +47: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +48: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +49: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +50: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +51: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +52: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +53: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +54: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +55: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +56: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +57: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +58: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +59: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +60: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +61: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +62: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +63: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +64: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +65: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +66: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +67: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +68: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +69: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +70: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +71: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +72: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +73: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +74: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +75: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +76: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +77: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +78: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +79: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +80: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +81: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +82: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +83: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +84: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +85: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +86: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +87: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +88: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +89: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +90: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +91: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +92: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +93: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +94: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +95: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +96: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +97: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +98: test/mv_register_test.dart: compact context join matches explicit-dot union across gaps\n00:00 +99: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +100: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +101: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +102: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +103: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +104: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +105: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +106: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +107: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +108: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +109: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +110: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +111: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +112: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +113: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +114: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +115: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +116: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +117: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +118: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +119: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +120: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +121: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +122: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +123: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +124: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +125: test/generated_history_test.dart: generated eight-kind history seed=0\n00:00 +126: test/generated_history_test.dart: generated eight-kind history seed=0\nseed=0 emitted=114 permutations=4\n00:01 +127: test/generated_history_test.dart: generated eight-kind history seed=1\nseed=1 emitted=116 permutations=4\n00:02 +128: test/generated_history_test.dart: generated eight-kind history seed=7\nseed=7 emitted=115 permutations=4\n00:03 +129: test/generated_history_test.dart: generated eight-kind history seed=42\nseed=42 emitted=111 permutations=4\n00:03 +130: test/generated_history_test.dart: generated eight-kind history seed=99\nseed=99 emitted=114 permutations=4\n00:04 +131: test/generated_history_test.dart: generated eight-kind history seed=2026\nseed=2026 emitted=111 permutations=4\n00:04 +132: test/generated_history_test.dart: generated eight-kind history seed=10000\nseed=10000 emitted=113 permutations=4\n00:05 +133: test/generated_history_test.dart: generated eight-kind history seed=65535\nseed=65535 emitted=114 permutations=4\n00:06 +134: All tests passed!\n[packages/deltasync_sync] dart format --output=none --set-exit-if-changed lib test\nFormatted 17 files (0 changed) in 0.13 seconds.\n[packages/deltasync_sync] dart analyze\nAnalyzing deltasync_sync...\nNo issues found!\n[packages/deltasync_sync] dart test --reporter expanded\n00:00 +0: loading test/sync_engine_test.dart\n00:00 +0: test/sync_engine_test.dart: SyncEngine Object? LWW path isolates nested JSON through restore\n00:00 +1: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +2: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +3: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +4: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +5: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +6: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +7: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +8: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +9: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +10: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +11: test/selective_observation_test.dart: eight-kind batch emits one isolated address set on all commit views\n00:00 +12: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +13: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +14: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +15: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +16: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +17: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +18: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +19: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +20: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +20: test/outbox_merge_test.dart: doubling outbox size keeps ID access growth below quadratic\nOutbox ID reads: n=32 reads=64; n=64 reads=128\n00:00 +21: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +22: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +23: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +24: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +25: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +26: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +27: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +28: test/point_query_test.dart: queries cover eight kinds after restore and during network failure\n00:00 +29: test/sync_engine_test.dart: two connected engines converge all current CRDTs and restore identity\n00:00 +30: test/sync_engine_test.dart: two connected engines converge all current CRDTs and restore identity\n00:00 +31: test/sync_engine_test.dart: two connected engines converge all current CRDTs and restore identity\n00:00 +32: test/sync_engine_test.dart: two connected engines converge all current CRDTs and restore identity\n00:00 +33: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +34: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +35: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +36: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +37: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +38: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +39: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +40: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +41: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +42: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +43: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +44: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +45: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +46: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +47: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +48: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +49: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +50: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +51: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +52: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +53: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +54: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +55: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +56: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +57: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +58: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +59: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +60: test/local_batch_test.dart: one batch edits all eight types with one commit and notification\n00:00 +61: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +62: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +63: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +64: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +65: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +66: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +67: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +68: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +69: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +70: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +71: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +72: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +73: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +74: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +75: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +76: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +77: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +78: test/field_decoder_test.dart: conversion failures do not change snapshot, clocks, outbox or events\n00:00 +79: test/field_query_test.dart: queries of eight types restore and remain independent of outbox/ACK\n00:00 +80: test/field_query_test.dart: queries of eight types restore and remain independent of outbox/ACK\n00:00 +81: test/local_batch_test.dart: batch delivery retains per-change partial ACK and failed-network edits\n00:00 +82: test/field_decoder_test.dart: batch conversion reads candidate; uncaught decoder error aborts batch\n00:00 +83: All tests passed!\n[packages/deltasync_storage] dart format --output=none --set-exit-if-changed lib test\nFormatted 6 files (0 changed) in 0.02 seconds.\n[packages/deltasync_storage] dart analyze\nAnalyzing deltasync_storage...\nNo issues found!\n[packages/deltasync_storage] dart test --reporter expanded\n00:00 +0: loading test/replica_storage_test.dart\n00:00 +0: test/replica_storage_test.dart: saves and loads replica snapshot\n00:00 +1: test/replica_storage_test.dart: saves and loads replica snapshot\n00:00 +2: test/outbox_summary_test.dart: Memory summary reads metadata without decoding delta payloads\n00:00 +3: test/replica_storage_test.dart: atomic commit validates every outbox entry before publishing\n00:00 +4: test/replica_storage_test.dart: enqueues idempotently and acknowledges operations\n00:00 +5: test/replica_storage_test.dart: partial ACK preserves unconfirmed changes in the replica outbox\n00:00 +6: test/replica_storage_test.dart: counter outbox routes by origin and rejects mixed origins\n00:00 +7: test/replica_storage_test.dart: snapshot copies nested state and outbox accepts one change only\n00:00 +8: test/replica_storage_test.dart: outbox entry isolates nested delta values and enforces attempts\n00:00 +9: test/replica_storage_test.dart: outbox wire format preserves status and rejects unknown labels\n00:00 +10: test/replica_storage_test.dart: outbox keeps same change pending independently for each peer\n00:00 +11: test/replica_storage_test.dart: legacy outbox needs explicit peer binding during migration\n00:00 +12: test/replica_storage_test.dart: atomic commit rejects reused pending ID with divergent payload\n00:00 +13: test/replica_storage_test.dart: pending excludes confirmed entries\n00:00 +14: All tests passed!\n[packages/deltasync_storage_sqflite] dart format --output=none --set-exit-if-changed lib test\nFormatted 8 files (0 changed) in 0.07 seconds.\n[packages/deltasync_storage_sqflite] dart analyze\nAnalyzing deltasync_storage_sqflite...\nNo issues found!\n[packages/deltasync_storage_sqflite] dart test --reporter expanded\nRunning build hooks...Running build hooks...00:00 +0: loading test/sync_recovery_test.dart\n00:00 +0: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +1: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +2: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +3: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +4: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +5: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +6: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +7: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +8: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +9: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +10: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +11: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +12: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +13: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +14: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +15: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +16: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +17: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +18: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +19: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +20: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +20: test/sqflite_replica_storage_test.dart: SqfliteReplicaStorage reopens database and rejects a newer schema version\nerror FormatException: Unsupported DeltaSync SQLite schema downgrade: 2 to 1 during open, closing...\n00:00 +21: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +22: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +23: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:00 +24: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=7\n00:02 +25: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=42\n00:03 +26: test/sync_recovery_test.dart: SQLite sync recovery generated durable history seed=2026\n00:04 +27: test/sync_recovery_test.dart: SQLite sync recovery start retries transient open and restores before editing\n00:04 +28: test/sync_recovery_test.dart: SQLite sync recovery invalid MV sequence fails start without overwriting SQLite\n00:04 +29: test/sync_recovery_test.dart: SQLite sync recovery migrates explicit MV snapshot and outbox contexts after reopen\n00:04 +30: test/sync_recovery_test.dart: SQLite sync recovery concurrent callers share a failed open and later retry\n00:04 +31: test/sync_recovery_test.dart: SQLite sync recovery old open failure cannot clear a newer successful opening\n00:04 +32: test/sync_recovery_test.dart: SQLite sync recovery incompatible schema fails each retry and preserves data\nerror FormatException: Unsupported DeltaSync SQLite schema downgrade: 2 to 1 during open, closing...\nerror FormatException: Unsupported DeltaSync SQLite schema downgrade: 2 to 1 during open, closing...\n00:04 +33: test/sync_recovery_test.dart: SQLite sync recovery restores identity, HLC, counter dots, tombstone, and pending outbox\n00:04 +34: test/sync_recovery_test.dart: SQLite sync recovery restores all eight CRDTs and mixed outbox before SQLite peer delivery\n00:05 +35: test/sync_recovery_test.dart: SQLite sync recovery retries after interruption before remote delivery\n00:05 +36: test/sync_recovery_test.dart: SQLite sync recovery retries idempotently after delivery but before ACK\n00:05 +37: test/sync_recovery_test.dart: SQLite sync recovery offline replicas reconcile durable changes across reconnect and restart\n00:05 +38: test/sync_recovery_test.dart: SQLite sync recovery rolls back compact MV context and outbox when SQLite commit fails\n00:05 +39: test/sync_recovery_test.dart: SQLite sync recovery two durable engines retry remote commit failure and mutation during ACK\n00:05 +40: All tests passed!\n[packages/deltasync_storage_testing] dart format --output=none --set-exit-if-changed lib test\nFormatted 3 files (0 changed) in 0.03 seconds.\n[packages/deltasync_storage_testing] dart analyze\nAnalyzing deltasync_storage_testing...\nNo issues found!\n[packages/deltasync_storage_testing] dart test --reporter expanded\n00:00 +0: loading test/memory_storage_contract_test.dart\n00:00 +0: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +1: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract summary excludes legacy confirmed entries without sending them\n00:00 +2: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +3: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +4: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +5: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +6: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +7: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +8: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +9: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +10: All tests passed!\n[packages/deltasync_transport] dart format --output=none --set-exit-if-changed lib test\nFormatted 6 files (0 changed) in 0.02 seconds.\n[packages/deltasync_transport] dart analyze\nAnalyzing deltasync_transport...\nNo issues found!\n[packages/deltasync_transport] dart test --reporter expanded\n00:00 +0: loading test/delta_envelope_test.dart\n00:00 +0: test/delta_envelope_test.dart: ACK stages expose stable wire labels and reject unknown labels\n00:00 +1: test/delta_envelope_test.dart: DeltaEnvelope round trips versioned delta\n00:00 +2: test/delta_envelope_test.dart: DeltaEnvelope rejects incompatible versions\n00:00 +3: test/delta_envelope_test.dart: legacy envelope requires explicit destination binding\n00:00 +4: test/delta_envelope_test.dart: envelope preserves mixed CRDT metadata through codec\n00:00 +5: test/delta_acknowledgement_test.dart: ACK round-trips stable label for received\n00:00 +6: test/delta_acknowledgement_test.dart: ACK round-trips stable label for received\n00:00 +7: test/delta_acknowledgement_test.dart: ACK round-trips stable label for applied-and-persisted\n00:00 +8: test/delta_acknowledgement_test.dart: ACK accepts empty lists and deduplicates IDs without aliasing\n00:00 +9: test/delta_acknowledgement_test.dart: ACK rejects missing, malformed and unknown known fields\n00:00 +10: All tests passed!\n[.] dart run example/deltasync_example.dart\nRunning build hooks...Running build hooks...local: {document/title: edited offline}\npending: 3\nconfirmed: 3\nremote: {document/title: edited offline}\n[.] dart run example/local_batch_example.dart\nRunning build hooks...Running build hooks...Local commit: 3 changes; 3 peer entries still await ACK.\n[.] dart run example/field_query_example.dart\nRunning build hooks...Running build hooks...missing: not configured\nnullable: lww: null\ndeleted: removed (LWW tombstone retained)\nzero: pn-counter: 0\nempty: or-set: {}\n[.] dart run example/field_decoder_example.dart\nRunning build hooks...Running build hooks...missing: not configured\nvalid: profile: Ada\nnull: present null\ndeleted: removed\ninvalid: invalid model: Invalid profile\nraw invalid: {name: 42, tags: []}\n[.] dart run example/selective_observation_example.dart\nRunning build hooks...Running build hooks...initial: not configured\nrefresh: Ada (local)\nrefreshes: 1; awaiting ACK: 3\n[.] dart run example/offline_reconciliation.dart reset /tmp/deltasync-ci-offline-xmcaz0lu\nRunning build hooks...Running build hooks...Demonstração limpa: /tmp/deltasync-ci-offline-xmcaz0lu\n[.] dart run example/offline_reconciliation.dart offline /tmp/deltasync-ci-offline-xmcaz0lu\nRunning build hooks...Running build hooks...A offline: compradores=Ana/null, itens=2, status=falha; commit local preservado, pendentes=2, falha=Peer shopper-b is offline\nB offline: compradores=null/Beto, itens=3, status=falha; commit local preservado, pendentes=2, falha=Peer shopper-a is offline\nBancos gravados em /tmp/deltasync-ci-offline-xmcaz0lu. Feche este processo e execute reconnect.\n[.] dart run example/offline_reconciliation.dart reconnect /tmp/deltasync-ci-offline-xmcaz0lu\nRunning build hooks...Running build hooks...A restaurado, antes da reconexão: compradores=Ana/null, itens=2, status=commit local; envio pendente, pendentes=2, falha=nenhuma\nB restaurado, antes da reconexão: compradores=null/Beto, itens=3, status=commit local; envio pendente, pendentes=2, falha=nenhuma\nA confirmado: compradores=Ana/Beto, itens=5, status=confirmado pelo peer, pendentes=0, falha=nenhuma\nB confirmado: compradores=Ana/Beto, itens=5, status=confirmado pelo peer, pendentes=0, falha=nenhuma\nA após reinício final: compradores=Ana/Beto, itens=5, status=confirmado pelo peer, pendentes=0, falha=nenhuma\nB após reinício final: compradores=Ana/Beto, itens=5, status=confirmado pelo peer, pendentes=0, falha=nenhuma\nConvergência e outbox confirmadas após reabrir bancos em /tmp/deltasync-ci-offline-xmcaz0lu.\n[.] dart test example/support/peer_link_test.dart --reporter expanded\nRunning build hooks...Running build hooks...00:00 +0: loading example/support/peer_link_test.dart\n00:00 +0: shared link preserves offline diagnostics and stream closure\n00:00 +1: shared link waits for commit and does not ACK a failed handler\n00:00 +2: All tests passed!\n"
+  },
+  "flutterJob": {
+    "command": [
+      "python3",
+      "-B",
+      "scripts/ci.py",
+      "flutter"
+    ],
+    "cwd": "/tmp/deltasync-r33-flutter-clean-p1ljmc32",
+    "packageCwd": "/tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile",
+    "invokedFrom": "/tmp/deltasync-r33-flutter-clean-p1ljmc32",
+    "pubCache": "/tmp/deltasync-r33-flutter-clean-p1ljmc32-pub-cache",
+    "initialPackageConfig": false,
+    "exitCode": 0,
+    "hostTests": 7,
+    "cleanAnalyses": 1,
+    "debugBuilds": [
+      "lib/main.dart",
+      "lib/main_eight.dart"
+    ],
+    "output": "[.] flutter --version\nFlutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git\nFramework • revision abaf9c5237 (2 weeks ago) • 2026-10-08 09:51:21 -0700\nEngine • hash d8a2d6c768c334d53e16277f837970ffa1e2de81 (revision deb287481e) (17 days ago) • 2026-10-07 17:09:12.000Z\nTools • Dart 3.13.5 • DevTools 2.60.0\n[example/flutter_mobile] flutter pub get --enforce-lockfile\nResolving dependencies...\nDownloading packages...\n  code_assets 1.2.1 (2.1.0 available)\n! deltasync_core 2.0.0 from path ../../packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path ../../packages/deltasync_storage (overridden)\n! deltasync_sync 2.0.0 from path ../../packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path ../../packages/deltasync_transport (overridden)\n  hooks 2.0.2 (2.2.0 available)\n  material_color_utilities 0.13.0 (0.13.1 available)\n  meta 1.18.3 (1.19.0 available)\n  native_toolchain_c 0.19.2 (0.19.5 available)\n  record_use 0.6.0 (1.1.1 available)\n  sqflite 2.4.4+1 (2.4.5 available)\n  sqflite_android 2.4.4 (2.4.5 available)\n  sqflite_common 2.5.13+1 (2.5.14 available)\n  sqflite_common_ffi 2.4.3 (2.4.5 available)\n  sqflite_darwin 2.4.4 (2.4.4+1 available)\n  sqflite_platform_interface 2.4.2 (2.4.3 available)\n  sqlite3 3.5.2 (3.8.0 available)\n  synchronized 3.4.2 (3.5.0 available)\n  test_api 0.7.12 (0.7.15 available)\n  vector_math 2.4.0 (2.4.3 available)\n  vm_service 15.3.0 (15.4.0 available)\n  web 1.1.1 (1.1.2 available)\nGot dependencies!\n18 packages have newer versions incompatible with dependency constraints.\nTry `flutter pub outdated` for more information.\n[example/flutter_mobile] dart pub deps --json\n{\"findings\": [], \"hostedPackages\": 46}\n[example/flutter_mobile] dart format --output=none --set-exit-if-changed lib test\nFormatted 13 files (0 changed) in 0.06 seconds.\n[example/flutter_mobile] flutter analyze\nAnalyzing flutter_mobile...                                     \nNo issues found! (ran in 7.0s)\n[example/flutter_mobile] flutter test --reporter expanded\n00:00 +0: loading /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart\n00:00 +0: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\n00:00 +1: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\n00:00 +2: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\n00:01 +3: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\n00:01 +4: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\nVAL08 restored A=- itens=0 pendentes=0; B=- itens=0 pendentes=0\n00:01 +4: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/interactive_demo_test.dart: two views keep editing through failure, converge and reset\nVAL08 restored A=- itens=0 pendentes=0; B=- itens=0 pendentes=0\n00:01 +4: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\nVAL08 Commit local A concluído A=Ana itens=0 pendentes=1; B=- itens=0 pendentes=0\n00:01 +4: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/interactive_demo_test.dart: two views keep editing through failure, converge and reset\nVAL08 Commit local A concluído A=Azul itens=0 pendentes=1; B=- itens=0 pendentes=0\n00:02 +5: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\nVAL08 Commit local A concluído A=Ana itens=1 pendentes=2; B=- itens=0 pendentes=0\n00:02 +5: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/interactive_demo_test.dart: two views keep editing through failure, converge and reset\nVAL08 Commit local B concluído A=Azul itens=0 pendentes=1; B=Verde itens=0 pendentes=1\nVAL08 Commit local A concluído A=Azul itens=1 pendentes=2; B=Verde itens=0 pendentes=1\nVAL08 Commit local B concluído A=Azul itens=1 pendentes=2; B=Verde itens=1 pendentes=2\n00:03 +5: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\nVAL08 Falha de envio; commits locais preservados A=Ana itens=1 pendentes=2; B=- itens=0 pendentes=0\nVAL08 ERROR Bad state: falha transitória de abertura\n#0      _RecordingFactory.openDatabase (file:///tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart:185:7)\n#1      SqfliteReplicaStorage._database (package:deltasync_storage_sqflite/src/sqflite_replica_storage.dart:30:10)\n#2      SqfliteReplicaStorage.loadReplica (package:deltasync_storage_sqflite/src/sqflite_replica_storage.dart:70:28)\n#3      ReplicaPersistence.restoreInto (package:deltasync_sync/src/sync/replica_persistence.dart:11:36)\n#4      SyncEngine._startInternal (package:deltasync_sync/src/sync_engine.dart:160:26)\n#5      SyncEngine.start (package:deltasync_sync/src/sync_engine.dart:150:16)\n#6      DemoSession.open.<anonymous closure> (package:deltasync_mobile_consumer/demo_session.dart:103:63)\n#7      MappedIterator.moveNext (dart:_internal/iterable.dart:421:20)\n#8      Future.wait (dart:async/future.dart:565:26)\n#9      DemoSession.open (package:deltasync_mobile_consumer/demo_session.dart:103:20)\n#10     MobileConsumerApp.build.<anonymous closure> (package:deltasync_mobile_consumer/demo_page.dart:23:44)\n<asynchronous suspension>\n#11     _DemoPageState._open (package:deltasync_mobile_consumer/demo_page.dart:63:16)\n<asynchronous suspension>\n\nVAL08 restored A=Ana itens=1 pendentes=2; B=- itens=0 pendentes=0\nVAL08 Peer disponível A=Ana itens=1 pendentes=2; B=- itens=0 pendentes=0\n00:04 +5: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/interactive_demo_test.dart: two views keep editing through failure, converge and reset\nVAL08 Falha de envio; commits locais preservados A=Azul itens=1 pendentes=2; B=Verde itens=1 pendentes=2\nVAL08 Commit local A concluído A=Azul novo itens=1 pendentes=3; B=Verde itens=1 pendentes=2\nVAL08 Peer disponível A=Azul novo itens=1 pendentes=3; B=Verde itens=1 pendentes=2\n00:05 +5: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/open_retry_test.dart: failed start releases SQLite and retry restores pending edits\nVAL08 Envio concluído A=Ana itens=1 pendentes=0; B=Ana itens=1 pendentes=0\n00:05 +6: /tmp/deltasync-r33-flutter-clean-p1ljmc32/example/flutter_mobile/test/interactive_demo_test.dart: two views keep editing through failure, converge and reset\nVAL08 Envio concluído A=Azul novo itens=2 pendentes=0; B=Azul novo itens=2 pendentes=0\nVAL08 restored A=- itens=0 pendentes=0; B=- itens=0 pendentes=0\n00:07 +7: All tests passed!\n[example/flutter_mobile] flutter build apk --debug --target lib/main.dart\nRunning Gradle task 'assembleDebug'...                          \nWARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/home/yago/.gradle/wrapper/dists/gradle-9.3.1-all/9ot9r568e8zfvvd4mn8rbu1j0/gradle-9.3.1/lib/native-platform-0.22-milestone-29.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\nRunning Gradle task 'assembleDebug'...                             19,1s\n✓ Built build/app/outputs/flutter-apk/app-debug.apk\n[example/flutter_mobile] flutter build apk --debug --target lib/main_eight.dart\nRunning Gradle task 'assembleDebug'...                          \nWARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/home/yago/.gradle/wrapper/dists/gradle-9.3.1-all/9ot9r568e8zfvvd4mn8rbu1j0/gradle-9.3.1/lib/native-platform-0.22-milestone-29.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\nRunning Gradle task 'assembleDebug'...                             12,4s\n✓ Built build/app/outputs/flutter-apk/app-debug.apk\n"
+  },
+  "advisoryQueries": {
+    "endpoint": "https://api.osv.dev/v1/querybatch",
+    "dart": {
+      "findings": [],
+      "hostedPackages": 60
+    },
+    "flutter": {
+      "findings": [],
+      "hostedPackages": 46
+    },
+    "activeExceptions": []
+  },
+  "policyFixtures": {
+    "command": "python3 -B -m unittest discover -s scripts/tests -v",
+    "exitCode": 0,
+    "tests": 11,
+    "output": "test_clean_and_known_advisory (test_ci.AdvisoryTests.test_clean_and_known_advisory) ... {\"findings\": [], \"hostedPackages\": 1}\n{\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_exception_is_exact_justified_and_expires (test_ci.AdvisoryTests.test_exception_is_exact_justified_and_expires) ... {\"findings\": [{\"excepted\": true, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_network_and_invalid_response_cannot_pass (test_ci.AdvisoryTests.test_network_and_invalid_response_cannot_pass) ... ok\ntest_pagination_is_complete_and_cycle_rejected (test_ci.AdvisoryTests.test_pagination_is_complete_and_cycle_rejected) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_underscore_prefixed_pub_package_is_scanned (test_ci.AdvisoryTests.test_underscore_prefixed_pub_package_is_scanned) ... {\"findings\": [], \"hostedPackages\": 1}\nok\ntest_unsupported_sources_and_bad_graph_fail (test_ci.AdvisoryTests.test_unsupported_sources_and_bad_graph_fail) ... ok\ntest_flutter_failure_stops_before_build_and_preserves_exit (test_ci.JobTests.test_flutter_failure_stops_before_build_and_preserves_exit) ... ok\ntest_network_failure_is_nonzero_even_after_successful_resolution (test_ci.JobTests.test_network_failure_is_nonzero_even_after_successful_resolution) ... CI check unavailable/invalid: <urlopen error offline>\nok\ntest_one_package_failure_stops_job_and_propagates_exit (test_ci.JobTests.test_one_package_failure_stops_job_and_propagates_exit) ... ok\ntest_pub_warning_exit_zero_still_fails_advisory_gate (test_ci.JobTests.test_pub_warning_exit_zero_still_fails_advisory_gate) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nUnexcepted dependency advisory; inspect the reported IDs\nok\ntest_workspace_paths_are_validated_from_dart_json (test_ci.JobTests.test_workspace_paths_are_validated_from_dart_json) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.006s\n\nOK\n"
+  },
+  "workflowValidation": {
+    "command": "/tmp/deltasync-r33-actionlint/actionlint .github/workflows/ci.yml",
+    "version": "1.7.7",
+    "archiveSha256": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757",
+    "exitCode": 0,
+    "output": ""
+  },
+  "formatting": {
+    "instrument": "format_ast.dart.txt",
+    "command": [
+      "dart",
+      "--packages=.dart_tool/package_config.json",
+      "/tmp/deltasync-r33-format-ast.dart",
+      "c803825f98c7e05c7770c1d287187fe2c91fdb9b",
+      "test/deltasync_test.dart",
+      "packages/deltasync_core/lib/src/replica/snapshot_codec.dart",
+      "packages/deltasync_core/test/crdt_interfaces_test.dart",
+      "packages/deltasync_core/test/lww_typed_json_test.dart",
+      "packages/deltasync_core/test/mv_register_test.dart",
+      "packages/deltasync_sync/lib/src/sync/outbound_sync.dart",
+      "packages/deltasync_sync/lib/src/sync/replica_persistence.dart",
+      "packages/deltasync_sync/lib/src/sync_engine.dart",
+      "packages/deltasync_sync/test/field_decoder_test.dart",
+      "packages/deltasync_sync/test/local_batch_test.dart",
+      "packages/deltasync_sync/test/outbox_merge_test.dart",
+      "packages/deltasync_sync/test/selective_observation_test.dart",
+      "packages/deltasync_sync/test/sync_engine_test.dart",
+      "packages/deltasync_storage/lib/src/memory_storage.dart",
+      "packages/deltasync_storage/test/outbox_summary_test.dart",
+      "packages/deltasync_storage_sqflite/test/pending_summary_test.dart",
+      "packages/deltasync_storage_sqflite/test/sync_recovery_test.dart",
+      "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+      "example/flutter_mobile/lib/main_eight.dart"
+    ],
+    "exitCode": 0,
+    "files": [
+      "test/deltasync_test.dart",
+      "packages/deltasync_core/lib/src/replica/snapshot_codec.dart",
+      "packages/deltasync_core/test/crdt_interfaces_test.dart",
+      "packages/deltasync_core/test/lww_typed_json_test.dart",
+      "packages/deltasync_core/test/mv_register_test.dart",
+      "packages/deltasync_sync/lib/src/sync/outbound_sync.dart",
+      "packages/deltasync_sync/lib/src/sync/replica_persistence.dart",
+      "packages/deltasync_sync/lib/src/sync_engine.dart",
+      "packages/deltasync_sync/test/field_decoder_test.dart",
+      "packages/deltasync_sync/test/local_batch_test.dart",
+      "packages/deltasync_sync/test/outbox_merge_test.dart",
+      "packages/deltasync_sync/test/selective_observation_test.dart",
+      "packages/deltasync_sync/test/sync_engine_test.dart",
+      "packages/deltasync_storage/lib/src/memory_storage.dart",
+      "packages/deltasync_storage/test/outbox_summary_test.dart",
+      "packages/deltasync_storage_sqflite/test/pending_summary_test.dart",
+      "packages/deltasync_storage_sqflite/test/sync_recovery_test.dart",
+      "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+      "example/flutter_mobile/lib/main_eight.dart"
+    ],
+    "canonicalProgramsEqual": true
+  },
+  "correctedFailures": [
+    {
+      "log": "/tmp/deltasync-r33-dart-first.log",
+      "exitCode": 2,
+      "outputExcerpt": "Got dependencies!\n10 packages have newer versions incompatible with dependency constraints.\nTry `dart pub outdated` for more information.\n[.] dart pub deps --json\nCI check unavailable/invalid: Invalid hosted package name",
+      "fullLogSha256": "a7e0ac39a6a26f4d3eba343b735d5713c9cbd2217ff4fc710603a2f7fc783105",
+      "correction": "Scanner rejected valid underscore-prefixed Pub name; fixed and regression added"
+    },
+    {
+      "log": "/tmp/deltasync-r33-flutter-first.log",
+      "exitCode": 1,
+      "outputExcerpt": "[example/flutter_mobile] dart pub deps --json\n{\"findings\": [], \"hostedPackages\": 46}\n[example/flutter_mobile] dart format --output=none --set-exit-if-changed lib test\nChanged lib/main_eight.dart\nFormatted 13 files (1 changed) in 0.05 seconds.",
+      "fullLogSha256": "5bf57ea007cdb740fc3a61ca1b30168aae321a2faac844d6bdedc4cfc6e18cf2",
+      "correction": "Flutter format gate found main_eight.dart; applied required Dart 3.13 formatting"
+    },
+    {
+      "log": "/tmp/deltasync-r33-dart-second.log",
+      "exitCode": 1,
+      "outputExcerpt": "{\"findings\": [], \"hostedPackages\": 60}\n[.] dart pub workspace list --json\n[.] dart format --output=none --set-exit-if-changed lib test\nChanged test/deltasync_test.dart\nFormatted 4 files (1 changed) in 0.01 seconds.",
+      "fullLogSha256": "451cf08a78b5307cc4259240669d1a2dd50f214ddee6ae4d72061692cae37c0f",
+      "correction": "Root format gate found language-version formatting differences; nineteen files formatted with canonical AST equivalence"
+    },
+    {
+      "log": "/tmp/deltasync-r33-dart-third.log",
+      "exitCode": 64,
+      "outputExcerpt": "pending: 3\nconfirmed: 3\nremote: {document/title: edited offline}\n[.] dart run example/offline_reconciliation.dart\nRunning build hooks...Running build hooks...Usage: dart run example/offline_reconciliation.dart <reset|offline|reconnect> [directory]",
+      "fullLogSha256": "8bf4cff01cbdd16a2c591a10a12f6f7089110887c0d450f10223fbf66dfcc89b",
+      "correction": "Offline CLI invoked without required phase; fixed to reset/offline/reconnect in a private temporary directory"
+    },
+    {
+      "log": "/tmp/deltasync-r33-clean-dart.log",
+      "exitCode": 3,
+      "outputExcerpt": "  error - example/flutter_mobile/lib/demo_page.dart:3:8 - Target of URI doesn't exist: 'package:flutter/material.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist\n  error - example/flutter_mobile/lib/demo_page.dart:4:8 - Target of URI doesn't exist: 'package:sqflite/sqflite.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist\n  error - example/flutter_mobile/lib/demo_page.dart:8:33 - Classes can only extend other classes. Try specifying a different superclass, or removing the extends clause. - extends_non_class\nwarning - example/flutter_mobile/lib/main_eight.dart:63:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member\nwarning - example/flutter_mobile/lib/main_eight.dart:88:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member\nwarning - example/flutter_mobile/lib/main_eight.dart:108:10 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member\n\n452 issues found.",
+      "fullLogSha256": "0c138a73444bc9529d1d7721dc8fba04f40f393226b3058629e414e535ce4cdf",
+      "correction": "Clean Dart analyzer entered the separate unresolved Flutter app; exclude only that app at root and validate full Flutter separately"
+    }
+  ],
+  "remoteExecution": {
+    "authorized": false,
+    "performed": false,
+    "runUrl": null,
+    "result": "Not executed; local configuration/command validation only"
+  },
+  "localEnvironment": {
+    "platform": "Linux-7.3.0-4-garuda-x86_64-with-glibc2.44",
+    "python": "3.15.0",
+    "java": "OpenJDK 25.0.3 (Android Studio JBR)",
+    "configuredRunner": "ubuntu-24.04 with Temurin 21; not executed remotely"
+  },
+  "pubspecLockSha256": "f33b766a90da3ff2996a959bf9c4c7ba8b46222540ed4f509c01cbe400bfffe5",
+  "analyzerToolRoot": "file:///home/yago/.pub-cache/hosted/pub.dev/analyzer-14.5.0",
+  "isolatedRootLockSha256": "c7e151121c3d8d1a8157213aa661a3bf97986b1e768c162587993184ddf38be9",
+  "resolvedDependencies": "resolutions.json",
+  "sources": [
+    {
+      "url": "https://dart.dev/tools/pub/security-advisories",
+      "use": "Pub resolution may warn and succeed; separate gate required"
+    },
+    {
+      "url": "https://google.github.io/osv.dev/post-v1-querybatch/",
+      "use": "Version queries, response ordering and pagination"
+    },
+    {
+      "url": "https://google.github.io/osv.dev/data/",
+      "use": "Pub ecosystem coverage and data sources"
+    },
+    {
+      "url": "https://github.com/rhysd/actionlint/releases/tag/v1.7.7",
+      "use": "Pinned local/workflow validator with verified checksum"
+    }
+  ],
+  "sha256": {
+    ".github/advisory-exceptions.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    ".github/workflows/ci.yml": "4b3f012db27e2967a7f0b6bfb8fdd3d892952b3f8bd3398a4ef1fde711e766a6",
+    "CHANGELOG.md": "f13c6753beeb67faf417a5bb5de9f3be167eee563ec64518e0961c737bc21fbf",
+    "README.md": "091ade7a15f96cf336e4949ed122423b4d7e327715df862f16190db664ff85ab",
+    "analysis_options.yaml": "beef090960be900a15bdee2adc29f22159414a0179eac785948c52ae0135a96d",
+    "dart_lang_instruction.md": "ecfb95ee0c84dd4a45399fe782b4438a89b27bfec76c400b4250bb83a22281f1",
+    "docs/ci.md": "27a176cda4f315980d52d56f968018e92fdccfb07a294c9f30ade62f606f8db3",
+    "docs/migracao-1.0.1.md": "2d9fb21a92a503436f5668e1b94a03a5b062741177ad33efb35ea8bbdf3311ca",
+    "docs/publicacao.md": "76450122f28e399266f296b023a8bdbac743e15161f97a45eeca496c1c0fb4e5",
+    "example/flutter_mobile/lib/main_eight.dart": "c24ae97745db200951b07fb614bf75c73c37895d79a1590ed86aa9ac83a32af5",
+    "example/flutter_mobile/pubspec.lock": "e13aab5403a9db67663b3d2b73c58af7d70005c146227432d9bd6bbd4c525f45",
+    "example/flutter_mobile/pubspec.yaml": "6929c3527da073e3960ac212c8d48b2ba2dc77e25a768cdbe11cecfed6d62fa8",
+    "packages/deltasync_core/CHANGELOG.md": "7f4533d679db7fe12ab368beffa3b948074be43e383ccd873d5a162c59bac0ae",
+    "packages/deltasync_core/lib/src/replica/snapshot_codec.dart": "2c56d9c43aadafa448ef9843783191ea536527300ba94fb52c720f24679c4e56",
+    "packages/deltasync_core/pubspec.yaml": "23aff4e0c6aafb9ccc4d624e73791b9fb6a0f06255a8636475e10efb3f53000a",
+    "packages/deltasync_core/test/crdt_interfaces_test.dart": "e07970646c49f1a3140866c9ded6a78a8f2e601ec9912732e6a633fdd15c3adb",
+    "packages/deltasync_core/test/lww_typed_json_test.dart": "ae172ee0ae4da57bfccd67191c2970eeb07ed44c39672eecda26f87f2013fe8c",
+    "packages/deltasync_core/test/mv_register_test.dart": "3f0031242010f4293025474c2edabb10f807011a8b4c3e8fdcf50daaa369812f",
+    "packages/deltasync_storage/CHANGELOG.md": "18a5fb1b0c54552b29893541403f0de1a6abe9eb6598c67323e6bd935a31d6ec",
+    "packages/deltasync_storage/lib/src/memory_storage.dart": "94a48bf649045507028b3ab8ccc95cc9084f48d0f0357caaeec4d2506333c66b",
+    "packages/deltasync_storage/pubspec.yaml": "95f8093b16cdba46bb198a72c83ad98518797b5ae25b43cb55792c4cb76c1821",
+    "packages/deltasync_storage/test/outbox_summary_test.dart": "64477716772f9f38fe188928a73116a06b41fd36b5e19f2942d84da12b2b3b5c",
+    "packages/deltasync_storage_sqflite/CHANGELOG.md": "e434e0d4b694c07c4510cb5e54caddd2e1e4944d3f0f4bf7116298440a54b39c",
+    "packages/deltasync_storage_sqflite/pubspec.yaml": "f206fb6c605f4f5f09091bef038ff7cd01bd95d1999ed65d930c90f6c7014a15",
+    "packages/deltasync_storage_sqflite/test/pending_summary_test.dart": "2ceeb4ec7d354d1c0e5a879123eab0a9e6a0caf7f5ec902700b3d1ef23f32a28",
+    "packages/deltasync_storage_sqflite/test/sync_recovery_test.dart": "43d0586c4a20f631bf97ab711bf187f1bccbedff57fcda4a6e7b8c3a5ac7ed0d",
+    "packages/deltasync_storage_testing/CHANGELOG.md": "6de395d834d34664d15802f5d63099d05ef0cc4e38ac747ad16f412bc1dfd144",
+    "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart": "28ba5dcf199bbbfb817322a4c2bc218df5b5a25b157cfc3af9933e0875bbefde",
+    "packages/deltasync_storage_testing/pubspec.yaml": "51fdb081947cc1af6e5c65649daf5898104b9abc15aeb4cd44508b0212dda844",
+    "packages/deltasync_sync/CHANGELOG.md": "7ac2e63ad11e0ca1eade7a7cc17d0c272d4c595902202ce3bbb30c9a1978703b",
+    "packages/deltasync_sync/lib/src/sync/outbound_sync.dart": "ff6451a8fdffc4985ced4ee1b3525a7bfaa2ca345894becb5a3ae225a65e156b",
+    "packages/deltasync_sync/lib/src/sync/replica_persistence.dart": "8131287133ab70ff4b00a30fab832802f3a9a365b1fe309bb0bbf3ac535914f9",
+    "packages/deltasync_sync/lib/src/sync_engine.dart": "43ae60849cb0abecf3a9cc72c99cd88e466af60237f76cdae4771f4559b29c66",
+    "packages/deltasync_sync/pubspec.yaml": "1b74056024c57f2e28a6770e367f6cee643911325c3c5fb6debc8e3f27a63212",
+    "packages/deltasync_sync/test/field_decoder_test.dart": "fb8f8e47746c95663b0650d826a3e5aeef9b5f7af8b5505adb73fb24b4d91538",
+    "packages/deltasync_sync/test/local_batch_test.dart": "f83ab73cd1b9b2d4e33f91b4ed344db2e85058173bbacf34d13310eab1b766ba",
+    "packages/deltasync_sync/test/outbox_merge_test.dart": "f0d498dd2c655ff6e51b0535f927133f86659bcb8b11d5b40ea35e008fd33448",
+    "packages/deltasync_sync/test/selective_observation_test.dart": "ccd81ad902df1f764a7773ae0a1338c06e50a8894fa42a5d35dcaefc4d35f367",
+    "packages/deltasync_sync/test/sync_engine_test.dart": "35a89ea3d9a28d9520aae49844fdacfc0e900818735da0f02a42faa391268cdf",
+    "packages/deltasync_transport/CHANGELOG.md": "28f68d37e37f831d812ae57ba1ecc1ce7e6701f263600cd6f0a727d1712cce73",
+    "packages/deltasync_transport/pubspec.yaml": "c799cb186a089b5af1bf5f0b7a8285b89786f1edd3282f95117c05109697bd47",
+    "plan/evidence/r33/format_ast.dart.txt": "f37b28c1848a0ce415734ac7f5450cbdaaedfdb3c774c812e2ecb781afea0c3f",
+    "pubspec.yaml": "bf502bec1efcdcee9f0fb111aefe7396145044d6bb2f8f9a60648f9403766f7b",
+    "scripts/ci.py": "090ef76ce89e67fc99d2d9d5d656d8a9680f26d5c97ce1d819fc32e015534cea",
+    "scripts/tests/test_ci.py": "8ccf847ed7fdecb871b387cc44677aee7bf9035adb9a7a26ce13d900729b392c",
+    "test/deltasync_test.dart": "32530179d6d096dcb8c9fe1f0528e67045eb32b7dd32a5da9ee6e23c5d496d79"
+  },
+  "maintenance": {
+    "policyJob": {
+      "command": "python3 -B scripts/ci.py policy",
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "[.] /home/linuxbrew/.linuxbrew/opt/python@3.15/bin/python3.15 -B -m unittest discover -s scripts/tests -v\ntest_clean_and_known_advisory (test_ci.AdvisoryTests.test_clean_and_known_advisory) ... {\"findings\": [], \"hostedPackages\": 1}\n{\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_exception_is_exact_justified_and_expires (test_ci.AdvisoryTests.test_exception_is_exact_justified_and_expires) ... {\"findings\": [{\"excepted\": true, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_network_and_invalid_response_cannot_pass (test_ci.AdvisoryTests.test_network_and_invalid_response_cannot_pass) ... ok\ntest_pagination_is_complete_and_cycle_rejected (test_ci.AdvisoryTests.test_pagination_is_complete_and_cycle_rejected) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_underscore_prefixed_pub_package_is_scanned (test_ci.AdvisoryTests.test_underscore_prefixed_pub_package_is_scanned) ... {\"findings\": [], \"hostedPackages\": 1}\nok\ntest_unsupported_sources_and_bad_graph_fail (test_ci.AdvisoryTests.test_unsupported_sources_and_bad_graph_fail) ... ok\ntest_flutter_failure_stops_before_build_and_preserves_exit (test_ci.JobTests.test_flutter_failure_stops_before_build_and_preserves_exit) ... ok\ntest_network_failure_is_nonzero_even_after_successful_resolution (test_ci.JobTests.test_network_failure_is_nonzero_even_after_successful_resolution) ... CI check unavailable/invalid: <urlopen error offline>\nok\ntest_one_package_failure_stops_job_and_propagates_exit (test_ci.JobTests.test_one_package_failure_stops_job_and_propagates_exit) ... ok\ntest_pub_warning_exit_zero_still_fails_advisory_gate (test_ci.JobTests.test_pub_warning_exit_zero_still_fails_advisory_gate) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nUnexcepted dependency advisory; inspect the reported IDs\nok\ntest_workspace_paths_are_validated_from_dart_json (test_ci.JobTests.test_workspace_paths_are_validated_from_dart_json) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.006s\n\nOK\n[.] /home/linuxbrew/.linuxbrew/opt/python@3.15/bin/python3.15 scripts/check_plan.py\nPlano consistente: 70 tarefas, 525 links locais. Prontas: R-34.\nChecagem estrutural; qualidade das evidências e testes exigem validação do agente.\n[.] git diff --check\n[.] git diff --check 'HEAD^' HEAD\n"
+    },
+    "planChecker": {
+      "command": "python3 scripts/check_plan.py",
+      "exitCode": 0,
+      "output": "Plano consistente: 70 tarefas, 525 links locais. Prontas: R-34.\nChecagem estrutural; qualidade das evidências e testes exigem validação do agente.\n"
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "output": ""
+    },
+    "actionlint": {
+      "command": "/tmp/deltasync-r33-actionlint/actionlint .github/workflows/ci.yml",
+      "exitCode": 0,
+      "output": ""
+    },
+    "integrity": {
+      "hashesVerified": 46,
+      "jsonReports": 2,
+      "pythonSyntax": "passed",
+      "newFilesWhitespace": "passed",
+      "frozenEvidenceUnchanged": true,
+      "decisionRiskIdsUnique": true,
+      "traceAnchorUnique": true,
+      "headUnchanged": true,
+      "manifestChangesSdkOnly": 8,
+      "flutterLockOnlySdkMetadata": true,
+      "remoteRun": false,
+      "libraryTests": 309,
+      "linkTests": 2,
+      "flutterTests": 7,
+      "policyTests": 11
+    },
+    "resolutionsSha256": "b16912bdd25174b293da5c67a62b926c5d2f08e096343fae64e97f3fb4225078",
+    "result": "R-33 complete; R-34 ready and recommended. No active task. No remote execution or service activation; phase 6/VAL-17 remain open."
+  },
+  "limits": [
+    "Dart 3.13.5 tested in minimum family 3.13; no runtime 3.13.0 or 3.12 claim",
+    "Local Linux/OpenJDK 25 differs from configured Ubuntu/Temurin 21; no GitHub Actions remote execution",
+    "Host Flutter tests and debug builds do not prove Android plugin runtime, physical networking or hosted release",
+    "Advisory snapshot covers known OSV Pub hosted packages, not SDK/OS/Gradle/Maven or arbitrary code safety",
+    "Public Pub service receives hosted names/versions; private repositories require adaptation",
+    "SDK/Gradle/toolchain downloads may be locally cached; Pub resolution/configs and advisory requests used separate new directories",
+    "Saropa pilot remains R-34; no runtime lint dependency, autofix, service activation, commit or publication"
+  ]
+}

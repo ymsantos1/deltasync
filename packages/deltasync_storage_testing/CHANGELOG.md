@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Require Dart ^3.13.0; align formatter with the declared language version.
 - Extend the storage contract suite with required pendingSummary behavior,
   peer/status filters, legacy confirmed exclusion, concurrency and commit failure.
 

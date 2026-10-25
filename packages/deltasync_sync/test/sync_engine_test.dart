@@ -561,9 +561,8 @@ void main() {
       receiverStorage.failNextSnapshot = true;
       await expectLater(sender.push(force: true), throwsStateError);
       expect(
-        (await senderStorage.pending(
-          'sender',
-        )).map((entry) => entry.changeIds.single),
+        (await senderStorage.pending('sender'))
+            .map((entry) => entry.changeIds.single),
         contains(duringSend.id),
       );
       expect(receiver.replica.state.values['during-send'], isNull);

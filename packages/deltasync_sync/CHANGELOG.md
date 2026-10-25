@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Require Dart ^3.13.0; align formatter with the declared language version.
 - Add commitsFor and isolated processed-address metadata for local/batch/remote
   commits. Require addresses in non-const SyncCommitEvent; external event
   implementations must add its getter. Keep existing observation variants and

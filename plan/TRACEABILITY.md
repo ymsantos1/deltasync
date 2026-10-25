@@ -5856,3 +5856,64 @@ dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs único
 âncora da execução e uma única fonte/emissão interna. Evidências anteriores
 preservadas. Revisão documental final sem achados impeditivos; produção/testes
 não mudaram após a matriz aprovada.
+
+<a id="execucao-r-33-2026-10-24"></a>
+
+## Execução R-33 — CI, advisories e SDK 3.13, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em c803825f98c7e05c7770c1d287187fe2c91fdb9b; R-30 concluída e R-33 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, baseline/matriz R-30, riscos de advisories/SDK e guia Dart. Consultadas fontes oficiais Dart/OSV/actions. Autor pediu evitar Dart 3.12 e autorizou alinhar para 3.13: critério e manifests passaram a ^3.13.0, referência stable 3.13.5. Nenhuma execução 3.12/3.13.0 alegada; baseline histórica preservada.
+Implementação: workflow com jobs Dart/Flutter/policy e runner scripts/ci.py compartilhado, permissões contents:read e actions por SHA. Lista canônica de pacotes vem do SDK; erro de qualquer etapa encerra job. App tem resolução/lockfile próprios e dois builds debug. Scanner consulta OSV/Pub online sobre versões resolvidas, paginação completa, exceções exatas com motivo/expiração e falha de rede/resposta sempre não zero. Onze testes controlados sem pacote vulnerável em manifest. Mínimo ^3.13.0 nos sete pacotes/exemplo; formato ajustado em 19 arquivos com AST canônica idêntica. Documentados política, migração e atualização periódica; nenhum dado/join/formato/runtime de lint novo.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigidos nome Pub com underscore inicial, invocação da CLI offline e diferenças de formato sob nova language version. Reforçados schema/paginação/erro de serviço, paths do workspace e propagação de saída. Checkout limpo revelou 452 diagnósticos ao analisar app Flutter sem resolução própria; raiz passou a excluir apenas esse app e os dois jobs foram reexecutados em checkouts/caches independentes. Delta revisto após correções; fluxo Flutter continua integral. Sem impeditivos restantes.
+Validação: aprovada
+Comandos: python3 -B scripts/ci.py dart; python3 -B scripts/ci.py flutter, cada um em clone/cache Pub distintos e sem package_config prévio; python3 -B scripts/ci.py policy; actionlint 1.7.7 .github/workflows/ci.yml; prova AST via dart --packages com baseline explícita. Resultado: 309 testes dos sete pacotes (18/134/83/14/40/10/10), dois do enlace, sete Flutter, onze da política, análises/formatos e dois APKs debug aprovados. Cinco exemplos e CLI em três processos/reset-offline-reconnect passaram. Consultas online: 60/46 pacotes hospedados, nenhum achado, nenhuma exceção ativa. Comandos/diretórios/saídas, versões resolvidas, falhas e hashes nos artefatos; repetições não somadas.
+Critérios: C1 por lista canônica, sete pacotes/SQLite FFI e resolução/cache próprios na família mínima 3.13.x/stable selecionada conforme nova orientação; C2 por jobs/contextos separados, checker/diff, exemplos Dart e Flutter com análise/testes/dois builds e limites explícitos; C3 por consulta online pós-resolução, códigos 1/2, exceção exata/expiração, paginação e política semanal/mensal, sem scanner outdated; C4 por actionlint/checksum, fixtures de pub com aviso/exit 0, falha de pacote/teste Flutter/rede e respostas inválidas, sem vulnerável em produção, sem autofix/credenciais/uploads; C5 por registro local separado e ausência explícita de execução remota autorizada/disponível.
+Manutenção: cinco critérios marcados, índice/fase/trace atualizados; DEC-67 e RISK-39/42 registram autorização de SDK e limites. R-34 liberada e recomendada sem iniciar piloto Saropa; nenhuma tarefa ativa. Fase 6/VAL-17 seguem abertos. Checker e diff executados após manutenção.
+Limitações: Dart 3.13.5/Flutter 3.47.7/Linux, sem runtime 3.12 ou patch 3.13.0. Host usa OpenJDK 25/Python 3.15; runner configura Ubuntu 24.04/Temurin 21, não executado remotamente. Tests/builds Flutter não provam runtime Android ou rede física. OSV cobre vulnerabilidades conhecidas Pub, não segurança integral de SDK/SO/código/Gradle/Maven. Toolchain/Gradle podem ter cache; resolução Pub/configuração e consultas finais foram independentes. Sem piloto/instalação Saropa, mudanças de API funcional/formatos, Compass, publicação, ativação de serviços, uploads, commit ou run remoto de Actions.
+
+### Evidências, correções e isolamento
+
+O [contrato e reprodução](evidence/r33/README.md) e a [política de CI](../docs/ci.md)
+explicam comandos, owners e limites. [validation.json](evidence/r33/validation.json)
+guarda saídas reais aprovadas, trechos decisivos/hashes das falhas anteriores,
+fontes oficiais, revisão e hashes dos arquivos. [resolutions.json](evidence/r33/resolutions.json)
+fixa os grafos resolvidos em cada checkout, sem reutilizar package_config/lock
+da biblioteca na árvore de trabalho. O app preserva seu lockfile e o exige na
+resolução; fontes/names/versions dos pacotes consultados são verificáveis.
+
+Execução na árvore já resolvida passou, mas o primeiro checkout limpo revelou
+dependência acidental da resolução Flutter para o analyzer da raiz. Não se
+aprovou essa execução: raiz exclui só o app independente, cuja análise integral
+permanece no job Flutter. Novos clones/cache distintos passaram sem depender
+da ordem dos jobs. O clone Dart terminou sem package_config Flutter. Falhas de
+formato e CLI também interromperam os jobs, confirmando a propagação de saída.
+
+O [instrumento AST](evidence/r33/format_ast.dart.txt) compara os 19 arquivos com
+a revisão inicial explícita; programas parseados são iguais. Mudanças de SDK
+e formatter não alteraram regra CRDT, payload, commit ou restauração. SDK/ranges
+de dependências externos dos manifests só mudaram no mínimo Dart autorizado;
+novas resoluções compatíveis foram exercitadas sem copiar lockfile da biblioteca.
+
+### Controles e execução remota
+
+Fixtures do runner verificam erro de pacote com exit 9, Flutter com exit 7,
+advisory com exit 1 e rede/resposta/configuração com exit 2, mesmo após pub get
+terminar com aviso e sucesso. Exceções exigem pacote/versão/ID exatos, motivo e
+expiração; vazias/expiradas/duplicadas/inutilizadas reprovam. Paginação, resposta
+contraditória e workspace malformado não ficam verdes. Dados sintéticos não
+entram nos manifests. Lints/recommended permanece; Saropa é avaliação R-34.
+
+Workflow usa SHAs verificados, token somente leitura, checkout sem persistir
+credenciais e checksum do actionlint; sem upload/publicação ou autofix. Não foi
+ativado serviço nem acionado workflow remoto. Logs locais e APKs não são prova
+de GitHub Actions aprovado ou runtime Android. Política semanal consulta rede;
+revisão mensal atualiza pins/exceções. Release integral continua em VAL-17.
+
+Após manutenção, policy completo passou com onze testes, checker de 70 tarefas
+e 525 links locais, diff local/último commit e actionlint. Conferidos 46 hashes,
+oito manifests com alteração somente de SDK, lock Flutter só com metadata SDK,
+19 programas canônicos equivalentes, JSON/sintaxe/whitespace, IDs únicos e
+âncora da execução. HEAD/evidências anteriores preservados. Revisão documental
+final sem impeditivos; código dos jobs corresponde aos checkouts validados.

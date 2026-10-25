@@ -507,6 +507,25 @@ migrar. Nenhuma variante de SyncObservation ou formato mudou; fixture cobre
 cinco casos exaustivos, implementação externa e quebras anteriores. Ver
 [R-41](TRACEABILITY.md#execucao-r-41-2026-10-24).
 
+DEC-67 — CI e faixa de SDK R-33, 2026-10-24: após o autor pedir evitar 3.12 e
+autorizar 3.13, alinhar os sete pacotes/exemplo para ^3.13.0 e executar Dart
+3.13.5 stable/Flutter 3.47.7. Não alegar runtime no patch 3.13.0 ou em 3.12;
+baseline R-30 permanece histórica. Novo formatter aplicado a 19 arquivos com
+árvores sintáticas canônicas idênticas. Workflow tem jobs Dart, Flutter e policy,
+SHAs/permissões mínimos, sem uploads/autofix/credenciais de publicação. Lista
+de pacotes vem de pub workspace list --json; raiz exclui só o app Flutter da
+análise Dart, pois ele tem análise integral/resolução próprias. Checkout limpo
+revelou essa necessidade; jobs foram provados em checkouts e caches separados.
+Resolução sempre roda, app exige lockfile; consulta online OSV/Pub usa versões
+resolvidas, segue paginação e reprova achado sem exceção ou resposta indisponível/
+inválida. Exceção exata exige motivo e expiração, sem instalar pacote vulnerável
+para fixture. Não usar outdated como scanner; lint/Saropa seguem em R-34.
+Policy verifica plano/diff, fixtures e actionlint com checksum fixado. Jobs
+semanais refazem consulta; revisar pins/exceções mensalmente. Builds não provam
+runtime Android; host local/JDK diferem do runner configurado. Preparar YAML não
+ativa serviço nem comprova execução remota, que não foi autorizada/realizada.
+Ver [R-33](TRACEABILITY.md#execucao-r-33-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |

@@ -162,127 +162,118 @@ void main() {
     },
   );
 
-  test(
-    'ACK storage/send failures preserve commit events and shared failure identity',
-    () async {
-      final all = <SyncObservation>[];
-      final errors = <SyncFailure>[];
-      final commits = <SyncCommitEvent>[];
-      engine.observations.listen(all.add);
-      engine.errors.listen(errors.add);
-      engine.commits.listen(commits.add);
-      final first = await engine.setDelta('one', true);
-      await engine.setDelta('two', true);
-      transport.ids = [first.id];
-      storage.failAck = true;
-      await expectLater(engine.push(), throwsStateError);
-      await flush();
-      expect(all.last, isA<SyncPushFailure>());
-      expect(errors, isEmpty);
-      expect(commits, hasLength(2));
-      expect((await engine.pendingSummary()).totalCount, 2);
-      storage.failAck = false;
-      final partial = await engine.push(force: true);
-      await flush();
-      expect(identical(all.last, partial), isTrue);
-      expect(partial.acknowledgedIds, {first.id});
-      expect(commits, hasLength(2));
-      expect((await engine.pendingSummary()).totalCount, 1);
-      transport.failIncomingAck = true;
-      final delta = Replica('peer').setDelta('remote', 'retained');
-      final envelope = DeltaEnvelope(
-        senderReplicaId: 'peer',
-        recipientReplicaId: 'local',
-        delta: Delta([delta]),
-      );
-      await expectLater(engine.receiveEnvelope(envelope), throwsStateError);
-      await flush();
-      expect(engine.valueAt('remote'), 'retained');
-      expect(commits.last.addresses, {'remote'});
-      expect(errors, isEmpty); // Awaited failure belongs to its caller.
-      final failed = engine.errors.first;
-      transport.incomingController.add(
-        envelope,
-      ); // Replay commits before ACK failure.
-      final failure = await failed;
-      await flush();
-      expect(identical(failure, errors.single), isTrue);
-      expect(identical(failure, all.last), isTrue);
-      expect(failure.source, SyncFailureSource.incomingDelta);
-      expect(
-        commits.where((e) => e.addresses.contains('remote')),
-        hasLength(2),
-      );
-      final streamFailure = engine.errors.first;
-      transport.incomingController.addError(StateError('stream'));
-      expect((await streamFailure).source, SyncFailureSource.incomingStream);
-      await flush();
-      expect(identical(errors.last, all.last), isTrue);
-    },
-  );
+  test('ACK storage/send failures preserve commit events and shared failure identity', () async {
+    final all = <SyncObservation>[];
+    final errors = <SyncFailure>[];
+    final commits = <SyncCommitEvent>[];
+    engine.observations.listen(all.add);
+    engine.errors.listen(errors.add);
+    engine.commits.listen(commits.add);
+    final first = await engine.setDelta('one', true);
+    await engine.setDelta('two', true);
+    transport.ids = [first.id];
+    storage.failAck = true;
+    await expectLater(engine.push(), throwsStateError);
+    await flush();
+    expect(all.last, isA<SyncPushFailure>());
+    expect(errors, isEmpty);
+    expect(commits, hasLength(2));
+    expect((await engine.pendingSummary()).totalCount, 2);
+    storage.failAck = false;
+    final partial = await engine.push(force: true);
+    await flush();
+    expect(identical(all.last, partial), isTrue);
+    expect(partial.acknowledgedIds, {first.id});
+    expect(commits, hasLength(2));
+    expect((await engine.pendingSummary()).totalCount, 1);
+    transport.failIncomingAck = true;
+    final delta = Replica('peer').setDelta('remote', 'retained');
+    final envelope = DeltaEnvelope(
+      senderReplicaId: 'peer',
+      recipientReplicaId: 'local',
+      delta: Delta([delta]),
+    );
+    await expectLater(engine.receiveEnvelope(envelope), throwsStateError);
+    await flush();
+    expect(engine.valueAt('remote'), 'retained');
+    expect(commits.last.addresses, {'remote'});
+    expect(errors, isEmpty); // Awaited failure belongs to its caller.
+    final failed = engine.errors.first;
+    transport.incomingController.add(
+      envelope,
+    ); // Replay commits before ACK failure.
+    final failure = await failed;
+    await flush();
+    expect(identical(failure, errors.single), isTrue);
+    expect(identical(failure, all.last), isTrue);
+    expect(failure.source, SyncFailureSource.incomingDelta);
+    expect(commits.where((e) => e.addresses.contains('remote')), hasLength(2));
+    final streamFailure = engine.errors.first;
+    transport.incomingController.addError(StateError('stream'));
+    expect((await streamFailure).source, SyncFailureSource.incomingStream);
+    await flush();
+    expect(identical(errors.last, all.last), isTrue);
+  });
 
-  test(
-    'late/paused/throwing selective listeners preserve order and close on dispose',
-    () async {
-      await engine.start();
-      await flush();
-      final all = <SyncCommitEvent>[];
-      final selected = <SyncCommitEvent>[];
-      final lateEvents = <SyncCommitEvent>[];
-      final done = Completer<void>();
-      engine.commits.listen(all.add);
-      final paused =
-          engine.commitsFor('x').listen(selected.add, onDone: done.complete)
-            ..pause();
-      addTearDown(paused.cancel);
-      final caught = Completer<Object>();
-      late StreamSubscription<SyncCommitEvent> throwing;
-      runZonedGuarded(
-        () {
-          throwing = engine.commitsFor('x').listen((_) {
-            throw StateError('listener');
-          });
-        },
-        (error, _) {
-          if (!caught.isCompleted) caught.complete(error);
-        },
-      );
-      await engine.setDelta('x', 1);
-      await caught.future;
-      await flush();
-      expect(all, hasLength(1));
-      final lateSubscription = engine.commits.listen(lateEvents.add);
-      await flush();
-      expect(lateEvents, isEmpty);
-      await Future.wait([engine.setDelta('x', 2), engine.setDelta('y', 3)]);
-      await flush();
-      expect(all.map((e) => e.addresses).toList(), [
-        {'x'},
-        {'x'},
-        {'y'},
-      ]);
-      expect(lateEvents, hasLength(2));
-      expect(selected, isEmpty);
-      await throwing.cancel();
-      var disposed = false;
-      final disposing = engine.dispose().then((_) {
-        disposed = true;
-      });
-      await flush();
-      expect(disposed, isFalse);
-      paused.resume();
-      await disposing.timeout(const Duration(seconds: 2));
-      await done.future;
-      expect(selected, hasLength(2));
-      expect(identical(selected[0], all[0]), isTrue);
-      expect(identical(selected[1], all[1]), isTrue);
-      expect(() => engine.query('x'), throwsStateError);
-      await lateSubscription.cancel();
-      await expectLater(engine.commitsFor('x'), emitsDone);
-      await expectLater(engine.errors, emitsDone);
-      await expectLater(engine.observations, emitsDone);
-    },
-  );
+  test('late/paused/throwing selective listeners preserve order and close on dispose', () async {
+    await engine.start();
+    await flush();
+    final all = <SyncCommitEvent>[];
+    final selected = <SyncCommitEvent>[];
+    final lateEvents = <SyncCommitEvent>[];
+    final done = Completer<void>();
+    engine.commits.listen(all.add);
+    final paused =
+        engine.commitsFor('x').listen(selected.add, onDone: done.complete)
+          ..pause();
+    addTearDown(paused.cancel);
+    final caught = Completer<Object>();
+    late StreamSubscription<SyncCommitEvent> throwing;
+    runZonedGuarded(
+      () {
+        throwing = engine.commitsFor('x').listen((_) {
+          throw StateError('listener');
+        });
+      },
+      (error, _) {
+        if (!caught.isCompleted) caught.complete(error);
+      },
+    );
+    await engine.setDelta('x', 1);
+    await caught.future;
+    await flush();
+    expect(all, hasLength(1));
+    final lateSubscription = engine.commits.listen(lateEvents.add);
+    await flush();
+    expect(lateEvents, isEmpty);
+    await Future.wait([engine.setDelta('x', 2), engine.setDelta('y', 3)]);
+    await flush();
+    expect(all.map((e) => e.addresses).toList(), [
+      {'x'},
+      {'x'},
+      {'y'},
+    ]);
+    expect(lateEvents, hasLength(2));
+    expect(selected, isEmpty);
+    await throwing.cancel();
+    var disposed = false;
+    final disposing = engine.dispose().then((_) {
+      disposed = true;
+    });
+    await flush();
+    expect(disposed, isFalse);
+    paused.resume();
+    await disposing.timeout(const Duration(seconds: 2));
+    await done.future;
+    expect(selected, hasLength(2));
+    expect(identical(selected[0], all[0]), isTrue);
+    expect(identical(selected[1], all[1]), isTrue);
+    expect(() => engine.query('x'), throwsStateError);
+    await lateSubscription.cancel();
+    await expectLater(engine.commitsFor('x'), emitsDone);
+    await expectLater(engine.errors, emitsDone);
+    await expectLater(engine.observations, emitsDone);
+  });
 
   test(
     'paused errors filter preserves failures and skips unrelated source events',

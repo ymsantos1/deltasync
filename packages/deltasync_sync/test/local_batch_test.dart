@@ -93,9 +93,9 @@ void main() {
       addTearDown(engine.dispose);
       await engine.setDelta('saved', 1);
       final before = engine.replica.toSnapshotJson();
-      final entries = (await storage.pending(
-        'batch',
-      )).map((e) => e.toJson()).toList();
+      final entries = (await storage.pending('batch'))
+          .map((e) => e.toJson())
+          .toList();
       await expectLater(engine.batch((_) {}), throwsStateError);
       await expectLater(
         engine.batch((batch) {
