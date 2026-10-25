@@ -1,9 +1,13 @@
 # deltasync_storage_sqflite
 
+Version 1.0.1 requires upgrade review despite its patch number. The release
+aligns all DeltaSync packages and includes intentional source breaks; see the
+[migration guide](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md).
+
 SQLite adapter for `ReplicaStorage`. Core, sync, and storage keep their Dart
 contracts and have no Flutter or SQL dependency.
 
-Add `deltasync_storage_sqflite: ^1.0.0`, `sqflite` and `path` to your Flutter
+Add `deltasync_storage_sqflite: ^1.0.1`, `sqflite` and `path` to your Flutter
 application dependencies. For Dart desktop, supply `sqflite_common_ffi` instead.
 
 Consumers pass a compatible sqflite `DatabaseFactory` and a database file path:
@@ -50,6 +54,13 @@ FFI on Linux x64. Flutter applications pass the platform `sqflite` factory;
 Android/iOS plugin behavior is not exercised by these desktop tests. Other
 platforms can use any factory compatible with `sqflite_common` and supported by
 their runtime. `MemoryStorage` tests do not prove durability.
+
+The composing application owns `close()`: cancel application listeners, drain
+the engine, then release transport/database resources using finally. Reopen the
+same database with the same stable replica ID to restore state and pending IDs.
+Use `pendingSummary` for counts instead of decoding pending deltas. A summary
+error after successful commit must not be reported as a failed edit; see the
+[durable integration guide](https://github.com/ymsantos1/deltasync/blob/main/docs/guia-integracao.md).
 
 The [Flutter Android consumer](https://github.com/ymsantos1/deltasync/blob/main/example/flutter_mobile/README.md) was built
 and run with the platform `sqflite` factory on a Moto G52, Android 13/API 33.

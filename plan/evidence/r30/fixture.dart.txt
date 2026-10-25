@@ -1,0 +1,161 @@
+// @dart=3.12
+// The generator runs only against the pinned historical source. Verification
+// consumes the committed JSON; it never regenerates expectations from new code.
+// ignore_for_file: deprecated_member_use
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:deltasync/deltasync.dart';
+
+const historicalRevision = '1e969182e8e172a8858a48ecf83a1feb2c21a455';
+const fixedMilliseconds = 1730000000000;
+
+void main(List<String> arguments) {
+  if (arguments.length != 1) throw ArgumentError('Expected output JSON path');
+  final local = Replica(
+    'baseline-a',
+    hlc: HlcClock(nowMilliseconds: () => fixedMilliseconds),
+  );
+  final remote = Replica(
+    'baseline-b',
+    hlc: HlcClock(nowMilliseconds: () => fixedMilliseconds),
+  );
+  final changes = <DeltaChange>[
+    local.setDelta('lww', {
+      'items': [1, true, null],
+    }),
+    local.incrementGCounter('g', 3),
+    local.incrementPnCounter('pn', 4),
+    local.decrementPnCounter('pn', 1),
+    local.addAllGSet('g-set', [
+      'red',
+      {
+        'tag': [1, true],
+      },
+    ]),
+    local.addTwoPSet('2p-set', 'removed'),
+    local.removeTwoPSet('2p-set', 'removed'),
+    local.addTwoPSet('2p-set', 'kept'),
+    local.writeMvRegister('mv', 'local'),
+    local.addOrSet('or-set', 'old'),
+    local.removeOrSet('or-set', 'old'),
+    local.addOrSet('or-set', 'new'),
+    local.addOrMapKey('or-map', 'roles'),
+    ...local.addOrMapValue('or-map', 'roles', 'reader'),
+    local.removeOrMapKey('or-map', 'roles'),
+    local.addOrMapKey('or-map', 'roles'),
+    ...local.addOrMapValue('or-map', 'roles', 'writer'),
+    local.setDelta('deleted', 'before'),
+    local.removeDelta('deleted'),
+    local.setDelta('null', null),
+  ];
+  local.apply(Delta([remote.writeMvRegister('mv', 'concurrent')]));
+  local.apply(Delta([remote.addOrSet('or-set', 'old')]));
+  changes.add(local.writeMvRegister('mv/compact', 'before'));
+  changes.add(local.writeMvRegister('mv/compact', 'after'));
+  final delayed = [
+    remote.addOrSet('gap', 'unseen-1'),
+    remote.addOrSet('gap', 'unseen-2'),
+  ];
+  local.apply(Delta([remote.addOrSet('gap', 'seen-3')]));
+  changes.add(local.removeOrSet('gap', 'seen-3'));
+
+  final epoch = DateTime.fromMillisecondsSinceEpoch(
+    fixedMilliseconds,
+    isUtc: true,
+  );
+  final entries = <OutboxEntry>[];
+  for (final peer in ['peer-a', 'peer-b']) {
+    for (var index = 0; index < changes.length; index++) {
+      entries.add(
+        OutboxEntry(
+          delta: Delta([changes[index]]),
+          recipientPeerId: peer,
+          status: index % 3 == 0 ? OutboxStatus.sent : OutboxStatus.pending,
+          attempts: index % 3 == 0 ? 2 : 0,
+          createdAt: epoch.add(Duration(milliseconds: index)),
+          sentAt: index % 3 == 0 ? epoch.add(const Duration(seconds: 1)) : null,
+        ),
+      );
+    }
+  }
+  final batch = Delta(changes);
+  final snapshot = ReplicaSnapshot.fromReplica(local);
+  final encoded = {
+    'revision': historicalRevision,
+    'packageVersion': '1.0.0',
+    'snapshot': snapshot.toJson(),
+    'outbox': entries.map((entry) => entry.toJson()).toList(),
+    'delta': DeltaCodec.encode(batch),
+    'envelope': DeltaEnvelope(
+      senderReplicaId: local.id,
+      recipientReplicaId: 'peer-a',
+      delta: batch,
+    ).toJson(),
+    'ack': DeltaAcknowledgement(
+      peerReplicaId: 'peer-a',
+      stage: DeltaAckStage.appliedAndPersisted,
+      changeIds: changes.take(4).map((change) => change.id),
+    ).toJson(),
+    'values': normalizedValues(local),
+    'delayed': DeltaCodec.encode(Delta(delayed)),
+    'legacyCodecV2': {
+      'version': 2,
+      'delta': {
+        'operations': [
+          Operation(
+            id: 'legacy-a:1',
+            replicaId: 'legacy-a',
+            type: 'lww.set',
+            vectorClock: VectorClock({'legacy-a': 1}),
+            payload: {'key': 'legacy-title', 'value': 'retained'},
+          ).toJson(),
+        ],
+        'crdtChanges': [],
+      },
+    },
+    'legacyStorageV1': {
+      'version': 1,
+      'replicaId': local.id,
+      'state': {},
+      'clock': local.clock.toJson(),
+      'metadata': {'replicaState': local.toSnapshotJson()},
+    },
+  };
+  File(arguments.single).writeAsStringSync(
+    '${const JsonEncoder.withIndent('  ').convert(encoded)}\n',
+  );
+}
+
+Map<String, Object?> normalizedValues(Replica replica) => {
+  for (final address in [
+    'lww',
+    'g',
+    'pn',
+    'g-set',
+    '2p-set',
+    'mv',
+    'or-set',
+    'or-map',
+    'deleted',
+    'null',
+    'gap',
+    'mv/compact',
+  ])
+    address: normalize(replica.valueAt(address)),
+};
+
+Object? normalize(Object? value) {
+  if (value is Set) {
+    final values = value.map(normalize).toList()
+      ..sort((a, b) => jsonEncode(a).compareTo(jsonEncode(b)));
+    return values;
+  }
+  if (value is Map) {
+    final keys = value.keys.cast<String>().toList()..sort();
+    return {for (final key in keys) key: normalize(value[key])};
+  }
+  if (value is List) return value.map(normalize).toList();
+  return value;
+}

@@ -1,0 +1,926 @@
+{
+  "task": "R-35",
+  "status": "passed",
+  "beforeRevision": "9fc0f68629e794c962fb9a74e163d8ebe27da27f",
+  "capturedUtc": "2026-10-25T04:00:23.085265+00:00",
+  "environment": {
+    "dart": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"",
+    "platform": "Linux x64; SQLite FFI; existing workspace dependency resolution",
+    "flutterRuntimeExecuted": false,
+    "newOsvQuery": false,
+    "remoteCiExecuted": false
+  },
+  "review": {
+    "kind": "self-review, distinct stage, not independent",
+    "corrections": [
+      "Removed inherited linear awaits and full-replica UI reads",
+      "No ACK inferred from an empty outbox",
+      "Exact persisted invalid-model payload asserted; correction reviewed"
+    ]
+  },
+  "testCounts": {
+    ".": 21,
+    "packages/deltasync_core": 134,
+    "packages/deltasync_sync": 83,
+    "packages/deltasync_storage": 14,
+    "packages/deltasync_storage_sqflite": 40,
+    "packages/deltasync_storage_testing": 10,
+    "packages/deltasync_transport": 10,
+    "shared peer link": 2
+  },
+  "policyTests": 11,
+  "commands": [
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.038,
+      "rawLogSha256": "b126264ba91ef67751ffbba40ed8a35c01da6efb9e57ac5e8f53c849c8c632e7",
+      "outputExcerpt": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\""
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "deps",
+        "--json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.304,
+      "rawLogSha256": "87ccd39b75b689809f46fd462219a9e67c2b32d00895ac1c10b23858b44f3ee6",
+      "outputExcerpt": "Resolved package versions recorded in resolution below."
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "example/commit_status_example.dart",
+        "example/offline_reconciliation.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.29,
+      "rawLogSha256": "43a0060b01f8d00290502db016cbde393b149f5a0971989771a4fe3fddc181e7",
+      "outputExcerpt": "Formatted 2 files (0 changed) in 0.01 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.279,
+      "rawLogSha256": "e8c7a2f0198cd5d58e3095d1d9ccef288d15d0099e8f27eed3d3e509ce78c155",
+      "outputExcerpt": "Formatted 5 files (0 changed) in 0.02 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.942,
+      "rawLogSha256": "4d69f01aeb1f23a35839a787f50c3e94a07f95be24a1a9df173afb204f577d01",
+      "outputExcerpt": "Analyzing deltasync...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.502,
+      "rawLogSha256": "936e2b379e86ecea655d00bc20b448c4835ae1168b64d3f07bde457445b5a09a",
+      "outputExcerpt": "00:00 +14: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +15: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +16: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +17: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +18: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +19: test/integration_guide_test.dart: valid JSON with invalid model remains a committed present value\n00:00 +20: test/integration_guide_test.dart: commit failure is reported without querying status or exposing candidate\n00:00 +21: All tests passed!\n00:00 +4: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +5: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +6: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +7: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +8: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +9: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +10: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +11: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +12: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery\n00:00 +13: test/integration_guide_test.dart: status failure preserves local success, outbox and SQLite recovery"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_core",
+      "exitCode": 0,
+      "elapsedSeconds": 0.432,
+      "rawLogSha256": "439355d8706a72013db1d3a72cf1c50887a1bbabed08e319125023f208c4518f",
+      "outputExcerpt": "Formatted 44 files (0 changed) in 0.15 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_core",
+      "exitCode": 0,
+      "elapsedSeconds": 0.482,
+      "rawLogSha256": "b42bc3a38bb5cb0fd17b7539bf335ef9933b69b87c8822f817893c694104107f",
+      "outputExcerpt": "Analyzing deltasync_core...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_core",
+      "exitCode": 0,
+      "elapsedSeconds": 6.295,
+      "rawLogSha256": "af606b7444dc2101f8f39407c1ef2a3feca8c052ef247608fcef56dc316304cb",
+      "outputExcerpt": "seed=99 emitted=114 permutations=4\n00:03 +131: test/generated_history_test.dart: generated eight-kind history seed=2026\nseed=2026 emitted=111 permutations=4\n00:03 +132: test/generated_history_test.dart: generated eight-kind history seed=10000\nseed=10000 emitted=113 permutations=4\n00:04 +133: test/generated_history_test.dart: generated eight-kind history seed=65535\nseed=65535 emitted=114 permutations=4\n00:04 +134: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_sync",
+      "exitCode": 0,
+      "elapsedSeconds": 0.37,
+      "rawLogSha256": "7ff178fe8974fa9cc688f057ac0c600737849c19042b160f2ac93dc9c55876b1",
+      "outputExcerpt": "Formatted 17 files (0 changed) in 0.09 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_sync",
+      "exitCode": 0,
+      "elapsedSeconds": 0.459,
+      "rawLogSha256": "2f2dbc1615a0113fbd17b218e8ecfa47e7ef22c5a872a201a5236d99b9fe7bf1",
+      "outputExcerpt": "Analyzing deltasync_sync...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_sync",
+      "exitCode": 0,
+      "elapsedSeconds": 1.846,
+      "rawLogSha256": "b2d1c091885f1630f088804d5f4e48f9e029db81a06605005f5e4a7c12c50742",
+      "outputExcerpt": "00:00 +76: test/selective_observation_test.dart: late/paused/throwing selective listeners preserve order and close on dispose\n00:00 +77: test/selective_observation_test.dart: late/paused/throwing selective listeners preserve order and close on dispose\n00:00 +78: test/selective_observation_test.dart: late/paused/throwing selective listeners preserve order and close on dispose\n00:00 +79: test/sync_engine_test.dart: incoming failures are observable and do not partially apply\n00:00 +80: test/selective_observation_test.dart: paused errors filter preserves failures and skips unrelated source events\n00:00 +81: test/selective_observation_test.dart: paused errors filter preserves failures and skips unrelated source events\n00:00 +82: test/selective_observation_test.dart: dispose drains an accepted blocked commit before closing selective stream\n00:00 +83: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_storage",
+      "exitCode": 0,
+      "elapsedSeconds": 0.287,
+      "rawLogSha256": "f17f9586c2bfddb4a79997a4603090ac06721d6b135a42ab855e30bbf8331b55",
+      "outputExcerpt": "Formatted 6 files (0 changed) in 0.02 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_storage",
+      "exitCode": 0,
+      "elapsedSeconds": 0.435,
+      "rawLogSha256": "11604f785141317dcfdbb9d190f857d8c38ac7baf07cce84defd5d05ee95e4fc",
+      "outputExcerpt": "Analyzing deltasync_storage...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_storage",
+      "exitCode": 0,
+      "elapsedSeconds": 1.22,
+      "rawLogSha256": "5f6a7805b61211614d4afee68d7a69487e75abbdd5bc0d35bd06bece907c36b2",
+      "outputExcerpt": "00:00 +7: test/replica_storage_test.dart: snapshot copies nested state and outbox accepts one change only\n00:00 +8: test/replica_storage_test.dart: outbox entry isolates nested delta values and enforces attempts\n00:00 +9: test/replica_storage_test.dart: outbox wire format preserves status and rejects unknown labels\n00:00 +10: test/replica_storage_test.dart: outbox keeps same change pending independently for each peer\n00:00 +11: test/replica_storage_test.dart: legacy outbox needs explicit peer binding during migration\n00:00 +12: test/replica_storage_test.dart: atomic commit rejects reused pending ID with divergent payload\n00:00 +13: test/replica_storage_test.dart: pending excludes confirmed entries\n00:00 +14: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_storage_sqflite",
+      "exitCode": 0,
+      "elapsedSeconds": 0.313,
+      "rawLogSha256": "dd57264277d68195797b0e18f1bc3c2a2e630eff15cceb8b3a8a5ef8b7a0e2f8",
+      "outputExcerpt": "Formatted 8 files (0 changed) in 0.06 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_storage_sqflite",
+      "exitCode": 0,
+      "elapsedSeconds": 0.507,
+      "rawLogSha256": "d05e88c1882ab1abf464cb684abab84b9c6d35bef069c9b4ae51a3269fa5f042",
+      "outputExcerpt": "Analyzing deltasync_storage_sqflite...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_storage_sqflite",
+      "exitCode": 0,
+      "elapsedSeconds": 5.19,
+      "rawLogSha256": "dcb4ad078aed9078a340702b4a7f8ba10f35aaadd8a399ee5720cbe9d0f3e149",
+      "outputExcerpt": "00:03 +33: test/sync_recovery_test.dart: SQLite sync recovery restores identity, HLC, counter dots, tombstone, and pending outbox\n00:03 +34: test/sync_recovery_test.dart: SQLite sync recovery restores all eight CRDTs and mixed outbox before SQLite peer delivery\n00:03 +35: test/sync_recovery_test.dart: SQLite sync recovery retries after interruption before remote delivery\n00:03 +36: test/sync_recovery_test.dart: SQLite sync recovery retries idempotently after delivery but before ACK\n00:03 +37: test/sync_recovery_test.dart: SQLite sync recovery offline replicas reconcile durable changes across reconnect and restart\n00:03 +38: test/sync_recovery_test.dart: SQLite sync recovery rolls back compact MV context and outbox when SQLite commit fails\n00:03 +39: test/sync_recovery_test.dart: SQLite sync recovery two durable engines retry remote commit failure and mutation during ACK\n00:03 +40: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_storage_testing",
+      "exitCode": 0,
+      "elapsedSeconds": 0.287,
+      "rawLogSha256": "a8665628d3d8dc8a51632550dfb214cf87c098912f4250420d0df700431790e6",
+      "outputExcerpt": "Formatted 3 files (0 changed) in 0.02 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_storage_testing",
+      "exitCode": 0,
+      "elapsedSeconds": 0.437,
+      "rawLogSha256": "6bf838f5cbf32e7c330eb975af17577743c5976fef33d74b4914e734b7bd1cf9",
+      "outputExcerpt": "Analyzing deltasync_storage_testing...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_storage_testing",
+      "exitCode": 0,
+      "elapsedSeconds": 1.178,
+      "rawLogSha256": "0c7b80e65df2dbf2b589ff1600ee6e9f72ffcfe1de9a464363167dd311ed8b7a",
+      "outputExcerpt": "00:00 +3: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +4: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +5: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +6: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +7: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +8: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +9: test/memory_storage_contract_test.dart: MemoryStorage (volatile simulation; not process-restart proof) ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +10: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "cwd": "packages/deltasync_transport",
+      "exitCode": 0,
+      "elapsedSeconds": 0.279,
+      "rawLogSha256": "ec27c9bb5a18e95eaf8a026729ee563d5f4f42124e659308761c49ba06babacd",
+      "outputExcerpt": "Formatted 6 files (0 changed) in 0.01 seconds."
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": "packages/deltasync_transport",
+      "exitCode": 0,
+      "elapsedSeconds": 0.45,
+      "rawLogSha256": "ff094ff9fa680200dc2646f037e4652ca8f5d64c570434e33b259eaa0fffc8b9",
+      "outputExcerpt": "Analyzing deltasync_transport...\nNo issues found!"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "packages/deltasync_transport",
+      "exitCode": 0,
+      "elapsedSeconds": 1.19,
+      "rawLogSha256": "263e93cda97067ef4011bc248379bafbfdd79600bdf9b081f0b8c9948272094e",
+      "outputExcerpt": "00:00 +3: test/delta_envelope_test.dart: DeltaEnvelope round trips versioned delta\n00:00 +4: test/delta_envelope_test.dart: DeltaEnvelope round trips versioned delta\n00:00 +5: test/delta_envelope_test.dart: DeltaEnvelope round trips versioned delta\n00:00 +6: test/delta_envelope_test.dart: DeltaEnvelope rejects incompatible versions\n00:00 +7: test/delta_envelope_test.dart: legacy envelope requires explicit destination binding\n00:00 +8: test/delta_envelope_test.dart: envelope preserves mixed CRDT metadata through codec\n00:00 +9: test/delta_envelope_test.dart: envelope validates constructor and malformed wire data\n00:00 +10: All tests passed!"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-v"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.333,
+      "rawLogSha256": "55cafa03738954deb7d495377734bcb30a95441647a17987c64a69bf48d76d24",
+      "outputExcerpt": "test_clean_and_known_advisory (test_ci.AdvisoryTests.test_clean_and_known_advisory) ... {\"findings\": [], \"hostedPackages\": 1}\n{\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_exception_is_exact_justified_and_expires (test_ci.AdvisoryTests.test_exception_is_exact_justified_and_expires) ... {\"findings\": [{\"excepted\": true, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_network_and_invalid_response_cannot_pass (test_ci.AdvisoryTests.test_network_and_invalid_response_cannot_pass) ... ok\ntest_pagination_is_complete_and_cycle_rejected (test_ci.AdvisoryTests.test_pagination_is_complete_and_cycle_rejected) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_underscore_prefixed_pub_package_is_scanned (test_ci.AdvisoryTests.test_underscore_prefixed_pub_package_is_scanned) ... {\"findings\": [], \"hostedPackages\": 1}\nok\ntest_unsupported_sources_and_bad_graph_fail (test_ci.AdvisoryTests.test_unsupported_sources_and_bad_graph_fail) ... ok\ntest_flutter_failure_stops_before_build_and_preserves_exit (test_ci.JobTests.test_flutter_failure_stops_before_build_and_preserves_exit) ... ok\ntest_network_failure_is_nonzero_even_after_successful_resolution (test_ci.JobTests.test_network_failure_is_nonzero_even_after_successful_resolution) ... CI check unavailable/invalid: <urlopen error offline>\nok\ntest_one_package_failure_stops_job_and_propagates_exit (test_ci.JobTests.test_one_package_failure_stops_job_and_propagates_exit) ... ok\ntest_pub_warning_exit_zero_still_fails_advisory_gate (test_ci.JobTests.test_pub_warning_exit_zero_still_fails_advisory_gate) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nUnexcepted dependency advisory; inspect the reported IDs\nok\ntest_workspace_paths_are_validated_from_dart_json (test_ci.JobTests.test_workspace_paths_are_validated_from_dart_json) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.006s\n\nOK"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/deltasync_example.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.08,
+      "rawLogSha256": "73d33727ec5409575ff34bc179f28fbdb9f0087092499932a9104c59a8de4598",
+      "outputExcerpt": "Running build hooks...Running build hooks...local: {document/title: edited offline}\npending: 3\nconfirmed: 3\nremote: {document/title: edited offline}"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/local_batch_example.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.041,
+      "rawLogSha256": "f2f3dd79bc06e9c3699740fce1c927f569dafdb9b3c23297424c6722b2186ba4",
+      "outputExcerpt": "Running build hooks...Running build hooks...Local commit: 3 changes; 3 peer entries still await ACK."
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/field_query_example.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.046,
+      "rawLogSha256": "6f336f3cef004d07c7f929fe235c93ec087cb0b49c196995db92061f97940a29",
+      "outputExcerpt": "Running build hooks...Running build hooks...missing: not configured\nnullable: lww: null\ndeleted: removed (LWW tombstone retained)\nzero: pn-counter: 0\nempty: or-set: {}"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/field_decoder_example.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.018,
+      "rawLogSha256": "bcdb65e2780a1539d8b00b94149e5bb222ee4ec53e42c20a16346050eecb11c2",
+      "outputExcerpt": "Running build hooks...Running build hooks...missing: not configured\nvalid: profile: Ada\nnull: present null\ndeleted: removed\ninvalid: invalid model: Invalid profile\nraw invalid: {name: 42, tags: []}"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/selective_observation_example.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.033,
+      "rawLogSha256": "afea29eafc6e378ac06f7ef5a05e231eea326c77806ae15702828e7e8f7c78c3",
+      "outputExcerpt": "Running build hooks...Running build hooks...initial: not configured\nrefresh: Ada (local)\nrefreshes: 1; awaiting ACK: 3"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "example/support/peer_link_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 1.222,
+      "rawLogSha256": "7a8543fe2c4d744923ae9c663156c56fd1a35e90df5589fb57129855346bdc7b",
+      "outputExcerpt": "Running build hooks...Running build hooks...00:00 +0: loading example/support/peer_link_test.dart\n00:00 +0: shared link preserves offline diagnostics and stream closure\n00:00 +1: shared link waits for commit and does not ACK a failed handler\n00:00 +2: All tests passed!"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/commit_status_example.dart",
+        "{runtime}/status"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.546,
+      "rawLogSha256": "79d119910052249a79dd632666c6e18b67e8bfec643d4f7e9a9649d247ec6bcc",
+      "outputExcerpt": "Running build hooks...Running build hooks...restored: not configured\nrefresh: profile: Ada\nsaved locally\nawaiting ACK: 1\nprofile: Ada\nsaved locally; peer unavailable: Bad state: peer offline"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/commit_status_example.dart",
+        "{runtime}/status"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.514,
+      "rawLogSha256": "bb0b664323ad1b5fd82f3236d9476bd68ca227603fbffffeb208cc651993f24e",
+      "outputExcerpt": "Running build hooks...Running build hooks...restored: profile: Ada\nrefresh: profile: Ada\nsaved locally\nawaiting ACK: 2\nprofile: Ada\nsaved locally; peer unavailable: Bad state: peer offline"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/offline_reconciliation.dart",
+        "reset",
+        "{runtime}/pair"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.303,
+      "rawLogSha256": "89e094b8c32e95abd50a49125163701fbcccbb5521c1d2fdb8a04ee61d04befd",
+      "outputExcerpt": "Running build hooks...Running build hooks...Demonstração limpa: {runtime}/pair"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/offline_reconciliation.dart",
+        "offline",
+        "{runtime}/pair"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.445,
+      "rawLogSha256": "50ab4dec203fcc68bc0e625d5428125b616ad81cc9c3e85aed20fe28b46c173c",
+      "outputExcerpt": "Running build hooks...Running build hooks...A offline: compradores=Ana/null, itens=2, status=falha; commit local preservado, pendentes=2, falha=Peer shopper-b is offline\nB offline: compradores=null/Beto, itens=3, status=falha; commit local preservado, pendentes=2, falha=Peer shopper-a is offline\nBancos gravados em {runtime}/pair. Feche este processo e execute reconnect."
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "example/offline_reconciliation.dart",
+        "reconnect",
+        "{runtime}/pair"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.444,
+      "rawLogSha256": "cc550dd223271d0778a14bbfd28e116d75689257173464f049e4faf063125609",
+      "outputExcerpt": "Running build hooks...Running build hooks...A restaurado, antes da reconexão: compradores=Ana/null, itens=2, status=commit local; envio pendente, pendentes=2, falha=nenhuma\nB restaurado, antes da reconexão: compradores=null/Beto, itens=3, status=commit local; envio pendente, pendentes=2, falha=nenhuma\nA confirmado: compradores=Ana/Beto, itens=5, status=sem pendências para o peer, pendentes=0, falha=nenhuma\nB confirmado: compradores=Ana/Beto, itens=5, status=sem pendências para o peer, pendentes=0, falha=nenhuma\nA após reinício final: compradores=Ana/Beto, itens=5, status=sem pendências para o peer, pendentes=0, falha=nenhuma\nB após reinício final: compradores=Ana/Beto, itens=5, status=sem pendências para o peer, pendentes=0, falha=nenhuma\nConvergência e outbox confirmadas após reabrir bancos em {runtime}/pair."
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "--packages=.dart_tool/package_config.json",
+        "/tmp/deltasync-r35-readme-probe.dart"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 2.434,
+      "rawLogSha256": "bead30e2437040f06fbc4e855f73ec2882301ffe8cb812b6a731a5f3ce2dd282",
+      "outputExcerpt": "Instance of 'AbsentField'\nAda\nSalvo localmente\nAguardando ACK: 1\nSalvo localmente; envio falhou: Bad state: offline\nInstance of 'PresentField'\nAda\nSalvo localmente\nAguardando ACK: 2\nSalvo localmente; envio falhou: Bad state: offline\nREADME probe: durable reopen and pending IDs verified"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_plan.py"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.832,
+      "rawLogSha256": "0706737d9c4274375775048b72501e118f64dcd3404407fc5ed6ec2a7b454f53",
+      "outputExcerpt": "Plano consistente: 70 tarefas, 526 links locais. Prontas: nenhuma.\nChecagem estrutural; qualidade das evidências e testes exigem validação do agente."
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "elapsedSeconds": 0.007,
+      "rawLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outputExcerpt": ""
+    }
+  ],
+  "resolution": {
+    "deltasync_transport": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "test": {
+      "version": "1.33.0",
+      "source": "hosted",
+      "kind": "dev"
+    },
+    "yaml": {
+      "version": "3.1.4",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "string_scanner": {
+      "version": "1.4.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "source_span": {
+      "version": "1.10.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "term_glyph": {
+      "version": "1.2.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "path": {
+      "version": "1.9.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "collection": {
+      "version": "1.19.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "webkit_inspection_protocol": {
+      "version": "1.2.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "logging": {
+      "version": "1.3.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "web_socket_channel": {
+      "version": "3.0.3",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "web_socket": {
+      "version": "1.0.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "web": {
+      "version": "1.1.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "stream_channel": {
+      "version": "2.1.4",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "async": {
+      "version": "2.13.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "meta": {
+      "version": "1.19.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "crypto": {
+      "version": "3.0.7",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "typed_data": {
+      "version": "1.4.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "test_core": {
+      "version": "0.6.21",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "vm_service": {
+      "version": "15.3.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "test_api": {
+      "version": "0.7.15",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "stack_trace": {
+      "version": "1.12.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "boolean_selector": {
+      "version": "2.1.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "source_maps": {
+      "version": "0.10.14",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "source_map_stack_trace": {
+      "version": "2.1.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "pool": {
+      "version": "1.5.3",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "package_config": {
+      "version": "3.0.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "io": {
+      "version": "1.1.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "glob": {
+      "version": "2.2.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "file": {
+      "version": "7.0.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "frontend_server_client": {
+      "version": "4.1.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "coverage": {
+      "version": "1.16.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "cli_util": {
+      "version": "0.6.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "ffi": {
+      "version": "2.2.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "cli_config": {
+      "version": "0.2.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "args": {
+      "version": "2.7.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "analyzer": {
+      "version": "14.5.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "watcher": {
+      "version": "1.2.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "pub_semver": {
+      "version": "2.2.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "convert": {
+      "version": "3.1.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "_fe_analyzer_shared": {
+      "version": "109.0.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "shelf_web_socket": {
+      "version": "3.0.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "shelf": {
+      "version": "1.4.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "http_parser": {
+      "version": "4.1.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "shelf_static": {
+      "version": "1.1.3",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "mime": {
+      "version": "2.1.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "shelf_packages_handler": {
+      "version": "3.0.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "node_preamble": {
+      "version": "2.0.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "matcher": {
+      "version": "0.12.20",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "http_multi_server": {
+      "version": "3.2.2",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "deltasync_core": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "deltasync_storage_testing": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "lints": {
+      "version": "6.1.0",
+      "source": "hosted",
+      "kind": "dev"
+    },
+    "deltasync_storage": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "deltasync_storage_sqflite": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "sqflite_common_ffi": {
+      "version": "2.4.4",
+      "source": "hosted",
+      "kind": "dev"
+    },
+    "synchronized": {
+      "version": "3.5.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "sqflite_common": {
+      "version": "2.5.14",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "sqlite3": {
+      "version": "3.7.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "native_toolchain_c": {
+      "version": "0.19.5",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "process": {
+      "version": "5.0.6",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "platform": {
+      "version": "3.2.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "hooks": {
+      "version": "2.2.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "record_use": {
+      "version": "1.1.1",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "code_assets": {
+      "version": "2.1.0",
+      "source": "hosted",
+      "kind": "transitive"
+    },
+    "deltasync_sync": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    },
+    "deltasync": {
+      "version": "2.0.0",
+      "source": "root",
+      "kind": "root"
+    }
+  },
+  "sourceSha256": {
+    "README.md": "2d402abac5eb49a5f99bc2eb505a112fd8c04b3cec1a9d694096a02b8a8911e0",
+    "docs/ci.md": "12d50f8bdbf0ac57b2a996a5d648cb996902386bcc9384cffdde546a1691d45d",
+    "docs/guia-integracao.md": "7ebcbdbeffe4d770230f9e2e4047ff20f4e99a37a4fd7b44a2042869de32eb17",
+    "docs/migracao-1.0.1.md": "b999991a280110cf67e1cfb773f85cd3c984c2ce9ec5ce06feede002ca79f683",
+    "example/offline_reconciliation.dart": "147aee6931b7c2d333be84752cb82fae6a4ac06441b6976eea087f6ec0557e32",
+    "packages/deltasync_core/README.md": "03ad3d2f36b60976d9ac839bb1f84f935b5c3b3bee8210bdd71b0e023c0656c9",
+    "packages/deltasync_storage/README.md": "5c47431874b446dfc57a97a6ef65f77c746f73b170101717350c98947d8f3d2a",
+    "packages/deltasync_storage_sqflite/README.md": "51d18583683f1d204f820b364697f2fe9d7d2d6926541891370a805ded47b03e",
+    "packages/deltasync_storage_testing/README.md": "6dba649bf06df239dc8bfddb3cb2ef39a7be3b7507740bdb7f6a77d002376c99",
+    "packages/deltasync_sync/README.md": "be7ca76f5f10ddc44773256e85488828314743bc975728a76e1c033098d3cc4a",
+    "packages/deltasync_transport/README.md": "ae5f35829e61833053d310e433e124d634a6a708802713243a21e8386829223a",
+    "scripts/ci.py": "45662ef2f894b84103665eaca713ad6c25381d229e387981687e335c8ca683df",
+    "docs/referencia-tecnica.md": "6129d22646f160f6414c80ce2083706e118c49347f62bac197d87e573747602d",
+    "docs/medicoes.md": "fa1613c5ef6095a55f4a1f54936f6f2dab5a437a5ffac3d6261ada968e1cd7db",
+    "example/commit_status_example.dart": "183ad922657f3d578ab1ade734102c2c7f682bde8791a4b442361257bc9788d9",
+    "test/integration_guide_test.dart": "6065196f5500a6f4f812cdb62b56e107814bcfc5750d170e85e724f4bb9aa178"
+  },
+  "limitations": [
+    "Finite tests and local SQLite/FFI do not prove universal CRDT convergence or Android/iOS runtime",
+    "Existing dependency resolution; no fresh install/registry publication validation in R-35",
+    "No library public API, wire/persistence format, manifest or SDK changes"
+  ],
+  "postMaintenance": {
+    "planChecker": {
+      "command": [
+        "python3",
+        "scripts/check_plan.py"
+      ],
+      "exitCode": 0,
+      "tasks": 70,
+      "localLinks": 541,
+      "ready": [
+        "R-36"
+      ]
+    },
+    "diffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    },
+    "deliverySourceHashesVerified": 16,
+    "untrackedWhitespaceChecked": true,
+    "headAndPublicLibrariesAndManifestsAndHistoricalEvidenceUnchanged": true
+  }
+}

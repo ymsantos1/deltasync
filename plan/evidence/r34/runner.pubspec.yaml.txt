@@ -1,0 +1,6 @@
+name: deltasync_saropa_pilot
+publish_to: none
+environment:
+  sdk: ^3.13.0
+dependencies:
+  saropa_lints: 16.7.0

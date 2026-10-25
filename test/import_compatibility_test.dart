@@ -15,7 +15,10 @@ void main() {
         facade.SyncEngineLifecycle.started,
       );
       expect(
-        const sync.SyncCommitEvent(origin: sync.SyncCommitOrigin.local),
+        sync.SyncCommitEvent(
+          origin: sync.SyncCommitOrigin.local,
+          addresses: ['field'],
+        ),
         isA<facade.SyncCommitEvent>(),
       );
     },
@@ -26,4 +29,7 @@ void main() {
 class _ExternalCommit implements facade.SyncCommitEvent {
   @override
   facade.SyncCommitOrigin get origin => facade.SyncCommitOrigin.local;
+
+  @override
+  Set<String> get addresses => const {'field'};
 }

@@ -4,6 +4,18 @@ Baseline histórica: 2026-09-27. Fontes: [PDF](<../referencia/Proposta TCC.pdf>)
 [contexto](../proposta.md) e inspeção/testes da revisão anterior.
 A reorganização documental não reexecutou testes Dart nem corrigiu código.
 
+Planejamento inicial de 1.0.1: [registro de 2026-10-24](#planejamento-1-0-1-2026-10-24).
+Escopo vigente: [todos os pontos na mesma 1.0.1](#escopo-integral-1-0-1-2026-10-24),
+conforme esclarecimento posterior do autor que substituiu o adiamento por versões.
+R-30 [concluiu a baseline e o mapa de migração](#execucao-r-30-2026-10-24).
+R-31 [concluiu a correção da outbox](#execucao-r-31-2026-10-24).
+R-39 [concluiu remoções com migração e rollback](#execucao-r-39-2026-10-24).
+R-32 [concluiu medição de custos e encaminhamento](#execucao-r-32-2026-10-24).
+R-37 [concluiu consulta leve de pendências](#execucao-r-37-2026-10-24).
+R-38 [concluiu lote local atômico](#execucao-r-38-2026-10-24).
+R-33/R-41/R-42 estão prontas; nenhuma tarefa ativa. Os registros abaixo
+preservam as baselines e conclusões nas datas em que foram obtidas.
+
 Estado atual — 2026-10-13: a [revisão técnica](#revisao-tecnica-2026-10-11)
 confirmou três defeitos apesar de 155 testes aprovados.
 [R-10](#execucao-r-10-2026-10-12),
@@ -4897,3 +4909,1283 @@ de publicar. A renumeração não torna formatos antigos compatíveis automatica
 permanecem as migrações e limites documentados. Checks de manutenção:
 `python3 scripts/check_plan.py` aprovado com 56 tarefas e 345 links locais;
 `git diff --check` aprovado.
+
+<a id="planejamento-1-0-1-2026-10-24"></a>
+
+## Planejamento de manutenção 1.0.1 — 2026-10-24
+
+Tipo: manutenção documental autorizada; nenhuma tarefa nova implementada.
+Skills aplicadas: plan-reader e plan-maintainer, com leitura integral e consulta
+ao RUNBOOK e aos trechos pertinentes do guia Dart sobre contratos e enums.
+Pedido: autor solicitou planejar todos os encaminhamentos da análise geral
+para 1.0.1, mantendo foco exclusivo na biblioteca. Não pediu alterações no app.
+
+### Origem e evidências disponíveis
+
+Antes desta edição documental, HEAD era
+`1e969182e8e172a8858a48ecf83a1feb2c21a455`, com worktree limpa. Sete pacotes em
+1.0.0. Na revisão da mesma sessão, Dart 3.13.5 stable/Linux x86_64 executou
+análise sem issues e 243 testes: facade 13, core 122, sync 51, storage 12,
+SQLite 27, storage_testing 8 e transport 10. Comando na raiz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-general-review-20261024.log 2>&1
+```
+
+A primeira tentativa encontrou cache Flutter fora da área gravável; execução
+autorizada posterior terminou com exit 0. Esse log é temporário e não é fixture
+de release. R-30 exige baseline reexecutável; esses resultados não concluem
+nenhuma tarefa da fase 6 nem validam código 1.0.1 ainda inexistente.
+
+Inspeção de [mergeOutbox](../packages/deltasync_sync/lib/src/sync/replica_persistence.dart)
+e [Delta.merge](../packages/deltasync_core/lib/src/delta.dart) confirma remontagem
+de prefixos, com trabalho quadrático para entradas distintas. Impacto temporal
+não medido nesta revisão. Cópias de candidata/adoção e snapshots protegem
+isolamento e precisam de medição antes de outras mudanças.
+
+O consumidor externo em `/projetos/tcc/samples_test_lib/compass_app` confirmou
+uso público de valueAt, observations, receiveEnvelope e ReplicaStorage. Dez
+testes focados passaram, incluindo HTTP com servidor separado e SQLite FFI.
+Três diagnósticos temporários, fora dos repositórios, reproduziram: tipo de nota
+incompatível com JSON válido, edição que lança erro de consulta após commit
+durável e duas consultas de pendências por edição. São evidências de fronteira
+de consumo e custo, não três defeitos novos dos joins/commits da biblioteca.
+Sem nova execução Android e sem alterações no app. A fase nova exige exemplos
+e regressões gerais na própria lib, sem depender de caminhos externos.
+
+### Decisões de planejamento
+
+- Criada [fase 6](06_PHASE6_MANUTENCAO_1_0_1.md), integrada ao índice canônico,
+  com R-30 a R-36 e VAL-17 para 1.0.1. Cada tarefa tem áreas, critérios,
+  dependências e verificações; nenhuma está em execução ou concluída.
+- R-30 está pronta e é a próxima selecionável. Demais tarefas de release
+  aguardam dependências. R-37/R-38/R-39 são WON'T-YET, fora do gate 1.0.1,
+  sem autorização de execução mesmo após suas dependências serem concluídas.
+- A análise previa funcionalidades novas e remoções públicas. DEC-52 aplica
+  [SemVer](https://semver.org/): consulta leve e ampliações compatíveis pertencem
+  à linha minor; remoções/quebras à major. Novos métodos obrigatórios em
+  interfaces também podem quebrar adaptadores e não entram como minor compatível.
+- DEC-53 preserva VAL-05 histórico e cria gate específico VAL-17 para os
+  artefatos novos. SHOULD expressa prioridade acadêmica; completar a release
+  planejada exige todas as dependências de VAL-17, inclusive avaliar o piloto.
+- DEC-54 mantém papéis de core/sync/storage/transport, mede custos e separa
+  ferramentas de segurança/correção. Saropa será avaliado isoladamente; adoção
+  não foi decidida. Conferidas referências oficiais de
+  [Saropa](https://pub.dev/packages/saropa_lints),
+  [advisories Dart](https://dart.dev/tools/pub/security-advisories) e
+  [versionamento Dart](https://dart.dev/tools/pub/versioning).
+- Índice, decisões abertas e RISK-37 a RISK-40 registram os encaminhamentos.
+  Não alterados manifests, fontes, testes de produto ou contratos. Nenhum
+  pacote renumerado/publicado e nenhuma ferramenta instalada neste planejamento.
+
+### Review e validação documental
+
+Review: realizado pelo próprio agente, em etapa distinta; não independente.
+Verificados cobertura da análise, compatibilidade patch/minor/major, prioridades
+relativas ao TCC, dependências e separação entre planejar e executar.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 67
+tarefas, 367 links locais e somente R-30 pronta; `git diff --check` aprovado.
+Índice/fase, status, anchors, dependências sem ciclos e metadados das skills
+foram conferidos. A fase 6 não altera os critérios concluídos das fases antigas.
+Testes Dart/Flutter não repetidos nesta edição somente documental; resultados
+anteriores acima são baseline contextual, não aprovação de implementação futura.
+Limitações: duração/esforço não estimados; publicação e ativação externa de CI
+permanecem fora deste pedido. R-30 define baseline e a execução posterior exige
+o ciclo completo de cinco skills por tarefa, sem subagentes.
+
+<a id="escopo-integral-1-0-1-2026-10-24"></a>
+
+## Ajuste de escopo integral para 1.0.1 — 2026-10-24
+
+Tipo: revisão documental do planejamento por direção explícita do autor.
+Skills: plan-reader e plan-maintainer, lidas integralmente; sem implementação.
+Pedido: autor reconhece que parte das mudanças deveria chegar a outra versão,
+mas deseja todos os pontos planejados na mesma 1.0.1. Isso resolve a escolha
+de versão e substitui a separação anterior entre patch/minor/major. O registro
+anterior permanece histórico; suas restrições de adiamento não são vigentes.
+
+### Alterações de planejamento
+
+- R-37/R-38/R-39 passam de WON'T-YET a SHOULD, integrando o gate 1.0.1.
+  R-37 entrega pendências leves; R-38 passa de avaliação a lote público atômico;
+  R-39 remove storage/aliases legados com readers e migração de dados preservados.
+- Criadas R-40, R-41 e R-42 para decoder opcional, eventos seletivos com emissão
+  consolidada e consulta de ausente/null/tombstone. Todas têm critérios próprios
+  de implementação, falhas, isolamento, consumo e validação; não apenas avaliação.
+- R-30 fixa baseline e mapa de migração. R-35 documenta todas as APIs e quebras;
+  R-36 exige os sete artefatos em 1.0.1 com aviso de upgrade incompatível;
+  VAL-17 verifica dados 1.0.0, consumidores migrados e toda a entrega nova.
+- Dependências foram reordenadas para retirar legado antes das novas APIs e
+  alcançar R-30 a R-42 pela VAL-17, sem ciclos. Nenhum desses itens fica para
+  outra versão. R-30 permanece a única tarefa pronta e nenhuma está iniciada.
+- DEC-55/56 substituem as restrições de DEC-52/53, preservando seu histórico.
+  OPEN-08, RISK-38/40/41, índice e gate refletem a decisão do autor.
+- Manter oito CRDTs, invariantes, SDK, formatos/readers e foco exclusivo na lib.
+  A decisão não autoriza descartar dados, publicar pacotes ou editar o Compass.
+  Saropa continua com piloto e decisão fundamentada, conforme pedido de análise.
+
+### Review e validação
+
+Review: realizado pelo mesmo agente em etapa distinta, sem revisão independente.
+Conferidos direção do autor, cobertura de todos os pontos, quebras de API,
+preservação dos dados, dependências e limites entre planejar e implementar.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 70
+tarefas, 372 links locais e somente R-30 pronta; `git diff --check` aprovado.
+Conferência adicional da árvore de dependências demonstrou que VAL-17 alcança
+todas as tarefas R-30 a R-42, sem itens WON'T-YET. Fase nova conferida quanto
+a whitespace e newline final. Índice, títulos, prioridades e dependências
+espelham as definições da fase, sem ciclos nem tarefa nova marcada concluída.
+Nenhuma mudança em fontes, manifests ou testes de produto; os manifests continuam
+1.0.0 até a tarefa de release. Testes Dart/Flutter não repetidos para estas edições
+documentais. Nenhuma implementação, instalação de ferramenta ou publicação feita.
+
+<a id="recuperacao-stash-2026-10-24"></a>
+
+## Recuperação de conflitos do stash — 2026-10-24
+
+Pedido: resolver conflitos sem perder análise e planejamento da 1.0.1.
+Procedimento: plan-maintainer; inspeção dos três estágios Git e do stash,
+resolução manual por apply_patch e validação documental. Nenhuma implementação.
+
+O stash foi aplicado sobre HEAD 6b7016a, cuja árvore mantém manifests 2.0.0.
+A base do stash, 1e969182e8e172a8858a48ecf83a1feb2c21a455, já tinha R-29 e
+manifests 1.0.0. Os conflitos atingiam README, DECISIONS e TRACEABILITY; RISKS
+foi recuperado sem conflito e a fase 6 permaneceu como arquivo novo fora do índice.
+
+Preservados integralmente escopo 1.0.1, R-30 a R-42, VAL-17, decisões, riscos e
+evidências das análises anteriores. Reposto o registro histórico R-29 na fase 1
+e no índice, pois dependências/links recuperados o referenciam. Sua conclusão é
+histórica; não afirma que a branch atual já foi renumerada. DEC-57 e a entrada
+da fase 6 deixam essa diferença explícita. Manifests, código e alterações da
+branch atual foram preservados; a resolução não reaplica renumeração de pacotes.
+
+Backup dos documentos antes da resolução e referências do índice/stash:
+`/tmp/deltasync-stash-recovery-hanaswca`. Stash original conservado. A fase 6
+também foi incluída no índice para que sua preservação não dependa de um arquivo
+não rastreado ao repetir stash/commit. Nenhum commit ou descarte de stash realizado.
+
+Review: realizado pelo mesmo agente, em etapa distinta, sem revisão independente.
+Validação documental: aprovada. `python3 scripts/check_plan.py` confirmou 70
+tarefas, 372 links locais e R-30 pronta; `git diff --check` e
+`git diff --cached --check` aprovados. `git ls-files -u` e lista de arquivos
+em conflito vazios. Conferidos alcance R-30 a R-42 pela VAL-17, identidade do
+stash original e alterações restritas a plan/. Testes Dart não repetidos;
+resolução limitada a documentos de planejamento e ao índice de conflitos Git.
+
+<a id="execucao-r-30-2026-10-24"></a>
+
+## Execução R-30 — Baseline e mapa de migração, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-30 era a única pronta, dependente de R-29 histórica concluída; worktree inicialmente limpa em 400161283e741d62dddf01cfc314629968a93828. Conferidos cinco critérios, DEC-55/56/57, riscos e guia Dart sobre contratos/enums. Identificada divergência apenas de versões/documentação entre baseline 1.0.0 e manifests atuais 2.0.0; execução limitada a R-30.
+Implementação: adicionados inventário público, captura reproduzível, fixture JSON dos oito tipos, consumidor independente, medidor da outbox e mapa de migração em plan/evidence/r30. Captura exporta o Git histórico e resolve suas dependências offline, sem alterar produção, SDK ou manifests. Tarefa/índice passaram por em andamento, em revisão e em validação, com retornos para correção.
+Review: aprovado
+Achados: revisão do próprio implementador, não independente. Corrigidos lint no extrator, fonte antiga sob análise recursiva, possibilidade de sobrescrever fixtures via --report, flags contraditórias, registro fixo de SDK e variação de formato fora do workspace. Fontes históricas viraram .dart.txt com @dart=3.12; guardas, correções e delta final foram revisados antes de repetir os checks afetados. Nenhum impeditivo restante para os critérios de R-30.
+Validação: aprovada
+Comandos: loop de analyze/test dos sete pacotes no SDK Dart 3.13.5; após pedido de usar dart no PATH, python3 plan/evidence/r30/capture.py --dart dart --test-consumers --report plan/evidence/r30/baseline.json; dart format --output=none --set-exit-if-changed lib test packages plan/evidence/r30; dart analyze; dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart; formato dos dois fontes materializados; cinco casos negativos da CLI. Resultados/logs e detalhes abaixo e em validation.json/baseline.json.
+Critérios: C1 coberto por 47 hashes de fontes, inventário das sete superfícies, 243 testes e fixtures do writer histórico; C2 por matriz de versões, igualdade completa de snapshot/outbox e readers de fronteira; C3 pelas quatro cargas com oito tipos/dois peers; C4 pelo mapa de substitutos e impacto nas interfaces/eventos; C5 pela matriz executável de SDK mínimo/referência e consumidores históricos/atuais. Definir a execução mínima não equivale a executá-la.
+Manutenção: cinco critérios marcados, evidência ligada à fase, índice/fase atualizados, DEC-58 e RISK-37/42 registrados; R-31 e R-33 prontas, próxima recomendada R-31, nenhuma tarefa ativa. Fase 6 permanece aberta; não executadas tarefas seguintes.
+Limitações: SDK 3.12.x não executado, apenas execução definida conforme o critério; R-33/VAL-17 devem realizá-la. SQLite FFI/Linux com fechamento/reabertura, sem kill de processo, novo Android, rede real ou instalação hosted. ACK do consumidor é controlado. API nova e remoções ainda não implementadas; versões atuais permanecem 2.0.0, alvo futuro 1.0.1. Sem commit, tag, push ou publicação.
+
+### Leitura e delimitação
+
+As cinco skills foram lidas integralmente antes da implementação e aplicadas
+nas etapas correspondentes pelo mesmo agente. Dependência histórica R-29 e
+direção de incluir tudo na 1.0.1 foram preservadas; não reaplicada renumeração.
+O [mapa de migração](evidence/r30/README.md#mapa-de-migração-para-a-101)
+distingue substitutos públicos existentes das assinaturas que as tarefas
+R-37/R-38/R-40/R-41/R-42 ainda devem definir. Uso/manutenção continuam locais:
+estado e join no core, commit/restauração em sync/storage, SQL no adaptador e
+domínio/rede/UI no consumidor. Nenhuma abstração adicionada ao fluxo de produto.
+
+### Implementação e proveniência
+
+- [baseline.json](evidence/r30/baseline.json) conserva revisões, hashes dos
+  47 arquivos lib, versões/SDK dos sete manifests, resolução histórica real
+  por `dart pub get --offline` e origem dos imports nos consumidores.
+- [api_1_0_0.json](evidence/r30/api_1_0_0.json) fixa assinaturas públicas
+  alcançadas pelos exports, incluindo construtores, membros, enums e aliases.
+  O extrator respeita show/hide; validateJsonValue e tabelas internas não vazam
+  pelo inventário. A facade alcança 62 símbolos, com sobreposição de reexports.
+- [fixture_1_0_0.json](evidence/r30/fixture_1_0_0.json) foi gerada exclusivamente
+  com package_config das fontes 1e969182e8e172a8858a48ecf83a1feb2c21a455.
+  Contém 23 mudanças locais, 46 entradas para dois peers, snapshot dos oito
+  tipos, LWW null/tombstone, MV concorrente/compacto, lacuna OR-Set e recriação
+  OR-Map. Hash SHA-256 dos dados:
+  `088e79d45c05bc2e8f2da0fb99981333f2dcf4fb3a2a036bd58fe6a3ea737325`.
+  Regeneração determinística pelo writer antigo conferida byte a byte;
+  regressões futuras leem a fixture congelada, sem gerar expectativas no writer novo.
+- Fontes de consumidor/gerador são assets explícitos, para que remoção de API
+  não quebre análise recursiva de um arquivo antigo. O consumidor implementa
+  ReplicaStorage, PendingDeltaStore, contratos de transporte/ACK e a fixture
+  da suíte pública sem importar src; somente o medidor acessa mergeOutbox interno.
+- [outbox_baseline.json](evidence/r30/outbox_baseline.json) registra 32/128/512/
+  1024 entradas, oito tipos e dois peers. Cinco amostras após dois aquecimentos;
+  construção das entradas fora do cronômetro, heap não medido. Visitas aos
+  prefixos são estimativa analítica do algoritmo histórico, não instrumentação.
+
+### Review, correções e revalidação
+
+O review verificou independência entre writer histórico e leitura atual,
+imutabilidade das expectativas, publicação dos contratos e preservação da
+causalidade, IDs, tentativas e destinos após restauração. O script não altera
+fontes de produto para satisfazer o procedimento. O SDK de referência é
+3.13.5 stable/Linux x86_64; instrumentos usam a dependência analyzer 14.5.0
+já selecionada no desenvolvimento, sem adicioná-la ao runtime.
+
+Correções proporcionais verificadas depois de cada delta:
+
+1. `use_null_aware_elements` no novo instrumento foi corrigido; a análise final
+   da raiz ficou sem issues. Os testes de produto não foram repetidos porque
+   nenhuma fonte de produto ou teste desses pacotes mudou.
+2. Fontes antigos ficaram como assets materializados; o consumidor ganhou
+   verificação de Isolate.resolvePackageUri para demonstrar qual árvore usa.
+3. Cinco guardas rejeitam saída de relatório sobre dados/API/fontes congelados
+   e flags incompatíveis com exit 2, mantendo hashes intactos.
+4. O registro de SDK mínimo passou a depender do SDK real e checks executados;
+   não registra resultado de runtime inexistente.
+5. O check de formato do consumidor isolado inicialmente variou pela linguagem
+   padrão fora do workspace. `@dart=3.12` fixa a linguagem declarada da biblioteca;
+   os dois assets passaram no formato e os 14 checks por árvore foram repetidos.
+   Isso não substitui executar um binário SDK 3.12.x.
+
+### Validação executada
+
+[validation.json](evidence/r30/validation.json) retém saídas e contagens reais.
+O loop inicial dos sete pacotes usou o executável do SDK já disponível, antes
+do pedido posterior de usar o comando `dart`. Comando efetivamente executado:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart analyze && /home/yago/.cache/flutter_sdk/bin/cache/dart-sdk/bin/dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r30-workspace.log 2>&1
+```
+
+Resultado: **243 testes** aprovados, facade 13, core 122, sync 51, storage 12,
+SQLite 27, testing 8 e transport 10. A análise inicial apontou um info do
+instrumento novo, corrigido antes da análise final. Tentativas em sandbox
+encontraram gravação de telemetria/cache fora da área gravável; execução
+autorizada posterior passou. A interrupção do usuário não foi tratada como falha
+de produto; conferidos logs/processos antes de retomar usando `dart`.
+
+Comandos finais com `dart`:
+
+```sh
+python3 plan/evidence/r30/capture.py --dart dart --test-consumers --report plan/evidence/r30/baseline.json
+dart format --output=none --set-exit-if-changed lib test packages plan/evidence/r30
+dart analyze
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart
+```
+
+- Formato: 76 arquivos, nenhuma alteração necessária; dois fontes históricos
+  materializados também aprovados com linguagem 3.12.
+- Análise final da raiz: sem issues; demais seis análises do loop aprovadas.
+- Consumidor histórico: **14 checks** aprovados; consumidor atual: os mesmos
+  **14 checks**, total de 28 execuções de cenários, não 28 cenários diferentes.
+  Incluem 8 checks da suíte de contrato, origem real dos imports, snapshots/
+  outbox/envelope/ACK, readers legados, aliases, SQLite reaberto e ACK parcial
+  que preserva o peer não confirmado. Próxima escrita usa ID novo; dots 1/2
+  entregues depois do 3 continuam visíveis quando não foram observados/removidos.
+- Baseline de custo: faixas 1816–2974 µs (32), 3783–6719 µs (128),
+  19779–25048 µs (512) e 67486–82999 µs (1024) nas cinco amostras do host.
+  Fórmula do percurso histórico: 528, 8256, 131328 e 524800 visitas a prefixos.
+  Sem afirmação de ganho universal ou comparação de heap/I/O.
+- Sintaxe Python e cinco guardas CLI aprovadas; fixture/API e os fontes
+  conferidos por SHA-256. JSONs e escopo dos arquivos revisados.
+
+### Manutenção
+
+R-30 satisfaz os cinco critérios: baseline reproduzível; dados/API/formato
+preservados; cargas de custo; mapa de migração; matriz de execução por SDK.
+O último critério exige definir a execução mínima, não alegar tê-la realizado:
+[matriz e comandos](evidence/r30/README.md#matriz-de-sdk) ficam com execução real
+pendente de R-33/VAL-17. DEC-58 e RISK-42 tornam esse limite explícito.
+R-31 é a próxima recomendada, R-33 também pronta; nenhuma iniciada. A fase 6 e
+o gate VAL-17 seguem abertos. Após manutenção, `python3 scripts/check_plan.py`
+e `git diff --check` foram aprovados; conferidos também arquivos novos,
+hashes/JSONs e ausência de alterações em produção.
+
+<a id="execucao-r-31-2026-10-24"></a>
+
+## Execução R-31 — Montagem linear da outbox, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-30 concluída, R-31 recomendada e pronta, worktree limpa em b792dc5e8312202e7a981c941d30d585b64e771b. Conferidos critérios completos, DEC-58, RISK-37 e guia Dart. Scope restrito ao helper sync e regressões; manter core/joins, contratos, formatos, filas e ACK.
+Implementação: mergeOutbox agora coleta mudanças uma vez e executa uma única Delta.merge; regras de conflito/ordem permanecem no core. Adicionadas seis regressões em sync e nota Unreleased no changelog; nenhuma classe ou dependência de produção nova. R-30 e suas fixtures foram preservadas.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Confirmados equivalência das duplicatas com ordem de chaves JSON diferente, rejeição de listas divergentes e preservação dos IDs cumulativos. Ajustados teste para conflito entre peers, acesso nullable local e formato do helper de falha; revisão do delta repetida após correção do gate de formato. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: dart test test/outbox_merge_test.dart --reporter expanded antes/depois no pacote sync; loop de dart format/analyze/test nos sete pacotes, retomado de sync após ajuste de formato; dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart antes/depois; python3 plan/evidence/r30/capture.py --dart dart --prepare-only --test-consumers; extrator API da R-30 contra a árvore atual. Logs, contagens e amostras reais em r31-validation.json; comandos completos abaixo.
+Critérios: C1 demonstrado pelo percurso único e regressão estrutural que falhou no código antigo; C2 pelas seis regressões, suíte de contrato/ACK e inventário público idêntico; C3 por 249 testes dos sete pacotes e 14 checks em cada consumidor, incluindo SQLite reaberto, oito tipos, falhas, concorrência e ACK parcial/perdido; C4 pelo mesmo medidor/cargas R-30 antes/depois no mesmo host, com limites explícitos.
+Manutenção: quatro critérios marcados, índice/fase/decisão/risco atualizados e evidência ligada; R-32/R-33/R-39 prontas, próxima recomendada R-39 pela ordem da fase. Nenhuma iniciada; gate VAL-17 e fase 6 continuam abertos.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI; sem SDK 3.12.x, novo runtime Android ou medição de heap. Tempos medem helper sem construção das entradas, I/O de storage ou rede; não certificam latência universal. Sem mudança de API/formatos/versões, publicação, commit ou próxima tarefa executada.
+
+### Leitura e implementação
+
+As cinco skills foram lidas integralmente e aplicadas por um agente em etapas
+distintas. A causa era o loop de mergeOutbox: cada entrada reconstruía o prefixo
+completo por Delta.merge. A correção fica em
+[replica_persistence.dart](../packages/deltasync_sync/lib/src/sync/replica_persistence.dart),
+sem duplicar comparação JSON, mexer em estado/join ou expor outro contrato.
+
+A implementação percorre entries.expand uma vez, materializa o lote isolado e
+consolida IDs por uma Delta.merge. Ordem de primeira aparição e substituição
+pela última duplicata equivalente seguem o Map do core. Deltas cumulativos com
+IDs distintos permanecem no lote; não foi implementado GC ou agregação de ACK.
+O snapshot e a outbox continuam nos mesmos contratos; seleção por peer e
+markSent permanecem em OutboundSync, e rede continua fora da fila de commits.
+
+### Regressão antes da correção
+
+[outbox_merge_test.dart](../packages/deltasync_sync/test/outbox_merge_test.dart)
+foi executado com o código antigo. Cinco casos funcionais passaram e a prova de
+crescimento falhou: para 64 entradas, observadas 4160 leituras de ID, acima do
+limite 3168 correspondente a três vezes o caso de 32 entradas. Não foi usado
+limiar de tempo. Após a correção, observadas 64 leituras para 32 entradas e
+128 para 64; leitura de cada entrada ocorre uma vez.
+
+Os seis casos cobrem lote vazio; iterable de consumo único com oito tipos e
+duas mudanças cumulativas do mesmo counter; duplicata equivalente entre peers
+com ordem JSON diferente; conflito aninhado entre peers sem mutação da entrada;
+crescimento estrutural; e falha de preparação que não marca enviado, não envia
+nem remove o commit/outbox existentes. O wrapper contador pertence somente ao
+teste interno, sem alterar o codec ou ser oferecido como padrão de consumidor.
+
+### Review e correções
+
+Review após implementação verificou diff de produção e arquivo de teste novo,
+incluindo impacto em consumidor/mantenedor. Nenhuma API pública mudou; o
+inventário AST dos sete entry points coincide semanticamente com api_1_0_0.json.
+Dados e fontes de fixture R-30 não foram regenerados. Foram mantidas as mesmas
+regras profundas de comparação, incluindo ordem de listas e equivalência de mapas.
+
+Depois de remover um null assertion no helper de falha do teste, o gate de
+formato detectou uma linha em branco pendente. A tarefa voltou a implementação;
+o arquivo foi formatado, o delta revisado e a validação retomada do pacote sync.
+Raiz/core já estavam aprovados e não foram repetidos por alteração apenas de
+formato no teste. A seleção de peer do teste de conflito foi revisada antes da
+rodada final. Changelog registra a correção sem antecipar a renumeração R-36.
+
+### Validação e comparação
+
+Evidência: [r31-validation.json](evidence/r31-validation.json), com logs do
+vermelho/verde, execuções dos pacotes, consumers e amostras brutas antes/depois.
+Ambiente: Dart 3.13.5 stable, Linux x86_64; comandos usam `dart` pelo PATH.
+
+Primeira rodada, na raiz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r31-workspace.log 2>&1
+```
+
+Raiz: 13 testes; core: 122. Formato do teste novo interrompeu a rodada ao entrar
+em sync. Após a correção e revisão do delta, retomada real:
+
+```sh
+for package in packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r31-workspace-resumed.log 2>&1
+```
+
+Sync 57, storage 12, SQLite 27, testing 8 e transport 10 testes aprovados;
+total **249 testes**, com formato e análise sem issues nos sete pacotes.
+Suítes existentes cobrem ACK parcial, timeout/perda de ACK, retry, edição durante
+envio, falha transacional local/remota, três histórias duráveis geradas e
+restauração dos oito CRDTs antes de entrega SQLite. Testes novos cobrem falha
+antes de markSent; testes de storage garantem retenção/rollback no backend real.
+
+Consumidores e dados congelados:
+
+```sh
+python3 plan/evidence/r30/capture.py --dart dart --prepare-only --test-consumers > /tmp/deltasync-r31-consumers.json
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/api_inventory.dart /projetos/tcc/deltasync > /tmp/deltasync-r31-api.json
+```
+
+**14 checks por árvore**, histórica e atual, aprovados. Mantidas origem dos
+imports, snapshot/outbox/IDs, tentativas, readers legados, reabertura SQLite,
+escrita posterior e ACK parcial por peer. Esses são os mesmos cenários em duas
+árvores, não 28 cenários distintos. Superfícies públicas coincidem com a baseline.
+
+O medidor R-30 foi executado antes de editar produção e depois da correção,
+sem mudar seu código ou o JSON histórico. Duas rodadas de aquecimento e cinco
+amostras por carga, oito tipos e dois peers, usando:
+
+```sh
+dart --packages=.dart_tool/package_config.json plan/evidence/r30/measure_outbox.dart
+```
+
+| Entradas | Mediana antes (µs) | Mediana depois (µs) | Razão observada |
+|---|---:|---:|---:|
+| 32 | 1990 | 1818 | 1,09 |
+| 128 | 3931 | 3512 | 1,12 |
+| 512 | 17946 | 5954 | 3,01 |
+| 1024 | 58646 | 8834 | 6,64 |
+
+Razão é mediana anterior dividida pela posterior, específica destas execuções.
+Ganhos pequenos nas menores cargas não sustentam promessa. A prova estrutural
+é o percurso e o crescimento das leituras de ID; tempos incluem validação/cópia
+do payload de cada entry, mas excluem sua construção inicial, SQLite e rede.
+Heap não medido; nenhuma conclusão de redução de memória foi anunciada.
+
+### Manutenção
+
+R-31 concluída com os quatro critérios demonstrados; DEC-59 e RISK-37 registram
+implementação/limites. R-32/R-33/R-39 prontas e nenhuma ativa. Próxima recomendada
+R-39 pela sequência autorizada da fase. Não iniciada; esta autorização executa
+uma tarefa. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas
+e 402 links locais; `git diff --check` passou. Artefatos novos também tiveram
+JSON, whitespace e hashes de fonte/teste conferidos.
+
+<a id="execucao-r-39-2026-10-24"></a>
+
+## Execução R-39 — Remoção de APIs legadas com migração, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 97f8f45, R-30/R-31 concluídas e R-39 pronta/recomendada. Lidos AGENTS, RUNBOOK, cinco skills completas, fase, baseline/mapa R-30, DEC-55 a DEC-59, RISK-26/38 e trechos de SDK, contratos e null safety do guia Dart. Confirmados consumidores públicos, readers e ramos legados antes de editar.
+Implementação: removidos PendingDeltaStore/MemoryPendingDeltaStore, parâmetro/campo store e ramificações de persistência/envio; storage obrigatório e não nullable nos dois construtores da engine. Removidos aliases set/remove de Replica/SyncEngine, Delta.crdt/crdtChanges e OutboxEntry.operationId. Retirados Operation/migrateLegacyOperation dos exports; DTO/parser e readers continuam. Migrados sete testes de sync; testes do reader no próprio core usam seu arquivo interno explicitamente. Acrescentados guia, changelogs e provas isoladas de migração/rollback, sem classe ou dependência nova em produção.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigida fixture de restauração com dono da outbox errado; documentado entryId após retirar operationId; mantidas regressões de envio sem ACK/falha e descarte. A prova negativa passou a exigir diagnósticos do analyzer por linha porque o compilador parava antes de todas as mensagens; comparação de inventário separa mudanças documentais exatas das assinaturas. Review repetido após correções/formatação, incluindo arquivos novos. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes e python3 plan/evidence/r39/validate.py --dart dart --report /tmp/deltasync-r39-consumers.json, executados da raiz; comandos completos e subprocessos nos artefatos abaixo. 249 testes do workspace, 14 checks históricos e 15 migrados aprovados; falha esperada de compilação do consumidor antigo na árvore atual e 12 probes negativos de API. Inventário dos sete exports restringe diferenças às previstas. SQLite executado em três processos, antigo/atual/antigo, sobre o mesmo banco.
+Critérios: C1 demonstrado por diff, inventário externo e rejeição estática das APIs removidas; C2 pelos dados congelados R-30 intactos, readers legados, oito tipos e recuperação SQLite; C3 por guia de fonte/dados/rollback, exemplo do guia compilado/testado, contratos implementados externamente, suíte de storage e rollback com escritas novas/ACK parcial. Nenhum join, versão de formato, schema ou manifesto alterado.
+Manutenção: três critérios marcados, índice/fase/trace atualizados, DEC-60 e RISK-26/38 revisados. R-38/R-42 liberadas; R-32/R-33 seguem prontas. Nenhuma ativa, próxima recomendada R-32; fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5 stable/Linux x86_64, SQLite FFI e dependências por path no consumidor isolado. Sem SDK 3.12.x, Android novo, publicação hosted ou compilação de Compass; SDK mínimo fica em R-33/VAL-17. Rollback cobre apenas a revisão 1.0.0 fixada e mudanças de R-39, sem prometer versões anteriores ou APIs futuras. MemoryStorage não comprova durabilidade. Sem commit/publicação ou início de outra tarefa.
+
+### Leitura e implementação
+
+[workspace.json](evidence/r39/workspace.json) registra revisão inicial, hashes de
+fontes/testes/guia/ferramentas, review e testes. Todos os arquivos R-30 permanecem
+intactos. A remoção elimina o segundo contrato de persistência e a escolha
+inválida de nenhum/dois stores. Storage obrigatório expressa a invariante no tipo,
+sem enum, wrapper, plugin ou camada nova. withStorage usa o mesmo construtor.
+
+Estado, mutação, delta e join continuam no core; candidata, commit, adoção e
+restauração no sync; atomicidade no backend; seleção por peer/tentativas no
+outbound. Rede fica fora da fila de commits. Operation e seu conversor permanecem
+em src/operation.dart, fora dos exports públicos, usados pelos readers de delta
+e snapshot. ReplicaSnapshot.legacy e OutboxStatus.confirmed foram mantidos por
+compatibilidade de dados/adaptadores; nenhum join ou formato mudou.
+
+O [guia](../docs/migracao-1.0.1.md) mapeia remoções/substitutos, pontos de
+manutenção, importação e rollback. O exemplo de importação exige checkpoint
+completo e peer explícito: pendências não recuperam estado já confirmado. A prova
+extrai esse exemplo do Markdown, compila e testa commit falho, dono incorreto,
+destino ocupado, importação correta e ACK parcial. Não impõe importador ao core.
+
+### Review e correções
+
+Primeira rodada de sync: 56 testes passaram e uma fixture migrada falhou.
+Enfileirava uma mudança de source e restaurava device-a; o storage suportado
+separa por origem. Corrigidos dono/destino da fixture, a regressão focada passou.
+Diff revisto após correções; rodada completa posterior aprovada. Log inicial e
+final permanecem em workspace.json. Envio sem ACK, falha de envio, restauração
+antes do uso e descarte continuam testados no caminho suportado.
+
+A primeira prova negativa exigia todas as mensagens do compilador; ele parou
+nas primeiras. Corrigida para incluir 12 linhas independentes com diagnósticos
+machine do analyzer. A comparação AST inicial também sinalizou comentários de
+retry/pending/entryId. O comparador agora verifica exatamente essas três mudanças
+documentais, separadas das assinaturas, sem alterar a baseline. Fixtures e
+comparador foram revistos após correção e reexecutados com sucesso.
+
+### Validação
+
+Na raiz, comando completo dos sete pacotes:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r39-workspace.log 2>&1
+python3 plan/evidence/r39/validate.py --dart dart --report /tmp/deltasync-r39-consumers.json
+```
+
+Resultado do workspace: **249 testes**, respectivamente 13/122/57/12/27/8/10;
+sete análises sem issues e sete gates de formato sem mudanças. Inclui oito tipos,
+falhas transacionais, rollback, ACK parcial/perdido, retries, edição concorrente,
+contextos causais e recuperação SQLite. Logs completos estão em workspace.json.
+
+[validation.json](evidence/r39/validation.json) conserva comandos, diretórios,
+resolução offline própria, SDK, logs, diferenças de API e hashes de R-30.
+Consumidor antigo: **14 checks** na revisão histórica. O
+[migrado](evidence/r39/consumer_test.dart.txt): **15 checks**, análise limpa e
+origem dos imports conferida, em projeto fora do workspace. São cenários
+correspondentes e um adicional, não 29 cenários inteiramente distintos. Os
+consumers implementam contratos por composição, sem imports de src.
+
+Consumidor antigo falha na árvore atual por APIs removidas, como esperado.
+Doze probes também falham com erros nas linhas esperadas; isso é prova de remoção,
+não reprovação do gate. Inventário dos sete entry points não encontrou mudanças
+fora das remoções/assinaturas previstas e dos ajustes documentais conferidos.
+Contratos de adaptadores/transporte e suíte de storage permaneceram iguais.
+
+O [programa de rollback](evidence/r39/rollback.dart.txt) rodou em três processos:
+1.0.0 gravou SQLite; atual reabriu, escreveu LWW/counter e recebeu ACK de três
+IDs; 1.0.0 reabriu e verificou novas escritas, 45 pendências e 23 entradas do
+outro peer com payload/metadados preservados. Consumer migrado também reabre
+SQLite após novos commits/ACK. Prova vale para essa referência e FFI/Linux,
+sem extrapolar a Android ou readers anteriores à revisão fixada.
+
+### Manutenção
+
+R-39 concluída com três critérios demonstrados; R-38/R-42 prontas por dependência.
+R-32 recomendada conforme sequência vigente; nenhuma próxima tarefa iniciada.
+DEC-60 registra internalização dos leitores e limite do rollback; RISK-26/38
+distinguem remoções verificadas do restante da release. Numeração intacta até
+R-36; gate integral continua VAL-17. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 416 links locais;
+`git diff --check` passou. JSON, hashes e whitespace dos artefatos novos também
+foram conferidos.
+
+<a id="execucao-r-32-2026-10-24"></a>
+
+## Execução R-32 — Custos de mutação, restauração e pendências, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 2e1b9f5a97cb99b50c6ec770b2b12c19914afab6; R-31 e R-39 concluídas, R-32 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, instrumentos existentes, DEC-58/59/60, RISK-25/37 e guia Dart (SDK, simplicidade, records, contratos). Conferidos fork/adopt, snapshots, replay e preparação real com os limites core/sync/storage.
+Implementação: estendido example/measure_crdt_cost.dart com --paths, preservando modo anterior e reutilizando factories, transporte controlado e helpers existentes. Cargas independentes de campos, valores e pendências, oito tipos, dois peers e statuses pending/sent; MemoryStorage e SQLite FFI. Acrescentados medição de 12 percursos, verificações runtime, bytes JSON separados, RSS de processo e arquivos fechados SQLite. Nenhuma fonte de produção, API, dependência, manifesto ou formato mudou.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigidos dois avisos de estilo e comparação de valores que dependia da ordem de mapas/sets; listas preservam ordem. Conferidas exclusão de setup/checks dos cronômetros, HLC monotônico na restauração, scopes global/peer distintos e limites de RSS/JSON/SQLite. Explicados overwrite do mesmo valor, caches/JIT, etapas isoladas e ausência de rede no preparo. Review repetido após correções e nos artefatos/documentação; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r32-paths.json 2> /tmp/deltasync-r32-paths.err; dart format --output=none --set-exit-if-changed example/measure_crdt_cost.dart lib test && dart analyze && dart test --reporter expanded; dart run example/measure_crdt_cost.dart > /tmp/deltasync-r32-legacy.log 2>&1, todos da raiz. JSON conferido por Python para contagens, medianas, métricas, equivalência entre backends e tamanhos; hashes/outputs preservados nos artefatos.
+Critérios: C1 pelas sete configurações por backend e 12 métricas, incluindo mutação, snapshot, restauração/outbox, preparo e consultas repetidas; C2 pela equivalência de estado/IDs/metadados, projeções separadas e fechamento/reabertura SQLite, sem confundir memória/arquivo; C3 por seed, ambiente, dois aquecimentos e cinco amostras por carga, RSS identificado como processo e ausência explícita de heap/alocações; C4 por gargalos/encaminhamentos no README da evidência e DEC-61: R-37 antes da release, novas otimizações de replay/cópias/SQL para avaliação posterior, sem relaxar isolamento ou retirar requisitos da fase.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-61, RISK-37 e novo RISK-43 registram custos e decisão. R-37 liberada por R-32/R-39 e próxima recomendada; R-33/R-38/R-42 seguem prontas. Nenhuma ativa, nenhuma próxima iniciada; fase 6 e VAL-17 continuam abertos.
+Limitações: Dart 3.13.5 stable/Linux x86_64, SQLite FFI e payload ASCII compartilhado por carga. Sem SDK 3.12.x, novo Android, rede real, profiling de heap/alocações ou SLA universal. Timings não são monotônicos em todas as cargas; JIT/GC/caches e ordem fixa permanecem. RSS não mede alocação por operação; bytes SQLite pós-escrita não são JSON pré-operação ou espaço recuperável. Sem mudança de lib, Compass, commit ou publicação.
+
+### Implementação e revisão após correções
+
+O [medidor](../example/measure_crdt_cost.dart) ganhou um modo de análise, sem
+alterar APIs ou introduzir camadas em produção. Records privados descrevem
+cargas; o preparo chama OutboundSync.prepare real. Modelos, regras de negócio e
+adaptação do app continuam no consumidor; estes imports internos são instrumentos,
+não um mecanismo de extensão sugerido aos aplicativos.
+
+Primeira análise encontrou dois infos de chaves em fluxo, corrigidos. A primeira
+execução de --paths saiu com 255 em `restored values`: snapshot equivalente, mas
+ordem do mapa de valores mudou na restauração. Corrigida a normalização de
+Map/Set, mantendo ordem de List, o instrumento passou. HLC pode avançar no replay;
+a prova exige monotonicidade e preserva comparação dos demais metadados. Nenhum
+achado exigiu mudar a biblioteca. Correções e limites dos cronômetros foram
+revistos antes da execução final; review não independente.
+
+### Validação e resultados
+
+[Método/resultados](evidence/r32/README.md) detalha comandos, parâmetros,
+escopos, tabelas e encaminhamentos. [Amostras](evidence/r32/measurements.json)
+registram 14 cargas, 28 aquecimentos e 70 amostras medidas. Cada execução verifica
+fork/adopt, snapshot, valores, IDs/clocks/contextos, outbox, seleção/ordem por peer,
+tentativas e commit final. Seed 20261024 e relógio fixo; 16/64/256 campos,
+64/256/1024 B ASCII e 16/64/256 pendências, variando um parâmetro por eixo.
+
+O JSON foi conferido separadamente: sete configurações com os dois backends,
+cinco amostras e 12 métricas por carga, oito tipos, todas as verificações
+aprovadas, medianas recalculadas e tamanhos/contagens de fixture iguais entre
+MemoryStorage/SQLite. Main/WAL/SHM foram registrados após fechar cada SQLite;
+todo main existia com tamanho positivo. RSS e máximo são do processo inteiro,
+incluindo runtime/SQLite; não contam heap, alocações ou cópias por operação.
+
+[validation.json](evidence/r32/validation.json) guarda revisão base, hashes do
+instrumento/dados/lock, falha inicial, execução final e modo anterior. Este último
+manteve quatro cargas MV com ACK esvaziando pendências, 253 itens no estado grande
+e 17 eventos retidos OR-Set. Seus tempos não foram comparados aos do modo novo.
+[Checks da raiz](evidence/r32/root-checks.json): formato sem mudanças, análise
+sem issues e **13 testes da facade** aprovados. Não reapresentar 249 testes de
+R-39 como execução desta tarefa; nenhuma fonte em lib/packages foi modificada.
+
+Com 256 entradas, cinco contagens pela engine levaram 5110 µs em memória e
+28681 µs no SQLite; start com outbox, 153115/168325 µs. Preparar 128 entradas do
+peer levou 1610/28568 µs. Código confirma payloads materializados para contagem,
+replay por entrada com fork/adopt e markSent com consulta/escrita por ID.
+As etapas e escopos diferem: não somar cronômetros nem atribuir toda diferença
+ao SQL. SQLite fechado de pending-256 tinha 233472 B, versus 106950 B de outbox
+JSON inicial; não são o mesmo objeto/instante nem medida de espaço recuperável.
+
+R-37 segue antes da release. Novas otimizações de replay/cópias/SQL ficam para
+avaliação posterior por DEC-61; não foi demonstrado defeito de dados ou definido
+SLA que imponha outra refatoração agora. Orçamento de consumidor mais estrito
+exige reavaliar essa decisão. Consulta pontual de string não mostrou crescimento
+consistente com campos/backlog; isso não se estende a coleções/modelos arbitrários.
+
+### Manutenção
+
+R-32 concluída com critérios demonstrados; R-37 pronta e recomendada, sem iniciar
+outra implementação. Registro de performance preserva garantias e todo o escopo
+de 1.0.1. Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e
+431 links locais; `git diff --check` passou. JSON, hashes e whitespace dos
+artefatos novos foram conferidos.
+
+<a id="execucao-r-37-2026-10-24"></a>
+
+## Execução R-37 — Resumo público de pendências, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em f2edf0f4da878dd785c1240536b4537aa081e9d4; R-32/R-39 concluídas e R-37 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, DEC-61, riscos, contrato/storage/sync e guia Dart sobre contratos, null safety e records. Confirmado custo de materialização nas evidências R-32 e status dentro do payload SQLite schema v1.
+Implementação: pendingSummary obrigatório em ReplicaStorage, referências MemoryStorage/SQLite e consulta enfileirada pela SyncEngine/facade. OutboxSummary contém pendingCount/sentCount e total derivado, sem cache. SQLite agrega status, com fallback restrito à ausência da função JSON; nenhuma mudança de schema/formato. Suíte pública de contrato ampliada; regressões de storage, sync, SQLite e facade; migração, changelogs, consumidor externo e medidor estendido com duas consultas adicionais.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Primeira análise/compilação SQLite detectou getResultCode ausente no helper DatabaseException; implementado e revisto. Corrigidos infos/formatação. Conferidos escopo global por peer/ID, confirmed excluído, ausência de payload no caminho otimizado, limites do fallback, propagação de erro e fila sem bloqueio por rede. Review repetido após correções, incluindo arquivos novos e documentos; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes; python3 -B plan/evidence/r37/validate_consumer.py --dart dart --report /tmp/deltasync-r37-consumer-smoke.json; dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r37-paths.json 2> /tmp/deltasync-r37-paths.err. Execuções da raiz, comandos/logs completos nos artefatos. Benchmark sem suítes Dart paralelas disparadas pelo agente.
+Critérios: C1 demonstrado pela API sem cache e provas estruturais de ausência de decodificação de deltas, com 14 cargas/70 amostras equivalentes; C2 pelo membro obrigatório mínimo, implementações de referência, suíte de contrato, guia e adaptador externo antigo rejeitado/migrado aprovado; C3 por filtros/status/ACK parcial, falha de consulta, edição durante rede, leitura concorrente com commit/rollback, lifecycle e SQLite fechado/reaberto preservando estado/outbox. 266 testes do workspace, 18 checks externos e sete inventários aprovados.
+Manutenção: três critérios marcados, índice/fase/trace atualizados, DEC-62 e RISK-37 revisados. Nenhuma ativa; próxima recomendada R-38, com R-33/R-42 também prontas. Fase 6/VAL-17 seguem abertas; nenhuma próxima implementação iniciada.
+Limitações: Dart 3.13.5/Linux x86_64, SQLite FFI; sem SDK 3.12.x, Android novo ou hosted artifacts. Ausência de JSON1 simulada em wrapper sobre banco real; fallback funcional, não benchmarkado. Agregação ainda processa JSON no SQLite, sem custo constante ou validação do corpo dos deltas. Heap/alocações não medidos. Sem alteração de core/joins/formatos/manifests, Compass, publicação ou commit.
+
+### Evidências por etapa
+
+[Contrato, migração, resultados e reprodução](evidence/r37/README.md) descrevem
+o consumo público e os limites. A leitura selecionou um único membro obrigatório,
+evitando capacidade opcional mais dispatch na engine. DTO valida contagens e
+deriva total; o estado continua no core, commit/adoção/restauração no sync e a
+outbox no backend. Resumo lê essa fonte, sem outra representação mutável.
+
+[validation.json](evidence/r37/validation.json) contém hashes, análise/review,
+falha inicial do helper e log completo do workspace: 14/122/62/14/34/10/10 testes,
+total **266**, sete análises limpas e formato aprovado. Novos testes cobrem
+metadata sem ler delta, empty/peer/réplica/status, ACK parcial, erros sem zero
+falso, fila durante commit/rollback, rede que não bloqueia edição/consulta,
+retry de inicialização e disposal. SQLite reabre após commit/envio/ACK e mantém
+snapshot/contagens; agregação não transfere payloads para Dart. O fallback também
+evita instanciar deltas, mas carrega JSON; erros distintos não ativam fallback.
+
+[consumer-validation.json](evidence/r37/consumer-validation.json) registra
+**18 checks** em projeto externo com resolução por path e origem conferida.
+O adaptador antigo não compila por pendingSummary ausente. O
+[migrado](evidence/r37/consumer_test.dart.txt) implementa o membro por delegação,
+sem src/herança interna. Dados congelados dos oito tipos, readers e contrato
+continuam exercitados. Sete inventários contra a revisão inicial confirmam
+somente OutboxSummary e pendingSummary como adições; R-30/R-39 permanecem intactos.
+
+[measurements.json](evidence/r37/measurements.json) reutiliza cargas R-32 com
+semente/aquecimentos e mede caminhos antigos/novos na mesma execução. Em SQLite,
+cinco contagens globais de 256 entradas levaram 31537 µs via pendingDelta e
+3157 µs via resumo; por peer, 12977/1552 µs para 128 entradas. Cada amostra
+verifica equivalência dos resultados. Em memória, a carga pequena por peer teve
+40/73 µs: fila/DTO têm custo fixo e não há promessa de ganho em todo cenário.
+Não extrapolar para redes, heap, outras plataformas ou fallback sem JSON1.
+
+### Manutenção
+
+R-37 concluída com critérios e evidências; R-38 recomendada e não iniciada.
+Guia separa falha de consulta de sucesso do commit local, descreve quebra do
+adaptador externo e limites de metadata/JSON. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 446 links locais;
+`git diff --check` passou. Hashes, JSON, sintaxe do instrumento Python, whitespace
+e unicidade dos IDs de risco foram conferidos. Correções finais documentais
+revistas sem mudanças adicionais de código.
+
+<a id="execucao-r-38-2026-10-24"></a>
+
+## Execução R-38 — Lote local atômico, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em ae1eefe7321da59b9fb420d17eb233dda6903cdc; R-39 concluída e R-38 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, fase, decisões/riscos, guia Dart (contratos, class modifiers e records) e pipeline de mutação/fork/adopt/commit. Confirmado que um editor de escopo limitado pode reutilizar candidata e commit sem expor Replica ou alterar joins.
+Implementação: SyncEngine.batch retorna Delta depois de um commit/adopção; LocalBatch final de construtor privado delega aos oito CRDTs, coleta mudanças e expira no fim do callback. Erros de edição invalidam o lote mesmo capturados; vazio/Future retornado abortam. Contexto Zone impede chamadas reentrantes e continuações async rejeitadas. Adicionados testes, exemplo público, documentação/changelog e extrator canônico de APIs com suporte a parts; sem novos contratos de storage/transport ou formatos.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Flag síncrona inicial foi substituída por contexto Zone para impedir chamadas diretas à engine em continuações de callbacks rejeitados. Matcher SQL foi restringido ao erro do trigger para comprovar falha após escrita parcial. Após matriz completa, reforçado teste de rollback para os oito tipos simultâneos e dots/IDs de retry; delta revisto e oito testes focados aprovados. Conferidos arquivos novos, lifetime do editor, eventos, reentrância, callback void nomeado e limites de I/O externo. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test dos sete pacotes; dart test test/local_batch_test.dart --reporter expanded no pacote sync após reforço; python3 -B plan/evidence/r38/validate_consumer.py --dart dart --report /tmp/deltasync-r38-consumer-smoke.json; dart run example/local_batch_example.dart. Comandos completos, diretórios e logs nos artefatos. Matriz 278 testes, oito focados adicionais sem somar ao total, dois checks externos e sete inventários aprovados; exemplo confirma três mudanças/pendências.
+Critérios: C1 pelo editor sem Replica, candidato/commit únicos, encerramento antes do await e teste com commit bloqueado; C2 por contrato explícito de retorno/vazio/throw/Future/reentrância e bloqueio de continuações, sem schemas/comandos de domínio; C3 por rollback dos oito tipos em memória, falha de segunda inserção em transação SQLite, preservação de snapshot/outbox/IDs, reabertura e edição concorrente; C4 por exemplo de perfil com campos relacionados e regressão de ACK parcial por mudança, com limites de transação distribuída documentados.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-63 e RISK-41 registram decisões/limites. R-41 liberada por R-37/R-38; próxima recomendada R-42 conforme sequência, com R-33 também pronta. Nenhuma ativa ou próxima implementação iniciada; fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5/Linux x86_64, SQLite FFI; sem runtime SDK 3.12.x, Android novo, kill de processo ou rede física. ACK controlado não prova persistência remota. Contrato proíbe I/O/trabalho async separado e chamadas fora do editor no callback; biblioteca não desfaz efeitos externos do app. Consumidor externo usa path, não hosted. Sem alteração de core/joins, contratos de adaptadores, JSON/schema/versões, Compass, commit ou publicação.
+
+### Leitura, implementação e review
+
+O [contrato e reprodução](evidence/r38/README.md) aponta código, guia e logs.
+LocalBatch justifica uma classe pelo lifetime/estado de falha do recurso; não é
+outro modelo de estado. Usa part na library de SyncEngine para compartilhar
+construtor/encerramento privados. final impede construção/implementação forjada
+por consumidor; métodos delegam validações/joins ao core e não criam regras
+paralelas. _record controla falha/coleta; _close libera a candidata. A engine
+continua usando _commitLocalResult, fila e commit local existentes.
+
+Review examinou código e testes novos, incluindo exceções capturadas e editor
+guardado para depois. A primeira flag protegia apenas o callback em execução;
+Zone foi adotado para que uma continuação async rejeitada também não possa
+chamar a engine diretamente. Teste específico aprovou rejeição sem erro órfão
+nem commit. Documentação explicita que efeitos externos iniciados pelo app não
+são transacionais. O exemplo usa dados preparados antes do callback.
+
+O [extrator atual](../scripts/api_inventory.dart) acrescenta parts ao algoritmo
+de inventário sem alterar a ferramenta congelada R-30. Contra as fontes da
+revisão inicial, seus sete inventários coincidem com os do extrator histórico;
+contra a árvore nova identifica somente LocalBatch e SyncEngine.batch como
+adições. Isso evita omitir API pública definida em part na manutenção seguinte.
+
+### Validação
+
+[validation.json](evidence/r38/validation.json) guarda hashes de código/testes/
+instrumentos, lock/versão do analyzer e logs da execução. Comando da matriz:
+
+```sh
+for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do
+  (cd "$package" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1
+done > /tmp/deltasync-r38-workspace.log 2>&1
+```
+
+Resultado: **278 testes**, respectivamente 15/122/70/14/37/10/10, com formato e
+sete análises limpas. Depois, só o teste de rollback em memória foi fortalecido
+para oito tipos simultâneos: arquivo formatado, delta revisto, análise e oito
+testes de lote aprovados. Checks não afetados da matriz foram preservados;
+produção não mudou após a matriz. Não somar essas repetições ao total.
+
+Cobertura específica: 22 mutações dos oito tipos com um commit/evento; valores
+isolados; callback vazio, inválido/capturado, throw e Future; editor fechado antes
+de await; engine reentrante e continuação rejeitada; commit falho preservando
+snapshot/IDs e retry com dots iniciais; edição concorrente na fila; rede falha e
+ACK parcial. SQLite injeta trigger no segundo INSERT, após snapshot/primeiro
+INSERT, verifica erro exato e reabre sem estado/outbox parcial. Outro lote dos
+oito tipos reabre intacto e ACK de uma mudança deixa sete entradas sent.
+
+[consumer-validation.json](evidence/r38/consumer-validation.json) registra dois
+testes externos por facade com callback nomeado void, três campos e rollback de
+validação do app. Compilação negativa rejeita construtor e implementação forjada
+do editor. Os sete inventários e a equivalência do extrator antigo também passam.
+O [exemplo](../example/local_batch_example.dart) verifica três mudanças e três
+pendências após commit; não envia dados nem sugere ACK automático.
+
+### Manutenção
+
+R-38 concluída, R-41 pronta por dependência e R-42 recomendada sem iniciar outra
+tarefa. DEC-63/RISK-41 distinguem escopo local, side effects externos e ACK por
+mudança. Gate integral continua VAL-17. Após manutenção,
+`python3 scripts/check_plan.py` aprovou 70 tarefas e 463 links locais;
+`git diff --check` passou. Hashes, JSON, sintaxe Python, whitespace e unicidade
+dos IDs foram conferidos. Revisão documental final sem achados impeditivos.
+
+<a id="execucao-r-42-2026-10-24"></a>
+
+## Execução R-42 — Consulta explícita de campo, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 754c763d5a90bdc95b10cc55fcf36b929890b47b; R-39 concluída, R-42 pronta e recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, decisões/riscos pertinentes e guia Dart sobre enums, null safety, sealed/final e library/part. Conferidos dono canônico, consultas dos oito tipos, pipeline de commit/adoção, lifecycle e lifetime do editor. Escopo limitado a R-42, sem antecipar R-40 ou adaptar Compass.
+Implementação: Replica.query, SyncEngine.query e LocalBatch.query retornam FieldQuery sealed com AbsentField, PresentField(kind/value) e DeletedField para tombstone LWW. Outros sete tipos vinculados são presentes com zero/coleção vazia. ReplicaState.isDeletedAt inspeciona metadados sem copiar payload; valor compartilha percurso com valueAt, que preserva semântica anterior. Resultados isolados/read-only, variantes final e construtores privados na library de Replica via part. Adicionados testes, exemplo, guia, READMEs/changelogs e prova de consumidor/inventários; nenhum schema, join ou contrato de adaptador mudou.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Evitada cópia de vencedor/valor LWW apenas para consultar tombstone por accessor canônico. Corrigidos fixture que tentava alterar snapshot imutável, getter inexistente label no exemplo e comparação de inventário que incluía Dartdoc no offset do AST. Após correções, revistos código, testes, novos arquivos e instrumento; preservados semântica de valueAt, lifecycle, isolamento e compatibilidade de dados. Nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop completo de dart format/analyze/test nos sete pacotes; python3 -B plan/evidence/r42/validate_consumer.py --dart dart --report /tmp/deltasync-r42-consumer.json; dart run example/field_query_example.dart. Matriz: 291 testes, respectivamente 16/128/73/14/40/10/10, sete formatos sem alterações e sete análises limpas. Dois testes externos, compilação negativa e sete inventários aprovados. Comandos completos, diretórios, saídas, falhas corrigidas e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 por três variantes fechadas, oito tipos, sete tipos vinculados vazios/zero, MV {null} e coleções aninhadas imutáveis; C2 por kindAt/isDeletedAt canônicos, percurso pontual sem fork/snapshot/state e tombstone preservado após outbox esvaziada; C3 por valueAt inalterado, exemplo e guia indicando decoder somente no ramo presente inclusive null, sem implementar R-40; C4 por ordens concorrentes/replay LWW, consulta durante commit bloqueado, candidata no editor, falha de commit, lifecycle, facade e três testes SQLite de reabertura/rollback.
+Manutenção: quatro critérios marcados, índice/fase/trace atualizados; DEC-64 e RISK-41 registram contrato e limites. R-40 liberada e recomendada; R-33/R-41 também prontas. Nenhuma tarefa ativa ou próxima implementação iniciada; fase 6/VAL-17 permanecem abertos. Conferência estrutural e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI; sem runtime SDK 3.12.x, Android novo, kill de processo ou rede física. ACK controlado não prova persistência remota; consumidor externo usa path, não hosted. Query não valida modelos do app; conveniência de decoder permanece em R-40. Sem mudanças de formatos, SDK, versões, Compass, commit ou publicação. Variantes são fechadas; futura expansão exige migrar switches e subclasses externas devem conferir conflito com método próprio chamado query.
+
+### Evidências e recuperação
+
+O [contrato e reprodução](evidence/r42/README.md) liga APIs, testes e caminhos de
+manutenção. [validation.json](evidence/r42/validation.json) contém logs e hashes
+de produção, testes, exemplo, guia e instrumentos. A falha inicial da fixture
+permanece registrada: toSnapshotJson é imutável; Map.of cria o mapa externo para
+preenchê-lo com snapshots públicos dos sete CRDTs. O exemplo passou após usar
+CrdtKind.wireName. O comparador aceita Dartdoc no prefixo da assinatura sem
+relaxar a lista de símbolos/membros esperados; extrator canônico não mudou.
+
+Core verifica ausência/null/remoção/ressurreição, tipos vazios e preenchidos,
+isolamento profundo e estabilidade; duas ordens de chegada de eventos LWW
+concorrentes e replay antigo preservam o vencedor. Guarda de teste numa réplica
+de 500 campos rejeita acesso aos caminhos públicos de cópia completa. Consulta
+usa somente metadados/valor do endereço e mantém snapshot/clocks intactos.
+Sync confronta candidata visível no editor com estado adotado enquanto commit
+aguarda, rejeita editor fechado e mantém estado anterior após falha. Consultas
+antes/durante start, após falha de carga e após dispose respeitam lifecycle.
+
+SQLite fecha e reabre banco real com os oito tipos, ausência, null, tombstone,
+sete tipos vazios/zero e coleções aninhadas. Um trigger aborta inserção da outbox
+depois da tentativa de snapshot; erro exato é exigido. Engine/banco mantêm
+snapshot/outbox/null anteriores; reabertura preserva null, retry remove e outra
+reabertura mantém tombstone. ACK controlado esvazia pendências sem apagar estado.
+MemoryStorage é evidência complementar volátil, não prova durável.
+
+O [consumidor externo](evidence/r42/consumer_test.dart.txt) compila switch
+exaustivo pela facade e consulta engine/editor sem importar internos. Dois testes
+aprovados; compilação negativa rejeita construtor e implementações de resultados
+sealed/final. [consumer-validation.json](evidence/r42/consumer-validation.json)
+confirma sete inventários contra HEAD inicial: quatro tipos adicionados no
+core/facade, query em Replica/SyncEngine/LocalBatch e isDeletedAt em ReplicaState.
+Nenhuma assinatura antiga removida/modificada, nem mudança em storage/transport.
+Evidências congeladas R-30 a R-38 permanecem intactas.
+
+### Manutenção
+
+R-42 concluída; próxima recomendada R-40 sem iniciá-la. Leitura/commit/ACK
+continuam separados; aplicação mantém modelos e conversões. O
+[guia de migração](../docs/migracao-1.0.1.md#consulta-explícita-de-campo--r-42)
+documenta os três casos, coleções vazias, decoder futuro, classes fechadas e
+pontos únicos de manutenção. Gate da release continua VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 478 links
+locais; `git diff --check` passou. Conferidos 20 hashes, lock inalterado, dois
+relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
+âncora da execução. Evidências anteriores preservadas. Revisão documental final
+sem achados impeditivos; nenhum código mudou após a matriz aprovada.
+
+<a id="execucao-r-40-2026-10-24"></a>
+
+## Execução R-40 — Decoder opcional, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 0e17a2a964b7adb8fcb0974dd6301e1168cfcc8d; R-42 concluída e R-40 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-64/RISK-40/41 e guia Dart sobre null safety, padrões, class modifiers/extensions e SDK. Conferidos FieldQuery, valor isolado, ciclo de query/start/dispose e editor. Selecionada conveniência no resultado presente para reutilizar percurso canônico e manter os ramos de ausência/remoção.
+Implementação: PresentField.decode<T> invoca T Function(Object?) uma vez sobre value já isolado, inclusive null, retorna T e propaga erro sem wrapping/default. Valor bruto permanece disponível; ausente/removido não oferecem decode. Mesmo resultado atende Replica/SyncEngine/LocalBatch sem novos métodos de engine, tipos, variantes, schema ou cache. Adicionados testes core/sync/facade, modelo/exemplo público, guia/READMEs/changelogs e fixture externa/inventários. Modelos e validação continuam no consumidor.
+Review: aprovado
+Achados: revisão do próprio agente, não independente, incluindo arquivos novos e instrumento. Corrigidos lint de bloco if no modelo de teste e expectativa externa de quatro pendências para três mutações locais; falha preservada e fixture corrigida sem mudar produto. Guia complementado com precedência de membro de instância sobre extension decode do consumidor. Após correções, revistos deltas, comportamento de null/erro, mutabilidade de saída, lifecycle e rollback do lote; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test em raiz, packages/deltasync_core e packages/deltasync_sync; python3 -B plan/evidence/r40/validate_consumer.py --dart dart --report /tmp/deltasync-r40-consumer.json; dart run example/field_decoder_example.dart. 225 testes, respectivamente 17/132/76, três formatos sem mudanças e três análises limpas. Dois testes externos e análise aprovados; prova negativa rejeita decode em ausente/removido. Sete inventários confirmam somente PresentField.decode como adição em core/facade. Comandos completos, saídas, falha corrigida, ambiente e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 pelo membro opcional no resultado existente, T Function(Object?) para T, valor bruto preservado e modelo/schema no app; C2 por ramos explícitos de ausência/remoção, null passado ao decoder, retorno nullable e exceção original propagada; C3 por oito tipos, tentativa de mutação aninhada, modelo mutável de saída e snapshots/clocks/outbox intactos em sucesso/falha, sem eventos de commit/erro da engine; C4 por Profile válido/JSON incompatível, erro tratado no exemplo/consumidor, query antes/durante start e após dispose, resultado retido, editor e facade.
+Manutenção: critérios marcados, índice/fase/trace atualizados; DEC-65 e RISK-40/41 registram contrato e limites. R-41 recomendada, R-33 também pronta; nenhuma tarefa ativa ou próxima implementação iniciada. Fase 6/VAL-17 continuam abertos. Checker estrutural e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64; sem SDK mínimo 3.12.x ou Android novo. Validação proporcional de core/sync/facade, não gate completo da release; sem nova prova SQLite porque persistência/formatos não mudaram e recuperação durável não é critério R-40. Consumidor externo usa path/resolução independente offline, não hosted. Callback pode capturar efeitos externos que a biblioteca não desfaz; modelo/validação/mutabilidade de saída pertencem ao app. Sem mudanças de variantes/query/valueAt, joins, commit/ACK, adaptadores, dados, SDK/versões, Compass, commit ou publicação.
+
+### Contrato, falhas e consumo
+
+O [contrato e reprodução](evidence/r40/README.md) apresenta os pontos únicos de
+manutenção. [validation.json](evidence/r40/validation.json) contém logs reais,
+hashes e correções. Preferido um membro em PresentField, tipo final já controlado
+pela biblioteca: a conveniência trabalha sobre a consulta feita e seu Object?
+isolado, sem estado nem despacho adicional. Isso preserva switches e permite
+aplicações escolherem converter ou inspecionar o bruto em cada leitura.
+
+Core exercita inferência de T, resultado nullable, null legítimo e ramos explícitos
+de ausência/remoção sem invocar decoder. Profile valida seu próprio schema; modelo
+mutável copia tags sem alterar entrada. Exceção de domínio, erro de tentativa de
+mutar lista aninhada e erro arbitrário propagam; a exceção arbitrária preserva
+identidade. Conversão dos oito tipos mantém snapshot/clocks e valor bruto.
+
+Sync confere snapshot ativo/persistido e outbox intactos após sucesso/erro,
+sem notificação de commit ou errors. Push falho não impede converter resultado
+retido nem editar depois. Lifecycle é aplicado ao obter consulta; resultado
+retido não segura engine/editor e permanece convertível após dispose/fechamento.
+Decoder que falha e escapa do callback aborta a candidata do lote pelo mecanismo
+existente; resultado válido lê edições provisórias. Não há tradução de erro de
+modelo em sucesso de edição nem rollback de commit anterior por falha de leitura.
+
+O [exemplo](../example/field_decoder_example.dart) mostra missing, valid, null,
+deleted e invalid, captura erro de modelo e preserva JSON bruto. O
+[consumidor externo](evidence/r40/consumer_test.dart.txt) usa somente facade,
+modelo próprio, retorno inferido e cópia mutável; sua primeira expectativa de
+contagem estava incorreta. Após correção de quatro para três, dois testes
+passaram. A falha anterior permanece no relatório, sem ocultar histórico.
+[consumer-validation.json](evidence/r40/consumer-validation.json) registra
+compilação negativa e sete inventários com única adição esperada; nenhuma
+assinatura anterior removida/modificada ou classe/variante nova. Evidências
+congeladas anteriores permanecem intactas.
+
+### Manutenção
+
+R-40 concluída; R-41 recomendada sem iniciá-la. O
+[guia de migração](../docs/migracao-1.0.1.md#decoder-opcional-no-resultado-presente--r-40)
+explica entrada/retorno, modelo inválido, resultado retido, efeitos externos e
+precedência do novo membro sobre extension do consumidor. DEC-65/RISK-40/41
+distinguem conversão, commit e falha de sync. Gate integral permanece VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 494 links
+locais; `git diff --check` passou. Conferidos 14 hashes, lock/HEAD inalterados,
+dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
+âncora da execução. Evidências anteriores preservadas. Revisão documental final
+sem achados impeditivos; produção/testes não mudaram após a matriz aprovada.
+
+<a id="execucao-r-41-2026-10-24"></a>
+
+## Execução R-41 — Eventos seletivos, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em bc65f4a2658b75141953477c6281c12eebf11f07; R-37/R-38 concluídas e R-41 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-63/64/65, riscos de integração/eventos e guia Dart sobre class modifiers, padrões e extensions. Inspecionados DeltaChange.crdtId, parse/join canônico de snapshot, pipelines de commit/adoção/ACK e os três controllers/listeners existentes. Escopo limitado a R-41.
+Implementação: SyncCommitEvent.addresses guarda conjunto isolado/read-only de endereços processados; commitsFor filtra endereço exato. Lote deduplica, replay/perdedor pode notificar; snapshot usa bindings remotos, inclusive vazios/zero/tombstone. Replica.mergeSnapshotJson retorna Set<String> do parse existente. Um controller assíncrono de SyncObservation e _emit produzem observações; commits/errors são filtros tipados. Eventos preparados antes do I/O só são emitidos após adoção. Adicionados testes core/sync/facade, exemplo, guia, fixture/inventários e migração de construtor/implementação/retorno; variantes e formatos preservados.
+Review: aprovado
+Achados: revisão do próprio agente, não independente, incluindo arquivos novos e instrumento. Identificada lacuna de teste do filtro errors pausado após unificação; teste adicionado. Preparação do evento movida para antes do await, eliminando cópia intermediária de metadados remotos; emissão continua após adoção. Documentados matching exato/OR-Map, buffering de pausa e ordem por subscription. Após correções, revistos deltas e dez testes focados aprovados; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop completo de dart format/analyze/test dos sete pacotes; python3 -B plan/evidence/r41/validate_consumer.py --dart dart --report /tmp/deltasync-r41-consumer-final.json; dart run example/selective_observation_example.dart. Matriz: 309 testes, respectivamente 18/134/83/14/40/10/10, sete formatos sem alterações e sete análises limpas. Dois testes externos, prova negativa das APIs antigas e sete inventários aprovados. Exemplo confirma uma atualização e três pendências sem push. Comandos, diretórios, saídas, correções operacionais e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 por metadados dos oito tipos, lote deduplicado, replay/perdedor LWW, delta vazio e snapshot com bindings vazios/tombstone isolados; C2 por commitsFor, query pontual no exemplo/consumidor e nenhum envio disparado pelo listener; C3 por um controller e _emit, filtros com identidade comum e outbox como fonte única; C4 por commit bloqueado/adoção, rollback local/remoto sem sucesso, ACK parcial/falho, listeners tardios/pausados/com erro, ordem e drenagem/done no dispose; C5 por guia/fixture de cinco casos exaustivos, construtor não const com addresses obrigatório, getter externo e retorno Set<String> de mergeSnapshotJson, inventariados contra HEAD inicial.
+Manutenção: cinco critérios marcados, índice/fase/trace atualizados; DEC-66 e RISK-40/41 registram semântica e limites. R-33 próxima pronta; nenhuma ativa ou próxima implementação iniciada. Fase 6/VAL-17 permanecem abertos. Checker e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64 e SQLite FFI real nas suítes existentes; sem SDK mínimo 3.12.x ou Android novo. ACKs controlados não provam rede/persistência remota real. Endereços processados não são diff visível ou valor histórico; pausa pode reter eventos não selecionados e atrasar dispose. Ordem é por subscription; consumidor retoma/cancela pausadas. Fixture externa usa path/resolução própria offline, não hosted. Sem novos formatos, joins, contratos de adaptadores, SDK/versões, Compass, CI/serviços externos, commit ou publicação.
+
+### Metadados, revisão e validação
+
+O [contrato e reprodução](evidence/r41/README.md) liga APIs, testes e pontos de
+manutenção. [validation.json](evidence/r41/validation.json) guarda logs reais e
+hashes. Endereços de deltas vêm do contrato comum; snapshot devolve bindings do
+peer já decodificado, sem segundo parser ou cópia completa de valores para
+metadados. Isso inclui CRDTs vazios que export de deltas pode não representar.
+Snapshots inválidos preservam estado/clocks; somente inputs adotados notificam.
+
+Revisão viu buffering como limite relevante da fonte unificada: errors pausado
+agora pode reter eventos comuns que descartará ao retomar. Teste novo confere
+que só falhas chegam, na ordem e com identidade preservada. Commit seletivo
+pausado não impede escritas; sua retomada entrega eventos/done e permite dispose.
+Listener com erro usa Zone e não desfaz commit; tardio consulta estado sem replay.
+Commit aceito e bloqueado é drenado antes do fechamento; trabalho novo é rejeitado.
+
+Memória verifica lote dos oito tipos, inputs remotos repetidos/perdedores,
+snapshot com binding vazio, falhas local/remota e ACK. Erro no storage de ACK
+preserva pendências; retry parcial não gera commit novo. Falha de envio de ACK
+após merge mantém estado/evento; callback incoming também produz SyncFailure
+com a mesma instância em errors/observations. Matriz completa reexecutou SQLite
+FFI, histórias duráveis, rollback e reabertura existentes; não extrapolar a Android.
+
+### Consumo e compatibilidade
+
+O [exemplo seletivo](../example/selective_observation_example.dart) hidrata estado
+após start, reage por query a um endereço e não inicia push. O
+[consumidor externo](evidence/r41/consumer_test.dart.txt) passa dois testes com
+nenhum envio automático, contador de pendências, evento externo e switch
+exaustivo dos cinco tipos existentes. Metadados são somente leitura e isolados.
+[consumer-validation.json](evidence/r41/consumer-validation.json) confirma sete
+inventários: commitsFor novo; addresses e construtor obrigatório não const em
+SyncCommitEvent; retorno Set<String> de mergeSnapshotJson. Nenhum símbolo ou
+variante novo/removido. Prova negativa rejeita construtor const anterior,
+implementação sem addresses e override void. Evidências anteriores congeladas
+permanecem intactas; quebras de fonte estão no
+[guia](../docs/migracao-1.0.1.md#eventos-seletivos-e-fonte-comum--r-41).
+
+### Manutenção
+
+R-41 concluída, R-33 recomendada sem iniciar CI ou ativar serviços externos.
+DEC-66/RISK-40/41 distinguem input processado, estado atual, commit e ACK.
+Emissão tem um ponto comum; variantes, dados e joins mantêm contratos anteriores.
+Gate integral da release permanece VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 510 links
+locais; `git diff --check` passou. Conferidos 18 hashes, lock/HEAD inalterados,
+dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos,
+âncora da execução e uma única fonte/emissão interna. Evidências anteriores
+preservadas. Revisão documental final sem achados impeditivos; produção/testes
+não mudaram após a matriz aprovada.
+
+<a id="execucao-r-33-2026-10-24"></a>
+
+## Execução R-33 — CI, advisories e SDK 3.13, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em c803825f98c7e05c7770c1d287187fe2c91fdb9b; R-30 concluída e R-33 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, baseline/matriz R-30, riscos de advisories/SDK e guia Dart. Consultadas fontes oficiais Dart/OSV/actions. Autor pediu evitar Dart 3.12 e autorizou alinhar para 3.13: critério e manifests passaram a ^3.13.0, referência stable 3.13.5. Nenhuma execução 3.12/3.13.0 alegada; baseline histórica preservada.
+Implementação: workflow com jobs Dart/Flutter/policy e runner scripts/ci.py compartilhado, permissões contents:read e actions por SHA. Lista canônica de pacotes vem do SDK; erro de qualquer etapa encerra job. App tem resolução/lockfile próprios e dois builds debug. Scanner consulta OSV/Pub online sobre versões resolvidas, paginação completa, exceções exatas com motivo/expiração e falha de rede/resposta sempre não zero. Onze testes controlados sem pacote vulnerável em manifest. Mínimo ^3.13.0 nos sete pacotes/exemplo; formato ajustado em 19 arquivos com AST canônica idêntica. Documentados política, migração e atualização periódica; nenhum dado/join/formato/runtime de lint novo.
+Review: aprovado
+Achados: revisão do próprio agente, não independente. Corrigidos nome Pub com underscore inicial, invocação da CLI offline e diferenças de formato sob nova language version. Reforçados schema/paginação/erro de serviço, paths do workspace e propagação de saída. Checkout limpo revelou 452 diagnósticos ao analisar app Flutter sem resolução própria; raiz passou a excluir apenas esse app e os dois jobs foram reexecutados em checkouts/caches independentes. Delta revisto após correções; fluxo Flutter continua integral. Sem impeditivos restantes.
+Validação: aprovada
+Comandos: python3 -B scripts/ci.py dart; python3 -B scripts/ci.py flutter, cada um em clone/cache Pub distintos e sem package_config prévio; python3 -B scripts/ci.py policy; actionlint 1.7.7 .github/workflows/ci.yml; prova AST via dart --packages com baseline explícita. Resultado: 309 testes dos sete pacotes (18/134/83/14/40/10/10), dois do enlace, sete Flutter, onze da política, análises/formatos e dois APKs debug aprovados. Cinco exemplos e CLI em três processos/reset-offline-reconnect passaram. Consultas online: 60/46 pacotes hospedados, nenhum achado, nenhuma exceção ativa. Comandos/diretórios/saídas, versões resolvidas, falhas e hashes nos artefatos; repetições não somadas.
+Critérios: C1 por lista canônica, sete pacotes/SQLite FFI e resolução/cache próprios na família mínima 3.13.x/stable selecionada conforme nova orientação; C2 por jobs/contextos separados, checker/diff, exemplos Dart e Flutter com análise/testes/dois builds e limites explícitos; C3 por consulta online pós-resolução, códigos 1/2, exceção exata/expiração, paginação e política semanal/mensal, sem scanner outdated; C4 por actionlint/checksum, fixtures de pub com aviso/exit 0, falha de pacote/teste Flutter/rede e respostas inválidas, sem vulnerável em produção, sem autofix/credenciais/uploads; C5 por registro local separado e ausência explícita de execução remota autorizada/disponível.
+Manutenção: cinco critérios marcados, índice/fase/trace atualizados; DEC-67 e RISK-39/42 registram autorização de SDK e limites. R-34 liberada e recomendada sem iniciar piloto Saropa; nenhuma tarefa ativa. Fase 6/VAL-17 seguem abertos. Checker e diff executados após manutenção.
+Limitações: Dart 3.13.5/Flutter 3.47.7/Linux, sem runtime 3.12 ou patch 3.13.0. Host usa OpenJDK 25/Python 3.15; runner configura Ubuntu 24.04/Temurin 21, não executado remotamente. Tests/builds Flutter não provam runtime Android ou rede física. OSV cobre vulnerabilidades conhecidas Pub, não segurança integral de SDK/SO/código/Gradle/Maven. Toolchain/Gradle podem ter cache; resolução Pub/configuração e consultas finais foram independentes. Sem piloto/instalação Saropa, mudanças de API funcional/formatos, Compass, publicação, ativação de serviços, uploads, commit ou run remoto de Actions.
+
+### Evidências, correções e isolamento
+
+O [contrato e reprodução](evidence/r33/README.md) e a [política de CI](../docs/ci.md)
+explicam comandos, owners e limites. [validation.json](evidence/r33/validation.json)
+guarda saídas reais aprovadas, trechos decisivos/hashes das falhas anteriores,
+fontes oficiais, revisão e hashes dos arquivos. [resolutions.json](evidence/r33/resolutions.json)
+fixa os grafos resolvidos em cada checkout, sem reutilizar package_config/lock
+da biblioteca na árvore de trabalho. O app preserva seu lockfile e o exige na
+resolução; fontes/names/versions dos pacotes consultados são verificáveis.
+
+Execução na árvore já resolvida passou, mas o primeiro checkout limpo revelou
+dependência acidental da resolução Flutter para o analyzer da raiz. Não se
+aprovou essa execução: raiz exclui só o app independente, cuja análise integral
+permanece no job Flutter. Novos clones/cache distintos passaram sem depender
+da ordem dos jobs. O clone Dart terminou sem package_config Flutter. Falhas de
+formato e CLI também interromperam os jobs, confirmando a propagação de saída.
+
+O [instrumento AST](evidence/r33/format_ast.dart.txt) compara os 19 arquivos com
+a revisão inicial explícita; programas parseados são iguais. Mudanças de SDK
+e formatter não alteraram regra CRDT, payload, commit ou restauração. SDK/ranges
+de dependências externos dos manifests só mudaram no mínimo Dart autorizado;
+novas resoluções compatíveis foram exercitadas sem copiar lockfile da biblioteca.
+
+### Controles e execução remota
+
+Fixtures do runner verificam erro de pacote com exit 9, Flutter com exit 7,
+advisory com exit 1 e rede/resposta/configuração com exit 2, mesmo após pub get
+terminar com aviso e sucesso. Exceções exigem pacote/versão/ID exatos, motivo e
+expiração; vazias/expiradas/duplicadas/inutilizadas reprovam. Paginação, resposta
+contraditória e workspace malformado não ficam verdes. Dados sintéticos não
+entram nos manifests. Lints/recommended permanece; Saropa é avaliação R-34.
+
+Workflow usa SHAs verificados, token somente leitura, checkout sem persistir
+credenciais e checksum do actionlint; sem upload/publicação ou autofix. Não foi
+ativado serviço nem acionado workflow remoto. Logs locais e APKs não são prova
+de GitHub Actions aprovado ou runtime Android. Política semanal consulta rede;
+revisão mensal atualiza pins/exceções. Release integral continua em VAL-17.
+
+Após manutenção, policy completo passou com onze testes, checker de 70 tarefas
+e 525 links locais, diff local/último commit e actionlint. Conferidos 46 hashes,
+oito manifests com alteração somente de SDK, lock Flutter só com metadata SDK,
+19 programas canônicos equivalentes, JSON/sintaxe/whitespace, IDs únicos e
+âncora da execução. HEAD/evidências anteriores preservados. Revisão documental
+final sem impeditivos; código dos jobs corresponde aos checkouts validados.
+
+<a id="execucao-r-34-2026-10-25"></a>
+
+## Execução R-34 — Piloto Saropa essential, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 2a42a0b9f2143fc36e2b793d4e86867d5217623a; R-33 concluída e R-34 pronta. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-67/OPEN-09, RISK-39/42 e trechos de SDK/contratos/matriz do guia Dart. Escopo restrito ao piloto e decisão; preservar recommended e Dart 3.13. Sem delegação.
+Implementação: runner Saropa 16.7.0 exato em /tmp com cache próprio e dois clones descartáveis. Trinta e duas análises medidas em sete pacotes e exemplo Flutter; 116 arquivos rastreados, 166 alertas idênticos nas duas passagens. Fixtures de resolução exata/flexível e defeitos deliberados; integração nativa em três configurações e controle de exclusão. Relatório, coordenadas, métricas, inventário/hashes, versões, manifests/instrumento e logs resumidos em plan/evidence/r34; docs/ci.md aponta a decisão proposta de adiar. Nenhuma mudança permanente de código, manifests, configuração ou política de advisories.
+Review: aprovado
+Achados: revisão do próprio agente em etapa distinta, não independente. Conferidos diff e arquivos novos, amostra de 19 nomes de regra, invariantes/cardinalidade/SQL/dispose, resolução e limites das medições. Corrigidos whitespace em logs novos e classificação UTC: o construtor já normaliza inclusive parâmetros externos. Reexaminado o delta dessas correções; não há achado impeditivo restante. Divergência nativa Flutter permanece limitação explícita que fundamenta adiamento, sem aprovar cobertura inexistente.
+Validação: aprovada
+Resultados: dezesseis análises de baseline terminaram com zero e dezesseis scans resolvidos com exit 1 por alertas. Hashes dos 116 fontes preservados, dois resultados idênticos, sem markers de skip/falha/parada nos stderr; JSON, códigos, coordenadas, grafos e instrumento Python conferidos. Ver validation.json e instrumento validate.py.txt. Nova checagem não repete nem alega os testes runtime/builds históricos de R-33.
+Comandos: em clones/runner separados, PUB_CACHE próprio, dart pub get; flutter pub get --enforce-lockfile; dart analyze nos sete pacotes e flutter analyze --no-pub no app, duas vezes cada; dart run saropa_lints:scan <alvo> --tier essential --resolve --format json --files-from-stdin, duas vezes por alvo. Integração adicional com blocos nativos essential, lane full e dart run saropa_lints:init --tier essential --reset --target <clone>; prova negativa retirando exclusão ancestral não resolveu divergência Flutter. Fixtures exata/flexível resolvidas e controle positivo analisado por ambas as ferramentas. Comandos/saídas resumidas e hashes originais nos artefatos. python3 /tmp/deltasync-r34-validate.py aprovou 472 verificações de evidência antes da manutenção; checker/diff aprovados. /usr/bin/time ausente motivou wait4 antes das medidas; exporter inicialmente excedeu saída e foi dividido, sem perder dados. Checagem encontrou whitespace em arquivo novo e caminho de log duplicado no validador temporário; corrigidos e revisados antes da aprovação.
+Critérios: C1 por runner/versão/hash/SDK, resolução test/analyzer, CLI em sete pacotes e Flutter e comparação nativa sem alegar equivalência; C2 por duas medidas wall/CPU/RSS, amostra dos 19 nomes de regra, sobreposição e controle positivo/negativo; C3 por DEC-68 e adiamento sem mudanças na resolução/configuração permanente; C4 por revisão contextual de SQL/cardinalidade/UTC/streams e ausência de defeito funcional bloqueador confirmado na amostra, sem autofix/supressão/refatoração nem regressão artificial; C5 por limites explícitos e manutenção dos checks de advisories/CRDT/recuperação separados.
+Manutenção: cinco critérios marcados; índice/fase/trace atualizados, DEC-68 e OPEN-09 resolvem adoção, RISK-39 registra custo/cobertura e decisão. R-35 pronta/recomendada sem iniciá-la; nenhuma tarefa ativa. Fase 6/VAL-17 permanecem abertos. Nenhum achado real fora do escopo identificado que exija nova tarefa.
+Limitações: medições locais Linux com duas passagens e parte do probe nativo concorrente, sem SLA/energia/runtime Android/CI remoto. Nomes essential correspondem a conjuntos diferentes em CLI/YAML/inicializador; plugin Flutter retornou zero apesar de 25 alertas CLI, causa não estabelecida, portanto integração não foi aprovada. Amostra não audita exaustivamente os 166 alertas e fixture também contém defeito não detectado. Nenhuma nova consulta OSV, suíte runtime/build ou execução 3.12/patch 3.13.0 alegada. Sem mudança funcional/API/persistência, Compass, instalação permanente, commit, publicação ou ativação de serviço.
+
+### Evidências e decisão
+
+O [relatório](evidence/r34/README.md) contém amostra, critérios de reavaliação,
+reprodução e limites para consumidores/contribuidores/forks. Os artefatos
+[pilot.json](evidence/r34/pilot.json), [metrics.json](evidence/r34/metrics.json),
+[diagnostics.json](evidence/r34/diagnostics.json),
+[inventory.json](evidence/r34/inventory.json) e
+[resolutions.json](evidence/r34/resolutions.json) registram versão exata, comandos,
+32 medidas, 166 alertas, 116 hashes e grafos efetivos. Os
+[logs](evidence/r34/logs.txt) preservam resultados decisivos e coordenadas, com
+hashes dos originais antes de normalizar caminhos/whitespace e omitir mensagens
+longas/progresso. [validation.json](evidence/r34/validation.json) registra checks;
+[validate.py.txt](evidence/r34/validate.py.txt) é instrumento histórico somente
+leitura ligado aos inputs temporários desta execução, não requisito novo de CI.
+
+Adiar Saropa atende à tarefa de avaliação, sem declarar o plugin aprovado ou
+resolver o conflito por downgrade. Test 1.33.0/analyzer 14.6.0 permaneceram no
+workspace dos clones; o runner usa analyzer 12.1.0 e aceita Dart 3.13.5. Root e
+Flutter mantêm recommended/flutter_lints e a consulta OSV independente da R-33.
+Os 166 alertas não equivalem a 166 bugs ou vulnerabilidades; controle positivo
+mostra sinais adicionais e sobreposição, e também um controller não detectado.
+
+Após manutenção, o checker exigiu os campos Review/Validação em linhas próprias
+e o campo Achados no registro final. Ajustada apenas a estrutura do registro,
+sem flexibilizar o checker. Revisão final das correções documentais e do
+checksum sem autorreferência aprovada. `python3 plan/evidence/r34/validate.py.txt`
+aprovou 474 verificações de evidência; `python3 scripts/check_plan.py` aprovou
+70 tarefas e 554 links locais, com R-35 pronta; `git diff --check` passou.
+Hashes, códigos de saída, whitespace dos arquivos novos, decisão e status foram
+conferidos novamente após correções. Fonte, manifests/configurações, HEAD e
+evidências históricas permanecem intactos. Nenhuma tarefa subsequente iniciada.
+
+<a id="execucao-r-35-2026-10-25"></a>
+
+## Execução R-35 — Guia durável e consumo público, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 9fc0f68629e794c962fb9a74e163d8ebe27da27f; R-35 pronta, todas as sete dependências concluídas. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, contratos/fontes e testes públicos de consulta/decoder/resumo/lote/eventos, DEC-62 a DEC-68, riscos de pós-commit/lifecycle e trechos SDK/patterns/contratos da referência Dart. Identificado README extenso, contagem por pendingDelta e orientação antiga sem separação de erro de status. Escopo autorizado: lib, docs/exemplos/fixture/CI do consumidor geral; Compass e renumeração R-36 ficam fora. Um agente, sem delegação.
+Implementação: README abre com percurso SQLite; referência e medições movidas para docs, mantendo anchors e informação histórica. Guia/READMEs/migração esclarecem modelo, commit/status/ACK, lote, consulta/decoder, eventos seletivos e manutenção. Novo exemplo executável reutiliza decoder/modelo existente; fixture geral usa SQLite real e fault injection em métodos públicos, sem src nem domínio no core. CLI offline passa a consultas pontuais/resumo leve e deixa de inferir confirmação de ausência de pendências. CI inclui novo exemplo em diretório temporário. Sem mudança de lib/src, API pública, formatos, manifests ou SDK. Primeiro check da fixture passou três casos; revisão e validação finais ainda pendentes.
+Review: aprovado
+Achados: revisão do próprio implementador em etapa distinta, não independente. Corrigidas orientações herdadas que copiavam réplica inteira, contavam payloads para UI e inferiam ACK da outbox vazia. Removido exemplo linear de awaits que poderia agrupar status com falha de edição; referência aponta o fluxo com catches separados. Ajustadas versões/contexto histórico e redação de compatibilidade. Fixture reforçada para conferir conteúdo exato do modelo inválido no snapshot salvo. Revistos os deltas após correções/formatter, scripts e arquivos novos; sem achados impeditivos restantes. Confirmadas 17 âncoras anteriores do README, nove do guia, 49 links GitHub locais e preservação literal da comparação histórica Compass.
+Validação: aprovada
+Comandos: dart format --output=none --set-exit-if-changed lib test, dart analyze e dart test --reporter expanded na raiz e em cada um dos seis subpacotes; formato dos dois exemplos tocados, dart test example/support/peer_link_test.dart --reporter expanded e python3 -B -m unittest discover -s scripts/tests -v. Cinco exemplos existentes executados; novo exemplo em dois processos com mesmo banco; CLI SQLite reset/offline/reconnect em três processos; bloco real do README extraído e executado com dart run --packages=.dart_tool/package_config.json /tmp/deltasync-r35-readme-probe.dart. Trinta e nove comandos finais, diretórios/saídas/hashes/versões em evidence/r35/validation.json. Verificados links/âncoras locais/GitHub mapeados ao checkout, históricos, sintaxe Python, fonte e escopo.
+Resultados: sete pacotes aprovados com 312 testes (21/134/83/14/40/10/10), mais dois do enlace e 11 de política CI. Os três casos novos integram os 21 da facade, sem somar execução preliminar. SQLite real preservou commit/outbox após falha de resumo e rede, fechamento/reabertura e nova edição; erro de modelo preservou payload exato. CLI restaurou estado/pendências em processos separados e reconciliou com ACK durável. Probe do README confirmou snapshot e dois IDs únicos após reabertura. Formato/análise passaram. Falha inicial de format por escrita do wrapper Dart fora do sandbox foi resolvida por execução autorizada, mantendo comando dart/SDK 3.13.5; sem fallback 3.12.
+Critérios: C1 por README SQLite, reuso de exemplos/decoder, referência/medições movidas e 17+9 âncoras preservadas; C2 por configuração/identidades/consulta/commit/ACK e execução durável; C3 por fixture geral de falha pós-commit, modelo inválido e controle negativo de commit falho, sem domínio no core; C4 por ownership/retry/lifecycle/streams sem replay, resumo por peer e eventos seletivos; C5 por mapa dos oito CRDTs/camadas/codecs e contratos públicos/extensão integrada sem plugins; C6 por guia de migração e aviso de quebra deliberada, decoder/lote/query/eventos e limites de LWW/par fixo/TLS/atomicidade local.
+Manutenção: seis critérios marcados; índice/fase/evidências atualizados, RISK-40 registra mitigação entregue. Decisões DEC-62 a DEC-68 mantidas, sem nova mudança de API/arquitetura ou decisão acadêmica. R-36 pronta/recomendada sem iniciar renumeração; nenhuma tarefa ativa. Fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5/Linux x64/SQLite FFI com resolução existente (test 1.33.0/analyzer 14.5.0/sqlite3 3.7.1), sem instalação limpa/advisory online novo, build/runtime Flutter/Android/iOS ou CI remoto nesta tarefa. As falhas de resumo/commit da fixture são injetadas em métodos públicos; commit falha antes da transação, sem alegar nova prova de rollback após writes. Fonte pública/API/formatos/manifests/SDK e evidências históricas permanecem intactos. URLs GitHub foram conferidos localmente, não publicados. Sem Compass, publicação, renumeração, commit ou tarefa subsequente.
+
+### Entrega e evidências
+
+O [relatório](evidence/r35/README.md), o
+[registro dos comandos](evidence/r35/validation.json) e a
+[preservação documental](evidence/r35/documentation.json) ligam critérios a
+resultados reais. [Probe do README](evidence/r35/readme_probe.dart.txt) contém o
+snippet efetivamente compilado mais harness de reabertura; não é nova API ou
+teste da lib distribuída. Históricos movidos para docs não foram recalculados.
+
+README e guias usam somente contratos públicos. O modelo do exemplo pertence ao
+consumidor e reutiliza o decoder existente. Não há nova classe de domínio no
+core ou framework de adaptação. As leituras pontuais/resumo e filtros públicos
+substituem cópias/reconstruções desnecessárias no exemplo; estado/outbox/joins e
+persistência mantêm seus donos. SDK e contratos não foram alterados para produzir
+uma entrega documental. A nova chamada no runner CI reutiliza o diretório
+temporário já existente; os testes de política e a execução do exemplo passaram,
+sem alegar execução integral/remota do workflow.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 541 links
+locais, com R-36 pronta; `git diff --check` passou. Conferidos 16 hashes dos
+documentos/fontes entregues, JSON e whitespace dos arquivos novos, HEAD intacto,
+ausência de alteração em lib/manifests e preservação das evidências anteriores.
+Revisão documental final sem impeditivos. Nenhum código mudou depois da matriz
+aprovada; R-36 permanece sem execução.
+
+<a id="execucao-r-36-2026-10-25"></a>
+
+## Execução R-36 — Metadados e preparação 1.0.1, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-35 concluída e R-36 pronta. Worktree contém a entrega R-35 ainda não commitada sobre 9fc0f68629e794c962fb9a74e163d8ebe27da27f; capturados status e hashes dos 298 arquivos iniciais antes de editar, sem stash/commit/reset. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, preparação/publicação, R-30/mapa de API, decisões de quebra/SDK e riscos. Referência Dart consultada para modificadores, variantes e versões; documentação oficial Pub/workspaces conferida. Escopo: metadados, exemplos de dependência, inventário e diretórios; sem publicação, tags, merges ou gate completo VAL-17.
+Implementação: sete versões 1.0.1 e 17 constraints internas ^1.0.1; dependências externas/SDK preservados. Changelogs consolidados em uma entrada 1.0.1 por pacote, com aviso de upgrade e capacidades pré-existentes identificadas; histórico 1.0.0 preservado. README/guia/publicação e dependências de consumo atualizados sem apagar conteúdo R-35. Flutter lock acompanha as seis bibliotecas locais usadas pelo app, sem alterar entradas externas. Inventário AST normalizado compara sete superfícies com a revisão 1.0.0 de R-30 e classifica assinaturas/implementadores/enums/variantes, sem confundir comentário com assinatura. Preparação/inspeção finais ainda pendentes.
+Review: aprovado
+Achados: revisão própria em etapa distinta, não independente. Rascunho 2.0.0 consolidado sem anunciar retirada de readers ou capacidades antigas como formato novo. Corrigidas redação de disponibilidade no pub e classificação AST que inicialmente contava comentários como assinatura; instrumento temporário usa offset posterior à documentação e compara mesma revisão histórica, mantendo os dados R-30 intactos. Conferidos sete exports, substitutos, novos tipos fechados, modificadores e ausência de alteração dos dez enums/cinco variantes existentes. Revistos os deltas após correções; sem impeditivos restantes. R-35 preservada; metadados das superfícies de dependência são os únicos trechos anteriores ajustados por esta tarefa.
+Validação: aprovada
+Comandos: dart pub get --offline na raiz; flutter pub get --offline no exemplo; dart pub deps --json, dart pub workspace list --json, dart --version e dart analyze. Instrumento AST derivado do existente executado com dart --packages=.dart_tool/package_config.json contra extração Git da revisão 1e969182e8e172a8858a48ecf83a1feb2c21a455 e árvore atual. python3 -B scripts/prepare_release.py preparou /tmp/deltasync-release-parent-cgx9_tyj/release. Inspeção Python conferiu conteúdo/hashes/constraints, SDK/externas, histórico e escopo; JSON/whitespace/links também aprovados. Comandos/saídas/versões e resultados em evidence/r36/validation.json. Sem testes runtime/dry-runs/consumer hosted nesta tarefa; pertencem ao próximo gate.
+Resultados: sete membros locais em 1.0.1 e 17 constraints ^1.0.1; normalizar somente versões internas reproduz exatamente os manifests iniciais. Sete changelogs únicos com alerta e histórico preservado. Diretórios têm 85 arquivos/48 fontes de lib, sem cache/tests/plan/lock; fontes/licença/README/changelog e manifest standalone correspondem à árvore preparada. Dez enums e cinco variantes existentes intactos; diferenças de exports/membros são as esperadas R-37/R-38/R-39/R-40/R-41/R-42. Análise Dart aprovada; Flutter lock mudou somente seis versões locais, sem alteração externa. Conferidos hashes iniciais de R-35/evidências e prefixo integral do registro anterior; sem perda de código/análise.
+Critérios: C1 por sete manifests/17 constraints e resolução consistente; C2 por changelogs consolidados/avisos, história 1.0.0, SDK/externas preservados e Saropa adiado sem leitor abandonado anunciado; C3 por publicação/consumo atualizados, prepare_release existente inalterado e 85 arquivos/hashes/filtragem inspecionados, sem CI/lint no runtime; C4 por comparação AST das sete superfícies com R-30, mapa de substitutos/modificadores/enums/variantes e fontes de writer/reader/schema intactas na renumeração. Nomes e APIs novos não surgiram nesta tarefa; foram conferidos, não reimplementados.
+Manutenção: quatro critérios marcados; índice/fase/trace atualizados, DEC-69/OPEN-08 registram fechamento do mapa e preparação, RISK-36/38 mantêm distinção entre candidatos e gate. VAL-17 pronta, não iniciada; referência de SDK corrigida para R-33/DEC-67 conforme orientação do autor, sem alterar baseline R-30. Nenhuma tarefa ativa; fase 6 segue aberta. Commit/publicação continuam com o autor.
+Limitações: Dart 3.13.5/Linux, resolução offline já existente; nenhuma execução 3.12/patch 3.13.0, consulta advisory nova, suíte completa, build/runtime Flutter ou prova de instalação pública nesta tarefa. Pastas preparadas são candidatas; dry-runs, migração de dados/consumidores e validação hosted sem paths/overrides pertencem a VAL-17. Os resultados R-28/R-35 permanecem históricos. Sem upload, tag, merge, push ou commit automático.
+
+### Evidências e continuidade
+
+[Relatório](evidence/r36/README.md), [validação](evidence/r36/validation.json),
+[comparação de API](evidence/r36/api-diff.json),
+[inventário preparado](evidence/r36/inventory.json) e
+[resolução local](evidence/r36/resolution.json) ligam critérios aos candidatos.
+[Instrumento AST](evidence/r36/api_inventory.dart.txt) preserva a distinção entre
+assinatura e comentário sem mudar os dados/ferramentas congelados de R-30.
+A preparação remove somente configuração de workspace nos manifests; licenças,
+fontes e filtros são mantidos. O mecanismo de distribuição existente não precisou
+ser ampliado; exemplos completos/docs/planos continuam fora do pacote publicado.
+
+O diff desta execução é identificado contra os hashes da worktree R-35 inicial,
+não apenas contra HEAD, que ainda não continha a entrega anterior. Código R-35,
+scripts, 48 fontes de lib e evidências existentes ficaram intactos; README/guia/
+dependências receberam os ajustes de release explicitados. Todos os changelogs
+pedem revisão do upgrade incompatível; documentação distingue metadados, dados e
+publicação real. VAL-17 permanece responsável por aprovar a release completa.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 70 tarefas e 557 links
+locais, com VAL-17 pronta; `git diff --check` passou. Conferidos hashes finais dos
+candidatos e dos 48 arquivos de lib, metadados/resolução, hierarquias novas,
+enums/variantes, histórico, links, whitespace e preservação R-35. Fechamento de
+dependências runtime da facade tem somente os cinco pacotes Dart, sem ferramenta
+CI/lint ou test; storage_testing mantém sua finalidade de suíte de desenvolvimento.
+Revisão final documental sem impeditivos; candidatos permanecem inalterados desde
+a inspeção aprovada. Nenhum trabalho de VAL-17 foi iniciado.
+
+<a id="execucao-val-17-2026-10-25"></a>
+
+## Execução VAL-17 — Gate 1.0.1, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 0d68d9b9919579335f52ba886e149d7b2b5ff01d; todas as dependências concluídas. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, decisões/riscos, R-30/R-36, fixtures/roteiros e trechos de SDK/modificadores/patterns do guia Dart. Matriz usa 3.13.5 como execução real na família mínima 3.13 e referência estável selecionada, sem runtime fictício 3.13.0/3.12. Diff com R-30 altera fila/lote/eventos/lifecycle e exige runtime Android atual. ADB inicialmente vazio; autor confirmou conexão/autorização, Moto G52 Android 13/API33 disponível. Só app de demo será atualizado, com backup e sem limpar dados; Compass permanece fora do escopo.
+Implementação: clones/caches Pub separados para jobs Dart/Flutter; harness de registro Pub loopback GET-only e consumidor hosted independente sem paths/overrides, reutilizando fixtures/contrato e migrando pendingSummary no adaptador público. Extração histórica usa revisão/JSON congelados, sem --freeze. Redação de publicação passou a exigir gate aprovado sem presumir estado anterior/posterior. Novo script fica em evidence/val17; nenhuma mudança em lib/SDK/manifests ou formatos. Roteiro físico preserva bancos pré-existentes e oito-alpha, testa edições independentes/offline, force-stop/restauração e ACK. Ajustes preliminares: incluir variável de proveniência R37 no consumidor hospedado; aguardar árvore UI disponível e confirmação de commit antes de encerrar processo. Correções são do harness, sem relaxar expectativas ou alterar a lib.
+Review: aprovado
+Achados: revisão própria em etapa distinta, não independente. Corrigidos R37_EXPECT_SOURCE ausente no consumidor, extração do envelope versionado na inspeção SQLite, espera de commit antes do force-stop e prevenção de XML UI antigo. Roteiro final espera VAL08 restored do PID atual antes de inspecionar a restauração. Revistos os deltas e resultados corrigidos: 54 testes hosted, schema/estado/outbox exatos e nova mutação/restauração/ACK físicos aprovados. Registro Pub só aceita GET e publish só roda com --dry-run; nenhum defeito da lib confirmado. Scripts novos/documentação e limites da prova foram revisados, sem impeditivos restantes.
+Validação: aprovada
+Comandos: python3 -B scripts/ci.py dart e flutter em dois clones de HEAD com PUB_CACHE novos/separados; jobs completos com resolução e OSV online. python3 -B scripts/ci.py policy e actionlint 1.7.7 sobre o workflow atual. python3 -B scripts/prepare_release.py; python3 -B plan/evidence/val17/validate_artifacts.py --release /tmp/deltasync-release-parent-r8mpulxa/release --report /tmp/deltasync-val17-artifacts.json. Extração R-30 --prepare-only sem --freeze; dart test no consumidor histórico com R30_EXPECT_SOURCE; dart run rollback.dart seed/upgrade/verify em três processos com o mesmo SQLite. Flutter build adicional --debug --no-pub --target lib/main.dart para instalar o alvo correto após build main_eight. ADB install -r, force-stop/start, dumps UI, logcat por PID e cópias run-as/tar de bancos fechados; python3 -B plan/evidence/val17/inspect_android.py --directory /tmp/deltasync-val17-mobile --report /tmp/deltasync-val17-mobile/proof.json. Registros exatos de comandos, diretórios, outputs/hashes e grafos em evidence/val17; conferidos AST Python, fontes dos clones/candidatos/cache e históricos imutáveis.
+Resultados: sete pacotes aprovados com 312 testes (21/134/83/14/40/10/10), dois testes do enlace e 11 controles de política. OSV online sem findings em 60 pacotes hosted Dart e 46 Flutter. Flutter 3.47.7: formato/análise, sete testes e APKs main/main_eight aprovados. Consumidor hosted independente: 54 testes, guia importPending compilado, 14 probes de remoção e diagnósticos esperados de evento/interface/override. Revisão histórica 1.0.0: 14 testes aprovados; SQLite seed/upgrade/verify confirma writer 1.0.1 legível em 1.0.0, 45 pendências e 23 payloads do outro peer intactos. Sete dry-runs exit 0/zero warnings; 85 arquivos preparados, 48 fontes de lib e 78 arquivos distribuídos conferidos, registro somente GET/zero uploads. Runtime Moto G52/API33: três pendências A/duas B e estado exatos após reinício; edição seguinte usa ID novo, acumula quatro A/duas B; envio converge título/contador 8 e zera outboxes. PID final 27656 confirma restauração após ACK e snapshots/outboxes exatos. Schema v1/snapshot v9 e banco eight-alpha preexistente preservados. App encerrado, XML temporário removido e backups mantidos, sem limpar dados nem tocar Compass.
+Critérios: C1 por matriz completa dos sete pacotes/oito tipos/histórias/falhas/concorrência/SQLite em 3.13.5; C2 por fixture congelada, testes atuais/históricos e três processos writer atual/reader 1.0.0; C3 por adaptador migrado público e probes negativos explícitos, sem mascarar quebras; C4 por suíte geral/fixtures de resumo/lote/decoder/eventos/query e rollback SQLite após writes, com Operation somente nos readers internos; C5 por instalação hosted fora do workspace sem paths/overrides, inventário/cache/hashes e sete dry-runs; C6 por exemplos/executáveis, Flutter e roteiro Android atual motivado pelo diff, confirmado por checkpoints do PID e bancos fechados; C7 por jobs/política/advisories atuais, DEC-68 mantida, riscos/docs/registros e roteiro manual, checker/diff após manutenção.
+Manutenção: sete critérios marcados, VAL-17/fase 6 concluídas, índice sem tarefa ativa ou próxima pronta. DEC-70 registra aprovação/alcance; OPEN-08 e RISK-36/38/39/40/41/42 atualizados, sem encerrar riscos de SemVer, consumidores desconhecidos, performance ou plataformas não executadas. Evidências anteriores e 48 fontes de lib intactas. Candidatos atuais e publicação manual constam no relatório; nenhuma ação de publicação/commit/tag/merge/push executada.
+Limitações: SDK executado 3.13.5, sem runtime 3.13.0/3.12; diretivas de linguagem antigas nas fixtures permanecem imutáveis. Jobs locais não são execução remota da CI. Runtime nativo atual cobre LWW/GCounter, duas réplicas no mesmo processo e enlace simulado; oito tipos e cenários adversariais são cobertos no host, sem alegar nova execução física dos oito, dois dispositivos ou rede real. Sem iOS, autenticação/TLS, usabilidade com participantes, benchmark nativo/SLA ou certificação de produção. OSV sem findings não prova ausência de vulnerabilidades. Registro local não comprova publicação, permissões de nomes ou instalação pública. Saropa não foi reavaliado/instalado; DEC-68 continua vigente.
+
+### Evidências finais
+
+[Matriz e reprodução](evidence/val17/README.md),
+[validação atual](evidence/val17/validation.json),
+[artefatos e diagnósticos](evidence/val17/artifacts.json),
+[Android atual](evidence/val17/android.json),
+[inventário](evidence/val17/inventory.json),
+[resoluções](evidence/val17/resolution.json) e
+[preservação de fontes](evidence/val17/source.json) ligam cada critério ao resultado.
+O [harness Pub](evidence/val17/validate_artifacts.py) e a
+[inspeção nativa](evidence/val17/inspect_android.py) pertencem à evidência, não
+à biblioteca distribuída. Arquivos binários, bancos, XML e logcat bruto não
+integram a entrega versionável.
+
+Após correções do harness, revisão própria e validação das partes afetadas foram
+repetidas sem reduzir expectativas. O reinício final só foi aceito após log de
+restauração do processo atual; a primeira tentativa permanece identificada como
+inconclusiva. Sete candidatos foram conferidos novamente após dry-runs, sem
+alterar conteúdo desde a aprovação. README do pacote já contém redação
+condicional válida antes/depois do gate. Alterações posteriores restringem-se a
+evidências e manutenção documental; fontes/testes de produto permanecem iguais
+às dos jobs aprovados. Publicação e instalação pública continuam com o autor.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 70 tarefas e 581
+links locais, sem tarefa pronta; `git diff --check` passou. O primeiro checker
+apontou apenas ausência do negrito exigido em Tarefa ativa; campo corrigido
+conforme formato existente e delta documental revisto, sem alterar o checker.
+JSON/Python AST/whitespace dos nove arquivos novos aprovados; 48 hashes de lib,
+94 arquivos de evidência histórica, scripts dos harnesses, candidatos e HEAD
+conferidos. Revisão final documental sem impeditivos; nenhum produto mudou
+após os jobs e o roteiro aprovados.
+
+<a id="execucao-r-43-2026-10-25"></a>
+
+## Execução R-43 — Limpeza de auxiliares legados, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa após commit do gate anterior; pedido novo autoriza limpeza de código sem uso, não exclusão de evidências/caches/arquivos auxiliares. Lidos os cinco procedimentos, executor, safe-refactor, AGENTS/RUNBOOK, plano/riscos e referência Dart sobre SDK/modificadores. Inspeção de todas as referências identifica writer toJson/igualdade/hashCode/_mapsEqual de Operation somente em testes; fromJson/conversão continuam necessários nos readers DeltaCodec/ReplicaState. Supressão em sync_types não tem uso depreciado; outras supressões continuam necessárias. R-43 registra o pedido adicional sem reescrever evidências VAL-17. Baseline do arquivo core afetado: 48 testes aprovados em Dart 3.13.5.
+Implementação: removidos encoder legado interno, igualdade/hash e auxiliar de comparação; parser/validações/construtor/conversão para delta preservados. Testes usam JSON literal para leitura, seis ordens e snapshot histórico, sem depender do writer que verificavam. Removida supressão sem uso em sync_types e corrigida orientação de ACK após remoção do storage legado. Sem APIs públicas, schemas, dependências ou SDK novos. Os 48 testes passam após edição; formatter inicial recebeu caminho relativo ao diretório errado, refeita execução na raiz e três arquivos conferidos.
+Review: aprovado
+Achados: revisão própria distinta, não independente. Confirmado uso dos métodos retirados apenas nos testes; igualdade de Operation não participa de collections/deduplicação/joins. Constructor/fromJson/validações e conversão têm texto idêntico, assim como DeltaCodec/ReplicaState/exports. JSON literal evita validar reader com seu próprio encoder. Permanecem seis ordens, clocks, tombstone e nova mutação após snapshot antigo. Corrigido somente o caminho do formatter; delta formatado revisto. Nenhuma supressão necessária foi retirada; sem impeditivos restantes.
+Validação: aprovada
+Comandos: dart --version; dart test test/crdt_interfaces_test.dart --reporter expanded no core antes/depois; dart format nos três arquivos editados. Na raiz e seis subpacotes: dart format --output=none --set-exit-if-changed lib test, dart analyze, dart test --reporter expanded. python3 -B scripts/prepare_release.py; python3 -B plan/evidence/val17/validate_artifacts.py --release /tmp/deltasync-release-parent-dkj7k781/release --report /tmp/deltasync-r43-artifacts.json. dart pub deps --json registra resolução usada. Conferência textual compara parser/validações/conversão/readers/exports com HEAD, além de hashes de 103 evidências anteriores e dos candidatos/cache instalado; comandos/saídas/hashes/inventário em evidence/r43/validation.json. Checker/diff executados após manutenção.
+Resultados: 48 testes do arquivo afetado antes/depois, incluídos nos 134 do core. Sete pacotes com formato/análise e 312 testes aprovados (21/134/83/14/40/10/10), incluindo histórias de oito tipos, falhas/concorrência e recuperação SQLite. Consumidor hosted novo: 54 testes, análise, trecho importPending e probes negativos das 14 remoções/evento/override aprovados; todos usam os candidatos posteriores à limpeza, sem paths/overrides. Sete dry-runs exit 0/zero warnings; 85 arquivos/48 fontes de lib conferidos. Comparação com inventário VAL-17 muda somente core/operation.dart, core/CHANGELOG e sync/sync_types.dart. Nenhum método retirado pertence aos exports suportados. Parser e conversão conservam texto exato, readers e app/pipeline/lifecycle intactos.
+Critérios: C1 por busca de referências, remoções locais e comparação textual de leitor/conversão/export, preservando dados/SDK; C2 por prova antes/depois e JSON literal, seis ordens, snapshot antigo/nova edição e matriz geral de falhas/SQLite mais consumidor hosted; C3 por sete candidatos novos, hashes/instalação/dry-runs e manutenção do plano/risco/documentação. A dispensa de novo Android é proporcional: não houve mudança executada pelo fluxo de leitura/commit/lifecycle; o runtime de VAL-17 permanece evidência histórica, sem ser reapresentado como atual.
+Manutenção: três critérios marcados; R-43/fase 6 concluídas e índice sem tarefa ativa/próxima. Pedido extra registrado no mesmo plano, dependente do gate anterior, sem alterar evidências históricas. RISK-26/36 e roteiro de publicação indicam a compatibilidade preservada e os candidatos atuais. Nenhuma decisão nova de arquitetura/API; DEC-60/70 mantidas. Novo inventário prepara /tmp/deltasync-release-parent-dkj7k781/release; publicação permanece com o autor.
+Limitações: Dart 3.13.5/Linux x64 com resolução local existente no workspace e cache novo no consumidor hosted. Sem nova consulta OSV, piloto Saropa, CI remota, runtime/build Flutter/Android/iOS ou SDK 3.13.0/3.12. Não se afirma prova física atual nem publicação/instalação pública; cópias nativas de VAL-17 e candidatos anteriores são históricos. Usos externos de src não são contratos suportados; nenhuma API exportada foi removida. Não houve exclusão de arquivos/caches/evidências, commit, tag, merge, push ou upload.
+
+### Prova e distribuição após limpeza
+
+[Relatório](evidence/r43/README.md) e [validação/inventário](evidence/r43/validation.json)
+documentam a limpeza e os novos candidatos. O parser legado continua com dono
+localizável: Operation lê/valida o DTO; migrateLegacyOperation o converte;
+DeltaCodec e snapshot restoration escolhem os readers históricos já suportados.
+O caminho de escrita continua nativo. DTO interno não precisa de writer/igualdade
+para cumprir esse contrato; os testes recebem registros anteriores explícitos.
+
+Revisão final incluiu changelog, diff formatado, documentação e evidências novas,
+sem achados impeditivos. Nenhuma mudança de fonte ocorreu depois da matriz
+aprovada. Os scripts históricos de VAL-17 foram reutilizados intactos e não
+foram renumerados nem refatorados para esta limpeza.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 71 tarefas e 590
+links locais, sem próxima pronta; `git diff --check` passou. Conferidos JSON,
+whitespace novo, hashes das fontes/testes finais, 103 evidências anteriores e
+85 arquivos preparados. HEAD preservado, sem commit ou publicação automática.
+
+## Manutenção documental — Referência acadêmica local e CI, 2026-10-25
+
+Autor reportou falha do job policy no GitHub Actions e autorizou retirar vínculos
+ao PDF acadêmico local. Os 11 testes de política passaram no log informado;
+o checker falhou porque referencia/ é ignorado e não existe no checkout remoto.
+Removidos os três links em proposta/índice/trace e um quarto na análise de
+arquitetura. O contexto histórico permanece em texto, sem exigir o arquivo local.
+Nenhuma alteração no checker, workflow, biblioteca, status de tarefas ou artefatos.
+
+Aplicados plan-maintainer e plan-validator. Revisão própria dos quatro documentos
+sem impeditivos; não é revisão independente. Clone temporário contendo somente
+arquivos versionados reproduziu os mesmos três erros antes da correção. Depois
+de copiar os documentos corrigidos, python3 -B scripts/ci.py policy passou:
+11 testes, checker com 71 tarefas/587 links e git diff --check, inclusive HEAD^/HEAD.
+Confirmada ausência de referencia/ durante a prova. As mensagens GHSA-fixture-only
+e offline pertencem aos controles negativos aprovados, não a falhas desse job.
+Após manutenção, checker e diff conferidos novamente. Não houve nova execução
+remota da CI ou testes Dart, pois a mudança é somente documental; nenhum commit,
+upload ou publicação automática.
+
+## Ajuste da correção de CI — Preservar fontes locais dos agentes, 2026-10-25
+
+Autor esclareceu que as referências acadêmicas devem continuar disponíveis aos
+agentes locais, sem se tornarem obrigação de usuários ou do Actions. A remoção
+documental anterior foi substituída: quatro links ao PDF estão restaurados,
+identificados como contexto local. O arquivo privado continua ignorado pelo Git.
+
+Aplicados surgical-patch, code-reviewer, plan-validator e plan-maintainer.
+Check_plan permanece estrito por padrão. Nova opção explícita
+--allow-missing-tcc-reference dispensa somente a ausência do caminho exato do
+PDF local; outros links continuam obrigatórios e arquivos existentes continuam
+validados. Ci.py encaminha a opção somente no job policy e o workflow público
+a informa. Docs/ci explica a distinção sem alterar contratos da biblioteca.
+
+Regressões reproduziram ausência do PDF e falharam antes da nova opção. Após a
+correção, 15 testes passaram, incluindo modo padrão estrito, exceção restrita,
+rejeição de outros arquivos ausentes, verificação de anchors se o arquivo existe
+e encaminhamento explícito pelo runner. Revisão própria distinta, não
+independente, sem impeditivos; comparação do diff preserva demais gates,
+advisories, tarefas e dependências. Nenhuma mudança em lib/SDK/manifests ou nos
+candidatos preparados. A validação final usa checkout sem arquivos ignorados,
+policy com a mesma opção do workflow, checker local e actionlint. Execução
+remota do GitHub não foi disparada; não há commit/publicação automática.
+
+Resultado final: checkout público sem referencia/ reprova corretamente no modo
+estrito (exit 1) e aprova policy com a opção do workflow (exit 0), com 15 testes.
+A opção em job Dart é rejeitada antes de executar checks (exit 2). Checker local
+aprovou 71 tarefas/590 links, actionlint 1.7.7 e git diff --check passaram.
+Revisão do delta final sem impeditivos; não houve alteração de código após essas
+provas, somente este registro de resultados.

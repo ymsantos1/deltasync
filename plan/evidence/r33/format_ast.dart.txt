@@ -1,0 +1,20 @@
+// Local verification instrument: formatting must preserve the parsed program.
+import 'dart:convert';
+import 'dart:io';
+import 'package:analyzer/dart/analysis/utilities.dart';
+
+void main(List<String> paths) {
+  final baseline = paths.first;
+  final results = <String>[];
+  for (final path in paths.skip(1)) {
+    final before = Process.runSync('git', ['show', '$baseline:$path']);
+    if (before.exitCode != 0) throw StateError('$path: no baseline');
+    final oldUnit = parseString(content: before.stdout as String, path: path).unit;
+    final newUnit = parseString(content: File(path).readAsStringSync(), path: path).unit;
+    if (oldUnit.toSource() != newUnit.toSource()) {
+      throw StateError('$path: parsed program changed');
+    }
+    results.add(path);
+  }
+  print(jsonEncode({'sameParsedPrograms': results}));
+}

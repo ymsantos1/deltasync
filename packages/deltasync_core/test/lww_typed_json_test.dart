@@ -192,9 +192,9 @@ void main() {
       'numbers': [1, 2],
     });
     expect(
-      Replica.fromSnapshotJson(
-        receiver.toSnapshotJson(),
-      ).state.values['settings'],
+      Replica.fromSnapshotJson(receiver.toSnapshotJson())
+          .state
+          .values['settings'],
       {
         'numbers': [1, 2],
       },

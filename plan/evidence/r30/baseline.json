@@ -1,0 +1,189 @@
+{
+  "historicalRevision": "1e969182e8e172a8858a48ecf83a1feb2c21a455",
+  "currentRevision": "400161283e741d62dddf01cfc314629968a93828",
+  "sdk": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"",
+  "historicalSourceDirectory": "/tmp/deltasync-r30-source-35j_r_j4",
+  "historicalPackageConfig": "/tmp/deltasync-r30-source-35j_r_j4/.dart_tool/package_config.json",
+  "historicalConsumer": "/tmp/deltasync-r30-source-35j_r_j4/plan/evidence/r30/consumer_test.dart",
+  "currentConsumer": "/tmp/deltasync-r30-consumer-9qomdfue/consumer_test.dart",
+  "generator": "/tmp/deltasync-r30-source-35j_r_j4/plan/evidence/r30/fixture.dart",
+  "dartCommand": "dart",
+  "historicalResolution": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ code_assets 2.1.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ hooks 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ lints 6.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ native_toolchain_c 0.19.5\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ platform 3.2.0\n+ pool 1.5.3\n+ process 5.0.6\n+ pub_semver 2.2.1\n+ record_use 1.1.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ sqflite_common 2.5.14\n+ sqflite_common_ffi 2.4.4\n+ sqlite3 3.7.1\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ synchronized 3.5.0\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 60 dependencies!\n",
+  "packageMetadata": {
+    "deltasync": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_core": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_storage": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_transport": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_sync": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_storage_sqflite": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    },
+    "deltasync_storage_testing": {
+      "historical": {
+        "version": "1.0.0",
+        "sdk": "^3.12.0"
+      },
+      "current": {
+        "version": "2.0.0",
+        "sdk": "^3.12.0"
+      }
+    }
+  },
+  "allLibSourcesIdentical": true,
+  "libSha256": {
+    "lib/deltasync.dart": "bfaeab7bb63a8fa7a06094b5617b7f4f9e22d4bd4a7e06bd224c6dc67ecd475a",
+    "packages/deltasync_core/lib/deltasync_core.dart": "b85a45a8e0ff7c8cddff64feb9bc2317327157695cb80736b05aa41350b7901f",
+    "packages/deltasync_core/lib/src/causal/dot_context.dart": "6e23716cdfcf5f9fc8fb9f61be3bb98b2bcb2e24bd51cd33397d2f6a144155cf",
+    "packages/deltasync_core/lib/src/crdt.dart": "6ec10262a706923d6a8d5606a4d25777ed4e83d87c335d8e8265a4a5f9612be0",
+    "packages/deltasync_core/lib/src/delta.dart": "204cb52d3b7f44f9b3f728c7143cd11a06c465dcf8176f91e8238cc9176691ab",
+    "packages/deltasync_core/lib/src/delta_change.dart": "7b51d1969a1840c476474c79d4256ee4a9eda050778eeb55cd31e1aa77c4043e",
+    "packages/deltasync_core/lib/src/delta_codec.dart": "5b5a5b89e3f2f0de3ad4b8e9c95fb0f51341cba645a80752efaf053a3d08d5f6",
+    "packages/deltasync_core/lib/src/g_counter.dart": "5def29fa2dbe1d36c5ebbcb152f1bfcb86d327236ade44dd6b22e6a706f0e5e1",
+    "packages/deltasync_core/lib/src/g_set.dart": "333695d6e2af26f01392ac0a677621cd6ea6abf02678a7264c66877d258c7e80",
+    "packages/deltasync_core/lib/src/hlc.dart": "449f0d89cd3fc99bc7e6854edc9a614a1163e8794adaca85d35ed537547e50a9",
+    "packages/deltasync_core/lib/src/identity.dart": "41af4e7bb97c9f1698a3359103634ec46163cc607f658b5320ddf29cfe39ef11",
+    "packages/deltasync_core/lib/src/json/value.dart": "f9b92fe4b544e3c94b0fe25f43095f4a89e923c9fbb97adaf773baf596444c5e",
+    "packages/deltasync_core/lib/src/json_set_value.dart": "44164ec68da45d049746ce209f2ef62bafeae28478b0417c246ef107b236410c",
+    "packages/deltasync_core/lib/src/json_value.dart": "34177ce6152079cda4dae2cdc6ecf5853127e08a9c2f8b996ce3436bc5bbac5f",
+    "packages/deltasync_core/lib/src/lww_delta.dart": "cb2293fa629270ad6716300d69c638085574adc827b4f2460ce69ca32046a908",
+    "packages/deltasync_core/lib/src/lww_register.dart": "1b2c1f9eabbaa2be47fa131902fbc47760a795202cff399452fdf49b46067155",
+    "packages/deltasync_core/lib/src/mv_register.dart": "7ebe805e81cc31b0224c5e5a54ce3e369994218a8d4a8a4026341f272ecb57e8",
+    "packages/deltasync_core/lib/src/operation.dart": "109805cfd487797cb1f54f933f6a7214c8fe3aa0e0d5ecdf789391db13301ed8",
+    "packages/deltasync_core/lib/src/or_map.dart": "f748c81983bd70dca946f9aa1d78f17285ca77a27e851a514aff69e8c69a477a",
+    "packages/deltasync_core/lib/src/or_set.dart": "72716c19fc38c38fd9d8632d4c8638367a629b8ee64afc92fea5e61740468449",
+    "packages/deltasync_core/lib/src/pn_counter.dart": "324224fb5d5a4c02807e5c8655db217bdaed2a1ccb6446906c98ff5b0f72cbe0",
+    "packages/deltasync_core/lib/src/replica/contents.dart": "86ef2d4b0c8e1be21529e45ae0e24930dde181274a7971a5f4af1fe6dbb17f9f",
+    "packages/deltasync_core/lib/src/replica/delta_validation.dart": "e1a959c8e653ac36d62ce1fcddd7981b645ee6e52dae2642e06741accf8c706a",
+    "packages/deltasync_core/lib/src/replica/snapshot_codec.dart": "0d397ba1f602faaaab703658f842750ed50f019f169ac2ea9c7baded81460129",
+    "packages/deltasync_core/lib/src/replica.dart": "97924dd85aaa42ebfdf385ac4aedb0608588ee2bc35bc2c6d41c36964fb48e81",
+    "packages/deltasync_core/lib/src/replica_state.dart": "189765668d1dfeccffd38d901e0b605d81cb18b977f6369b880851cc6f60cde4",
+    "packages/deltasync_core/lib/src/two_p_set.dart": "336c0865a96adbd6d64a934da7abcdd497ef770ab0a3ade81919ff911b9d769d",
+    "packages/deltasync_core/lib/src/vector_clock.dart": "f962fb9a585a65641ce659b6e876b2f2e2fdd335e54eae54ff5cf36186da60df",
+    "packages/deltasync_storage/lib/deltasync_storage.dart": "e4c3467846a8f7c5b431fa19e7bf2c45c716f767ceeb76fd7c1d41c7284bf939",
+    "packages/deltasync_storage/lib/src/memory_storage.dart": "08748471ab3e6c25603d14f1fc41e19354ac944d2bbfc0cc19d56293414ff4f9",
+    "packages/deltasync_storage/lib/src/pending_delta_store.dart": "c6e4c47aa0635d5ce38b013ada12b386691e956da3f7e800139e354e3cd29474",
+    "packages/deltasync_storage/lib/src/replica_storage.dart": "741e31a6efb0bf263a88f34b53e53dd81791182cc18eddeb1f72ebb3fc17214d",
+    "packages/deltasync_storage/lib/src/replica_storage_contract.dart": "17cb7b18e1a310cb6b9bc2825be0dda7f5a6d7c87f49a4b28834892cb5c0b8bb",
+    "packages/deltasync_transport/lib/deltasync_transport.dart": "de582ba3467e8ba96fa62a56d9a1efa13919f598dfe02921c1efc0b3875bff34",
+    "packages/deltasync_transport/lib/src/delta_acknowledgement.dart": "d4fbf6f1890545558f00b8b495ac3dc4890673d78f1688dd5aa3ac9205acc4da",
+    "packages/deltasync_transport/lib/src/delta_envelope.dart": "8708141d9c3de24dec8e257f30ac8031088c92b8df32b7aa5e8a800a1a960c79",
+    "packages/deltasync_transport/lib/src/delta_transport.dart": "92d696d5c10afaa510e1c297cba426b5f6c401f717f71d51755599060f90fb81",
+    "packages/deltasync_sync/lib/deltasync_sync.dart": "efa205d7d832d944a177177fbd14884bc232c56b412367be09c5f7ccf0d782ae",
+    "packages/deltasync_sync/lib/src/sync/outbound_sync.dart": "ae1f3dd865c2335ab9e1919f206c30fbcf356ad12ea171ddc9264db4f66f858f",
+    "packages/deltasync_sync/lib/src/sync/replica_persistence.dart": "8fb486be31415fda3fd5bdad192f9f0942dde647d690a5e87bbf25e548617db9",
+    "packages/deltasync_sync/lib/src/sync/serial_commit_queue.dart": "8641ff099f3bb6ce9569327c6cd13d330aac8f98e8da005f55ef9eb2bfde9e1e",
+    "packages/deltasync_sync/lib/src/sync_engine.dart": "e56dbd76e6df94b5d41289e3f8e1f0b8d3267ff08ead119730f6b4b43c50b996",
+    "packages/deltasync_sync/lib/src/sync_types.dart": "85d030d04df5fb88a806c226f98cd7d575e9b6f35ddbaec6baf7bec8449b3276",
+    "packages/deltasync_storage_sqflite/lib/deltasync_storage_sqflite.dart": "fc666cd59c25cf9b5e000397720efd4af48ac025f783f624581eca935072aff4",
+    "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart": "1ed8347e40122a44e36e12cbffb42a137094ee493388b92fa0f16d24f04c1490",
+    "packages/deltasync_storage_testing/lib/deltasync_storage_testing.dart": "37da536fbf79c6ef2abcc986f1b900c119d7446b85bfb3ba0dbb35f9003109b9",
+    "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart": "9b80d07f13f555cd791f0099e231bf74a6db02be191ce2b6ac2997543cf19ba0"
+  },
+  "publicDeclaredSymbols": {
+    "deltasync": 62,
+    "deltasync_core": 38,
+    "deltasync_storage": 7,
+    "deltasync_transport": 6,
+    "deltasync_sync": 11,
+    "deltasync_storage_sqflite": 1,
+    "deltasync_storage_testing": 2
+  },
+  "analyzerToolPackage": "file:///home/yago/.pub-cache/hosted/pub.dev/analyzer-14.5.0",
+  "fixtureSha256": "088e79d45c05bc2e8f2da0fb99981333f2dcf4fb3a2a036bd58fe6a3ea737325",
+  "apiInventorySha256": "7afff3be91574032c2ec57a402672f7bf976be1c7b0dc9e1d9d0fbcfbb6d28fd",
+  "consumerSourceSha256": "4e0e164425ab0b3c13f3f30077717c4361211d0a6ff0e9af71021b7d8cbc3ca7",
+  "generatorSourceSha256": "a115fa7b00631ba0c878fd9952334a79f7fb9c113dfd64305800189b3af3de6b",
+  "fixtureGeneratorUsesHistoricalPackageConfig": true,
+  "futureRegressionsMustReadFrozenFixture": true,
+  "minimumSdkExecution": {
+    "version": "3.12.x",
+    "definedIn": "README.md#matriz-de-sdk",
+    "scope": "consumer checks; seven-package matrix recorded separately",
+    "executed": false,
+    "reason": "See sdk and consumerChecks; no claim for an unexecuted SDK"
+  },
+  "consumerChecks": [
+    {
+      "source": "historical",
+      "command": [
+        "dart",
+        "test",
+        "/tmp/deltasync-r30-source-35j_r_j4/plan/evidence/r30/consumer_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "workingDirectory": "/tmp/deltasync-r30-source-35j_r_j4",
+      "tests": 14,
+      "exitCode": 0,
+      "log": "/tmp/deltasync-r30-source-35j_r_j4/historical-consumer.log",
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading /tmp/deltasync-r30-source-35j_r_j4/plan/evidence/r30/consumer_test.dart\n00:00 +0: consumer resolves the explicitly expected source tree\n00:00 +1: R-30 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +2: R-30 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +3: R-30 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +4: R-30 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +5: R-30 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +6: R-30 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +7: R-30 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +8: R-30 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +9: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +10: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +11: legacy public aliases remain compilable before their planned removal\n00:00 +12: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +13: legacy snapshot wrapper restores through the public engine boundary\n00:00 +14: All tests passed!\n"
+    },
+    {
+      "source": "current",
+      "command": [
+        "dart",
+        "test",
+        "/tmp/deltasync-r30-consumer-9qomdfue/consumer_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "workingDirectory": "/projetos/tcc/deltasync",
+      "tests": 14,
+      "exitCode": 0,
+      "log": "/tmp/deltasync-r30-source-35j_r_j4/current-consumer.log",
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading /tmp/deltasync-r30-consumer-9qomdfue/consumer_test.dart\n00:00 +0: consumer resolves the explicitly expected source tree\n00:00 +1: R-30 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +2: R-30 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +3: R-30 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +4: R-30 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +5: R-30 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +6: R-30 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +7: R-30 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +8: R-30 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +9: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +10: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +11: legacy public aliases remain compilable before their planned removal\n00:00 +12: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +13: legacy snapshot wrapper restores through the public engine boundary\n00:00 +14: All tests passed!\n"
+    }
+  ]
+}

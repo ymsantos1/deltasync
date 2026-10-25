@@ -55,7 +55,7 @@ def anchors(text):
     return result
 
 
-def check(root):
+def check(root, *, allow_missing_tcc_reference=False):
     errors = []
     plan = root / "plan"
     required = [root / p for p in (
@@ -81,6 +81,9 @@ def check(root):
             destination = (file.parent / unquote(parsed.path)).resolve() if parsed.path else file
             link_count += 1
             if not destination.exists():
+                if (allow_missing_tcc_reference
+                        and destination == (root / "referencia/Proposta TCC.pdf").resolve()):
+                    continue
                 errors.append(f"{file.relative_to(root)}: link ausente {target}")
             elif parsed.fragment and destination.is_file():
                 content = texts.get(destination)
@@ -209,9 +212,11 @@ def check(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--allow-missing-tcc-reference", action="store_true",
+                        help="Allow only the absent local referencia/Proposta TCC.pdf in public CI")
     args = parser.parse_args()
     try:
-        errors, tasks, links = check(args.root.resolve())
+        errors, tasks, links = check(args.root.resolve(), allow_missing_tcc_reference=args.allow_missing_tcc_reference)
     except (OSError, UnicodeError, ValueError) as error:
         print(f"Falha ao ler plano: {error}", file=sys.stderr)
         return 1

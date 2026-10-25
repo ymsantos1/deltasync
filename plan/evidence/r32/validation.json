@@ -1,0 +1,59 @@
+{
+  "task": "R-32",
+  "date": "2026-10-24",
+  "beforeRevision": "2e1b9f5a97cb99b50c6ec770b2b12c19914afab6",
+  "initialWorktree": "clean",
+  "skills": [
+    "plan-reader",
+    "plan-implementer",
+    "code-reviewer",
+    "plan-validator",
+    "plan-maintainer"
+  ],
+  "productionChanged": false,
+  "instrumentSha256": "f1feb28bb17d9557d4e260e541bffe8ece4451eec4329d209055262a28d8c2c7",
+  "measurementsSha256": "c25d7c38786d8b86429f7f14e44ec00f0e230fae7ec7d5f6eab5c472ad4edd86",
+  "pubspecLockSha256": "f0d7bd4ae56ed920d0924cb9e659a9096cbd17e13b6e0ad4d25a26bb40ec18db",
+  "review": {
+    "approved": true,
+    "independent": false,
+    "afterCorrections": true,
+    "corrections": [
+      "Wrapped two flow statements after analyzer lint infos",
+      "Normalize map/set order for semantic value comparison; ordered lists remain ordered",
+      "Document same-value LWW overwrite, global vs peer query scope, non-additive byte projections and closed SQLite file scope"
+    ]
+  },
+  "preliminaryFailure": {
+    "exitCode": 255,
+    "command": "dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r32-paths-preliminary.json",
+    "error": "Bad state: R-32 verification failed: restored values",
+    "cause": "Value map iteration order differed after restoration while snapshots matched; fixed instrumentation comparison, no product changes"
+  },
+  "measurement": {
+    "command": "dart run example/measure_crdt_cost.dart --paths > /tmp/deltasync-r32-paths.json 2> /tmp/deltasync-r32-paths.err",
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "stderr": "Running build hooks...Running build hooks...",
+    "workloads": 14,
+    "measuredSamples": 70,
+    "warmupSamples": 28,
+    "operationsPerSample": 12,
+    "runtimeEquivalenceChecks": true,
+    "separateJsonConsistencyChecksPassed": true,
+    "noOtherDartTestsLaunchedConcurrentlyByAgent": true
+  },
+  "legacyMode": {
+    "command": "dart run example/measure_crdt_cost.dart > /tmp/deltasync-r32-legacy.log 2>&1",
+    "exitCode": 0,
+    "output": "Running build hooks...Running build hooks...environment: os=linux, dart=3.13.5, abi=linux_x64, processors=12\nlarge-state: existing=250, changes=3, visible=253, delta=707 B, envelope=809 B, snapshot=56664 B, outbox=1176 B\nmv-register: N=4, expected-context-refs=6, actual-context-refs=6, compact-context-units=3, active-versions=1, context-dots=4, delta=1112 B, envelope=1189 B, outbox-with-metadata=1709 B, snapshot-before-ack=542 B, snapshot-after-ack=542 B, pending-before=4, pending-after=0, outbox-after-ack=0 B, acknowledged=4, write-us=1095-7385, ack-ms=18, sqlite-before-ack=24576 B, sqlite-after-ack=24576 B\nmv-register: N=8, expected-context-refs=28, actual-context-refs=28, compact-context-units=7, active-versions=1, context-dots=8, delta=2220 B, envelope=2297 B, outbox-with-metadata=3449 B, snapshot-before-ack=542 B, snapshot-after-ack=542 B, pending-before=8, pending-after=0, outbox-after-ack=0 B, acknowledged=8, write-us=1032-1313, ack-ms=12, sqlite-before-ack=32768 B, sqlite-after-ack=32768 B\nmv-register: N=16, expected-context-refs=120, actual-context-refs=120, compact-context-units=15, active-versions=1, context-dots=16, delta=4525 B, envelope=4604 B, outbox-with-metadata=7034 B, snapshot-before-ack=552 B, snapshot-after-ack=552 B, pending-before=16, pending-after=0, outbox-after-ack=0 B, acknowledged=16, write-us=1009-1693, ack-ms=20, sqlite-before-ack=36864 B, sqlite-after-ack=36864 B\nmv-register: N=32, expected-context-refs=496, actual-context-refs=496, compact-context-units=31, active-versions=1, context-dots=32, delta=9085 B, envelope=9164 B, outbox-with-metadata=14138 B, snapshot-before-ack=552 B, snapshot-after-ack=552 B, pending-before=32, pending-after=0, outbox-after-ack=0 B, acknowledged=32, write-us=942-2501, ack-ms=26, sqlite-before-ack=45056 B, sqlite-after-ack=45056 B\nor-set: cycles=8, visible=1, add-tags=9, retained-events=17, observed-dot-refs=8, delta=4569 B, envelope=4661 B, outbox-with-metadata=7305 B, snapshot=4851 B\n",
+    "checks": "four MV workloads retain expected causal counts and clear pending after durable ACK; 253 visible large-state items; 17 retained OR-Set events"
+  },
+  "rootChecks": "root-checks.json",
+  "limits": [
+    "Dart 3.13.5 Linux/SQLite FFI; no SDK 3.12.x or Android execution",
+    "No heap/allocation profiling; RSS includes managed/native memory and accumulated process history",
+    "Fixed order, JIT, GC and OS caches remain; timings are host observations, not SLA",
+    "No library, public API, data format, dependency or version changes; no speculative refactor"
+  ]
+}

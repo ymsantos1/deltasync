@@ -1,0 +1,97 @@
+// @dart=3.12
+// Same public source is run with historical and current package resolutions.
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:deltasync/deltasync.dart';
+import 'package:deltasync_storage_sqflite/deltasync_storage_sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+class PartialAckTransport implements AcknowledgingDeltaTransport {
+  @override
+  String get peerReplicaId => 'peer-a';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
+  @override
+  Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope) async =>
+      DeltaAcknowledgement(
+        peerReplicaId: peerReplicaId,
+        stage: DeltaAckStage.appliedAndPersisted,
+        changeIds: envelope.delta.changes.take(3).map((change) => change.id),
+      );
+}
+
+void require(bool condition, String message) {
+  if (!condition) throw StateError(message);
+}
+
+Future<void> main(List<String> arguments) async {
+  final [mode, databasePath, fixturePath] = arguments;
+  final fixture = jsonDecode(File(fixturePath).readAsStringSync()) as Map;
+  Map<String, Object?> map(Object? value) =>
+      Map<String, Object?>.from(value as Map);
+  final frozen = ReplicaSnapshot.fromJson(map(fixture['snapshot']));
+  sqfliteFfiInit();
+  final storage = SqfliteReplicaStorage(
+    databaseFactory: databaseFactoryFfi,
+    databasePath: databasePath,
+  );
+  SyncEngine? engine;
+  try {
+    if (mode == 'seed') {
+      await storage.commit(frozen, [
+        for (final entry in fixture['outbox'] as List)
+          OutboxEntry.fromJson(map(entry)),
+      ]);
+      require(
+        (await storage.pending(frozen.replicaId)).length == 46,
+        'seed IDs',
+      );
+    } else if (mode == 'upgrade' || mode == 'verify') {
+      engine = SyncEngine.withStorage(
+        replica: Replica(frozen.replicaId),
+        storage: storage,
+        transport: PartialAckTransport(),
+      );
+      await engine.start();
+      if (mode == 'upgrade') {
+        await engine.setDelta('upgrade', {'written': 'current'});
+        await engine.incrementGCounter('g');
+        final result = await engine.push(force: true);
+        require(result.acknowledgedIds.length == 3, 'partial ACK');
+      }
+      require(engine.valueAt('g') == 4, 'counter after upgrade/rollback');
+      require(
+        (engine.valueAt('upgrade') as Map)['written'] == 'current',
+        'current payload readable after rollback',
+      );
+      final entries = await storage.pending(frozen.replicaId);
+      require(entries.length == 45, 'unacknowledged IDs survive rollback');
+      final peerB = entries.where((entry) => entry.recipientPeerId == 'peer-b');
+      require(peerB.length == 23, 'other peer retained');
+      final expectedB = (fixture['outbox'] as List)
+          .where((entry) => (entry as Map)['recipientPeerId'] == 'peer-b')
+          .map(jsonEncode)
+          .toSet();
+      require(
+        peerB
+            .map((entry) => jsonEncode(entry.toJson()))
+            .toSet()
+            .containsAll(expectedB),
+        'other peer payload/metadata unchanged',
+      );
+      require(
+        engine.replica.toSnapshotJson()['version'] == 9,
+        'snapshot version',
+      );
+    } else {
+      throw ArgumentError.value(mode, 'mode');
+    }
+    stdout.writeln(jsonEncode({'mode': mode, 'passed': true}));
+  } finally {
+    await engine?.dispose();
+    await storage.close();
+  }
+}

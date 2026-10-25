@@ -832,6 +832,11 @@ Critérios:
 Validação: configuração/documentação, resolução local e preparação de release.
 Evidência de conclusão: [execução R-29](TRACEABILITY.md#execucao-r-29-2026-10-15).
 
+Nota de recuperação do stash, 2026-10-24: conclusão histórica obtida em
+1e969182e8e172a8858a48ecf83a1feb2c21a455. A branch atual 6b7016a mantém os
+manifests em 2.0.0 e não incluía esse registro. Preservar a evidência não reaplica
+a alteração de versão; R-30 deve conferir a divergência antes de implementar 1.0.1.
+
 ## Gate da fase
 
 Revisar diff de cada tarefa, executar verificações acima e análise dos pacotes

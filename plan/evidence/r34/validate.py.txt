@@ -1,0 +1,83 @@
+"""Read-only validation of the R-34 artifacts against this execution's inputs."""
+import ast
+import collections
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+root = Path('/projetos/tcc/deltasync')
+evidence = root / 'plan/evidence/r34'
+paths = json.loads(Path('/tmp/deltasync-r34-paths.json').read_text())
+pilot = json.loads((evidence/'pilot.json').read_text())
+metrics = json.loads((evidence/'metrics.json').read_text())
+diagnostics = json.loads((evidence/'diagnostics.json').read_text())
+inventory = json.loads((evidence/'inventory.json').read_text())
+resolutions = json.loads((evidence/'resolutions.json').read_text())
+checks = []
+
+def checked(name, condition):
+    assert condition, name
+    checks.append(name)
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+checked('archive integrity', pilot['saropa']['archiveSha256'] == pilot['saropa']['cachedSha256'])
+checked('32 measurement records', len(metrics) == 32)
+checked('166 diagnostics / 19 rules', len(diagnostics) == pilot['totalDiagnostics'] == 166
+        and len(pilot['countsByRule']) == 19)
+checked('rule distribution', dict(collections.Counter(d['rule'] for d in diagnostics)) == pilot['countsByRule'])
+checked('116 unique Dart inputs', sum(map(len, inventory['packages'].values())) == len(inventory['sourceSha256']) == 116)
+for path, sha256 in inventory['sourceSha256'].items():
+    checked('source unchanged: '+path, digest(root/path) == sha256)
+for record in metrics:
+    checked(record['log']+' exit code', record['exitCode'] == (0 if record['mode']=='baseline' else 1))
+    checked(record['log']+' inventory', record['fileCount']==len(inventory['packages'][record['package']]))
+for diagnostic in diagnostics:
+    checked('diagnostic coordinate', diagnostic['file'] in inventory['sourceSha256']
+            and 0 < diagnostic['line'] <= len((root/diagnostic['file']).read_text().splitlines()))
+for name, sha256 in pilot['rawLogSha256'].items():
+    path = (Path('/tmp/deltasync-r34-native/reports/.saropa_lints/plugin.log') if name=='native-plugin.log'
+            else Path('/tmp/deltasync-r34-results')/name if '-baseline-' in name or '-saropa-' in name
+            else Path('/tmp')/name if name.startswith('deltasync-r34-')
+            else Path('/tmp')/('deltasync-r34-'+name))
+    checked('raw log hash: '+name, digest(path)==sha256)
+for package in inventory['packages']:
+    label=package.replace('/','_').replace('.','root')
+    a=Path('/tmp/deltasync-r34-results')/(label+'-saropa-1.stdout')
+    b=Path('/tmp/deltasync-r34-results')/(label+'-saropa-2.stdout')
+    checked('identical passes: '+package, json.loads(a.read_text())==json.loads(b.read_text()))
+    for repeat in (1,2):
+        text=(a.parent/(label+f'-saropa-{repeat}.stderr')).read_text()
+        checked('no partial scan: '+package, not any(s in text for s in (
+            'Skipping (could not resolve)', 'stopping early', 'Rule "')))
+def versions(name):
+    return {p['name']:p['version'] for p in resolutions[name]['packages']}
+checked('workspace baseline preserved by native plugin', versions('baseline')==versions('native'))
+checked('runner pinned', versions('runner')['saropa_lints']=='16.7.0' and versions('runner')['analyzer']=='12.1.0')
+checked('flexible dependency downgrade captured', versions('flexible')['test']=='1.31.1')
+ast.parse((evidence/'measure.py.txt').read_text())
+checks.append('measurement instrument parses')
+for path in evidence.iterdir():
+    if path.is_file():
+        text=path.read_text()
+        checked('new file whitespace: '+path.name, text.endswith('\n') and all(line==line.rstrip() for line in text.splitlines()))
+checked('HEAD unchanged', subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==pilot['beforeRevision'])
+changed=subprocess.check_output(['git','diff','--name-only'],cwd=root,text=True).splitlines()
+checked('tracked changes only documentation', all(p.startswith(('docs/','plan/')) for p in changed))
+checked('frozen historical evidence preserved', not any(p.startswith('plan/evidence/') for p in changed))
+commands=[]
+for command in [['python3','scripts/check_plan.py'],['git','diff','--check']]:
+    result=subprocess.run(command,cwd=root,text=True,capture_output=True)
+    commands.append(dict(command=command,exitCode=result.returncode,stdout=result.stdout,stderr=result.stderr))
+    checked('command passed: '+' '.join(command), result.returncode==0)
+report=dict(status='passed',checks=len(checks),checksSummary=[
+    '32 metrics, 116 source hashes, 166 diagnostic coordinates and 19 rule counters',
+    'raw logs match SHA256; both diagnostic passes match; no partial-scan markers',
+    'version snapshots, native isolation, Python AST and new file whitespace',
+    'HEAD/manifests/configuration/product and historical evidence unchanged'],
+    commands=commands,artifactsSha256={p.name:digest(p) for p in evidence.iterdir()
+        if p.is_file() and p.name!='validation.json'})
+Path('/tmp/deltasync-r34-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps(dict(status=report['status'],checks=len(checks),commands=commands),ensure_ascii=False))

@@ -176,7 +176,7 @@ Future<void> _show(String label, ShoppingApp app) async {
   final status = app.lastFailure != null
       ? 'falha; commit local preservado'
       : pending == 0
-      ? 'confirmado pelo peer'
+      ? 'sem pendências para o peer'
       : 'commit local; envio pendente';
   print(
     '$label: compradores=${view.shopperA}/${view.shopperB}, '
@@ -214,16 +214,16 @@ class ShoppingApp {
   }
 
   ShoppingView get view {
-    final replica = engine.replica;
     return ShoppingView(
-      shopperA: replica.state.values['shopper/$_replicaA/name'] as String?,
-      shopperB: replica.state.values['shopper/$_replicaB/name'] as String?,
-      itemCount: replica.gCounterValue('shopping/items'),
+      shopperA: engine.valueAt('shopper/$_replicaA/name') as String?,
+      shopperB: engine.valueAt('shopper/$_replicaB/name') as String?,
+      itemCount: (engine.valueAt('shopping/items') as int?) ?? 0,
     );
   }
 
-  Future<int> get pendingCount async =>
-      (await engine.pendingDelta()).changes.length;
+  Future<int> get pendingCount async => (await engine.pendingSummary(
+    recipientPeerId: engine.transport.peerReplicaId,
+  )).totalCount;
 
   Future<void> dispose() => engine.dispose();
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 import 'package:deltasync_transport/deltasync_transport.dart';
@@ -30,9 +28,15 @@ class SyncPushFailure extends SyncObservation {
 /// Notification after a local mutation or remote merge is committed and adopted.
 /// It signals state availability, not remote acknowledgement.
 class SyncCommitEvent extends SyncObservation {
-  const SyncCommitEvent({required this.origin});
+  SyncCommitEvent({required this.origin, required Iterable<String> addresses})
+    : addresses = Set.unmodifiable(addresses);
 
   final SyncCommitOrigin origin;
+
+  /// Unique addresses processed by this committed input, not visible changes.
+  /// Includes replay/losing LWW input, tombstones and empty bound snapshot CRDTs.
+  /// Snapshot metadata includes peer addresses only. Detached and read-only.
+  final Set<String> addresses;
 }
 
 /// Failure delivered by `SyncEngine.errors` from an incoming transport callback.
@@ -49,8 +53,8 @@ class SyncFailure extends SyncObservation {
 }
 
 /// Result of one push attempt. A null [acknowledgement] means only local send
-/// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
-/// retains changes even when remote ACK is received.
+/// completed; received ACKs do not populate [acknowledgedIds]. Only durable
+/// acknowledgements remove changes from the recipient's outbox.
 class SyncPushResult extends SyncObservation {
   SyncPushResult({
     required this.sent,
@@ -75,8 +79,7 @@ class SyncPushResult extends SyncObservation {
 /// The caller schedules retries; this policy does not start a timer. New pending
 /// entries are eligible on the next push. Sent entries wait for the exponential
 /// delay and stop being selected once [maxAttempts] is reached, if configured.
-/// `push(force: true)` bypasses both filters. The legacy [PendingDeltaStore]
-/// path has no attempt metadata; every push retries its retained delta.
+/// `push(force: true)` bypasses both filters.
 class SyncRetryPolicy {
   const SyncRetryPolicy({
     this.baseDelay = const Duration(seconds: 1),

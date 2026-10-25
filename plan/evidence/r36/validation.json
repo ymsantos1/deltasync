@@ -1,0 +1,450 @@
+{
+  "task": "R-36",
+  "status": "passed",
+  "capturedUtc": "2026-10-25T18:20:08.958070+00:00",
+  "initialHead": "9fc0f68629e794c962fb9a74e163d8ebe27da27f",
+  "initialWorktreeStatus": " M README.md\n M docs/ci.md\n M docs/guia-integracao.md\n M docs/migracao-1.0.1.md\n M example/offline_reconciliation.dart\n M packages/deltasync_core/README.md\n M packages/deltasync_storage/README.md\n M packages/deltasync_storage_sqflite/README.md\n M packages/deltasync_storage_testing/README.md\n M packages/deltasync_sync/README.md\n M packages/deltasync_transport/README.md\n M plan/06_PHASE6_MANUTENCAO_1_0_1.md\n M plan/README.md\n M plan/RISKS.md\n M plan/TRACEABILITY.md\n M scripts/ci.py\n?? docs/medicoes.md\n?? docs/referencia-tecnica.md\n?? example/commit_status_example.dart\n?? plan/evidence/r35/\n?? test/integration_guide_test.dart\n",
+  "initialSnapshotSha256": "81bc9bde903aaf60658fc4a18d243f580e0f269d7906bfc2b3cdd852c6adc3ef",
+  "initialFiles": 298,
+  "inspection": {
+    "destination": "/tmp/deltasync-release-parent-cgx9_tyj/release",
+    "packages": {
+      "deltasync_core": {
+        "version": "1.0.1",
+        "files": 33,
+        "libraryFiles": 28,
+        "internalConstraints": {},
+        "inventoryVerified": true
+      },
+      "deltasync_storage": {
+        "version": "1.0.1",
+        "files": 9,
+        "libraryFiles": 4,
+        "internalConstraints": {
+          "deltasync_core": "^1.0.1"
+        },
+        "inventoryVerified": true
+      },
+      "deltasync_transport": {
+        "version": "1.0.1",
+        "files": 9,
+        "libraryFiles": 4,
+        "internalConstraints": {
+          "deltasync_core": "^1.0.1"
+        },
+        "inventoryVerified": true
+      },
+      "deltasync_sync": {
+        "version": "1.0.1",
+        "files": 12,
+        "libraryFiles": 7,
+        "internalConstraints": {
+          "deltasync_core": "^1.0.1",
+          "deltasync_storage": "^1.0.1",
+          "deltasync_transport": "^1.0.1"
+        },
+        "inventoryVerified": true
+      },
+      "deltasync_storage_testing": {
+        "version": "1.0.1",
+        "files": 7,
+        "libraryFiles": 2,
+        "internalConstraints": {
+          "deltasync_core": "^1.0.1",
+          "deltasync_storage": "^1.0.1"
+        },
+        "inventoryVerified": true
+      },
+      "deltasync_storage_sqflite": {
+        "version": "1.0.1",
+        "files": 7,
+        "libraryFiles": 2,
+        "internalConstraints": {
+          "deltasync_storage": "^1.0.1",
+          "deltasync_core": "^1.0.1",
+          "deltasync_storage_testing": "^1.0.1",
+          "deltasync_sync": "^1.0.1",
+          "deltasync_transport": "^1.0.1"
+        },
+        "inventoryVerified": true
+      },
+      "deltasync": {
+        "version": "1.0.1",
+        "files": 8,
+        "libraryFiles": 1,
+        "internalConstraints": {
+          "deltasync_core": "^1.0.1",
+          "deltasync_storage": "^1.0.1",
+          "deltasync_sync": "^1.0.1",
+          "deltasync_transport": "^1.0.1",
+          "deltasync_storage_sqflite": "^1.0.1"
+        },
+        "inventoryVerified": true
+      }
+    },
+    "internalConstraintCount": 17,
+    "inventoryFileSha256": "d91097e9ffd5dee8be0bc2f000f39bb488a5141f8f7ef3e791f947ec8a747cd4",
+    "filesTotal": 85,
+    "sdkAndExternalConstraintsUnchanged": true,
+    "localResolution": {
+      "deltasync_core": "1.0.1",
+      "deltasync_storage": "1.0.1",
+      "deltasync_transport": "1.0.1",
+      "deltasync_sync": "1.0.1",
+      "deltasync_storage_testing": "1.0.1",
+      "deltasync_storage_sqflite": "1.0.1",
+      "deltasync": "1.0.1"
+    },
+    "rootHistoryPreserved": true,
+    "flutterExternalLockUnchanged": true,
+    "previousEvidenceAndLibrariesAndR35CodePreserved": true,
+    "priorTracePreserved": true,
+    "changedSinceInitial": [
+      "CHANGELOG.md",
+      "README.md",
+      "docs/guia-integracao.md",
+      "docs/migracao-1.0.1.md",
+      "docs/publicacao.md",
+      "example/flutter_mobile/pubspec.lock",
+      "packages/deltasync_core/CHANGELOG.md",
+      "packages/deltasync_core/README.md",
+      "packages/deltasync_core/pubspec.yaml",
+      "packages/deltasync_storage/CHANGELOG.md",
+      "packages/deltasync_storage/README.md",
+      "packages/deltasync_storage/pubspec.yaml",
+      "packages/deltasync_storage_sqflite/CHANGELOG.md",
+      "packages/deltasync_storage_sqflite/README.md",
+      "packages/deltasync_storage_sqflite/pubspec.yaml",
+      "packages/deltasync_storage_testing/CHANGELOG.md",
+      "packages/deltasync_storage_testing/README.md",
+      "packages/deltasync_storage_testing/pubspec.yaml",
+      "packages/deltasync_sync/CHANGELOG.md",
+      "packages/deltasync_sync/README.md",
+      "packages/deltasync_sync/pubspec.yaml",
+      "packages/deltasync_transport/CHANGELOG.md",
+      "packages/deltasync_transport/README.md",
+      "packages/deltasync_transport/pubspec.yaml",
+      "plan/06_PHASE6_MANUTENCAO_1_0_1.md",
+      "plan/README.md",
+      "plan/TRACEABILITY.md",
+      "pubspec.yaml"
+    ]
+  },
+  "apiChecks": {
+    "baselineRevision": "1e969182e8e172a8858a48ecf83a1feb2c21a455",
+    "sevenExpectedDiffSetsChecked": true,
+    "existingModifiersUnchanged": true,
+    "enumsUnchanged": [
+      "ClockRelation",
+      "CrdtKind",
+      "DeltaAckStage",
+      "OrMapAction",
+      "OrSetAction",
+      "OutboxStatus",
+      "SyncCommitOrigin",
+      "SyncEngineLifecycle",
+      "SyncFailureSource",
+      "TwoPSetAction"
+    ],
+    "observationVariantsUnchanged": [
+      "SyncCommitEvent",
+      "SyncFailure",
+      "SyncPushFailure",
+      "SyncPushResult",
+      "SyncRestoredEvent"
+    ],
+    "beforeNormalizedSha256": "ecd5745544cc92bb310b79d9a6a1b407f3a2d6148122de8b798b107936884126",
+    "currentNormalizedSha256": "d1202c52d122fb58e1f94802af5a3d5a06779c25305387e8b8b7bf3f9bbefdc2",
+    "newTypes": {
+      "FieldQuery": {
+        "source": "packages/deltasync_core/lib/src/replica/field_query.dart",
+        "declaration": "sealed class FieldQuery",
+        "members": []
+      },
+      "AbsentField": {
+        "source": "packages/deltasync_core/lib/src/replica/field_query.dart",
+        "declaration": "final class AbsentField extends FieldQuery",
+        "members": []
+      },
+      "PresentField": {
+        "source": "packages/deltasync_core/lib/src/replica/field_query.dart",
+        "declaration": "final class PresentField extends FieldQuery",
+        "members": [
+          "final CrdtKind kind;",
+          "final Object? value;",
+          "T decode<T>(T Function(Object? value) decoder)"
+        ]
+      },
+      "DeletedField": {
+        "source": "packages/deltasync_core/lib/src/replica/field_query.dart",
+        "declaration": "final class DeletedField extends FieldQuery",
+        "members": []
+      },
+      "LocalBatch": {
+        "source": "packages/deltasync_sync/lib/src/sync/local_batch.dart",
+        "declaration": "final class LocalBatch",
+        "members": [
+          "Object? valueAt(String address)",
+          "FieldQuery query(String address)",
+          "void setDelta(String key, Object? value)",
+          "void removeDelta(String key)",
+          "void incrementGCounter(String crdtId, [int amount = 1])",
+          "void incrementPnCounter(String crdtId, [int amount = 1])",
+          "void decrementPnCounter(String crdtId, [int amount = 1])",
+          "void addGSet(String crdtId, Object? element)",
+          "void addAllGSet(String crdtId, Iterable<Object?> elements)",
+          "void addTwoPSet(String crdtId, Object? element)",
+          "void addAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+          "void removeTwoPSet(String crdtId, Object? element)",
+          "void removeAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+          "void writeMvRegister(String crdtId, Object? value)",
+          "void addOrSet(String crdtId, Object? element)",
+          "void removeOrSet(String crdtId, Object? element)",
+          "void addOrMapKey(String crdtId, String key)",
+          "void removeOrMapKey(String crdtId, String key)",
+          "void addOrMapValue(String crdtId, String key, Object? value)"
+        ]
+      },
+      "OutboxSummary": {
+        "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+        "declaration": "class OutboxSummary",
+        "members": [
+          "OutboxSummary({required this.pendingCount, required this.sentCount})",
+          "final int pendingCount;",
+          "final int sentCount;",
+          "int get totalCount"
+        ]
+      }
+    }
+  },
+  "records": [
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stdout": "Resolving dependencies...\nDownloading packages...\nGot dependencies!\n",
+      "rawLogSha256": "d4cb7a3c68b4133b4f6e58c67ff5bfd13725d8021e930388cdc98da8a575919d"
+    },
+    {
+      "command": [
+        "flutter",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "example/flutter_mobile",
+      "exitCode": 0,
+      "stdout": "Resolving dependencies...\nDownloading packages...\n  code_assets 1.2.1 (2.1.0 available)\n< deltasync 1.0.1 from path ../.. (was 2.0.0 from path ../..)\n! deltasync_core 1.0.1 from path ../../packages/deltasync_core (overridden)\n! deltasync_storage 1.0.1 from path ../../packages/deltasync_storage (overridden)\n< deltasync_storage_sqflite 1.0.1 from path ../../packages/deltasync_storage_sqflite (was 2.0.0 from path ../../packages/deltasync_storage_sqflite)\n! deltasync_sync 1.0.1 from path ../../packages/deltasync_sync (overridden)\n! deltasync_transport 1.0.1 from path ../../packages/deltasync_transport (overridden)\n  hooks 2.0.2 (2.2.0 available)\n  meta 1.18.3 (1.19.0 available)\n  native_toolchain_c 0.19.2 (0.19.5 available)\n  record_use 0.6.0 (1.1.1 available)\n  sqflite 2.4.4+1 (2.4.4+2 available)\n  sqflite_android 2.4.4 (2.4.4+1 available)\n  sqflite_common 2.5.13+1 (2.5.14 available)\n  sqflite_common_ffi 2.4.3 (2.4.4 available)\n  sqflite_darwin 2.4.4 (2.4.4+1 available)\n  sqlite3 3.5.2 (3.7.1 available)\n  synchronized 3.4.2 (3.5.0 available)\n  test_api 0.7.12 (0.7.15 available)\n  vector_math 2.4.0 (2.4.3 available)\nChanged 2 dependencies!\n14 packages have newer versions incompatible with dependency constraints.\nTry `flutter pub outdated` for more information.\n",
+      "rawLogSha256": "278f92ee8f62bc9dc8ff9ae0f143c567661dfea67e62ff8084fadf091b7e916f"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stdout": "Analyzing deltasync...\nNo issues found!\n",
+      "rawLogSha256": "4d69f01aeb1f23a35839a787f50c3e94a07f95be24a1a9df173afb204f577d01"
+    },
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stdout": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n",
+      "rawLogSha256": "b126264ba91ef67751ffbba40ed8a35c01da6efb9e57ac5e8f53c849c8c632e7"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "deps",
+        "--json"
+      ],
+      "exitCode": 0,
+      "summary": "Seven workspace package versions verified in resolution.json"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "workspace",
+        "list",
+        "--json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"packages\": [\n    {\n      \"name\": \"deltasync\",\n      \"path\": \"/projetos/tcc/deltasync\"\n    },\n    {\n      \"name\": \"deltasync_core\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_core\"\n    },\n    {\n      \"name\": \"deltasync_sync\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_sync\"\n    },\n    {\n      \"name\": \"deltasync_storage\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_storage\"\n    },\n    {\n      \"name\": \"deltasync_storage_sqflite\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_storage_sqflite\"\n    },\n    {\n      \"name\": \"deltasync_storage_testing\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_storage_testing\"\n    },\n    {\n      \"name\": \"deltasync_transport\",\n      \"path\": \"/projetos/tcc/deltasync/packages/deltasync_transport\"\n    }\n  ]\n}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/prepare_release.py"
+      ],
+      "exitCode": 0,
+      "stdout": "/tmp/deltasync-release-parent-cgx9_tyj/release\n"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/tmp/deltasync-r36-api-inventory.dart",
+        "<historical/current root>"
+      ],
+      "exitCode": 0,
+      "stdout": "before 0\ncurrent 0\n"
+    }
+  ],
+  "review": {
+    "kind": "Self-review in separate stage, not independent",
+    "corrections": [
+      "Exclude AST doc comments from signature comparisons",
+      "Keep pre-existing capabilities separate from new changes in changelogs",
+      "Fix publication availability wording; do not assume public versions exist"
+    ]
+  },
+  "limits": {
+    "dryRunsExecuted": false,
+    "artifactHostedConsumerExecuted": false,
+    "runtimeSuiteRepeated": false,
+    "publicationExecuted": false,
+    "minimumPatch3130Executed": false,
+    "dart312Executed": false,
+    "fullReleaseGate": "VAL-17 pending"
+  },
+  "preparedSourceSha256": {
+    "CHANGELOG.md": "879d7c9c4fa5b932e7995ccc5974663cd593ecfed65d6587cab98f85d8a08ed8",
+    "README.md": "70075b3058a49fa468a3057dd5248bc15147bc5e1b96564a120aeb5f4aa572a0",
+    "pubspec.yaml": "91cbb99493afa0fd1878bb4ed64ddc7653ce943c2914b432954160d3c3cf075b",
+    "packages/deltasync_core/CHANGELOG.md": "fc5b79023a75591d809d4bc3879cbefef1b79006bd8ba30bf50c5d9cfb82e0c9",
+    "packages/deltasync_storage/CHANGELOG.md": "d1cf88c6a5a714283641c5a6d38c98edec7435c5401d4593f0485650d7d4d89e",
+    "packages/deltasync_sync/CHANGELOG.md": "464cda115fb3440833eb8ff9738c25f6f2013941049d7041055e3daa788cb1a4",
+    "packages/deltasync_transport/CHANGELOG.md": "d3ecd9a9a823487d804751ed8ae77500e4f11796450dfb0f4aa6626e2cf47c35",
+    "packages/deltasync_storage_sqflite/CHANGELOG.md": "82b643aa82209c9750df59deeaa02b137ea31d036fd4db53e6dbf0d3722346b4",
+    "packages/deltasync_storage_testing/CHANGELOG.md": "918f452298ed76b1328c6c544bbd59c6f7ebd03545557516220395e053de8ef8",
+    "packages/deltasync_core/README.md": "fc5da19fb29929b059dd7d0de78794f462eb5bb5a5b1e7a98a8b7a5758e85df9",
+    "packages/deltasync_storage/README.md": "ef417a2c58b8b3610592dae73f0b6cbde8f97ca1254df18359fa8e6f252363dd",
+    "packages/deltasync_sync/README.md": "6e7311d6eb4cf11223416e24fe02a8730d607bf55095967cad9fb723beb1816c",
+    "packages/deltasync_transport/README.md": "17e74852f62cd6110f5d767b176f59171b5890b3b3e5bc0eb45e156c8f239230",
+    "packages/deltasync_storage_sqflite/README.md": "326b622ac690da699ae25acfb6ee70135c049402eb1aca11178dc8c2345574d9",
+    "packages/deltasync_storage_testing/README.md": "808f23a6da67356e030c1c5cabc51515b72ef5e62629198517268a22932ff713",
+    "packages/deltasync_core/pubspec.yaml": "1871d046a4816102b01192b5cd0fdd507a0d2d9843ac7f21340ced65d5f63abe",
+    "packages/deltasync_storage/pubspec.yaml": "88aad51d236de380668d61ffb26987f557016e665bae4cec708f075d90c1ad77",
+    "packages/deltasync_sync/pubspec.yaml": "c9e11929e993e0eb55188d6f6181478e98c32a83c77e1b771ef54c23f99d5603",
+    "packages/deltasync_transport/pubspec.yaml": "cad0df905bb5bc3d20be0d14ef778c460318b905c0b6c6dca5464e87743e803c",
+    "packages/deltasync_storage_sqflite/pubspec.yaml": "b0fdd7081268acf12f7b1484f29a092a06a069f3e1fc11a213b4a6bda8a7818d",
+    "packages/deltasync_storage_testing/pubspec.yaml": "e9ccdde0578bc61d5bda20f82ba1c4e39cac47661c51b07be5ea8302f0ade312"
+  },
+  "initialLibrarySha256": {
+    "example/flutter_mobile/lib/demo_page.dart": "14d8f9ce4dc54c1c1c667ee21443662a39da0b68c5abffb17cd8e4124de5f954",
+    "example/flutter_mobile/lib/demo_session.dart": "b55a8b55b36732883375e4634f2a6c9561e08581453694cc2b2e13eedb143683",
+    "example/flutter_mobile/lib/main.dart": "2e2f461b42be336911d4e1bf745037681249d00989e56abf4571928e164d7fa4",
+    "example/flutter_mobile/lib/main_eight.dart": "c24ae97745db200951b07fb614bf75c73c37895d79a1590ed86aa9ac83a32af5",
+    "example/flutter_mobile/lib/peer_link.dart": "3dc64e57b13b545a0879ff121cd0c1a2355ec41dad6ac4806bdbc8dfbff5e0ce",
+    "example/flutter_mobile/lib/support/eight_scenario.dart": "27706d5c19e94dfd2e0d427f96878947c0257e593737537a8c2f1ed3db384074",
+    "example/flutter_mobile/lib/support/http_peer_link.dart": "0c122c8516ebf955359e3e561d49f78a771ad9f1c3eb0a2d92bfc5aa7fe3fb5d",
+    "example/flutter_mobile/lib/support/peer_link.dart": "d8eabb57c4f3f4515b0c657241756823ce5b3572d27bd0f99fbac5726fbd7556",
+    "lib/deltasync.dart": "bfaeab7bb63a8fa7a06094b5617b7f4f9e22d4bd4a7e06bd224c6dc67ecd475a",
+    "packages/deltasync_core/lib/deltasync_core.dart": "b4e2997ac38a7cd15b5c299fe849703b022afb1e33aca285de99593c1a2f64a0",
+    "packages/deltasync_core/lib/src/causal/dot_context.dart": "6e23716cdfcf5f9fc8fb9f61be3bb98b2bcb2e24bd51cd33397d2f6a144155cf",
+    "packages/deltasync_core/lib/src/crdt.dart": "6ec10262a706923d6a8d5606a4d25777ed4e83d87c335d8e8265a4a5f9612be0",
+    "packages/deltasync_core/lib/src/delta.dart": "c8b1a9551645156a6170425c1bdc33c4ed73aa09272b28b970c1ecda13c0863a",
+    "packages/deltasync_core/lib/src/delta_change.dart": "7b51d1969a1840c476474c79d4256ee4a9eda050778eeb55cd31e1aa77c4043e",
+    "packages/deltasync_core/lib/src/delta_codec.dart": "5b5a5b89e3f2f0de3ad4b8e9c95fb0f51341cba645a80752efaf053a3d08d5f6",
+    "packages/deltasync_core/lib/src/g_counter.dart": "5def29fa2dbe1d36c5ebbcb152f1bfcb86d327236ade44dd6b22e6a706f0e5e1",
+    "packages/deltasync_core/lib/src/g_set.dart": "333695d6e2af26f01392ac0a677621cd6ea6abf02678a7264c66877d258c7e80",
+    "packages/deltasync_core/lib/src/hlc.dart": "449f0d89cd3fc99bc7e6854edc9a614a1163e8794adaca85d35ed537547e50a9",
+    "packages/deltasync_core/lib/src/identity.dart": "41af4e7bb97c9f1698a3359103634ec46163cc607f658b5320ddf29cfe39ef11",
+    "packages/deltasync_core/lib/src/json/value.dart": "f9b92fe4b544e3c94b0fe25f43095f4a89e923c9fbb97adaf773baf596444c5e",
+    "packages/deltasync_core/lib/src/json_set_value.dart": "44164ec68da45d049746ce209f2ef62bafeae28478b0417c246ef107b236410c",
+    "packages/deltasync_core/lib/src/json_value.dart": "34177ce6152079cda4dae2cdc6ecf5853127e08a9c2f8b996ce3436bc5bbac5f",
+    "packages/deltasync_core/lib/src/lww_delta.dart": "cb2293fa629270ad6716300d69c638085574adc827b4f2460ce69ca32046a908",
+    "packages/deltasync_core/lib/src/lww_register.dart": "1b2c1f9eabbaa2be47fa131902fbc47760a795202cff399452fdf49b46067155",
+    "packages/deltasync_core/lib/src/mv_register.dart": "7ebe805e81cc31b0224c5e5a54ce3e369994218a8d4a8a4026341f272ecb57e8",
+    "packages/deltasync_core/lib/src/operation.dart": "109805cfd487797cb1f54f933f6a7214c8fe3aa0e0d5ecdf789391db13301ed8",
+    "packages/deltasync_core/lib/src/or_map.dart": "f748c81983bd70dca946f9aa1d78f17285ca77a27e851a514aff69e8c69a477a",
+    "packages/deltasync_core/lib/src/or_set.dart": "72716c19fc38c38fd9d8632d4c8638367a629b8ee64afc92fea5e61740468449",
+    "packages/deltasync_core/lib/src/pn_counter.dart": "324224fb5d5a4c02807e5c8655db217bdaed2a1ccb6446906c98ff5b0f72cbe0",
+    "packages/deltasync_core/lib/src/replica.dart": "a615b0a1ef071d9a4beef283d6fd213604f87a76b2289e4180af69946d86d136",
+    "packages/deltasync_core/lib/src/replica/contents.dart": "86ef2d4b0c8e1be21529e45ae0e24930dde181274a7971a5f4af1fe6dbb17f9f",
+    "packages/deltasync_core/lib/src/replica/delta_validation.dart": "e1a959c8e653ac36d62ce1fcddd7981b645ee6e52dae2642e06741accf8c706a",
+    "packages/deltasync_core/lib/src/replica/field_query.dart": "0ec5e467efe1eeefe019725698c352c42df5244f660dcc8bada1a0a81b995ac5",
+    "packages/deltasync_core/lib/src/replica/snapshot_codec.dart": "2c56d9c43aadafa448ef9843783191ea536527300ba94fb52c720f24679c4e56",
+    "packages/deltasync_core/lib/src/replica_state.dart": "7375f9e8b82cbc0c222b2f5b4a221b5a30a894831bf33866baa2a6a30e9f3a59",
+    "packages/deltasync_core/lib/src/two_p_set.dart": "336c0865a96adbd6d64a934da7abcdd497ef770ab0a3ade81919ff911b9d769d",
+    "packages/deltasync_core/lib/src/vector_clock.dart": "f962fb9a585a65641ce659b6e876b2f2e2fdd335e54eae54ff5cf36186da60df",
+    "packages/deltasync_storage/lib/deltasync_storage.dart": "1cb31651ad6f138b14c05ebf740d309dcbd77ace4578b70ed167c18e4b3fa998",
+    "packages/deltasync_storage/lib/src/memory_storage.dart": "94a48bf649045507028b3ab8ccc95cc9084f48d0f0357caaeec4d2506333c66b",
+    "packages/deltasync_storage/lib/src/replica_storage.dart": "741e31a6efb0bf263a88f34b53e53dd81791182cc18eddeb1f72ebb3fc17214d",
+    "packages/deltasync_storage/lib/src/replica_storage_contract.dart": "4de49a7460fa5f11f2b2ed351b3e6830faa1bd62fce377bfda87db0af4aca13f",
+    "packages/deltasync_storage_sqflite/lib/deltasync_storage_sqflite.dart": "fc666cd59c25cf9b5e000397720efd4af48ac025f783f624581eca935072aff4",
+    "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart": "abc4df6c7b942c1232cb925d285bb00f7ea5d994cca2b5bb60564c67d7557309",
+    "packages/deltasync_storage_testing/lib/deltasync_storage_testing.dart": "37da536fbf79c6ef2abcc986f1b900c119d7446b85bfb3ba0dbb35f9003109b9",
+    "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart": "28ba5dcf199bbbfb817322a4c2bc218df5b5a25b157cfc3af9933e0875bbefde",
+    "packages/deltasync_sync/lib/deltasync_sync.dart": "efa205d7d832d944a177177fbd14884bc232c56b412367be09c5f7ccf0d782ae",
+    "packages/deltasync_sync/lib/src/sync/local_batch.dart": "4d11d263e5ed385b19794480c2a3d6f80db3a99cd548f52e54f6d98892708326",
+    "packages/deltasync_sync/lib/src/sync/outbound_sync.dart": "ff6451a8fdffc4985ced4ee1b3525a7bfaa2ca345894becb5a3ae225a65e156b",
+    "packages/deltasync_sync/lib/src/sync/replica_persistence.dart": "8131287133ab70ff4b00a30fab832802f3a9a365b1fe309bb0bbf3ac535914f9",
+    "packages/deltasync_sync/lib/src/sync/serial_commit_queue.dart": "8641ff099f3bb6ce9569327c6cd13d330aac8f98e8da005f55ef9eb2bfde9e1e",
+    "packages/deltasync_sync/lib/src/sync_engine.dart": "43ae60849cb0abecf3a9cc72c99cd88e466af60237f76cdae4771f4559b29c66",
+    "packages/deltasync_sync/lib/src/sync_types.dart": "0a32842a1f1cd2ec3bad38f2156daa6d157f01ad97b89e8302e6292b1c35d0fd",
+    "packages/deltasync_transport/lib/deltasync_transport.dart": "de582ba3467e8ba96fa62a56d9a1efa13919f598dfe02921c1efc0b3875bff34",
+    "packages/deltasync_transport/lib/src/delta_acknowledgement.dart": "d4fbf6f1890545558f00b8b495ac3dc4890673d78f1688dd5aa3ac9205acc4da",
+    "packages/deltasync_transport/lib/src/delta_envelope.dart": "8708141d9c3de24dec8e257f30ac8031088c92b8df32b7aa5e8a800a1a960c79",
+    "packages/deltasync_transport/lib/src/delta_transport.dart": "92d696d5c10afaa510e1c297cba426b5f6c401f717f71d51755599060f90fb81"
+  },
+  "existingR35EvidenceSha256": {
+    "plan/evidence/r35/README.md": "aaf0f0e892ddcabe7c4e36c52c1d600e67749d8937e996a6acbd8ec28c431ff9",
+    "plan/evidence/r35/documentation.json": "44d3f499f61c0636b3afe71efca1966378c88b3666e31e29db454f9c16c900fb",
+    "plan/evidence/r35/readme_probe.dart.txt": "a77d693185aea4c144520eb3a8448044dd5749493edbdba0af155eaf15c6a35b",
+    "plan/evidence/r35/validation.json": "32e11d5dd1024905f51109e58c1630d648f7a92e00823c71c5065f277283562f"
+  },
+  "runtimeDependencyInspection": {
+    "facadeInternalClosure": [
+      "deltasync",
+      "deltasync_core",
+      "deltasync_storage",
+      "deltasync_sync",
+      "deltasync_transport"
+    ],
+    "facadeExternalClosure": [],
+    "testingPackageUsesTestIntentionally": [
+      "deltasync_core",
+      "deltasync_storage",
+      "test"
+    ],
+    "lintAndCiRuntimeDependenciesAbsent": true
+  },
+  "postMaintenance": {
+    "planChecker": {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/check_plan.py"
+      ],
+      "exitCode": 0,
+      "tasks": 70,
+      "localLinks": 557,
+      "ready": [
+        "VAL-17"
+      ]
+    },
+    "diffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    },
+    "sdkGateReferenceAlignedToR33DEC67": true
+  }
+}

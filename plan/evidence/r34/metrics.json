@@ -1,0 +1,644 @@
+[
+  {
+    "package": ".",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 5.418,
+    "userSeconds": 7.427,
+    "systemSeconds": 0.612,
+    "peakRssKiB": 548236,
+    "log": "root-baseline-1",
+    "fileCount": 19
+  },
+  {
+    "package": ".",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 1.08,
+    "userSeconds": 1.147,
+    "systemSeconds": 0.277,
+    "peakRssKiB": 183460,
+    "log": "root-baseline-2",
+    "fileCount": 19
+  },
+  {
+    "package": ".",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 13.173,
+    "userSeconds": 20.372,
+    "systemSeconds": 0.982,
+    "peakRssKiB": 716372,
+    "log": "root-saropa-1",
+    "fileCount": 19
+  },
+  {
+    "package": ".",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 13.101,
+    "userSeconds": 20.272,
+    "systemSeconds": 0.917,
+    "peakRssKiB": 723056,
+    "log": "root-saropa-2",
+    "fileCount": 19
+  },
+  {
+    "package": "packages/deltasync_core",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.47,
+    "userSeconds": 0.309,
+    "systemSeconds": 0.135,
+    "peakRssKiB": 109568,
+    "log": "packages_deltasync_core-baseline-1",
+    "fileCount": 44
+  },
+  {
+    "package": "packages/deltasync_core",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.487,
+    "userSeconds": 0.31,
+    "systemSeconds": 0.151,
+    "peakRssKiB": 110308,
+    "log": "packages_deltasync_core-baseline-2",
+    "fileCount": 44
+  },
+  {
+    "package": "packages/deltasync_core",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_core",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 8.358,
+    "userSeconds": 11.993,
+    "systemSeconds": 0.63,
+    "peakRssKiB": 394352,
+    "log": "packages_deltasync_core-saropa-1",
+    "fileCount": 44
+  },
+  {
+    "package": "packages/deltasync_core",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_core",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 8.5,
+    "userSeconds": 12.179,
+    "systemSeconds": 0.642,
+    "peakRssKiB": 388520,
+    "log": "packages_deltasync_core-saropa-2",
+    "fileCount": 44
+  },
+  {
+    "package": "packages/deltasync_sync",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.441,
+    "userSeconds": 0.246,
+    "systemSeconds": 0.139,
+    "peakRssKiB": 108664,
+    "log": "packages_deltasync_sync-baseline-1",
+    "fileCount": 17
+  },
+  {
+    "package": "packages/deltasync_sync",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.442,
+    "userSeconds": 0.248,
+    "systemSeconds": 0.131,
+    "peakRssKiB": 108636,
+    "log": "packages_deltasync_sync-baseline-2",
+    "fileCount": 17
+  },
+  {
+    "package": "packages/deltasync_sync",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_sync",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 6.616,
+    "userSeconds": 9.34,
+    "systemSeconds": 0.545,
+    "peakRssKiB": 367744,
+    "log": "packages_deltasync_sync-saropa-1",
+    "fileCount": 17
+  },
+  {
+    "package": "packages/deltasync_sync",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_sync",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 6.788,
+    "userSeconds": 9.575,
+    "systemSeconds": 0.559,
+    "peakRssKiB": 366448,
+    "log": "packages_deltasync_sync-saropa-2",
+    "fileCount": 17
+  },
+  {
+    "package": "packages/deltasync_storage",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.437,
+    "userSeconds": 0.245,
+    "systemSeconds": 0.126,
+    "peakRssKiB": 96104,
+    "log": "packages_deltasync_storage-baseline-1",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_storage",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.433,
+    "userSeconds": 0.247,
+    "systemSeconds": 0.116,
+    "peakRssKiB": 96864,
+    "log": "packages_deltasync_storage-baseline-2",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_storage",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 5.885,
+    "userSeconds": 8.448,
+    "systemSeconds": 0.49,
+    "peakRssKiB": 370664,
+    "log": "packages_deltasync_storage-saropa-1",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_storage",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 6.087,
+    "userSeconds": 8.477,
+    "systemSeconds": 0.547,
+    "peakRssKiB": 386316,
+    "log": "packages_deltasync_storage-saropa-2",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_storage_sqflite",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.519,
+    "userSeconds": 0.359,
+    "systemSeconds": 0.16,
+    "peakRssKiB": 118568,
+    "log": "packages_deltasync_storage_sqflite-baseline-1",
+    "fileCount": 8
+  },
+  {
+    "package": "packages/deltasync_storage_sqflite",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.509,
+    "userSeconds": 0.349,
+    "systemSeconds": 0.163,
+    "peakRssKiB": 119820,
+    "log": "packages_deltasync_storage_sqflite-baseline-2",
+    "fileCount": 8
+  },
+  {
+    "package": "packages/deltasync_storage_sqflite",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage_sqflite",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 8.271,
+    "userSeconds": 12.014,
+    "systemSeconds": 0.684,
+    "peakRssKiB": 396868,
+    "log": "packages_deltasync_storage_sqflite-saropa-1",
+    "fileCount": 8
+  },
+  {
+    "package": "packages/deltasync_storage_sqflite",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage_sqflite",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 7.946,
+    "userSeconds": 11.631,
+    "systemSeconds": 0.629,
+    "peakRssKiB": 408444,
+    "log": "packages_deltasync_storage_sqflite-saropa-2",
+    "fileCount": 8
+  },
+  {
+    "package": "packages/deltasync_storage_testing",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.449,
+    "userSeconds": 0.258,
+    "systemSeconds": 0.129,
+    "peakRssKiB": 95384,
+    "log": "packages_deltasync_storage_testing-baseline-1",
+    "fileCount": 3
+  },
+  {
+    "package": "packages/deltasync_storage_testing",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.443,
+    "userSeconds": 0.23,
+    "systemSeconds": 0.148,
+    "peakRssKiB": 95540,
+    "log": "packages_deltasync_storage_testing-baseline-2",
+    "fileCount": 3
+  },
+  {
+    "package": "packages/deltasync_storage_testing",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage_testing",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 5.992,
+    "userSeconds": 8.448,
+    "systemSeconds": 0.501,
+    "peakRssKiB": 376108,
+    "log": "packages_deltasync_storage_testing-saropa-1",
+    "fileCount": 3
+  },
+  {
+    "package": "packages/deltasync_storage_testing",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_storage_testing",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 5.577,
+    "userSeconds": 7.718,
+    "systemSeconds": 0.49,
+    "peakRssKiB": 399716,
+    "log": "packages_deltasync_storage_testing-saropa-2",
+    "fileCount": 3
+  },
+  {
+    "package": "packages/deltasync_transport",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.447,
+    "userSeconds": 0.257,
+    "systemSeconds": 0.127,
+    "peakRssKiB": 96376,
+    "log": "packages_deltasync_transport-baseline-1",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_transport",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.438,
+    "userSeconds": 0.249,
+    "systemSeconds": 0.121,
+    "peakRssKiB": 95796,
+    "log": "packages_deltasync_transport-baseline-2",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_transport",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_transport",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 5.745,
+    "userSeconds": 8.162,
+    "systemSeconds": 0.474,
+    "peakRssKiB": 379268,
+    "log": "packages_deltasync_transport-saropa-1",
+    "fileCount": 6
+  },
+  {
+    "package": "packages/deltasync_transport",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/packages/deltasync_transport",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 6.139,
+    "userSeconds": 8.669,
+    "systemSeconds": 0.572,
+    "peakRssKiB": 380128,
+    "log": "packages_deltasync_transport-saropa-2",
+    "fileCount": 6
+  },
+  {
+    "package": "example/flutter_mobile",
+    "mode": "baseline",
+    "repeat": 1,
+    "command": [
+      "flutter",
+      "analyze",
+      "--no-pub"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 8.817,
+    "userSeconds": 11.549,
+    "systemSeconds": 0.833,
+    "peakRssKiB": 638428,
+    "log": "example_flutter_mobile-baseline-1",
+    "fileCount": 13
+  },
+  {
+    "package": "example/flutter_mobile",
+    "mode": "baseline",
+    "repeat": 2,
+    "command": [
+      "flutter",
+      "analyze",
+      "--no-pub"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 3.591,
+    "userSeconds": 3.802,
+    "systemSeconds": 0.585,
+    "peakRssKiB": 365500,
+    "log": "example_flutter_mobile-baseline-2",
+    "fileCount": 13
+  },
+  {
+    "package": "example/flutter_mobile",
+    "mode": "saropa",
+    "repeat": 1,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/example/flutter_mobile",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 17.857,
+    "userSeconds": 26.427,
+    "systemSeconds": 1.255,
+    "peakRssKiB": 771460,
+    "log": "example_flutter_mobile-saropa-1",
+    "fileCount": 13
+  },
+  {
+    "package": "example/flutter_mobile",
+    "mode": "saropa",
+    "repeat": 2,
+    "command": [
+      "dart",
+      "run",
+      "saropa_lints:scan",
+      "{checkout}/example/flutter_mobile",
+      "--tier",
+      "essential",
+      "--resolve",
+      "--format",
+      "json",
+      "--files-from-stdin"
+    ],
+    "exitCode": 1,
+    "elapsedSeconds": 17.091,
+    "userSeconds": 25.456,
+    "systemSeconds": 1.169,
+    "peakRssKiB": 745968,
+    "log": "example_flutter_mobile-saropa-2",
+    "fileCount": 13
+  }
+]

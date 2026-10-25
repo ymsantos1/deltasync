@@ -52,6 +52,10 @@ class ReplicaState {
 
   CrdtKind? kindAt(String address) => _addressKinds[address];
 
+  /// True only for a retained LWW tombstone; reads no value or delta payload.
+  /// For presence and values across all kinds, use Replica.query.
+  bool isDeletedAt(String address) => _entries[address]?.isDeleted ?? false;
+
   LwwDelta<Object?>? winnerAt(String address) => _entries[address]?.winner;
 
   void bind(String address, CrdtKind kind) {

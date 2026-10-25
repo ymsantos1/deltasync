@@ -1,0 +1,288 @@
+{
+  "task": "R-39",
+  "sdk": {
+    "command": [
+      "dart",
+      "--version"
+    ],
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "output": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n"
+  },
+  "isolatedConsumer": "/tmp/deltasync-r39-consumer-v7k10l45",
+  "historicalRevision": "1e969182e8e172a8858a48ecf83a1feb2c21a455",
+  "historicalSource": "/tmp/deltasync-r30-source-tp0vk_cz",
+  "records": [
+    {
+      "command": [
+        "dart",
+        "test",
+        "/tmp/deltasync-r30-source-tp0vk_cz/plan/evidence/r30/consumer_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r30-source-tp0vk_cz",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading /tmp/deltasync-r30-source-tp0vk_cz/plan/evidence/r30/consumer_test.dart\n00:00 +0: consumer resolves the explicitly expected source tree\n00:00 +1: R-30 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +2: R-30 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +3: R-30 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +4: R-30 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +5: R-30 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +6: R-30 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +7: R-30 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +8: R-30 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +9: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +10: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +11: legacy public aliases remain compilable before their planned removal\n00:00 +12: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +13: legacy snapshot wrapper restores through the public engine boundary\n00:00 +14: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 0,
+      "output": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ code_assets 2.1.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ deltasync 2.0.0 from path /projetos/tcc/deltasync\n! deltasync_core 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage (overridden)\n! deltasync_storage_sqflite 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage_sqflite (overridden)\n! deltasync_storage_testing 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage_testing (overridden)\n! deltasync_sync 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_transport (overridden)\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ hooks 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ native_toolchain_c 0.19.5\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ platform 3.2.0\n+ pool 1.5.3\n+ process 5.0.6\n+ pub_semver 2.2.1\n+ record_use 1.1.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ sqflite_common 2.5.14\n+ sqflite_common_ffi 2.4.4\n+ sqlite3 3.7.1\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ synchronized 3.5.0\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 60 dependencies!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test",
+        "rollback.dart"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 0,
+      "output": "Analyzing test, rollback.dart...\nNo issues found!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading test/consumer_test.dart\n00:00 +0: test/consumer_test.dart: consumer resolves the explicitly expected source tree\n00:00 +1: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +2: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +3: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +4: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +5: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +6: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +7: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +8: test/consumer_test.dart: R-39 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +9: test/consumer_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +10: test/consumer_test.dart: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +11: test/consumer_test.dart: migrated public calls commit, retain pending IDs and apply deletes\n00:00 +12: test/consumer_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +13: test/consumer_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +14: test/consumer_test.dart: legacy snapshot wrapper restores through the public engine boundary\n00:00 +15: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "/tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 1,
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading /tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart\n00:00 +0 -1: loading /tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart [E]\n  Failed to load \"/tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart\":\n  old/consumer_test.dart:64:38: Error: Type 'PendingDeltaStore' not found.\n  class ConsumerLegacyStore implements PendingDeltaStore {\n                                       ^^^^^^^^^^^^^^^^^\n  old/consumer_test.dart:194:9: Error: No named parameter with the name 'store'.\n          store: store,\n          ^^^^^\n  /projetos/tcc/deltasync/packages/deltasync_sync/lib/src/sync_engine.dart:16:3: Context: Found this candidate, but the arguments don't match.\n    SyncEngine({\n    ^^^^^^^^^^\n  old/consumer_test.dart:200:29: Error: Member not found: 'Delta.crdt'.\n          final delta = Delta.crdt([change]);\n                              ^^^^\n  old/consumer_test.dart:203:22: Error: The getter 'operationId' isn't defined for the type 'OutboxEntry'.\n   - 'OutboxEntry' is from 'package:deltasync_storage/src/replica_storage_contract.dart' ('/projetos/tcc/deltasync/packages/deltasync_storage/lib/src/replica_storage_contract.dart').\n  Try correcting the name to the name of an existing getter, or defining a getter or field named 'operationId'.\n          expect(entry.operationId, change.id);\n                       ^^^^^^^^^^^\n  old/consumer_test.dart:205:13: Error: The method 'set' isn't defined for the type 'Replica'.\n   - 'Replica' is from 'package:deltasync_core/src/replica.dart' ('/projetos/tcc/deltasync/packages/deltasync_core/lib/src/replica.dart').\n  Try correcting the name to the name of an existing method, or defining a method named 'set'.\n            ..set('a', 1)\n              ^^^\n  old/consumer_test.dart:206:13: Error: The method 'remove' isn't defined for the type 'Replica'.\n   - 'Replica' is from 'package:deltasync_core/src/replica.dart' ('/projetos/tcc/deltasync/packages/deltasync_core/lib/src/replica.dart').\n  Try correcting the name to the name of an existing method, or defining a method named 'remove'.\n            ..remove('a');\n              ^^^^^^\n  old/fixture.dart:107:11: Error: Method not found: 'Operation'.\n            Operation(\n            ^^^^^^^^^\n00:00 +0 -1: Some tests failed.\n\nFailing tests:\n  /tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart: loading /tmp/deltasync-r39-consumer-v7k10l45/old/consumer_test.dart\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "--format",
+        "machine",
+        "/tmp/deltasync-r39-consumer-v7k10l45/removed.dart"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 3,
+      "output": "ERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|3|1|17|Undefined class 'PendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|4|1|23|Undefined class 'MemoryPendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|5|1|9|Undefined class 'Operation'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_FUNCTION|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|6|1|22|The function 'migrateLegacyOperation' isn't defined.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|7|3|3|The method 'set' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|8|3|6|The method 'remove' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|9|3|3|The method 'set' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|10|3|6|The method 'remove' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|11|7|4|The method 'crdt' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|12|21|11|The getter 'crdtChanges' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|13|7|11|The getter 'operationId' isn't defined for the type 'OutboxEntry'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_NAMED_PARAMETER|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|14|68|5|The named parameter 'store' isn't defined.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|3|20|12|The value of the local variable 'removedStore' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|4|26|18|The value of the local variable 'removedMemoryStore' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-r39-consumer-v7k10l45/removed.dart|5|12|16|The value of the local variable 'removedOperation' isn't used.\n"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "/tmp/deltasync-r30-source-tp0vk_cz/rollback.dart",
+        "seed",
+        "/tmp/deltasync-r39-consumer-v7k10l45/rollback.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-r30-source-tp0vk_cz",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...{\"mode\":\"seed\",\"passed\":true}\n"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "/tmp/deltasync-r39-consumer-v7k10l45/rollback.dart",
+        "upgrade",
+        "/tmp/deltasync-r39-consumer-v7k10l45/rollback.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-r39-consumer-v7k10l45",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...{\"mode\":\"upgrade\",\"passed\":true}\n"
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "/tmp/deltasync-r30-source-tp0vk_cz/rollback.dart",
+        "verify",
+        "/tmp/deltasync-r39-consumer-v7k10l45/rollback.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-r30-source-tp0vk_cz",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...{\"mode\":\"verify\",\"passed\":true}\n"
+    }
+  ],
+  "apiDifferences": {
+    "deltasync": {
+      "removedSymbols": [
+        "MemoryPendingDeltaStore",
+        "Operation",
+        "PendingDeltaStore",
+        "migrateLegacyOperation"
+      ],
+      "members": {
+        "SyncEngine": {
+          "removed": [
+            "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+            "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+            "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+            "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+            "final ReplicaStorage? storage;"
+          ],
+          "added": [
+            "SyncEngine({ required Replica replica, required this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+            "final ReplicaStorage storage;"
+          ],
+          "documentation": [
+            {
+              "before": "/// Locally retained changes, including sent but unacknowledged changes. The /// deprecated store cannot remove entries even after a remote ACK. Future<Delta> pendingDelta()",
+              "after": "/// Locally retained changes, including sent but unacknowledged changes. Future<Delta> pendingDelta()"
+            }
+          ]
+        },
+        "Replica": {
+          "removed": [
+            "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+            "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)"
+          ],
+          "added": [],
+          "documentation": []
+        },
+        "OutboxEntry": {
+          "removed": [
+            "/// Legacy singular alias. New code should use [changeIds]. @Deprecated('Use changeIds for native CRDT changes.') String get operationId"
+          ],
+          "added": [],
+          "documentation": [
+            {
+              "before": "String get entryId",
+              "after": "/// Stable ID of the single change in this entry. String get entryId"
+            }
+          ]
+        },
+        "SyncRetryPolicy": {
+          "documentationOnly": true
+        },
+        "Delta": {
+          "removed": [
+            "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+            "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)"
+          ],
+          "added": [],
+          "documentation": []
+        }
+      }
+    },
+    "deltasync_core": {
+      "removedSymbols": [
+        "Operation",
+        "migrateLegacyOperation"
+      ],
+      "members": {
+        "Replica": {
+          "removed": [
+            "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+            "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)"
+          ],
+          "added": [],
+          "documentation": []
+        },
+        "Delta": {
+          "removed": [
+            "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+            "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)"
+          ],
+          "added": [],
+          "documentation": []
+        }
+      }
+    },
+    "deltasync_storage": {
+      "removedSymbols": [
+        "MemoryPendingDeltaStore",
+        "PendingDeltaStore"
+      ],
+      "members": {
+        "OutboxEntry": {
+          "removed": [
+            "/// Legacy singular alias. New code should use [changeIds]. @Deprecated('Use changeIds for native CRDT changes.') String get operationId"
+          ],
+          "added": [],
+          "documentation": [
+            {
+              "before": "String get entryId",
+              "after": "/// Stable ID of the single change in this entry. String get entryId"
+            }
+          ]
+        }
+      }
+    },
+    "deltasync_transport": {
+      "removedSymbols": [],
+      "members": {}
+    },
+    "deltasync_sync": {
+      "removedSymbols": [],
+      "members": {
+        "SyncRetryPolicy": {
+          "documentationOnly": true
+        },
+        "SyncEngine": {
+          "removed": [
+            "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+            "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+            "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+            "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+            "final ReplicaStorage? storage;"
+          ],
+          "added": [
+            "SyncEngine({ required Replica replica, required this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+            "final ReplicaStorage storage;"
+          ],
+          "documentation": [
+            {
+              "before": "/// Locally retained changes, including sent but unacknowledged changes. The /// deprecated store cannot remove entries even after a remote ACK. Future<Delta> pendingDelta()",
+              "after": "/// Locally retained changes, including sent but unacknowledged changes. Future<Delta> pendingDelta()"
+            }
+          ]
+        }
+      }
+    },
+    "deltasync_storage_sqflite": {
+      "removedSymbols": [],
+      "members": {}
+    },
+    "deltasync_storage_testing": {
+      "removedSymbols": [],
+      "members": {}
+    }
+  },
+  "r30UnchangedSha256": {
+    "plan/evidence/r30/README.md": "526ae1d7ffeeea56ae9a1c561616c3825835d14174b4934d876a6b492d59cf40",
+    "plan/evidence/r30/api_1_0_0.json": "7afff3be91574032c2ec57a402672f7bf976be1c7b0dc9e1d9d0fbcfbb6d28fd",
+    "plan/evidence/r30/api_inventory.dart": "1b72d7e370ce81567b521bf550db7346863e539d63f8ccddccfb6b4929c88150",
+    "plan/evidence/r30/baseline.json": "2b315aa09cdf80a9630a4d9fd2242aba258d31cc0b9e6793de675cd08fc131c2",
+    "plan/evidence/r30/capture.py": "ffb85927c038925150b5d214ad08c4aca3de0ba24ec2a70e0fd9a8fc873a5481",
+    "plan/evidence/r30/consumer_test.dart.txt": "4e0e164425ab0b3c13f3f30077717c4361211d0a6ff0e9af71021b7d8cbc3ca7",
+    "plan/evidence/r30/fixture.dart.txt": "a115fa7b00631ba0c878fd9952334a79f7fb9c113dfd64305800189b3af3de6b",
+    "plan/evidence/r30/fixture_1_0_0.json": "088e79d45c05bc2e8f2da0fb99981333f2dcf4fb3a2a036bd58fe6a3ea737325",
+    "plan/evidence/r30/measure_outbox.dart": "090e0271808ec1b9d3724358dfc2b0bab698aecdb0553de000986db2130965c9",
+    "plan/evidence/r30/outbox_baseline.json": "9814b23e967c097cf05192844654919f69b5e0f3e8ccecd01a2ee974a5da6864",
+    "plan/evidence/r30/validation.json": "ec612fe84f04f92aa584e5ed63072161b3896758adb65a1c4506a43f205c21c9"
+  },
+  "limits": [
+    "Path dependencies, not hosted release artifacts",
+    "SQLite FFI Linux subprocesses, not Android runtime",
+    "SDK 3.12.x remains for R-33/VAL-17"
+  ]
+}

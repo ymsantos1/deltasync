@@ -1,0 +1,102 @@
+{
+  "sdk": "3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"",
+  "os": "linux",
+  "warmupRuns": 2,
+  "measuredRuns": 5,
+  "includesEntryConstruction": false,
+  "heapMeasured": false,
+  "workloads": [
+    {
+      "entries": 32,
+      "peerAEntries": 16,
+      "kinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "samplesMicroseconds": [
+        2922,
+        2974,
+        2468,
+        1816,
+        2066
+      ],
+      "baselineReferencePrefixVisits": 528,
+      "visitCountEvidence": "analytical reference for historical loops, not an instrumented count"
+    },
+    {
+      "entries": 128,
+      "peerAEntries": 64,
+      "kinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "samplesMicroseconds": [
+        6719,
+        6038,
+        5246,
+        4165,
+        3783
+      ],
+      "baselineReferencePrefixVisits": 8256,
+      "visitCountEvidence": "analytical reference for historical loops, not an instrumented count"
+    },
+    {
+      "entries": 512,
+      "peerAEntries": 256,
+      "kinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "samplesMicroseconds": [
+        24033,
+        21568,
+        20626,
+        19779,
+        25048
+      ],
+      "baselineReferencePrefixVisits": 131328,
+      "visitCountEvidence": "analytical reference for historical loops, not an instrumented count"
+    },
+    {
+      "entries": 1024,
+      "peerAEntries": 512,
+      "kinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "samplesMicroseconds": [
+        82999,
+        69438,
+        67486,
+        67488,
+        68656
+      ],
+      "baselineReferencePrefixVisits": 524800,
+      "visitCountEvidence": "analytical reference for historical loops, not an instrumented count"
+    }
+  ]
+}

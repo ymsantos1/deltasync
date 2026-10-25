@@ -1,11 +1,11 @@
 name: deltasync_core
 description: CRDT state and delta primitives for DeltaSync.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/ymsantos1/deltasync/tree/main/packages/deltasync_core
 issue_tracker: https://github.com/ymsantos1/deltasync/issues
 resolution: workspace
 environment:
-  sdk: ^3.12.0
+  sdk: ^3.13.0
 
 dev_dependencies:
   test: ^1.25.6
