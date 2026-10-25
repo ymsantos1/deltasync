@@ -5,7 +5,7 @@ Os sete pacotes estão preparados como **1.0.1**, com dependências internas
 [guia de migração](migracao-1.0.1.md) e os changelogs de todos os pacotes antes
 de atualizar. Dados/JSON/schema não são renumerados junto com os pacotes.
 
-R-36 prepara metadados/diretórios; **VAL-17 ainda deve aprovar os artefatos**.
+R-36 prepara metadados/diretórios; a publicação exige **gate VAL-17 aprovado**.
 A publicação permanece manual, responsabilidade do autor. Preparação e dry-run
 não enviam pacotes nem reservam nomes. Nenhum upload, tag, merge ou push é
 autorizado por estes comandos de preparação.
@@ -62,9 +62,10 @@ Confira a lista de arquivos, versão, licença e ausência de fontes do monorepo
 Antes da primeira publicação, os dry-runs de dependentes podem falhar se as
 versões 1.0.1 exigidas ainda não estiverem disponíveis no pub.dev. Não reduza
 constraints para fazer o dry-run passar com uma versão 1.0.0 incompatível.
-VAL-17 deverá consumir os sete artefatos 1.0.1 em registro local somente leitura,
-sem paths/overrides, quando necessário. R-28 demonstra esse procedimento para
-uma preparação anterior; sua aprovação não valida os novos artefatos. A prova
+VAL-17 consumiu os sete artefatos 1.0.1 em registro local somente leitura,
+sem paths/overrides, e aprovou os sete dry-runs. Veja os
+[candidatos, hashes e limites](../plan/evidence/val17/README.md).
+R-28 permanece evidência histórica de uma preparação anterior. A prova
 local não representa instalação/publicação do pub.dev. Após publicar cada dependência,
 repita a resolução/dry-run do próximo pacote usando o registro público padrão.
 Não use `PUB_HOSTED_URL` do teste local para uma publicação real.

@@ -6053,3 +6053,52 @@ dependências runtime da facade tem somente os cinco pacotes Dart, sem ferrament
 CI/lint ou test; storage_testing mantém sua finalidade de suíte de desenvolvimento.
 Revisão final documental sem impeditivos; candidatos permanecem inalterados desde
 a inspeção aprovada. Nenhum trabalho de VAL-17 foi iniciado.
+
+<a id="execucao-val-17-2026-10-25"></a>
+
+## Execução VAL-17 — Gate 1.0.1, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 0d68d9b9919579335f52ba886e149d7b2b5ff01d; todas as dependências concluídas. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, decisões/riscos, R-30/R-36, fixtures/roteiros e trechos de SDK/modificadores/patterns do guia Dart. Matriz usa 3.13.5 como execução real na família mínima 3.13 e referência estável selecionada, sem runtime fictício 3.13.0/3.12. Diff com R-30 altera fila/lote/eventos/lifecycle e exige runtime Android atual. ADB inicialmente vazio; autor confirmou conexão/autorização, Moto G52 Android 13/API33 disponível. Só app de demo será atualizado, com backup e sem limpar dados; Compass permanece fora do escopo.
+Implementação: clones/caches Pub separados para jobs Dart/Flutter; harness de registro Pub loopback GET-only e consumidor hosted independente sem paths/overrides, reutilizando fixtures/contrato e migrando pendingSummary no adaptador público. Extração histórica usa revisão/JSON congelados, sem --freeze. Redação de publicação passou a exigir gate aprovado sem presumir estado anterior/posterior. Novo script fica em evidence/val17; nenhuma mudança em lib/SDK/manifests ou formatos. Roteiro físico preserva bancos pré-existentes e oito-alpha, testa edições independentes/offline, force-stop/restauração e ACK. Ajustes preliminares: incluir variável de proveniência R37 no consumidor hospedado; aguardar árvore UI disponível e confirmação de commit antes de encerrar processo. Correções são do harness, sem relaxar expectativas ou alterar a lib.
+Review: aprovado
+Achados: revisão própria em etapa distinta, não independente. Corrigidos R37_EXPECT_SOURCE ausente no consumidor, extração do envelope versionado na inspeção SQLite, espera de commit antes do force-stop e prevenção de XML UI antigo. Roteiro final espera VAL08 restored do PID atual antes de inspecionar a restauração. Revistos os deltas e resultados corrigidos: 54 testes hosted, schema/estado/outbox exatos e nova mutação/restauração/ACK físicos aprovados. Registro Pub só aceita GET e publish só roda com --dry-run; nenhum defeito da lib confirmado. Scripts novos/documentação e limites da prova foram revisados, sem impeditivos restantes.
+Validação: aprovada
+Comandos: python3 -B scripts/ci.py dart e flutter em dois clones de HEAD com PUB_CACHE novos/separados; jobs completos com resolução e OSV online. python3 -B scripts/ci.py policy e actionlint 1.7.7 sobre o workflow atual. python3 -B scripts/prepare_release.py; python3 -B plan/evidence/val17/validate_artifacts.py --release /tmp/deltasync-release-parent-r8mpulxa/release --report /tmp/deltasync-val17-artifacts.json. Extração R-30 --prepare-only sem --freeze; dart test no consumidor histórico com R30_EXPECT_SOURCE; dart run rollback.dart seed/upgrade/verify em três processos com o mesmo SQLite. Flutter build adicional --debug --no-pub --target lib/main.dart para instalar o alvo correto após build main_eight. ADB install -r, force-stop/start, dumps UI, logcat por PID e cópias run-as/tar de bancos fechados; python3 -B plan/evidence/val17/inspect_android.py --directory /tmp/deltasync-val17-mobile --report /tmp/deltasync-val17-mobile/proof.json. Registros exatos de comandos, diretórios, outputs/hashes e grafos em evidence/val17; conferidos AST Python, fontes dos clones/candidatos/cache e históricos imutáveis.
+Resultados: sete pacotes aprovados com 312 testes (21/134/83/14/40/10/10), dois testes do enlace e 11 controles de política. OSV online sem findings em 60 pacotes hosted Dart e 46 Flutter. Flutter 3.47.7: formato/análise, sete testes e APKs main/main_eight aprovados. Consumidor hosted independente: 54 testes, guia importPending compilado, 14 probes de remoção e diagnósticos esperados de evento/interface/override. Revisão histórica 1.0.0: 14 testes aprovados; SQLite seed/upgrade/verify confirma writer 1.0.1 legível em 1.0.0, 45 pendências e 23 payloads do outro peer intactos. Sete dry-runs exit 0/zero warnings; 85 arquivos preparados, 48 fontes de lib e 78 arquivos distribuídos conferidos, registro somente GET/zero uploads. Runtime Moto G52/API33: três pendências A/duas B e estado exatos após reinício; edição seguinte usa ID novo, acumula quatro A/duas B; envio converge título/contador 8 e zera outboxes. PID final 27656 confirma restauração após ACK e snapshots/outboxes exatos. Schema v1/snapshot v9 e banco eight-alpha preexistente preservados. App encerrado, XML temporário removido e backups mantidos, sem limpar dados nem tocar Compass.
+Critérios: C1 por matriz completa dos sete pacotes/oito tipos/histórias/falhas/concorrência/SQLite em 3.13.5; C2 por fixture congelada, testes atuais/históricos e três processos writer atual/reader 1.0.0; C3 por adaptador migrado público e probes negativos explícitos, sem mascarar quebras; C4 por suíte geral/fixtures de resumo/lote/decoder/eventos/query e rollback SQLite após writes, com Operation somente nos readers internos; C5 por instalação hosted fora do workspace sem paths/overrides, inventário/cache/hashes e sete dry-runs; C6 por exemplos/executáveis, Flutter e roteiro Android atual motivado pelo diff, confirmado por checkpoints do PID e bancos fechados; C7 por jobs/política/advisories atuais, DEC-68 mantida, riscos/docs/registros e roteiro manual, checker/diff após manutenção.
+Manutenção: sete critérios marcados, VAL-17/fase 6 concluídas, índice sem tarefa ativa ou próxima pronta. DEC-70 registra aprovação/alcance; OPEN-08 e RISK-36/38/39/40/41/42 atualizados, sem encerrar riscos de SemVer, consumidores desconhecidos, performance ou plataformas não executadas. Evidências anteriores e 48 fontes de lib intactas. Candidatos atuais e publicação manual constam no relatório; nenhuma ação de publicação/commit/tag/merge/push executada.
+Limitações: SDK executado 3.13.5, sem runtime 3.13.0/3.12; diretivas de linguagem antigas nas fixtures permanecem imutáveis. Jobs locais não são execução remota da CI. Runtime nativo atual cobre LWW/GCounter, duas réplicas no mesmo processo e enlace simulado; oito tipos e cenários adversariais são cobertos no host, sem alegar nova execução física dos oito, dois dispositivos ou rede real. Sem iOS, autenticação/TLS, usabilidade com participantes, benchmark nativo/SLA ou certificação de produção. OSV sem findings não prova ausência de vulnerabilidades. Registro local não comprova publicação, permissões de nomes ou instalação pública. Saropa não foi reavaliado/instalado; DEC-68 continua vigente.
+
+### Evidências finais
+
+[Matriz e reprodução](evidence/val17/README.md),
+[validação atual](evidence/val17/validation.json),
+[artefatos e diagnósticos](evidence/val17/artifacts.json),
+[Android atual](evidence/val17/android.json),
+[inventário](evidence/val17/inventory.json),
+[resoluções](evidence/val17/resolution.json) e
+[preservação de fontes](evidence/val17/source.json) ligam cada critério ao resultado.
+O [harness Pub](evidence/val17/validate_artifacts.py) e a
+[inspeção nativa](evidence/val17/inspect_android.py) pertencem à evidência, não
+à biblioteca distribuída. Arquivos binários, bancos, XML e logcat bruto não
+integram a entrega versionável.
+
+Após correções do harness, revisão própria e validação das partes afetadas foram
+repetidas sem reduzir expectativas. O reinício final só foi aceito após log de
+restauração do processo atual; a primeira tentativa permanece identificada como
+inconclusiva. Sete candidatos foram conferidos novamente após dry-runs, sem
+alterar conteúdo desde a aprovação. README do pacote já contém redação
+condicional válida antes/depois do gate. Alterações posteriores restringem-se a
+evidências e manutenção documental; fontes/testes de produto permanecem iguais
+às dos jobs aprovados. Publicação e instalação pública continuam com o autor.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 70 tarefas e 581
+links locais, sem tarefa pronta; `git diff --check` passou. O primeiro checker
+apontou apenas ausência do negrito exigido em Tarefa ativa; campo corrigido
+conforme formato existente e delta documental revisto, sem alterar o checker.
+JSON/Python AST/whitespace dos nove arquivos novos aprovados; 48 hashes de lib,
+94 arquivos de evidência histórica, scripts dos harnesses, candidatos e HEAD
+conferidos. Revisão final documental sem impeditivos; nenhum produto mudou
+após os jobs e o roteiro aprovados.

@@ -1,0 +1,174 @@
+{
+  "task": "VAL-17",
+  "date": "2026-10-25",
+  "device": "Moto G52",
+  "android": "13",
+  "api": 33,
+  "package": "com.example.deltasync_mobile_consumer",
+  "target": "lib/main.dart",
+  "apkBuildLogSha256": "7ba96e970f4fa94ee76b815e9ef5de80258b63d1f62cc3194e1a91e39777cdd0",
+  "runtime": {
+    "marker": "VAL17_161926",
+    "phases": [
+      {
+        "name": "offline-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "73f674ff5d9d6888775430a4aa44cb35c8ce83ff5a95444dbfb1323b801736f9",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "restored-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "9313b192ccf28d096c9bdcd1e3f379b82f4c8d546128d72b29d1daec238bed6f",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "committed-offline-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "7eacd9b6e6dd35301c8210a4febf7495a1d1489398d9506044c8e6b07bec944a",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "committed-restored-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "7eacd9b6e6dd35301c8210a4febf7495a1d1489398d9506044c8e6b07bec944a",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "ack-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "24e08b14c7bbde9383dc68deb67b60f8c06681ef0c3b2fcb2b620b173b9fc07e",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "final-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "24e08b14c7bbde9383dc68deb67b60f8c06681ef0c3b2fcb2b620b173b9fc07e",
+          "bytes": 107008
+        }
+      },
+      {
+        "name": "final-verified-closed",
+        "pidAbsent": true,
+        "backup": {
+          "sha256": "60c254530525b2cc9911be26105f7198db31b0cfef8644e77729d6666553ef7b",
+          "bytes": 107008
+        }
+      }
+    ],
+    "apkSha256": "52feb5b84176398326f8947bb5489d525972e098bb41aa623eac2d4919f5c765",
+    "initialPid": "17603",
+    "restoredPid": "20550",
+    "restoredAgainPid": "22105",
+    "committedRestoredPid": "22719",
+    "beforeAckPid": "23257",
+    "finalPid": "25319",
+    "verifiedFinalPid": "27656",
+    "verifiedRestoreLog": [
+      "10-25 16:43:36.817 27656 27656 I flutter : VAL08 restored A=VAL17_161926_A_restored itens=8 pendentes=0; B=VAL17_161926_A_restored itens=8 pendentes=0"
+    ],
+    "phaseNotes": {
+      "offline-closed": "Early harness attempt; final text edit had not committed. Not counted as three pending entries.",
+      "final-closed": "Early final restart; startup not confirmed by current PID. Superseded by final-verified-closed."
+    }
+  },
+  "proof": {
+    "snapshotAndOutboxExactAfterRestart": true,
+    "pendingBeforeAck": {
+      "a": 3,
+      "b": 2
+    },
+    "newEditAfterRestartHasDistinctId": true,
+    "latestWinner": {
+      "type": "lww",
+      "key": "shopping/title",
+      "id": "shopper-a:delta:12",
+      "replicaId": "shopper-a",
+      "timestamp": {
+        "physicalMilliseconds": 1792956718533,
+        "logical": 0
+      },
+      "value": "VAL17_161926_A_restored",
+      "deleted": false,
+      "dot": {
+        "replicaId": "shopper-a",
+        "counter": 12
+      }
+    },
+    "counterComponents": {
+      "shopper-a": 4,
+      "shopper-b": 4
+    },
+    "counterValue": 8,
+    "finalOutboxesEmpty": true,
+    "finalStateExactAfterRestart": true,
+    "eightAlphaDatabaseUnchanged": true,
+    "schema": 1,
+    "snapshotVersion": 9,
+    "databaseFileSha256": {
+      "before-install": {
+        "eight-alpha.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eight-alpha.sqlite": "51fb42eb515ed7a395dd546aa788aaf921368b637258f6b20a162457c2378552",
+        "shopper-b.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-b.sqlite": "1e666265892c56cbd9a154793f2b0164d3919f1498f534f9e69d040582b63842",
+        "shopper-a.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-a.sqlite": "9a57503f07b09523b6840f471808874d6b3b7d34fdad4497613fa0f247a70d96"
+      },
+      "committed-offline": {
+        "eight-alpha.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eight-alpha.sqlite": "51fb42eb515ed7a395dd546aa788aaf921368b637258f6b20a162457c2378552",
+        "shopper-b.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-b.sqlite": "8973f88593692eb994ec99533ae53b197d6be346c8d8893818f49c3af712c256",
+        "shopper-a.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-a.sqlite": "4df9903a7c5a2d2a87d2a60e7601d100ebc51df8b258d32f662c336e46c9b132"
+      },
+      "committed-restored": {
+        "eight-alpha.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eight-alpha.sqlite": "51fb42eb515ed7a395dd546aa788aaf921368b637258f6b20a162457c2378552",
+        "shopper-b.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-b.sqlite": "8973f88593692eb994ec99533ae53b197d6be346c8d8893818f49c3af712c256",
+        "shopper-a.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-a.sqlite": "4df9903a7c5a2d2a87d2a60e7601d100ebc51df8b258d32f662c336e46c9b132"
+      },
+      "ack": {
+        "eight-alpha.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eight-alpha.sqlite": "51fb42eb515ed7a395dd546aa788aaf921368b637258f6b20a162457c2378552",
+        "shopper-b.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-b.sqlite": "1471f5ede1d1d1fc8e4efadae1b9a2cdb11d22a6838602f926afbbe5126b74b9",
+        "shopper-a.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-a.sqlite": "dd740c4a6d34331eb138100649feec37531b20caa19bd211507a555dddc44698"
+      },
+      "final-verified": {
+        "eight-alpha.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eight-alpha.sqlite": "51fb42eb515ed7a395dd546aa788aaf921368b637258f6b20a162457c2378552",
+        "shopper-b.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-b.sqlite": "da9895747682b5e6f7875615282d202cbb26e63f694ed4e69ece2f915d4ac412",
+        "shopper-a.sqlite-journal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shopper-a.sqlite": "9965e89d15d351f0fbb42bd4c7a58a155b71aff63e05a815339929119e9da41c"
+      }
+    }
+  },
+  "ackLog": "10-25 16:31:58.761 23257 23257 I flutter : VAL08 Commit local A concluído A=VAL17_161926_A_restored itens=7 pendentes=4; B=VAL17_161926_B itens=7 pendentes=2\n10-25 16:32:05.422 23257 23257 I flutter : VAL08 Peer disponível A=VAL17_161926_A_restored itens=7 pendentes=4; B=VAL17_161926_B itens=7 pendentes=2\n10-25 16:32:10.183 23257 23257 I flutter : VAL08 Envio concluído A=VAL17_161926_A_restored itens=8 pendentes=0; B=VAL17_161926_A_restored itens=8 pendentes=0\n",
+  "finalVerifiedLog": "27656 ['10-25 16:43:36.817 27656 27656 I flutter : VAL08 restored A=VAL17_161926_A_restored itens=8 pendentes=0; B=VAL17_161926_A_restored itens=8 pendentes=0'] {'sha256': '60c254530525b2cc9911be26105f7198db31b0cfef8644e77729d6666553ef7b', 'bytes': 107008}\n",
+  "rawArtifactsDirectory": "/tmp/deltasync-val17-mobile",
+  "rawDatabaseApkOrUiCommitted": false,
+  "tempUiFileRemoved": true,
+  "appLeftStopped": true,
+  "otherAppsTouched": false,
+  "limitations": [
+    "Two replicas in one process with a simulated peer link",
+    "Native runtime exercised LWW/GCounter and common persistence/lifecycle; eight-kind coverage is from current host tests",
+    "No real network or auth/TLS claim; no iOS run"
+  ]
+}

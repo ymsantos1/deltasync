@@ -1,0 +1,280 @@
+{
+  "task": "VAL-17",
+  "date": "2026-10-25",
+  "status": "passed",
+  "release": "/tmp/deltasync-release-parent-r8mpulxa/release",
+  "consumer": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+  "pubCache": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache",
+  "registry": "http://127.0.0.1:37873",
+  "registryStopped": true,
+  "requests": 462,
+  "requestMethods": {
+    "GET": 462
+  },
+  "uploads": 0,
+  "publicRegistryUpload": false,
+  "noOverrides": true,
+  "installed": {
+    "deltasync": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync-1.0.1",
+    "deltasync_core": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_core-1.0.1",
+    "deltasync_storage": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_storage-1.0.1",
+    "deltasync_storage_sqflite": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_storage_sqflite-1.0.1",
+    "deltasync_storage_testing": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_storage_testing-1.0.1",
+    "deltasync_sync": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_sync-1.0.1",
+    "deltasync_transport": "/tmp/deltasync-val17-hosted-dvvmzc0y/pub-cache/hosted/localhost%5837873/deltasync_transport-1.0.1"
+  },
+  "archiveSha256": {
+    "deltasync_core": "49b04ffbb64ae5b2cbfdc03bf7d90c1d31201c025c39c052e962c369f49b9188",
+    "deltasync_storage": "bf5d1171027d8b818c93ad01d9644039a91b90e1e1d831e025e5b83182e15da4",
+    "deltasync_transport": "96bca47f9a37747cac472cbbaad979d21e06bbd55d8a9bc429b2412b7cbbacc2",
+    "deltasync_sync": "9487fb07dd1337ae9819dc63ed0bbdbd3eed80d06c434afc1a960315294ca87c",
+    "deltasync_storage_testing": "4d9f691b3ee69945c436efd71c13ea2cf23f2a009b86ed91c3468821157aba7d",
+    "deltasync_storage_sqflite": "63be7e95c0a71212942073a35ae88ace2a85214d4376a4ab5c90a1df780c8b65",
+    "deltasync": "29f360c2b54ce022f5e3cc11b66c71fc9c9d1aec5ae2a46d9f349905768ff879"
+  },
+  "preparedFiles": 85,
+  "distributedFiles": 78,
+  "libraryFiles": 48,
+  "consumerTests": 54,
+  "negativeAliasCases": 14,
+  "dryRuns": 7,
+  "records": [
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 66 dependencies!",
+      "fullOutputSha256": "ca8fb48055494789f7202d5726a35677b88f8246d04fd9aa20f3a6a87c2f0139"
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 0,
+      "output": "Formatted test/import_pending.dart\nFormatted test/migrated_test.dart\nFormatted test/r37_test.dart\nFormatted test/r38_test.dart\nFormatted test/r40_test.dart\nFormatted test/r41_test.dart\nFormatted test/r42_test.dart\nFormatted 8 files (7 changed) in 0.03 seconds.\n",
+      "fullOutputSha256": "accb99c16fa34c037c88c5eb60c2747ea41fd3f92ada2b9a6ecb8ccc2c56293f"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 0,
+      "output": "Analyzing test...\nNo issues found!\n",
+      "fullOutputSha256": "102986eb10a6468eb16acb72e6833b549e7ac96079dd3157c1a87f92bce1d267"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading test/r42_test.dart\n00:00 +0: test/r38_test.dart: external named synchronous callback uses public batch API\n00:00 +1: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +2: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +3: test/r41_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +4: test/r41_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +5: test/r40_test.dart: external model conversion handles absence, null, deletion and failure\n00:00 +6: test/r41_test.dart: migrated constructor, event implementation and exhaustive switch compile\n00:00 +7: test/r41_test.dart: migrated constructor, event implementation and exhaustive switch compile\n00:00 +8: test/r37_test.dart: consumer resolves the explicitly expected source tree\n00:00 +9: test/migrated_test.dart: consumer resolves the explicitly expected source tree\n00:00 +10: test/r37_test.dart: R-37 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +11: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +12: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +13: test/r37_test.dart: R-37 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +14: test/r37_test.dart: R-37 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +15: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +16: test/r37_test.dart: R-37 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +17: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +18: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +19: test/r37_test.dart: R-37 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +20: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +21: test/r37_test.dart: R-37 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +22: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +23: test/r37_test.dart: R-37 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +24: test/r37_test.dart: R-37 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +25: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +26: test/r37_test.dart: R-37 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +27: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +28: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +29: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +30: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +31: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +32: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +33: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +34: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +35: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +36: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +37: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +38: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +39: test/r37_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +40: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary excludes legacy confirmed entries without sending them\n00:00 +41: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +42: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +43: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +44: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +45: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +46: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +47: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +48: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +49: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +50: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +51: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +52: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +53: test/r37_test.dart: legacy snapshot wrapper restores through the public engine boundary\n00:01 +54: All tests passed!\n",
+      "fullOutputSha256": "455b2421d05596feb968a0471ff7222d7332d84e2111cbf9208931bf0a0ff0d3"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "--format",
+        "machine",
+        "removed.dart"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 3,
+      "output": "ERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|3|1|17|Undefined class 'PendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|4|1|23|Undefined class 'MemoryPendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|5|1|9|Undefined class 'Operation'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_FUNCTION|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|6|1|22|The function 'migrateLegacyOperation' isn't defined.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|7|3|3|The method 'set' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|8|3|6|The method 'remove' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|9|3|3|The method 'set' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|10|3|6|The method 'remove' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|11|7|4|The method 'crdt' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|12|21|11|The getter 'crdtChanges' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|13|7|11|The getter 'operationId' isn't defined for the type 'OutboxEntry'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|14|3|5|The getter 'store' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|MISSING_REQUIRED_ARGUMENT|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|15|1|10|The named parameter 'storage' is required, but there's no corresponding argument.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_NAMED_PARAMETER|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|16|68|5|The named parameter 'store' isn't defined.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|3|20|12|The value of the local variable 'removedStore' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|4|26|13|The value of the local variable 'removedMemory' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/removed.dart|5|12|16|The value of the local variable 'removedOperation' isn't used.\n",
+      "fullOutputSha256": "4bf4fb0f1dc8a7d0c9d171d6a5fe60b2ee3df9993aecf57667b7e480899cf5b6"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "--format",
+        "machine",
+        "event.dart"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 3,
+      "output": "ERROR|COMPILE_TIME_ERROR|CONST_INITIALIZED_WITH_NON_CONSTANT_VALUE|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/event.dart|2|15|47|Const variables must be initialized with a constant value.\nERROR|COMPILE_TIME_ERROR|CONST_WITH_NON_CONST|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/event.dart|2|15|47|The constructor being called isn't a const constructor.\nERROR|COMPILE_TIME_ERROR|MISSING_REQUIRED_ARGUMENT|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/event.dart|2|15|15|The named parameter 'addresses' is required, but there's no corresponding argument.\nERROR|COMPILE_TIME_ERROR|NON_ABSTRACT_CLASS_INHERITS_ABSTRACT_MEMBER|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/event.dart|3|7|8|Missing concrete implementation of 'getter SyncCommitEvent.addresses'.\nERROR|COMPILE_TIME_ERROR|INVALID_OVERRIDE|/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/event.dart|7|16|17|'OldReplica.mergeSnapshotJson' ('void Function(Map<String, Object?>)') isn't a valid override of 'Replica.mergeSnapshotJson' ('Set<String> Function(Map<String, Object?>)').\n",
+      "fullOutputSha256": "1252847879ed299d488f85f8cb7e9713202e387b4530dd607df0a52d22e48974"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_core",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 49 dependencies!",
+      "fullOutputSha256": "d01e3426e89df65f22b8927087db9836f082ee68fb1511e0b4db8fd0e6cfb7f2"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_core",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 34 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "2d3f73c5328bff7fd9a0ad5d9a7a9aa157a835065118e0efd4a6cfaee6c1993b"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 50 dependencies!",
+      "fullOutputSha256": "f3c2f1e87d60de29a0bcb047c7fa1fe1376b141a91a3041a3662402ce7f78710"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 6 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "6c34242365bd41f647a8e6f3553cfe8615a730a1145f8465946008421285be20"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_transport",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 50 dependencies!",
+      "fullOutputSha256": "f3c2f1e87d60de29a0bcb047c7fa1fe1376b141a91a3041a3662402ce7f78710"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_transport",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 4 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "49367c83fa457b16cf1f151384b859975d3e39814a843bc18667428b4f0e66dc"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_sync",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 52 dependencies!",
+      "fullOutputSha256": "acc519a738f0c766c369bb7ba99c745b600d7bff5abf78d731fd7ffd6948e277"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_sync",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 13 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "a5eedafaf491c7556373730f667e96d9ea7be4c83a2f1a52a9f8a94b6eeeec03"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage_testing",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 52 dependencies!",
+      "fullOutputSha256": "79fd9934172f714c37b804a547f9e71c5bad291cfdf76d5c386bf6290dd97d53"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage_testing",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 5 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "3e925013759b899c0e3a2bf1281b9cd12d5d7b91c4730a5ba3451ca680932f11"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage_sqflite",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 64 dependencies!",
+      "fullOutputSha256": "7262c729dac74e926bc72a4b4044025622a46bbdb1bb3af82f7d6e0189512c80"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync_storage_sqflite",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 6 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "375ad877ced116ae65589bb4820b4a7c3813adb9892623457e5af751abee55df"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync",
+      "exitCode": 0,
+      "output": "+ yaml 3.1.4\nChanged 65 dependencies!",
+      "fullOutputSha256": "faff03c56bad2337b48ee5779372a60b68cb46659526429f035be93c3df3f65a"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "cwd": "/tmp/deltasync-release-parent-r8mpulxa/release/deltasync",
+      "exitCode": 0,
+      "output": "Total compressed archive size: 7 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+      "fullOutputSha256": "17587b383e3ac310f283ec792c33fb714b1fe8e75bcd778c66a67b3606e9ef49"
+    }
+  ],
+  "fullReportSha256": "11f21ead8bcf6db0c26803fb7f61791384fc39a25a7ee89dc242ec0fa37be6f5",
+  "firstFailure": {
+    "reason": "Missing R37_EXPECT_SOURCE in the provenance probe; fixed and rerun all 54 tests and seven dry-runs",
+    "sha256": "65aa048e9c845e4fde107ba9ec24454cb6e2593ca9374552502f929ccd80fdf6"
+  }
+}

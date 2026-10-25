@@ -1,0 +1,261 @@
+{
+  "task": "VAL-17",
+  "date": "2026-10-25",
+  "sourceHead": "0d68d9b9919579335f52ba886e149d7b2b5ff01d",
+  "dart": "3.13.5",
+  "flutter": "3.47.7",
+  "platform": "Linux x64",
+  "sdkConstraint": "^3.13.0",
+  "jobs": {
+    "dart": {
+      "job": "dart",
+      "cwd": "/tmp/deltasync-val17-cnt5wt_w/dart",
+      "pubCache": "/tmp/deltasync-val17-cnt5wt_w/dart-pub-cache",
+      "exitCode": 0,
+      "elapsedSeconds": 74.074,
+      "command": [
+        "python3",
+        "-B",
+        "scripts/ci.py",
+        "dart"
+      ],
+      "fullLogSha256": "556759a5a1909accdb745aac3678a582e33f542b4f7ea0a3001e26f5c62cb6cf",
+      "commands": [
+        "[.] dart --version",
+        "[.] dart pub get",
+        "[.] dart pub deps --json",
+        "[.] dart pub workspace list --json",
+        "[.] dart format --output=none --set-exit-if-changed lib test",
+        "[.] dart analyze",
+        "[.] dart test --reporter expanded",
+        "[packages/deltasync_core] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_core] dart analyze",
+        "[packages/deltasync_core] dart test --reporter expanded",
+        "[packages/deltasync_sync] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_sync] dart analyze",
+        "[packages/deltasync_sync] dart test --reporter expanded",
+        "[packages/deltasync_storage] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_storage] dart analyze",
+        "[packages/deltasync_storage] dart test --reporter expanded",
+        "[packages/deltasync_storage_sqflite] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_storage_sqflite] dart analyze",
+        "[packages/deltasync_storage_sqflite] dart test --reporter expanded",
+        "[packages/deltasync_storage_testing] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_storage_testing] dart analyze",
+        "[packages/deltasync_storage_testing] dart test --reporter expanded",
+        "[packages/deltasync_transport] dart format --output=none --set-exit-if-changed lib test",
+        "[packages/deltasync_transport] dart analyze",
+        "[packages/deltasync_transport] dart test --reporter expanded",
+        "[.] dart run example/deltasync_example.dart",
+        "[.] dart run example/local_batch_example.dart",
+        "[.] dart run example/field_query_example.dart",
+        "[.] dart run example/field_decoder_example.dart",
+        "[.] dart run example/selective_observation_example.dart",
+        "[.] dart run example/offline_reconciliation.dart reset /tmp/deltasync-ci-offline-8z3rwfcd",
+        "[.] dart run example/offline_reconciliation.dart offline /tmp/deltasync-ci-offline-8z3rwfcd",
+        "[.] dart run example/offline_reconciliation.dart reconnect /tmp/deltasync-ci-offline-8z3rwfcd",
+        "[.] dart run example/commit_status_example.dart /tmp/deltasync-ci-offline-8z3rwfcd/status",
+        "[.] dart test example/support/peer_link_test.dart --reporter expanded"
+      ],
+      "advisories": [
+        {
+          "findings": [],
+          "hostedPackages": 60
+        }
+      ],
+      "testResults": [
+        "00:00 +21: All tests passed!",
+        "00:06 +134: All tests passed!",
+        "00:00 +83: All tests passed!",
+        "00:00 +14: All tests passed!",
+        "00:05 +40: All tests passed!",
+        "00:00 +10: All tests passed!",
+        "00:00 +10: All tests passed!",
+        "00:00 +2: All tests passed!"
+      ],
+      "generatedHistories": [
+        "seed=0 emitted=114 permutations=4",
+        "seed=1 emitted=116 permutations=4",
+        "seed=7 emitted=115 permutations=4",
+        "seed=42 emitted=111 permutations=4",
+        "seed=99 emitted=114 permutations=4",
+        "seed=2026 emitted=111 permutations=4",
+        "seed=10000 emitted=113 permutations=4",
+        "seed=65535 emitted=114 permutations=4"
+      ],
+      "finalOutput": [
+        "[.] dart run example/commit_status_example.dart /tmp/deltasync-ci-offline-8z3rwfcd/status",
+        "Running build hooks...Running build hooks...restored: not configured",
+        "refresh: profile: Ada",
+        "saved locally",
+        "awaiting ACK: 1",
+        "profile: Ada",
+        "saved locally; peer unavailable: Bad state: peer offline",
+        "[.] dart test example/support/peer_link_test.dart --reporter expanded",
+        "Running build hooks...Running build hooks...00:00 +0: loading example/support/peer_link_test.dart",
+        "00:00 +0: shared link preserves offline diagnostics and stream closure",
+        "00:00 +1: shared link waits for commit and does not ACK a failed handler",
+        "00:00 +2: All tests passed!"
+      ]
+    },
+    "flutter": {
+      "job": "flutter",
+      "cwd": "/tmp/deltasync-val17-cnt5wt_w/flutter",
+      "pubCache": "/tmp/deltasync-val17-cnt5wt_w/flutter-pub-cache",
+      "exitCode": 0,
+      "elapsedSeconds": 92.097,
+      "command": [
+        "python3",
+        "-B",
+        "scripts/ci.py",
+        "flutter"
+      ],
+      "fullLogSha256": "2d45b4312c64754e1efdedf31fe792e27ae27d927027a42e4b034bd35db18309",
+      "commands": [
+        "[.] flutter --version",
+        "[example/flutter_mobile] flutter pub get --enforce-lockfile",
+        "[example/flutter_mobile] dart pub deps --json",
+        "[example/flutter_mobile] dart format --output=none --set-exit-if-changed lib test",
+        "[example/flutter_mobile] flutter analyze",
+        "[example/flutter_mobile] flutter test --reporter expanded",
+        "[example/flutter_mobile] flutter build apk --debug --target lib/main.dart",
+        "[example/flutter_mobile] flutter build apk --debug --target lib/main_eight.dart"
+      ],
+      "advisories": [
+        {
+          "findings": [],
+          "hostedPackages": 46
+        }
+      ],
+      "testResults": [
+        "00:07 +7: All tests passed!"
+      ],
+      "generatedHistories": [],
+      "finalOutput": [
+        "",
+        "Running Gradle task 'assembleDebug'...                             41,6s",
+        "✓ Built build/app/outputs/flutter-apk/app-debug.apk",
+        "[example/flutter_mobile] flutter build apk --debug --target lib/main_eight.dart",
+        "Running Gradle task 'assembleDebug'...                          ",
+        "WARNING: A restricted method in java.lang.System has been called",
+        "WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/home/yago/.gradle/wrapper/dists/gradle-9.3.1-all/9ot9r568e8zfvvd4mn8rbu1j0/gradle-9.3.1/lib/native-platform-0.22-milestone-29.jar)",
+        "WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module",
+        "WARNING: Restricted methods will be blocked in a future release unless native access is enabled",
+        "",
+        "Running Gradle task 'assembleDebug'...                             12,8s",
+        "✓ Built build/app/outputs/flutter-apk/app-debug.apk"
+      ]
+    }
+  },
+  "workspaceTestCounts": {
+    "facade": 21,
+    "core": 134,
+    "sync": 83,
+    "storage": 14,
+    "sqflite": 40,
+    "storageTesting": 10,
+    "transport": 10
+  },
+  "workspaceTotal": 312,
+  "peerLinkTests": 2,
+  "flutterTests": 7,
+  "historical": {
+    "command": [
+      "dart",
+      "test",
+      "/tmp/deltasync-r30-source-c0fkjwb0/plan/evidence/r30/consumer_test.dart",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/tmp/deltasync-r30-source-c0fkjwb0",
+    "exitCode": 0,
+    "output": "Running build hooks...Running build hooks...00:00 +0: loading /tmp/deltasync-r30-source-c0fkjwb0/plan/evidence/r30/consumer_test.dart\n00:00 +0: consumer resolves the explicitly expected source tree\n00:00 +1: R-30 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +2: R-30 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +3: R-30 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +4: R-30 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +5: R-30 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +6: R-30 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +7: R-30 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +8: R-30 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +9: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +10: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +11: legacy public aliases remain compilable before their planned removal\n00:00 +12: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +13: legacy snapshot wrapper restores through the public engine boundary\n00:00 +14: All tests passed!\n"
+  },
+  "rollback": [
+    {
+      "command": [
+        "dart",
+        "run",
+        "rollback.dart",
+        "seed",
+        "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/roundtrip.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-r30-source-c0fkjwb0",
+      "exitCode": 0,
+      "output": "{\"mode\":\"seed\",\"passed\":true}\nRunning build hooks...Running build hooks..."
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "rollback.dart",
+        "upgrade",
+        "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/roundtrip.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer",
+      "exitCode": 0,
+      "output": "{\"mode\":\"upgrade\",\"passed\":true}\nRunning build hooks...Running build hooks..."
+    },
+    {
+      "command": [
+        "dart",
+        "run",
+        "rollback.dart",
+        "verify",
+        "/tmp/deltasync-val17-hosted-dvvmzc0y/consumer/roundtrip.sqlite",
+        "/projetos/tcc/deltasync/plan/evidence/r30/fixture_1_0_0.json"
+      ],
+      "cwd": "/tmp/deltasync-r30-source-c0fkjwb0",
+      "exitCode": 0,
+      "output": "{\"mode\":\"verify\",\"passed\":true}\nRunning build hooks...Running build hooks..."
+    }
+  ],
+  "policy": {
+    "command": [
+      "python3",
+      "-B",
+      "scripts/ci.py",
+      "policy"
+    ],
+    "exitCode": 0,
+    "tests": 11,
+    "logSha256": "eae352dc93217dd06560854bf1a23f9c07e0811f3888a24e58790f6a950188af",
+    "output": "[.] /home/linuxbrew/.linuxbrew/opt/python@3.15/bin/python3.15 -B -m unittest discover -s scripts/tests -v\ntest_clean_and_known_advisory (test_ci.AdvisoryTests.test_clean_and_known_advisory) ... {\"findings\": [], \"hostedPackages\": 1}\n{\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_exception_is_exact_justified_and_expires (test_ci.AdvisoryTests.test_exception_is_exact_justified_and_expires) ... {\"findings\": [{\"excepted\": true, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_network_and_invalid_response_cannot_pass (test_ci.AdvisoryTests.test_network_and_invalid_response_cannot_pass) ... ok\ntest_pagination_is_complete_and_cycle_rejected (test_ci.AdvisoryTests.test_pagination_is_complete_and_cycle_rejected) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nok\ntest_underscore_prefixed_pub_package_is_scanned (test_ci.AdvisoryTests.test_underscore_prefixed_pub_package_is_scanned) ... {\"findings\": [], \"hostedPackages\": 1}\nok\ntest_unsupported_sources_and_bad_graph_fail (test_ci.AdvisoryTests.test_unsupported_sources_and_bad_graph_fail) ... ok\ntest_flutter_failure_stops_before_build_and_preserves_exit (test_ci.JobTests.test_flutter_failure_stops_before_build_and_preserves_exit) ... ok\ntest_network_failure_is_nonzero_even_after_successful_resolution (test_ci.JobTests.test_network_failure_is_nonzero_even_after_successful_resolution) ... CI check unavailable/invalid: <urlopen error offline>\nok\ntest_one_package_failure_stops_job_and_propagates_exit (test_ci.JobTests.test_one_package_failure_stops_job_and_propagates_exit) ... ok\ntest_pub_warning_exit_zero_still_fails_advisory_gate (test_ci.JobTests.test_pub_warning_exit_zero_still_fails_advisory_gate) ... {\"findings\": [{\"excepted\": false, \"id\": \"GHSA-fixture-only\", \"package\": \"fake_package\", \"version\": \"1.0.0\"}], \"hostedPackages\": 1}\nUnexcepted dependency advisory; inspect the reported IDs\nok\ntest_workspace_paths_are_validated_from_dart_json (test_ci.JobTests.test_workspace_paths_are_validated_from_dart_json) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.006s\n\nOK\n[.] /home/linuxbrew/.linuxbrew/opt/python@3.15/bin/python3.15 scripts/check_plan.py\nPlano consistente: 70 tarefas, 557 links locais. Prontas: nenhuma.\nChecagem estrutural; qualidade das evidências e testes exigem validação do agente.\n[.] git diff --check\n[.] git diff --check 'HEAD^' HEAD\n"
+  },
+  "actionlint": {
+    "version": "1.7.7",
+    "command": [
+      "/tmp/deltasync-r33-actionlint/actionlint",
+      ".github/workflows/ci.yml"
+    ],
+    "exitCode": 0,
+    "archiveSha256": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
+  },
+  "saropa": {
+    "decision": "DEC-68",
+    "permanentAdoption": false,
+    "pilotR34Historical": true
+  },
+  "finalChecks": {
+    "commands": [
+      "python3 -B scripts/check_plan.py",
+      "git diff --check"
+    ],
+    "exitCodes": [0, 0],
+    "tasks": 70,
+    "localLinks": 581,
+    "ready": [],
+    "jsonPythonAstAndNewFileWhitespace": "passed",
+    "libraryHashesChecked": 48,
+    "historicalEvidenceFilesUnchanged": 94,
+    "maintenanceCorrection": "Restore required bold markup in Tarefa ativa; checker unchanged and rerun passed"
+  },
+  "limitations": [
+    "No runtime Dart 3.13.0 or 3.12",
+    "No remote CI run",
+    "No iOS run",
+    "No public publishing or public hosted-install proof"
+  ]
+}

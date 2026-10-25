@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-35/R-36/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
-VAL-17 pronta; gate completo ainda não executado.
+Estado: concluída em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-35/R-36/R-37/R-38/R-39/R-40/R-41/R-42 e VAL-17 concluídas.
+Gate completo aprovado, com sete candidatos preparados; publicação manual permanece com o autor.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -359,7 +359,7 @@ nesta tarefa. VAL-17 pronta; fase 6 permanece aberta.
 
 ## VAL-17 — Validar migração e artefatos da 1.0.1
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-36
 
@@ -368,42 +368,48 @@ Este é o gate da release de manutenção; não substitui registros históricos.
 
 Critérios:
 
-- [ ] Executar formato/análise/testes dos sete pacotes na faixa mínima e no SDK
+- [x] Executar formato/análise/testes dos sete pacotes na faixa mínima e no SDK
   de referência vigentes em R-33/DEC-67 (^3.13.0; referência 3.13.5), que substituem
   a matriz histórica R-30. Registrar patches efetivamente executados, sem alegar
   runtime 3.13.0 ou 3.12 não executado. Revalidar os oito CRDTs, histórias geradas,
   concorrência, ACK parcial/perdido, edição durante falha e recuperação SQLite.
-- [ ] Consumir fixtures 1.0.0 preservando estado, clocks, contextos, tombstones,
+- [x] Consumir fixtures 1.0.0 preservando estado, clocks, contextos, tombstones,
   IDs/outbox e próxima mutação após restauração. Confirmar mesmo formato de escrita
   para readers 1.0.0 e manutenção dos readers legados já documentados.
-- [ ] Compilar consumidores/adaptadores migrados de 1.0.0 e executar fluxos
+- [x] Compilar consumidores/adaptadores migrados de 1.0.0 e executar fluxos
   equivalentes; provar preservação dos contratos fora das quebras inventariadas.
   Fixtures de uso das APIs retiradas devem apontar os substitutos documentados,
   sem mascarar quebra de fonte nem exigir compilação inalterada do legado.
-- [ ] Revalidar consulta leve, lote local atômico, decoder, eventos seletivos
+- [x] Revalidar consulta leve, lote local atômico, decoder, eventos seletivos
   e ausente/null/tombstone com falhas, concorrência e recuperação. Conferir
   remoção do fluxo legado de produção e preservação dos readers de dados.
-- [ ] Inspecionar conteúdo/hashes e executar dry-runs dos sete artefatos. Usar
+- [x] Inspecionar conteúdo/hashes e executar dry-runs dos sete artefatos. Usar
   consumidor fora do workspace, sem paths/overrides, em registro local somente
   leitura quando as dependências ainda não existirem no pub.dev. Preservar
   distinção entre essa prova e instalação/publicação reais no registro público.
-- [ ] Executar exemplos Dart/SQLite e Flutter analyze/test/build pertinentes.
+- [x] Executar exemplos Dart/SQLite e Flutter analyze/test/build pertinentes.
   Decidir e registrar necessidade de runtime Android conforme diff efetivo;
   mudança em lifecycle/persistência/plugin exige roteiro pertinente e evidência
   atual. Build ou evidência histórica não substituem runtime exigido pela mudança.
-- [ ] Conferir CI e decisão Saropa, riscos remanescentes, documentação e registros
+- [x] Conferir CI e decisão Saropa, riscos remanescentes, documentação e registros
   por tarefa; executar check_plan.py e git diff --check. Não concluir com falha
   impeditiva ou critério pendente. Entregar instruções concretas de publicação
   manual ao autor, sem upload, tag, commit, merge ou push automático.
 
 Validação: matriz de critérios/comandos/evidências e limites reais de plataforma,
 SDK e serviços. Publicação real continua com o autor, conforme DEC-50.
-Evidência de conclusão: ainda não registrada.
+Resultado: 312 testes do workspace, 54 hosted, 14 históricos, três processos de
+migração SQLite, sete dry-runs sem warnings, exemplos, Flutter e Android real
+aprovados em Dart 3.13.5. Dados/readers preservados; fonte migrada e probes de
+quebras explícitas conferidos. Sem publicação ou alegação de instalação pública.
+Evidência de conclusão: [execução VAL-17](TRACEABILITY.md#execucao-val-17-2026-10-25)
+e [matriz, comandos e limites](evidence/val17/README.md).
 
 ## APIs e simplificações incluídas na release
 
 As tarefas abaixo fazem parte de 1.0.1 e são dependências transitivas de VAL-17.
-O pedido atual planeja sua execução; nenhuma implementação foi iniciada.
+Foram implementadas e revalidadas no gate concluído; seus registros preservam
+as decisões e evidências de cada entrega.
 
 <a id="r-37"></a>
 
