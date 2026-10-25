@@ -135,11 +135,15 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-36 preparou sete pacotes 1.0.1 e 17 constraints internas
+Tarefa ativa: **nenhuma**. R-43 concluiu a limpeza posterior do legado sem uso.
+R-36 preparou sete pacotes 1.0.1 e 17 constraints internas
 ^1.0.1, com changelogs/migração e 85 arquivos inspecionados. VAL-17 aprovou
 o gate completo e encerrou a fase 6 em 25/10; nenhum pacote foi publicado.
 O gate atual validou 312 testes dos sete pacotes, consumidor hosted, migração,
 sete dry-runs, exemplos/builds e runtime Android. Ver [evidências e limites](evidence/val17/README.md).
+R-43 preservou readers e retirou apenas auxiliares internos sem uso; revalidou
+312 testes, 54 hosted e sete dry-runs. Os [candidatos atuais](evidence/r43/README.md#candidatos-atuais-e-publicação)
+substituem os anteriores para publicação; VAL-17 permanece evidência histórica.
 R-34 adiou Saropa permanente. Recommended e CI/advisories R-33 permanecem,
 sem downgrade de SDK/test.
 R-33 alinhou o mínimo para ^3.13.0 por orientação do autor; nenhum workflow remoto
@@ -147,7 +151,7 @@ foi executado. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: nenhuma; todas as tarefas deste plano estão concluídas.
+selecionável: nenhuma; todas as tarefas autorizadas estão concluídas.
 VAL-17 encerrou o gate sem publicação, tag, commit ou push; envio manual e
 instalação pública continuam com o autor, conforme [roteiro](evidence/val17/README.md#publicação-manual-pelo-autor).
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
@@ -264,6 +268,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | concluída | SHOULD | R-42 |
 | [R-41](06_PHASE6_MANUTENCAO_1_0_1.md#r-41) | Oferecer eventos seletivos e consolidar canais internos | concluída | SHOULD | R-37, R-38 |
 | [R-42](06_PHASE6_MANUTENCAO_1_0_1.md#r-42) | Distinguir ausência, valor null e tombstone na consulta | concluída | SHOULD | R-39 |
+| [R-43](06_PHASE6_MANUTENCAO_1_0_1.md#r-43) | Limpar auxiliares legados sem uso operacional | concluída | SHOULD | VAL-17 |
 
 ## Consolidação 1.0.1
 

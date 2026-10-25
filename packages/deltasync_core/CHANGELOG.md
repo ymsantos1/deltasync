@@ -17,6 +17,8 @@ Package renumbering does not change JSON/schema or remove historical readers.
   setDelta/removeDelta, Delta(changes) and changes.
 - Stop exporting Operation and migrateLegacyOperation; historical JSON readers
   still convert these records through DeltaCodec and snapshot restoration.
+- Remove the unused internal legacy encoder and value equality helpers; keep
+  historical parsing, validation and migration unchanged.
 
 ### Retained capabilities
 

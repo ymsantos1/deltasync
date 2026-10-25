@@ -1,0 +1,508 @@
+{
+  "task": "R-43",
+  "date": "2026-10-25",
+  "sourceHead": "76e0299215ea6b78a2cfe1b137f3688a87d1a6af",
+  "initiallyClean": true,
+  "dart": "3.13.5",
+  "platform": "Linux x64",
+  "status": "passed",
+  "behaviorBoundary": {
+    "parserValidationConstructorExact": true,
+    "migrationExact": true,
+    "readerCallSitesExact": true,
+    "publicExportsExact": true,
+    "libraryFiles": 48,
+    "changedLibraries": [
+      "packages/deltasync_core/lib/src/operation.dart",
+      "packages/deltasync_sync/lib/src/sync_types.dart"
+    ],
+    "historicalEvidenceFilesUnchanged": 103,
+    "removed": [
+      "Operation.toJson",
+      "Operation.operator ==",
+      "Operation.hashCode",
+      "Operation._mapsEqual",
+      "unused deprecated_member_use suppression in sync_types.dart"
+    ],
+    "sourceSha256": {
+      "packages/deltasync_core/lib/src/operation.dart": "1ef95c3ae83bb6211d98a11e56502b9d5695c4fb735b53ec83ea7bd60ca52210",
+      "packages/deltasync_sync/lib/src/sync_types.dart": "9fa0a605e6bac6902117ae6377f04a7eb065c3f28cf11250161e42f0f2634541",
+      "packages/deltasync_core/test/crdt_interfaces_test.dart": "3c5d9629a7d71a189b7719e78c19ed3d29fe255da1ba1afaa0468c017b8e61d1"
+    }
+  },
+  "baselineAndAfter": [
+    {
+      "stage": "before",
+      "command": [
+        "dart",
+        "test",
+        "test/crdt_interfaces_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/projetos/tcc/deltasync/packages/deltasync_core",
+      "exitCode": 0,
+      "tests": 48,
+      "logSha256": "8bcc424f7331e8fd4450c235b5afa42c1ece8eb6913e73c4c268adfdff37028f",
+      "output": [
+        "00:00 +46: snapshot bootstrap merges state without taking peer identity",
+        "00:00 +47: conflicting snapshot address type leaves replica unchanged",
+        "00:00 +48: All tests passed!"
+      ]
+    },
+    {
+      "stage": "after",
+      "command": [
+        "dart",
+        "test",
+        "test/crdt_interfaces_test.dart",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/projetos/tcc/deltasync/packages/deltasync_core",
+      "exitCode": 0,
+      "tests": 48,
+      "logSha256": "9c8e79b4dca2a938824fa3432663249e39c238359bf686da19d8a2ad51457032",
+      "output": [
+        "00:00 +46: snapshot bootstrap merges state without taking peer identity",
+        "00:00 +47: conflicting snapshot address type leaves replica unchanged",
+        "00:00 +48: All tests passed!"
+      ]
+    }
+  ],
+  "workspace": {
+    "command": "for package in . packages/deltasync_core packages/deltasync_sync packages/deltasync_storage packages/deltasync_storage_sqflite packages/deltasync_storage_testing packages/deltasync_transport; do (cd \"$package\" && dart format --output=none --set-exit-if-changed lib test && dart analyze && dart test --reporter expanded) || exit 1; done",
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "packageTestCounts": [
+      21,
+      134,
+      83,
+      14,
+      40,
+      10,
+      10
+    ],
+    "total": 312,
+    "logSha256": "205b9f293996618d7942b72b05e96ed8627bb63b62325dcd8cebb049929f6411",
+    "output": [
+      "Formatted 5 files (0 changed) in 0.02 seconds.",
+      "No issues found!",
+      "00:00 +21: All tests passed!",
+      "Formatted 44 files (0 changed) in 0.16 seconds.",
+      "No issues found!",
+      "00:04 +134: All tests passed!",
+      "Formatted 17 files (0 changed) in 0.10 seconds.",
+      "No issues found!",
+      "00:00 +83: All tests passed!",
+      "Formatted 6 files (0 changed) in 0.03 seconds.",
+      "No issues found!",
+      "00:00 +14: All tests passed!",
+      "Formatted 8 files (0 changed) in 0.06 seconds.",
+      "No issues found!",
+      "00:04 +40: All tests passed!",
+      "Formatted 3 files (0 changed) in 0.03 seconds.",
+      "No issues found!",
+      "00:00 +10: All tests passed!",
+      "Formatted 6 files (0 changed) in 0.01 seconds.",
+      "No issues found!",
+      "00:00 +10: All tests passed!"
+    ]
+  },
+  "resolution": {
+    "sdks": [
+      {
+        "name": "Dart",
+        "version": "3.13.5"
+      },
+      {
+        "name": "Flutter",
+        "version": "3.47.7"
+      }
+    ],
+    "packages": {
+      "deltasync_transport": "1.0.1",
+      "test": "1.33.0",
+      "yaml": "3.1.4",
+      "string_scanner": "1.4.1",
+      "source_span": "1.10.2",
+      "term_glyph": "1.2.2",
+      "path": "1.9.1",
+      "collection": "1.19.1",
+      "webkit_inspection_protocol": "1.2.1",
+      "logging": "1.3.0",
+      "web_socket_channel": "3.0.3",
+      "web_socket": "1.0.1",
+      "web": "1.1.1",
+      "stream_channel": "2.1.4",
+      "async": "2.13.1",
+      "meta": "1.19.0",
+      "crypto": "3.0.7",
+      "typed_data": "1.4.0",
+      "test_core": "0.6.21",
+      "vm_service": "15.3.0",
+      "test_api": "0.7.15",
+      "stack_trace": "1.12.2",
+      "boolean_selector": "2.1.2",
+      "source_maps": "0.10.14",
+      "source_map_stack_trace": "2.1.2",
+      "pool": "1.5.3",
+      "package_config": "3.0.0",
+      "io": "1.1.0",
+      "glob": "2.2.0",
+      "file": "7.0.1",
+      "frontend_server_client": "4.1.0",
+      "coverage": "1.16.0",
+      "cli_util": "0.6.0",
+      "ffi": "2.2.0",
+      "cli_config": "0.2.0",
+      "args": "2.7.0",
+      "analyzer": "14.5.0",
+      "watcher": "1.2.1",
+      "pub_semver": "2.2.1",
+      "convert": "3.1.2",
+      "_fe_analyzer_shared": "109.0.0",
+      "shelf_web_socket": "3.0.0",
+      "shelf": "1.4.2",
+      "http_parser": "4.1.2",
+      "shelf_static": "1.1.3",
+      "mime": "2.1.0",
+      "shelf_packages_handler": "3.0.2",
+      "node_preamble": "2.0.2",
+      "matcher": "0.12.20",
+      "http_multi_server": "3.2.2",
+      "deltasync_core": "1.0.1",
+      "deltasync_storage_testing": "1.0.1",
+      "lints": "6.1.0",
+      "deltasync_storage": "1.0.1",
+      "deltasync_storage_sqflite": "1.0.1",
+      "sqflite_common_ffi": "2.4.4",
+      "synchronized": "3.5.0",
+      "sqflite_common": "2.5.14",
+      "sqlite3": "3.7.1",
+      "native_toolchain_c": "0.19.5",
+      "process": "5.0.6",
+      "platform": "3.2.0",
+      "hooks": "2.2.0",
+      "record_use": "1.1.1",
+      "code_assets": "2.1.0",
+      "deltasync_sync": "1.0.1",
+      "deltasync": "1.0.1"
+    }
+  },
+  "artifacts": {
+    "command": [
+      "python3",
+      "-B",
+      "plan/evidence/val17/validate_artifacts.py",
+      "--release",
+      "/tmp/deltasync-release-parent-dkj7k781/release",
+      "--report",
+      "/tmp/deltasync-r43-artifacts.json"
+    ],
+    "release": "/tmp/deltasync-release-parent-dkj7k781/release",
+    "consumer": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+    "pubCache": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache",
+    "registry": "http://127.0.0.1:41175",
+    "registryStopped": true,
+    "uploads": 0,
+    "onlyGetRequests": true,
+    "noPathsOrOverrides": true,
+    "consumerTests": 54,
+    "negativeAliasCases": 14,
+    "dryRuns": 7,
+    "archiveSha256": {
+      "deltasync_core": "d763d65897954426e52e81948b19d1cec12b78af038e3ffe678f68e3b1f54720",
+      "deltasync_storage": "d10029a1dfbe61554d9863993dd5be28635e98e3913fa9cc35e0a4c36d343f43",
+      "deltasync_transport": "153adbc032d35cf01745840e406900045e103148a164cc7a8bc4d89d8ab6b3c4",
+      "deltasync_sync": "f523a11b23cd9316a0e2ea130954e63dc65caa60451d53bd41cee3ea71980e41",
+      "deltasync_storage_testing": "c96559f4db44b73e14d234eb2a71b5f2b70a99fe05a501e588534ad84dcb07ec",
+      "deltasync_storage_sqflite": "948a6e54fb8dc9ab2652d82fb51a4ac3277b7241b6a3a4d33651f0dc6a9503d4",
+      "deltasync": "e86052df87b4c9713d0e3367cc049a59b8e6254d1b6e319feadcae4f27fada0e"
+    },
+    "installed": {
+      "deltasync": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync-1.0.1",
+      "deltasync_core": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_core-1.0.1",
+      "deltasync_storage": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_storage-1.0.1",
+      "deltasync_storage_sqflite": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_storage_sqflite-1.0.1",
+      "deltasync_storage_testing": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_storage_testing-1.0.1",
+      "deltasync_sync": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_sync-1.0.1",
+      "deltasync_transport": "/tmp/deltasync-val17-hosted-80rkq9xh/pub-cache/hosted/localhost%5841175/deltasync_transport-1.0.1"
+    },
+    "records": [
+      {
+        "command": [
+          "dart",
+          "format",
+          "test"
+        ],
+        "cwd": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+        "exitCode": 0,
+        "output": "Formatted test/import_pending.dart\nFormatted test/migrated_test.dart\nFormatted test/r37_test.dart\nFormatted test/r38_test.dart\nFormatted test/r40_test.dart\nFormatted test/r41_test.dart\nFormatted test/r42_test.dart\nFormatted 8 files (7 changed) in 0.04 seconds.\n",
+        "fullOutputSha256": "50b17743a7f434f74ab2f423c95a3a73ddeb37d2a371cc11805ff43d508c595c"
+      },
+      {
+        "command": [
+          "dart",
+          "analyze",
+          "test"
+        ],
+        "cwd": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+        "exitCode": 0,
+        "output": "Analyzing test...\nNo issues found!\n",
+        "fullOutputSha256": "102986eb10a6468eb16acb72e6833b549e7ac96079dd3157c1a87f92bce1d267"
+      },
+      {
+        "command": [
+          "dart",
+          "test",
+          "--reporter",
+          "expanded"
+        ],
+        "cwd": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+        "exitCode": 0,
+        "output": "Running build hooks...Running build hooks...00:00 +0: loading test/r42_test.dart\n00:00 +0: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +1: test/r38_test.dart: external named synchronous callback uses public batch API\n00:00 +2: test/r41_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +3: test/r41_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +4: test/r41_test.dart: consumer refreshes selected field without automatic sync or full reads\n00:00 +5: test/r40_test.dart: external model conversion handles absence, null, deletion and failure\n00:00 +6: test/r40_test.dart: external model conversion handles absence, null, deletion and failure\n00:00 +7: test/r40_test.dart: decoder cannot mutate input or hide exception as a successful read\n00:00 +8: test/r37_test.dart: consumer resolves the explicitly expected source tree\n00:00 +9: test/migrated_test.dart: consumer resolves the explicitly expected source tree\n00:00 +10: test/r37_test.dart: R-37 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +11: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +12: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +13: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +14: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +15: test/r37_test.dart: R-37 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +16: test/r37_test.dart: R-37 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +17: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +18: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +19: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +20: test/r37_test.dart: R-37 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +21: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +22: test/r37_test.dart: R-37 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +23: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +24: test/r37_test.dart: R-37 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +25: test/migrated_test.dart: R-39 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +26: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +27: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +28: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +29: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +30: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +31: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +32: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +33: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +34: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +35: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +36: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +37: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +38: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +39: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +40: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +41: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +42: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +43: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +44: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +45: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +46: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +47: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +48: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +49: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +50: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +51: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +52: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +53: test/migrated_test.dart: legacy snapshot wrapper restores through the public engine boundary\n00:00 +54: All tests passed!\n",
+        "fullOutputSha256": "6fbbc750591f327329eed95ef3e7cde39f784bdb25a458031de74860d6ec4afb"
+      },
+      {
+        "command": [
+          "dart",
+          "analyze",
+          "--format",
+          "machine",
+          "removed.dart"
+        ],
+        "cwd": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+        "exitCode": 3,
+        "output": "ERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|3|1|17|Undefined class 'PendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|4|1|23|Undefined class 'MemoryPendingDeltaStore'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_CLASS|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|5|1|9|Undefined class 'Operation'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_FUNCTION|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|6|1|22|The function 'migrateLegacyOperation' isn't defined.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|7|3|3|The method 'set' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|8|3|6|The method 'remove' isn't defined for the type 'Replica'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|9|3|3|The method 'set' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|10|3|6|The method 'remove' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_METHOD|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|11|7|4|The method 'crdt' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|12|21|11|The getter 'crdtChanges' isn't defined for the type 'Delta'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|13|7|11|The getter 'operationId' isn't defined for the type 'OutboxEntry'.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_GETTER|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|14|3|5|The getter 'store' isn't defined for the type 'SyncEngine'.\nERROR|COMPILE_TIME_ERROR|MISSING_REQUIRED_ARGUMENT|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|15|1|10|The named parameter 'storage' is required, but there's no corresponding argument.\nERROR|COMPILE_TIME_ERROR|UNDEFINED_NAMED_PARAMETER|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|16|68|5|The named parameter 'store' isn't defined.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|3|20|12|The value of the local variable 'removedStore' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|4|26|13|The value of the local variable 'removedMemory' isn't used.\nWARNING|STATIC_WARNING|UNUSED_LOCAL_VARIABLE|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/removed.dart|5|12|16|The value of the local variable 'removedOperation' isn't used.\n",
+        "fullOutputSha256": "fa3ad898d748388d45722c732a79bd524fea1c5878376bd4c043b28f5083e6ed"
+      },
+      {
+        "command": [
+          "dart",
+          "analyze",
+          "--format",
+          "machine",
+          "event.dart"
+        ],
+        "cwd": "/tmp/deltasync-val17-hosted-80rkq9xh/consumer",
+        "exitCode": 3,
+        "output": "ERROR|COMPILE_TIME_ERROR|CONST_INITIALIZED_WITH_NON_CONSTANT_VALUE|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/event.dart|2|15|47|Const variables must be initialized with a constant value.\nERROR|COMPILE_TIME_ERROR|CONST_WITH_NON_CONST|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/event.dart|2|15|47|The constructor being called isn't a const constructor.\nERROR|COMPILE_TIME_ERROR|MISSING_REQUIRED_ARGUMENT|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/event.dart|2|15|15|The named parameter 'addresses' is required, but there's no corresponding argument.\nERROR|COMPILE_TIME_ERROR|NON_ABSTRACT_CLASS_INHERITS_ABSTRACT_MEMBER|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/event.dart|3|7|8|Missing concrete implementation of 'getter SyncCommitEvent.addresses'.\nERROR|COMPILE_TIME_ERROR|INVALID_OVERRIDE|/tmp/deltasync-val17-hosted-80rkq9xh/consumer/event.dart|7|16|17|'OldReplica.mergeSnapshotJson' ('void Function(Map<String, Object?>)') isn't a valid override of 'Replica.mergeSnapshotJson' ('Set<String> Function(Map<String, Object?>)').\n",
+        "fullOutputSha256": "ca21a529374dfc19f4ddd79b94d51b29d6eb0d58679d6a61fe4e9af78c5c8478"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_core",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 34 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "c0e7d40c049da6992d867f4d7ec30688c2f3dbc571c37f906af6f4499ce3b4eb"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_storage",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 6 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "ecf36b38f0f4ce7a9ea7888abfd63f4bcb50b7c0ae8157496ac55129975f773d"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_transport",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 4 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "f9bf74d732f61d83ff9ce118a4149273e762ba01b70da6249f5a9a4c420dd2fe"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_sync",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 13 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "b3e015cd6e3a398daece34b106f9ffbbfeff27677e32ac655cde44d3d7fb5485"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_storage_testing",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 5 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "8077e0dd90b10bbce7b35ade7d7c9f8aa51193243e3aecd6687a09b8707268ca"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync_storage_sqflite",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 6 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "c5adc81fa85a297d3f4b94650918eced3b09194042a733f0d8c8866a4a7132ea"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "publish",
+          "--dry-run"
+        ],
+        "cwd": "/tmp/deltasync-release-parent-dkj7k781/release/deltasync",
+        "exitCode": 0,
+        "output": "Total compressed archive size: 7 KB.\nValidating package...\nThe server may enforce additional checks.\n\nPackage has 0 warnings.",
+        "fullOutputSha256": "b688629d87765ba87f99d2176ad90f4cc0744a73305f428201c284cb75b5a623"
+      }
+    ],
+    "fullReportSha256": "59c1780e713e424bd65de23c7d03d373814a1bb116eae68fbebd1649832c90d2",
+    "inventory": {
+      "deltasync_core": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "304058b2b23f8b318e485fb7f531eaffb51f26bb1b16feff7e36f3be105ff056",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "fc5da19fb29929b059dd7d0de78794f462eb5bb5a5b1e7a98a8b7a5758e85df9",
+        "lib/deltasync_core.dart": "b4e2997ac38a7cd15b5c299fe849703b022afb1e33aca285de99593c1a2f64a0",
+        "lib/src/causal/dot_context.dart": "6e23716cdfcf5f9fc8fb9f61be3bb98b2bcb2e24bd51cd33397d2f6a144155cf",
+        "lib/src/crdt.dart": "6ec10262a706923d6a8d5606a4d25777ed4e83d87c335d8e8265a4a5f9612be0",
+        "lib/src/delta.dart": "c8b1a9551645156a6170425c1bdc33c4ed73aa09272b28b970c1ecda13c0863a",
+        "lib/src/delta_change.dart": "7b51d1969a1840c476474c79d4256ee4a9eda050778eeb55cd31e1aa77c4043e",
+        "lib/src/delta_codec.dart": "5b5a5b89e3f2f0de3ad4b8e9c95fb0f51341cba645a80752efaf053a3d08d5f6",
+        "lib/src/g_counter.dart": "5def29fa2dbe1d36c5ebbcb152f1bfcb86d327236ade44dd6b22e6a706f0e5e1",
+        "lib/src/g_set.dart": "333695d6e2af26f01392ac0a677621cd6ea6abf02678a7264c66877d258c7e80",
+        "lib/src/hlc.dart": "449f0d89cd3fc99bc7e6854edc9a614a1163e8794adaca85d35ed537547e50a9",
+        "lib/src/identity.dart": "41af4e7bb97c9f1698a3359103634ec46163cc607f658b5320ddf29cfe39ef11",
+        "lib/src/json/value.dart": "f9b92fe4b544e3c94b0fe25f43095f4a89e923c9fbb97adaf773baf596444c5e",
+        "lib/src/json_set_value.dart": "44164ec68da45d049746ce209f2ef62bafeae28478b0417c246ef107b236410c",
+        "lib/src/json_value.dart": "34177ce6152079cda4dae2cdc6ecf5853127e08a9c2f8b996ce3436bc5bbac5f",
+        "lib/src/lww_delta.dart": "cb2293fa629270ad6716300d69c638085574adc827b4f2460ce69ca32046a908",
+        "lib/src/lww_register.dart": "1b2c1f9eabbaa2be47fa131902fbc47760a795202cff399452fdf49b46067155",
+        "lib/src/mv_register.dart": "7ebe805e81cc31b0224c5e5a54ce3e369994218a8d4a8a4026341f272ecb57e8",
+        "lib/src/operation.dart": "1ef95c3ae83bb6211d98a11e56502b9d5695c4fb735b53ec83ea7bd60ca52210",
+        "lib/src/or_map.dart": "f748c81983bd70dca946f9aa1d78f17285ca77a27e851a514aff69e8c69a477a",
+        "lib/src/or_set.dart": "72716c19fc38c38fd9d8632d4c8638367a629b8ee64afc92fea5e61740468449",
+        "lib/src/pn_counter.dart": "324224fb5d5a4c02807e5c8655db217bdaed2a1ccb6446906c98ff5b0f72cbe0",
+        "lib/src/replica/contents.dart": "86ef2d4b0c8e1be21529e45ae0e24930dde181274a7971a5f4af1fe6dbb17f9f",
+        "lib/src/replica/delta_validation.dart": "e1a959c8e653ac36d62ce1fcddd7981b645ee6e52dae2642e06741accf8c706a",
+        "lib/src/replica/field_query.dart": "0ec5e467efe1eeefe019725698c352c42df5244f660dcc8bada1a0a81b995ac5",
+        "lib/src/replica/snapshot_codec.dart": "2c56d9c43aadafa448ef9843783191ea536527300ba94fb52c720f24679c4e56",
+        "lib/src/replica.dart": "a615b0a1ef071d9a4beef283d6fd213604f87a76b2289e4180af69946d86d136",
+        "lib/src/replica_state.dart": "7375f9e8b82cbc0c222b2f5b4a221b5a30a894831bf33866baa2a6a30e9f3a59",
+        "lib/src/two_p_set.dart": "336c0865a96adbd6d64a934da7abcdd497ef770ab0a3ade81919ff911b9d769d",
+        "lib/src/vector_clock.dart": "f962fb9a585a65641ce659b6e876b2f2e2fdd335e54eae54ff5cf36186da60df",
+        "pubspec.yaml": "bad4d5709fbf7597890204d8b70497b0656a07caf20afa7edc7b095d1a09226d"
+      },
+      "deltasync_storage": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "d1cf88c6a5a714283641c5a6d38c98edec7435c5401d4593f0485650d7d4d89e",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "ef417a2c58b8b3610592dae73f0b6cbde8f97ca1254df18359fa8e6f252363dd",
+        "lib/deltasync_storage.dart": "1cb31651ad6f138b14c05ebf740d309dcbd77ace4578b70ed167c18e4b3fa998",
+        "lib/src/memory_storage.dart": "94a48bf649045507028b3ab8ccc95cc9084f48d0f0357caaeec4d2506333c66b",
+        "lib/src/replica_storage.dart": "741e31a6efb0bf263a88f34b53e53dd81791182cc18eddeb1f72ebb3fc17214d",
+        "lib/src/replica_storage_contract.dart": "4de49a7460fa5f11f2b2ed351b3e6830faa1bd62fce377bfda87db0af4aca13f",
+        "pubspec.yaml": "55be3c911ae493d7fa0b0e5bc50f7850965ddae234e5a413b7f3173b84a3fdad"
+      },
+      "deltasync_transport": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "d3ecd9a9a823487d804751ed8ae77500e4f11796450dfb0f4aa6626e2cf47c35",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "17e74852f62cd6110f5d767b176f59171b5890b3b3e5bc0eb45e156c8f239230",
+        "lib/deltasync_transport.dart": "de582ba3467e8ba96fa62a56d9a1efa13919f598dfe02921c1efc0b3875bff34",
+        "lib/src/delta_acknowledgement.dart": "d4fbf6f1890545558f00b8b495ac3dc4890673d78f1688dd5aa3ac9205acc4da",
+        "lib/src/delta_envelope.dart": "8708141d9c3de24dec8e257f30ac8031088c92b8df32b7aa5e8a800a1a960c79",
+        "lib/src/delta_transport.dart": "92d696d5c10afaa510e1c297cba426b5f6c401f717f71d51755599060f90fb81",
+        "pubspec.yaml": "0539c7266c37b205f78e879fef234e71e4c5ba4769f15c07a5fa766aa0df259d"
+      },
+      "deltasync_sync": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "464cda115fb3440833eb8ff9738c25f6f2013941049d7041055e3daa788cb1a4",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "6e7311d6eb4cf11223416e24fe02a8730d607bf55095967cad9fb723beb1816c",
+        "lib/deltasync_sync.dart": "efa205d7d832d944a177177fbd14884bc232c56b412367be09c5f7ccf0d782ae",
+        "lib/src/sync/local_batch.dart": "4d11d263e5ed385b19794480c2a3d6f80db3a99cd548f52e54f6d98892708326",
+        "lib/src/sync/outbound_sync.dart": "ff6451a8fdffc4985ced4ee1b3525a7bfaa2ca345894becb5a3ae225a65e156b",
+        "lib/src/sync/replica_persistence.dart": "8131287133ab70ff4b00a30fab832802f3a9a365b1fe309bb0bbf3ac535914f9",
+        "lib/src/sync/serial_commit_queue.dart": "8641ff099f3bb6ce9569327c6cd13d330aac8f98e8da005f55ef9eb2bfde9e1e",
+        "lib/src/sync_engine.dart": "43ae60849cb0abecf3a9cc72c99cd88e466af60237f76cdae4771f4559b29c66",
+        "lib/src/sync_types.dart": "9fa0a605e6bac6902117ae6377f04a7eb065c3f28cf11250161e42f0f2634541",
+        "pubspec.yaml": "dd1b6f1ae8af925ca46a59fc26880fd226635c4fdbbfa977035671705e716c69"
+      },
+      "deltasync_storage_testing": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "918f452298ed76b1328c6c544bbd59c6f7ebd03545557516220395e053de8ef8",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "808f23a6da67356e030c1c5cabc51515b72ef5e62629198517268a22932ff713",
+        "lib/deltasync_storage_testing.dart": "37da536fbf79c6ef2abcc986f1b900c119d7446b85bfb3ba0dbb35f9003109b9",
+        "lib/src/replica_storage_contract.dart": "28ba5dcf199bbbfb817322a4c2bc218df5b5a25b157cfc3af9933e0875bbefde",
+        "pubspec.yaml": "462bd8a00943d0d769dfc2ca7e630e5d03b00e660c0a6bf68708b6ba54ce7451"
+      },
+      "deltasync_storage_sqflite": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "82b643aa82209c9750df59deeaa02b137ea31d036fd4db53e6dbf0d3722346b4",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "326b622ac690da699ae25acfb6ee70135c049402eb1aca11178dc8c2345574d9",
+        "lib/deltasync_storage_sqflite.dart": "fc666cd59c25cf9b5e000397720efd4af48ac025f783f624581eca935072aff4",
+        "lib/src/sqflite_replica_storage.dart": "abc4df6c7b942c1232cb925d285bb00f7ea5d994cca2b5bb60564c67d7557309",
+        "pubspec.yaml": "f71f6be568854ad3224992c33d796c99db636b05fe9b3de5c4a29510a8a3ef1c"
+      },
+      "deltasync": {
+        ".pubignore": "c2407a36ca3877fcbcacbb61e77cf96f9f0af42c71b5aee107b509073eafea9e",
+        "CHANGELOG.md": "879d7c9c4fa5b932e7995ccc5974663cd593ecfed65d6587cab98f85d8a08ed8",
+        "LICENSE": "f3114466b003e92946e2f1818dec05e5cc89d703520aa968fb13ce8b1f9ed92d",
+        "README.md": "797c3dd409e4b7779c9681551a5abb60717300ce0701db0923ebf2ed842b580f",
+        "analysis_options.yaml": "beef090960be900a15bdee2adc29f22159414a0179eac785948c52ae0135a96d",
+        "example/deltasync_example.dart": "997fee715bd03db6804eee2cbc0afdccacccbf4dcc3265937f2780218c587f58",
+        "lib/deltasync.dart": "bfaeab7bb63a8fa7a06094b5617b7f4f9e22d4bd4a7e06bd224c6dc67ecd475a",
+        "pubspec.yaml": "f2f13bdedc3495ddb7a2f095579d7d256742a896a014e4d34a518f78bf8e9c60"
+      }
+    },
+    "changedPreparedFiles": [
+      "deltasync_core/CHANGELOG.md",
+      "deltasync_core/lib/src/operation.dart",
+      "deltasync_sync/lib/src/sync_types.dart"
+    ]
+  },
+  "review": {
+    "sameAgent": true,
+    "independent": false,
+    "status": "approved",
+    "correction": "Formatter initially ran with repository-relative paths from package cwd; rerun at repository root. Final format gate passed.",
+    "remainingBlockingFindings": []
+  },
+  "finalChecks": {
+    "commands": ["python3 -B scripts/check_plan.py", "git diff --check"],
+    "exitCodes": [0, 0],
+    "tasks": 71,
+    "localLinks": 590,
+    "ready": [],
+    "historicalEvidenceAndCandidateHashes": "passed",
+    "newFileJsonAndWhitespace": "passed"
+  },
+  "limitations": [
+    "No new Android/Flutter build: no reader, pipeline, lifecycle, adapter or app logic changed",
+    "VAL-17 native runtime remains historical evidence; not claimed as a new run",
+    "No new OSV query, Saropa pilot, remote CI, SDK 3.13.0/3.12 or iOS run",
+    "No publishing, commits, tags, merges, pushes, cache deletion or historical evidence modification"
+  ]
+}

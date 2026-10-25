@@ -32,26 +32,6 @@ class Operation {
   final VectorClock vectorClock;
   final Map<String, Object?> payload;
 
-  Map<String, Object?> toJson() => {
-    'id': id,
-    'replicaId': replicaId,
-    'type': type,
-    'vectorClock': vectorClock.toJson(),
-    'payload': payload,
-  };
-
-  @override
-  bool operator ==(Object other) =>
-      other is Operation &&
-      other.id == id &&
-      other.replicaId == replicaId &&
-      other.type == type &&
-      other.vectorClock == vectorClock &&
-      _mapsEqual(other.payload, payload);
-
-  @override
-  int get hashCode => Object.hash(id, replicaId, type, vectorClock);
-
   static String _requiredString(Map<String, Object?> json, String key) {
     final value = json[key];
     if (value is! String || value.isEmpty) {
@@ -66,19 +46,6 @@ class Operation {
       if (entryKey is! String) throw FormatException('Invalid $key key');
       return MapEntry(entryKey, entryValue);
     });
-  }
-
-  static bool _mapsEqual(
-    Map<String, Object?> first,
-    Map<String, Object?> second,
-  ) {
-    if (first.length != second.length) return false;
-    for (final entry in first.entries) {
-      if (!second.containsKey(entry.key) || second[entry.key] != entry.value) {
-        return false;
-      }
-    }
-    return true;
   }
 }
 

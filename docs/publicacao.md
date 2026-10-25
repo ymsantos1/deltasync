@@ -65,6 +65,9 @@ constraints para fazer o dry-run passar com uma versão 1.0.0 incompatível.
 VAL-17 consumiu os sete artefatos 1.0.1 em registro local somente leitura,
 sem paths/overrides, e aprovou os sete dry-runs. Veja os
 [candidatos, hashes e limites](../plan/evidence/val17/README.md).
+Após o gate, a limpeza autorizada R-43 preparou e revalidou
+[novos candidatos da fonte limpa](../plan/evidence/r43/README.md#candidatos-atuais-e-publicação).
+Use esses candidatos atuais para envio; os diretórios de VAL-17 são históricos.
 R-28 permanece evidência histórica de uma preparação anterior. A prova
 local não representa instalação/publicação do pub.dev. Após publicar cada dependência,
 repita a resolução/dry-run do próximo pacote usando o registro público padrão.

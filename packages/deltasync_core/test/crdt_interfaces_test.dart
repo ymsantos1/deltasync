@@ -607,16 +607,20 @@ void main() {
     expect(second.compare(concurrent), ClockRelation.concurrent);
   });
 
-  test('Operation round trips through JSON shape', () {
-    final operation = Operation(
-      id: 'device-a:1',
-      replicaId: 'device-a',
-      type: 'register.set',
-      vectorClock: VectorClock().tick('device-a'),
-      payload: {'field': 'title', 'value': 'draft'},
-    );
+  test('legacy operation reader decodes historical JSON fields', () {
+    final operation = Operation.fromJson({
+      'id': 'device-a:1',
+      'replicaId': 'device-a',
+      'type': 'lww.set',
+      'vectorClock': {'device-a': 1},
+      'payload': {'key': 'title', 'value': 'draft'},
+    });
 
-    expect(Operation.fromJson(operation.toJson()), operation);
+    expect(operation.id, 'device-a:1');
+    expect(operation.replicaId, 'device-a');
+    expect(operation.type, 'lww.set');
+    expect(operation.vectorClock.entries, {'device-a': 1});
+    expect(operation.payload, {'key': 'title', 'value': 'draft'});
   });
 
   test('LwwRegister keeps delete as tombstone', () {
@@ -649,27 +653,27 @@ void main() {
   });
 
   test('legacy LWW codec migration preserves total old ordering', () {
-    final z = Operation(
-      id: 'z:1',
-      replicaId: 'z',
-      type: 'lww.set',
-      vectorClock: VectorClock({'z': 1}),
-      payload: {'key': 'title', 'value': 'z'},
-    );
-    final a = Operation(
-      id: 'a:1',
-      replicaId: 'a',
-      type: 'lww.set',
-      vectorClock: VectorClock({'z': 1, 'a': 1}),
-      payload: {'key': 'title', 'value': 'a'},
-    );
-    final m = Operation(
-      id: 'm:1',
-      replicaId: 'm',
-      type: 'lww.set',
-      vectorClock: VectorClock({'m': 1}),
-      payload: {'key': 'title', 'value': 'm'},
-    );
+    final z = {
+      'id': 'z:1',
+      'replicaId': 'z',
+      'type': 'lww.set',
+      'vectorClock': {'z': 1},
+      'payload': {'key': 'title', 'value': 'z'},
+    };
+    final a = {
+      'id': 'a:1',
+      'replicaId': 'a',
+      'type': 'lww.set',
+      'vectorClock': {'z': 1, 'a': 1},
+      'payload': {'key': 'title', 'value': 'a'},
+    };
+    final m = {
+      'id': 'm:1',
+      'replicaId': 'm',
+      'type': 'lww.set',
+      'vectorClock': {'m': 1},
+      'payload': {'key': 'title', 'value': 'm'},
+    };
     final orders = [
       [z, a, m],
       [z, m, a],
@@ -682,17 +686,23 @@ void main() {
     for (final order in orders) {
       final migrated = DeltaCodec.decode({
         'version': 2,
-        'delta': {
-          'operations': [for (final operation in order) operation.toJson()],
-          'crdtChanges': [],
-        },
+        'delta': {'operations': order, 'crdtChanges': []},
       });
       final replica = Replica('receiver')..apply(migrated);
       expect(replica.state.values['title'], 'a');
     }
-    expect(migrateLegacyOperation(z).timestamp, HlcTimestamp(1, 0));
-    expect(migrateLegacyOperation(a).timestamp, HlcTimestamp(2, 0));
-    expect(migrateLegacyOperation(m).timestamp, HlcTimestamp(1, 0));
+    expect(
+      migrateLegacyOperation(Operation.fromJson(z)).timestamp,
+      HlcTimestamp(1, 0),
+    );
+    expect(
+      migrateLegacyOperation(Operation.fromJson(a)).timestamp,
+      HlcTimestamp(2, 0),
+    );
+    expect(
+      migrateLegacyOperation(Operation.fromJson(m)).timestamp,
+      HlcTimestamp(1, 0),
+    );
   });
 
   test('LWW state converges when concurrent operations arrive reordered', () {
@@ -898,13 +908,13 @@ void main() {
 
   test('legacy snapshot winner migrates once to native snapshot shape', () {
     const legacyClock = 7000000000000000;
-    final operation = Operation(
-      id: 'legacy:7',
-      replicaId: 'legacy',
-      type: 'lww.set',
-      vectorClock: VectorClock({'legacy': legacyClock}),
-      payload: {'key': 'title', 'value': 'value'},
-    );
+    final operation = {
+      'id': 'legacy:7',
+      'replicaId': 'legacy',
+      'type': 'lww.set',
+      'vectorClock': {'legacy': legacyClock},
+      'payload': {'key': 'title', 'value': 'value'},
+    };
     final replica = Replica.fromSnapshotJson({
       'version': 1,
       'replicaId': 'legacy',
@@ -913,7 +923,7 @@ void main() {
       'operationSequence': 7,
       'deltaSequence': 0,
       'lww': {
-        'title': {'legacyWinner': operation.toJson()},
+        'title': {'legacyWinner': operation},
       },
       'gCounters': <String, Object?>{},
       'pnCounters': <String, Object?>{},
@@ -921,7 +931,9 @@ void main() {
 
     expect(replica.state.values, {'title': 'value'});
     expect(replica.toSnapshotJson()['version'], 9);
-    final migratedTimestamp = migrateLegacyOperation(operation).timestamp;
+    final migratedTimestamp = migrateLegacyOperation(
+      Operation.fromJson(operation),
+    ).timestamp;
     expect(
       replica.setDelta('title', 'new').timestamp.compareTo(migratedTimestamp),
       greaterThan(0),

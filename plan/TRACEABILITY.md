@@ -6102,3 +6102,39 @@ JSON/Python AST/whitespace dos nove arquivos novos aprovados; 48 hashes de lib,
 94 arquivos de evidência histórica, scripts dos harnesses, candidatos e HEAD
 conferidos. Revisão final documental sem impeditivos; nenhum produto mudou
 após os jobs e o roteiro aprovados.
+
+<a id="execucao-r-43-2026-10-25"></a>
+
+## Execução R-43 — Limpeza de auxiliares legados, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa após commit do gate anterior; pedido novo autoriza limpeza de código sem uso, não exclusão de evidências/caches/arquivos auxiliares. Lidos os cinco procedimentos, executor, safe-refactor, AGENTS/RUNBOOK, plano/riscos e referência Dart sobre SDK/modificadores. Inspeção de todas as referências identifica writer toJson/igualdade/hashCode/_mapsEqual de Operation somente em testes; fromJson/conversão continuam necessários nos readers DeltaCodec/ReplicaState. Supressão em sync_types não tem uso depreciado; outras supressões continuam necessárias. R-43 registra o pedido adicional sem reescrever evidências VAL-17. Baseline do arquivo core afetado: 48 testes aprovados em Dart 3.13.5.
+Implementação: removidos encoder legado interno, igualdade/hash e auxiliar de comparação; parser/validações/construtor/conversão para delta preservados. Testes usam JSON literal para leitura, seis ordens e snapshot histórico, sem depender do writer que verificavam. Removida supressão sem uso em sync_types e corrigida orientação de ACK após remoção do storage legado. Sem APIs públicas, schemas, dependências ou SDK novos. Os 48 testes passam após edição; formatter inicial recebeu caminho relativo ao diretório errado, refeita execução na raiz e três arquivos conferidos.
+Review: aprovado
+Achados: revisão própria distinta, não independente. Confirmado uso dos métodos retirados apenas nos testes; igualdade de Operation não participa de collections/deduplicação/joins. Constructor/fromJson/validações e conversão têm texto idêntico, assim como DeltaCodec/ReplicaState/exports. JSON literal evita validar reader com seu próprio encoder. Permanecem seis ordens, clocks, tombstone e nova mutação após snapshot antigo. Corrigido somente o caminho do formatter; delta formatado revisto. Nenhuma supressão necessária foi retirada; sem impeditivos restantes.
+Validação: aprovada
+Comandos: dart --version; dart test test/crdt_interfaces_test.dart --reporter expanded no core antes/depois; dart format nos três arquivos editados. Na raiz e seis subpacotes: dart format --output=none --set-exit-if-changed lib test, dart analyze, dart test --reporter expanded. python3 -B scripts/prepare_release.py; python3 -B plan/evidence/val17/validate_artifacts.py --release /tmp/deltasync-release-parent-dkj7k781/release --report /tmp/deltasync-r43-artifacts.json. dart pub deps --json registra resolução usada. Conferência textual compara parser/validações/conversão/readers/exports com HEAD, além de hashes de 103 evidências anteriores e dos candidatos/cache instalado; comandos/saídas/hashes/inventário em evidence/r43/validation.json. Checker/diff executados após manutenção.
+Resultados: 48 testes do arquivo afetado antes/depois, incluídos nos 134 do core. Sete pacotes com formato/análise e 312 testes aprovados (21/134/83/14/40/10/10), incluindo histórias de oito tipos, falhas/concorrência e recuperação SQLite. Consumidor hosted novo: 54 testes, análise, trecho importPending e probes negativos das 14 remoções/evento/override aprovados; todos usam os candidatos posteriores à limpeza, sem paths/overrides. Sete dry-runs exit 0/zero warnings; 85 arquivos/48 fontes de lib conferidos. Comparação com inventário VAL-17 muda somente core/operation.dart, core/CHANGELOG e sync/sync_types.dart. Nenhum método retirado pertence aos exports suportados. Parser e conversão conservam texto exato, readers e app/pipeline/lifecycle intactos.
+Critérios: C1 por busca de referências, remoções locais e comparação textual de leitor/conversão/export, preservando dados/SDK; C2 por prova antes/depois e JSON literal, seis ordens, snapshot antigo/nova edição e matriz geral de falhas/SQLite mais consumidor hosted; C3 por sete candidatos novos, hashes/instalação/dry-runs e manutenção do plano/risco/documentação. A dispensa de novo Android é proporcional: não houve mudança executada pelo fluxo de leitura/commit/lifecycle; o runtime de VAL-17 permanece evidência histórica, sem ser reapresentado como atual.
+Manutenção: três critérios marcados; R-43/fase 6 concluídas e índice sem tarefa ativa/próxima. Pedido extra registrado no mesmo plano, dependente do gate anterior, sem alterar evidências históricas. RISK-26/36 e roteiro de publicação indicam a compatibilidade preservada e os candidatos atuais. Nenhuma decisão nova de arquitetura/API; DEC-60/70 mantidas. Novo inventário prepara /tmp/deltasync-release-parent-dkj7k781/release; publicação permanece com o autor.
+Limitações: Dart 3.13.5/Linux x64 com resolução local existente no workspace e cache novo no consumidor hosted. Sem nova consulta OSV, piloto Saropa, CI remota, runtime/build Flutter/Android/iOS ou SDK 3.13.0/3.12. Não se afirma prova física atual nem publicação/instalação pública; cópias nativas de VAL-17 e candidatos anteriores são históricos. Usos externos de src não são contratos suportados; nenhuma API exportada foi removida. Não houve exclusão de arquivos/caches/evidências, commit, tag, merge, push ou upload.
+
+### Prova e distribuição após limpeza
+
+[Relatório](evidence/r43/README.md) e [validação/inventário](evidence/r43/validation.json)
+documentam a limpeza e os novos candidatos. O parser legado continua com dono
+localizável: Operation lê/valida o DTO; migrateLegacyOperation o converte;
+DeltaCodec e snapshot restoration escolhem os readers históricos já suportados.
+O caminho de escrita continua nativo. DTO interno não precisa de writer/igualdade
+para cumprir esse contrato; os testes recebem registros anteriores explícitos.
+
+Revisão final incluiu changelog, diff formatado, documentação e evidências novas,
+sem achados impeditivos. Nenhuma mudança de fonte ocorreu depois da matriz
+aprovada. Os scripts históricos de VAL-17 foram reutilizados intactos e não
+foram renumerados nem refatorados para esta limpeza.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 71 tarefas e 590
+links locais, sem próxima pronta; `git diff --check` passou. Conferidos JSON,
+whitespace novo, hashes das fontes/testes finais, 103 evidências anteriores e
+85 arquivos preparados. HEAD preservado, sem commit ou publicação automática.

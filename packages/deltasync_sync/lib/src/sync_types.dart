@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:deltasync_core/deltasync_core.dart';
 import 'package:deltasync_storage/deltasync_storage.dart';
 import 'package:deltasync_transport/deltasync_transport.dart';
@@ -55,8 +53,8 @@ class SyncFailure extends SyncObservation {
 }
 
 /// Result of one push attempt. A null [acknowledgement] means only local send
-/// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage
-/// retains changes even when remote ACK is received.
+/// completed; received ACKs do not populate [acknowledgedIds]. Only durable
+/// acknowledgements remove changes from the recipient's outbox.
 class SyncPushResult extends SyncObservation {
   SyncPushResult({
     required this.sent,

@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: concluída em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-35/R-36/R-37/R-38/R-39/R-40/R-41/R-42 e VAL-17 concluídas.
-Gate completo aprovado, com sete candidatos preparados; publicação manual permanece com o autor.
+Estado: concluída em 2026-10-25, incluindo limpeza R-43 autorizada após VAL-17.
+R-30 a R-43 e o gate histórico VAL-17 concluídos; candidatos posteriores à limpeza revalidados.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -13,7 +13,7 @@ Entrada: R-29 concluída no histórico 1.0.0. Após recuperação do stash, a br
 1e969182e8e172a8858a48ecf83a1feb2c21a455 antes de editar. O alvo permanece 1.0.1;
 esta resolução não renumera pacotes. Baseline e limites da análise estão na
 [rastreabilidade](TRACEABILITY.md#planejamento-1-0-1-2026-10-24).
-Saída: VAL-17 concluída e sete artefatos 1.0.1 preparados, sem publicação.
+Saída: VAL-17 e limpeza R-43 concluídas, com sete artefatos 1.0.1 revalidados, sem publicação.
 
 ## Escopo, versões e prioridade
 
@@ -607,6 +607,38 @@ Evidência de conclusão: [execução R-42](TRACEABILITY.md#execucao-r-42-2026-1
 [consumidor/inventários](evidence/r42/consumer-validation.json). 291 testes em
 sete pacotes, dois testes externos e exemplo aprovados; revisão própria após
 correções, sem revisão independente. R-40 pronta; fase 6/VAL-17 continuam abertos.
+
+<a id="r-43"></a>
+
+## R-43 — Limpar auxiliares legados sem uso operacional
+
+Status: concluída
+MoSCoW: SHOULD
+Dependências: VAL-17
+
+Pedido posterior do autor: remover código legado não utilizado, preservando os
+readers e dados suportados. Limpeza localizada, sem nova API ou refatoração geral.
+
+Critérios:
+
+- [x] Conferir referências e retirar somente encoder/igualdade auxiliares da
+  Operation interna usados apenas pelos testes, além de supressão e orientação
+  de sync obsoletas. Preservar parser, validação, migração e formatos públicos.
+- [x] Trocar testes de escrita legada por entradas JSON explícitas, mantendo
+  leitura, seis ordens de migração LWW, tombstone e próxima mutação após restore.
+  Revisar e executar formato/análise/testes do workspace e consumidor pertinente.
+- [x] Preparar/revalidar sete candidatos posteriores à limpeza, sem substituir
+  evidências históricas, e atualizar alcance do gate/documentação/checker/diff.
+  Sem publicação, commit ou remoção de caches/evidências fora deste pedido.
+
+Validação: provas antes/depois do core, suíte atual dos sete pacotes, consumidor
+hosted e dry-runs; dispensa novo Android somente se reader/runtime forem intactos.
+Resultado: auxiliares de Operation e supressão sem uso removidos; leitura e
+conversão idênticas. 48 testes antes/depois, 312 no workspace, 54 hosted e sete
+dry-runs aprovados; três arquivos preparados mudaram. Review próprio aprovado.
+Sem runtime nativo novo, pois lógica de leitura/commit/lifecycle não mudou.
+Evidência de conclusão: [execução R-43](TRACEABILITY.md#execucao-r-43-2026-10-25)
+e [fontes, provas e novos candidatos](evidence/r43/README.md).
 
 ## Gate da fase
 
