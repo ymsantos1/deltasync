@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "checks": 474,
+  "checksSummary": [
+    "32 metrics, 116 source hashes, 166 diagnostic coordinates and 19 rule counters",
+    "raw logs match SHA256; both diagnostic passes match; no partial-scan markers",
+    "version snapshots, native isolation, Python AST and new file whitespace",
+    "HEAD/manifests/configuration/product and historical evidence unchanged"
+  ],
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "scripts/check_plan.py"
+      ],
+      "exitCode": 0,
+      "stdout": "Plano consistente: 70 tarefas, 554 links locais. Prontas: R-35.\nChecagem estrutural; qualidade das evid\u00eancias e testes exigem valida\u00e7\u00e3o do agente.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "artifactsSha256": {
+    "pilot.json": "d7262beebe63ce98e47c50493327af640b6e0afd951b1341f78abbda8f8187a4",
+    "metrics.json": "af0bdf5254e261743039fa2172386bfa33af662d579bfae753bc0ac1e04fd977",
+    "diagnostics.json": "f27c4d9d3c97661667a92606d8ab980beb3f8994ac75c4bd679fdf843e816216",
+    "inventory.json": "def259a5708368ee468a854e4192401fedc992ab1d2e8ad01369d74433aee145",
+    "resolutions.json": "a763bdb577bf13235753ed04253f2a61b63146fde350f0581c2c351cdf188950",
+    "logs.txt": "845875f79dca24c89c49c686697a2acafaf90e536e7ff05ceec576f668cdd725",
+    "measure.py.txt": "f39510b0afd31653c0647bc41466e59dda80cc9a7452c4f9dfafb18b495862bc",
+    "probe.dart.txt": "fcc44a0f992a46fcd0417b7908db3a03dd69801b3c1d13f62f7a30c26a623e81",
+    "runner.pubspec.yaml.txt": "898cf4bb16fa40d1c05f699801893690bd5df33f64e90202ced0ad2c37dff4d8",
+    "exact.pubspec.yaml.txt": "9a3392b4823b368de4ea29ef07c553e709284205d031581a7466bad76794bf05",
+    "flexible.pubspec.yaml.txt": "1dded2ef6e776da200abd36ad9f0c3617b79a07d0eb4913bc9198d191f944538",
+    "fixture.pubspec.yaml.txt": "f9ef420f954df0899fe1d579dd86815a1678cac2f00f49153805a0282c8c0041",
+    "README.md": "e2bdbd55f18d19b983421e87e6415267a562e79e9d859fcb32f1f2bd1696e21e",
+    "validate.py.txt": "88f6f77a68d3e36f6d6cdf8ec11862d30b06a05190c0b9c5cffe64e5eedd0ff3"
+  }
+}

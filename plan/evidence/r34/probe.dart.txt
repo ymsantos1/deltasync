@@ -1,0 +1,24 @@
+import 'dart:async';
+
+// Deliberate defects in a disposable fixture; never execute this code.
+Stream<int> leakedController() {
+  final controller = StreamController<int>();
+  controller.add(1);
+  return controller.stream;
+}
+
+void lostTrace() {
+  try {
+    throw const FormatException('probe');
+  } catch (error) {
+    throw error;
+  }
+}
+
+void swallowedError() {
+  try {
+    throw const FormatException('probe');
+  } catch (_) {}
+}
+
+Map<String, int> duplicateKeys() => {'a': 1, 'a': 2};

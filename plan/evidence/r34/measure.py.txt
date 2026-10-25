@@ -1,0 +1,52 @@
+"""One-off R-34 measurement. Run only against the disposable checkout."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import time
+
+paths = json.loads(Path('/tmp/deltasync-r34-paths.json').read_text())
+root, runner = Path(paths['pilot']), Path(paths['runner'])
+output = Path('/tmp/deltasync-r34-results')
+output.mkdir(exist_ok=True)
+env = dict(os.environ, PUB_CACHE=paths['pubCache'])
+packages = ['.', *['packages/' + p for p in (
+    'deltasync_core', 'deltasync_sync', 'deltasync_storage',
+    'deltasync_storage_sqflite', 'deltasync_storage_testing',
+    'deltasync_transport')], 'example/flutter_mobile']
+tracked = subprocess.check_output(['git', 'ls-files', '*.dart'], cwd=root, text=True).splitlines()
+records = []
+inventory = {}
+for package in packages:
+    directory = root / package
+    files = [str(root / f) for f in tracked if
+             (not f.startswith(('packages/', 'example/flutter_mobile/')) if package == '.'
+              else f.startswith(package + '/'))]
+    inventory[package] = files
+    for mode in ('baseline', 'saropa'):
+        for repeat in range(2):
+            label = package.replace('/', '_').replace('.', 'root') + f'-{mode}-{repeat+1}'
+            command = (['flutter', 'analyze', '--no-pub'] if package == 'example/flutter_mobile'
+                       else ['dart', 'analyze']) if mode == 'baseline' else [
+                           'dart', 'run', 'saropa_lints:scan', str(directory),
+                           '--tier', 'essential', '--resolve', '--format', 'json',
+                           '--files-from-stdin']
+            started = time.monotonic()
+            file_list = output / (label + '.files')
+            file_list.write_text('\n'.join(files) + '\n')
+            with file_list.open() as stdin, (output / (label + '.stdout')).open('w') as stdout, (output / (label + '.stderr')).open('w') as stderr:
+                process = subprocess.Popen(command,
+                    cwd=directory if mode == 'baseline' else runner,
+                    env=env, stdin=stdin if mode == 'saropa' else subprocess.DEVNULL,
+                    text=True, stdout=stdout, stderr=stderr)
+                _, status, usage = os.wait4(process.pid, 0)
+                process.returncode = os.waitstatus_to_exitcode(status)
+            record = dict(package=package, mode=mode, repeat=repeat+1,
+                          command=command, exitCode=process.returncode,
+                          elapsedSeconds=round(time.monotonic()-started, 3), userSeconds=round(usage.ru_utime, 3),
+                          systemSeconds=round(usage.ru_stime, 3), peakRssKiB=usage.ru_maxrss,
+                          log=label, fileCount=len(files))
+            records.append(record)
+            (output / 'metrics.json').write_text(json.dumps(records, indent=2) + '\n')
+            print(json.dumps(record), flush=True)
+(output / 'inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')

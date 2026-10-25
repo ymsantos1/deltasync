@@ -5917,3 +5917,52 @@ oito manifests com alteração somente de SDK, lock Flutter só com metadata SDK
 19 programas canônicos equivalentes, JSON/sintaxe/whitespace, IDs únicos e
 âncora da execução. HEAD/evidências anteriores preservados. Revisão documental
 final sem impeditivos; código dos jobs corresponde aos checkouts validados.
+
+<a id="execucao-r-34-2026-10-25"></a>
+
+## Execução R-34 — Piloto Saropa essential, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 2a42a0b9f2143fc36e2b793d4e86867d5217623a; R-33 concluída e R-34 pronta. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-67/OPEN-09, RISK-39/42 e trechos de SDK/contratos/matriz do guia Dart. Escopo restrito ao piloto e decisão; preservar recommended e Dart 3.13. Sem delegação.
+Implementação: runner Saropa 16.7.0 exato em /tmp com cache próprio e dois clones descartáveis. Trinta e duas análises medidas em sete pacotes e exemplo Flutter; 116 arquivos rastreados, 166 alertas idênticos nas duas passagens. Fixtures de resolução exata/flexível e defeitos deliberados; integração nativa em três configurações e controle de exclusão. Relatório, coordenadas, métricas, inventário/hashes, versões, manifests/instrumento e logs resumidos em plan/evidence/r34; docs/ci.md aponta a decisão proposta de adiar. Nenhuma mudança permanente de código, manifests, configuração ou política de advisories.
+Review: aprovado
+Achados: revisão do próprio agente em etapa distinta, não independente. Conferidos diff e arquivos novos, amostra de 19 nomes de regra, invariantes/cardinalidade/SQL/dispose, resolução e limites das medições. Corrigidos whitespace em logs novos e classificação UTC: o construtor já normaliza inclusive parâmetros externos. Reexaminado o delta dessas correções; não há achado impeditivo restante. Divergência nativa Flutter permanece limitação explícita que fundamenta adiamento, sem aprovar cobertura inexistente.
+Validação: aprovada
+Resultados: dezesseis análises de baseline terminaram com zero e dezesseis scans resolvidos com exit 1 por alertas. Hashes dos 116 fontes preservados, dois resultados idênticos, sem markers de skip/falha/parada nos stderr; JSON, códigos, coordenadas, grafos e instrumento Python conferidos. Ver validation.json e instrumento validate.py.txt. Nova checagem não repete nem alega os testes runtime/builds históricos de R-33.
+Comandos: em clones/runner separados, PUB_CACHE próprio, dart pub get; flutter pub get --enforce-lockfile; dart analyze nos sete pacotes e flutter analyze --no-pub no app, duas vezes cada; dart run saropa_lints:scan <alvo> --tier essential --resolve --format json --files-from-stdin, duas vezes por alvo. Integração adicional com blocos nativos essential, lane full e dart run saropa_lints:init --tier essential --reset --target <clone>; prova negativa retirando exclusão ancestral não resolveu divergência Flutter. Fixtures exata/flexível resolvidas e controle positivo analisado por ambas as ferramentas. Comandos/saídas resumidas e hashes originais nos artefatos. python3 /tmp/deltasync-r34-validate.py aprovou 472 verificações de evidência antes da manutenção; checker/diff aprovados. /usr/bin/time ausente motivou wait4 antes das medidas; exporter inicialmente excedeu saída e foi dividido, sem perder dados. Checagem encontrou whitespace em arquivo novo e caminho de log duplicado no validador temporário; corrigidos e revisados antes da aprovação.
+Critérios: C1 por runner/versão/hash/SDK, resolução test/analyzer, CLI em sete pacotes e Flutter e comparação nativa sem alegar equivalência; C2 por duas medidas wall/CPU/RSS, amostra dos 19 nomes de regra, sobreposição e controle positivo/negativo; C3 por DEC-68 e adiamento sem mudanças na resolução/configuração permanente; C4 por revisão contextual de SQL/cardinalidade/UTC/streams e ausência de defeito funcional bloqueador confirmado na amostra, sem autofix/supressão/refatoração nem regressão artificial; C5 por limites explícitos e manutenção dos checks de advisories/CRDT/recuperação separados.
+Manutenção: cinco critérios marcados; índice/fase/trace atualizados, DEC-68 e OPEN-09 resolvem adoção, RISK-39 registra custo/cobertura e decisão. R-35 pronta/recomendada sem iniciá-la; nenhuma tarefa ativa. Fase 6/VAL-17 permanecem abertos. Nenhum achado real fora do escopo identificado que exija nova tarefa.
+Limitações: medições locais Linux com duas passagens e parte do probe nativo concorrente, sem SLA/energia/runtime Android/CI remoto. Nomes essential correspondem a conjuntos diferentes em CLI/YAML/inicializador; plugin Flutter retornou zero apesar de 25 alertas CLI, causa não estabelecida, portanto integração não foi aprovada. Amostra não audita exaustivamente os 166 alertas e fixture também contém defeito não detectado. Nenhuma nova consulta OSV, suíte runtime/build ou execução 3.12/patch 3.13.0 alegada. Sem mudança funcional/API/persistência, Compass, instalação permanente, commit, publicação ou ativação de serviço.
+
+### Evidências e decisão
+
+O [relatório](evidence/r34/README.md) contém amostra, critérios de reavaliação,
+reprodução e limites para consumidores/contribuidores/forks. Os artefatos
+[pilot.json](evidence/r34/pilot.json), [metrics.json](evidence/r34/metrics.json),
+[diagnostics.json](evidence/r34/diagnostics.json),
+[inventory.json](evidence/r34/inventory.json) e
+[resolutions.json](evidence/r34/resolutions.json) registram versão exata, comandos,
+32 medidas, 166 alertas, 116 hashes e grafos efetivos. Os
+[logs](evidence/r34/logs.txt) preservam resultados decisivos e coordenadas, com
+hashes dos originais antes de normalizar caminhos/whitespace e omitir mensagens
+longas/progresso. [validation.json](evidence/r34/validation.json) registra checks;
+[validate.py.txt](evidence/r34/validate.py.txt) é instrumento histórico somente
+leitura ligado aos inputs temporários desta execução, não requisito novo de CI.
+
+Adiar Saropa atende à tarefa de avaliação, sem declarar o plugin aprovado ou
+resolver o conflito por downgrade. Test 1.33.0/analyzer 14.6.0 permaneceram no
+workspace dos clones; o runner usa analyzer 12.1.0 e aceita Dart 3.13.5. Root e
+Flutter mantêm recommended/flutter_lints e a consulta OSV independente da R-33.
+Os 166 alertas não equivalem a 166 bugs ou vulnerabilidades; controle positivo
+mostra sinais adicionais e sobreposição, e também um controller não detectado.
+
+Após manutenção, o checker exigiu os campos Review/Validação em linhas próprias
+e o campo Achados no registro final. Ajustada apenas a estrutura do registro,
+sem flexibilizar o checker. Revisão final das correções documentais e do
+checksum sem autorreferência aprovada. `python3 plan/evidence/r34/validate.py.txt`
+aprovou 474 verificações de evidência; `python3 scripts/check_plan.py` aprovou
+70 tarefas e 554 links locais, com R-35 pronta; `git diff --check` passou.
+Hashes, códigos de saída, whitespace dos arquivos novos, decisão e status foram
+conferidos novamente após correções. Fonte, manifests/configurações, HEAD e
+evidências históricas permanecem intactos. Nenhuma tarefa subsequente iniciada.

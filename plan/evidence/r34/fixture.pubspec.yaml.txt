@@ -1,0 +1,6 @@
+name: deltasync_saropa_signal_probe
+publish_to: none
+environment:
+  sdk: ^3.13.0
+dev_dependencies:
+  lints: ^6.0.0

@@ -526,6 +526,25 @@ runtime Android; host local/JDK diferem do runner configurado. Preparar YAML nã
 ativa serviço nem comprova execução remota, que não foi autorizada/realizada.
 Ver [R-33](TRACEABILITY.md#execucao-r-33-2026-10-24).
 
+DEC-68 — Avaliação Saropa R-34, 2026-10-25: adiar adoção permanente após piloto
+essential 16.7.0 exato em runner isolado com Dart 3.13.5. SDK aceitou o runner;
+o conflito comprovado é Saropa/analyzer ^12.1.0 com test 1.33.0 no mesmo grafo,
+não rejeição geral a Dart 3.13. Plugin nativo preserva o grafo do workspace,
+mas não reproduziu cobertura da CLI no app Flutter. Versões, lanes e caminhos
+de configuração geraram conjuntos diferentes e precisam de controle positivo
+antes de adoção. A CLI resolveu 116 arquivos e gerou 166 alertas estáveis;
+segunda passagem adicionou 71.229 s aos 7.423 s da análise atual, com ruído
+contextual em guardas, SQL parametrizado e lifecycle. São medidas locais, sem
+SLA ou equivalência entre ferramentas. Amostra dos 19 nomes de regra e fixture
+mostram utilidade pontual, sobreposição e falhas de detecção; nenhum defeito
+funcional bloqueador confirmado. Manter recommended, análise Flutter própria,
+advisories online e testes separados. Sem dependência/configuração permanente,
+downgrade, autofix ou baseline genérica. Reconsiderar somente com versão/custo,
+compatibilidade e controles Dart/Flutter novamente verificados; isso não cria
+dependência adicional de R-35 nem retira escopo da release. Lint não prova CRDT,
+atomicidade, recuperação, autenticação ou ausência de vulnerabilidade. Ver
+[relatório](evidence/r34/README.md) e [execução](TRACEABILITY.md#execucao-r-34-2026-10-25).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
@@ -534,7 +553,7 @@ Ver [R-33](TRACEABILITY.md#execucao-r-33-2026-10-24).
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
 | OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
 | OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42 | Todas as APIs entram na 1.0.1. R-30 fixou superfícies e mapa de impacto/substitutos existentes; nomes/assinaturas das conveniências novas serão fechados nas tarefas responsáveis e atualizados no mapa. Quebras de interface/switches exigem fixture migrada; decisão de versão resolvida em DEC-55. |
-| OPEN-09 | R-34 | Adoção Saropa depende de resolução, alertas úteis, falsos positivos e custo medidos no piloto; preset/versionamento/configuração final ainda não escolhidos. Decisão de adiar pode satisfazer a tarefa de avaliação, com evidência. |
+| OPEN-09 | R-34 | Resolvida por DEC-68: piloto essential 16.7.0 concluiu por adiamento fundamentado. Recommended/CI/advisories permanecem; sem instalação permanente ou downgrade. Novo piloto e controle positivo Dart/Flutter exigidos antes de reconsiderar adoção, sem bloquear R-35. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.

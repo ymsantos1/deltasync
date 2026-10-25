@@ -135,15 +135,16 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-33 configurou CI, validou jobs locais em checkouts
-independentes e alinhou o SDK para ^3.13.0 por orientação do autor. Referência
-executada: Dart 3.13.5; nenhuma execução remota do workflow. Escrita e revisão
-do TCC ficam com o autor, fora deste plano.
+Tarefa ativa: **nenhuma**. R-34 concluiu o piloto essential 16.7.0 com Dart 3.13.5
+e decidiu adiar Saropa permanente por custo, ruído e cobertura nativa divergente
+no Flutter. Recommended e CI/advisories R-33 permanecem, sem downgrade de SDK/test.
+R-33 alinhou o mínimo para ^3.13.0 por orientação do autor; nenhum workflow remoto
+foi executado. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-34**, para avaliar Saropa em piloto isolado.
-Esta execução encerra em R-33; nenhum serviço externo foi ativado.
+selecionável: **R-35**, para consolidar guia durável, contratos e migração.
+Esta execução encerra em R-34; nenhuma dependência/configuração de lint foi adotada.
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
@@ -248,8 +249,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-31](06_PHASE6_MANUTENCAO_1_0_1.md#r-31) | Corrigir montagem quadrática da outbox | concluída | SHOULD | R-30 |
 | [R-32](06_PHASE6_MANUTENCAO_1_0_1.md#r-32) | Medir custos de mutação, restauração e pendências | concluída | SHOULD | R-31 |
 | [R-33](06_PHASE6_MANUTENCAO_1_0_1.md#r-33) | Automatizar verificações e advisories em CI | concluída | SHOULD | R-30 |
-| [R-34](06_PHASE6_MANUTENCAO_1_0_1.md#r-34) | Avaliar Saropa e lint proporcional | pronta | SHOULD | R-33 |
-| [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | planejada | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
+| [R-34](06_PHASE6_MANUTENCAO_1_0_1.md#r-34) | Avaliar Saropa e lint proporcional | concluída | SHOULD | R-33 |
+| [R-35](06_PHASE6_MANUTENCAO_1_0_1.md#r-35) | Simplificar guia durável e esclarecer contratos públicos | pronta | SHOULD | R-34, R-37, R-38, R-39, R-40, R-41, R-42 |
 | [R-36](06_PHASE6_MANUTENCAO_1_0_1.md#r-36) | Preparar metadados da release 1.0.1 | planejada | SHOULD | R-35 |
 | [VAL-17](06_PHASE6_MANUTENCAO_1_0_1.md#val-17) | Validar migração e artefatos da 1.0.1 | planejada | SHOULD | R-36 |
 | [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | concluída | SHOULD | R-32, R-39 |

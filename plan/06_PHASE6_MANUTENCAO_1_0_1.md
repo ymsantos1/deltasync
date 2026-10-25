@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-33/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
-R-34 pronta; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
+R-35 pronta; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -231,7 +231,7 @@ fase 6/VAL-17 permanecem abertos.
 
 ## R-34 — Avaliar Saropa e lint proporcional
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-33
 
@@ -240,31 +240,38 @@ piloto isolado antes de alterar resolução/configuração permanente do workspa
 
 Critérios:
 
-- [ ] Manter lints/recommended e avaliar saropa_lints com preset essential,
+- [x] Manter lints/recommended e avaliar saropa_lints com preset essential,
   versão registrada e runner isolado. Conferir compatibilidade de SDK,
   analyzer/test, integração Flutter e análise de todos os pacotes pertinentes.
-- [ ] Comparar tempo e uso de recursos disponíveis com a baseline; classificar
+- [x] Comparar tempo e uso de recursos disponíveis com a baseline; classificar
   amostra revisada de alertas úteis, falsos positivos, sobreposição com regras
   existentes e custo de manutenção. Não inferir utilidade pela quantidade de regras.
-- [ ] Decidir e justificar adoção seletiva ou adiamento. Concluir o piloto não
+- [x] Decidir e justificar adoção seletiva ou adiamento. Concluir o piloto não
   exige instalar Saropa. Se adotado, usar somente ferramenta de desenvolvimento,
   conservar resolução dos consumidores e documentar regras/exceções delimitadas.
-- [ ] Tratar achados reais com regressões e validação proporcionais no ciclo da
+- [x] Tratar achados reais com regressões e validação proporcionais no ciclo da
   tarefa; não aplicar autofix em massa, ocultar erros críticos em baseline genérica
   ou fazer mudanças cosméticas amplas. Achado fora do escopo recebe tarefa
   própria; incompatibilidade já prevista nesta fase segue seu mapa de migração.
-- [ ] Explicar que lint não prova convergência, atomicidade, recuperação,
+- [x] Explicar que lint não prova convergência, atomicidade, recuperação,
   autenticação ou ausência de vulnerabilidades; manter advisories/testes separados.
 
 Validação: logs/relatório do piloto, decisão revisada e checks das configurações
 que forem adotadas. Referência: [Saropa](https://pub.dev/packages/saropa_lints).
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-34](TRACEABILITY.md#execucao-r-34-2026-10-25)
+e [piloto reproduzível](evidence/r34/README.md). Saropa 16.7.0 essential em runner
+isolado, Dart 3.13.5, sete pacotes e exemplo Flutter: 32 medições, 116 arquivos,
+166 diagnósticos estáveis. Adiamento fundamentado, sem instalação permanente;
+amostra de 19 nomes de regra, sobreposição/controles e custo registrados.
+Nenhum defeito funcional bloqueador confirmado na amostra; nenhuma correção de
+produto necessária. Revisão após correções documentais e validação aprovadas.
+R-35 liberada; fase 6/VAL-17 continuam abertos.
 
 <a id="r-35"></a>
 
 ## R-35 — Simplificar guia durável e esclarecer contratos públicos
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-34, R-37, R-38, R-39, R-40, R-41, R-42
 

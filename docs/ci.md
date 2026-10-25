@@ -97,7 +97,13 @@ Esse exemplo não é uma exceção ativa. Não usar wildcard ou supressão gené
 um upgrade exige revisar novamente a combinação pacote/versão/ID. A lista
 ignored_advisories do pub não substitui essa revisão e não esconde achados do
 OSV. Ausência de achado não prova ausência de vulnerabilidade; lint, testes de
-CRDT, atomicidade e recuperação continuam separados. O piloto Saropa é R-34.
+CRDT, atomicidade e recuperação continuam separados. O
+[piloto Saropa R-34](../plan/evidence/r34/README.md) avaliou essential 16.7.0
+com Dart 3.13.5 e decidiu adiar a adoção permanente. O runner isolado funcionou;
+adicionar Saropa ao mesmo grafo conflitou com test 1.33.0, e o plugin nativo
+teve cobertura diferente da CLI no exemplo Flutter. Custo e ruído foram medidos.
+Manter recommended, análise Flutter própria e scanner OSV; não fazer downgrade
+de SDK/test nem habilitar um preset amplo com baseline genérica para obter lint.
 
 Toda execução consulta a rede, inclusive com dependências já em cache. O workflow
 não restaura caches de dependências e nunca usa relatório antigo como resultado

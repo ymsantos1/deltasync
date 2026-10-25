@@ -1,0 +1,1647 @@
+{
+  "baseline": {
+    "root": "deltasync",
+    "packages": [
+      {
+        "name": "deltasync_transport",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "test",
+        "version": "1.33.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml",
+        "version": "3.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "string_scanner",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_span",
+        "version": "1.10.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "term_glyph",
+        "version": "1.2.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "path",
+        "version": "1.9.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "collection",
+        "version": "1.19.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "webkit_inspection_protocol",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "logging",
+        "version": "1.3.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket_channel",
+        "version": "3.0.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket",
+        "version": "1.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web",
+        "version": "1.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stream_channel",
+        "version": "2.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "async",
+        "version": "2.13.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "meta",
+        "version": "1.19.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "crypto",
+        "version": "3.0.7",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "typed_data",
+        "version": "1.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_core",
+        "version": "0.6.21",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "vm_service",
+        "version": "15.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_api",
+        "version": "0.7.15",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stack_trace",
+        "version": "1.12.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "boolean_selector",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_maps",
+        "version": "0.10.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_map_stack_trace",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pool",
+        "version": "1.5.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "package_config",
+        "version": "3.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "io",
+        "version": "1.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "glob",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "file",
+        "version": "7.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "frontend_server_client",
+        "version": "4.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "coverage",
+        "version": "1.16.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_util",
+        "version": "0.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "ffi",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_config",
+        "version": "0.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "args",
+        "version": "2.7.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer",
+        "version": "14.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "watcher",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pub_semver",
+        "version": "2.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "convert",
+        "version": "3.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "_fe_analyzer_shared",
+        "version": "110.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_web_socket",
+        "version": "3.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf",
+        "version": "1.4.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_parser",
+        "version": "4.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_static",
+        "version": "1.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "mime",
+        "version": "2.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_packages_handler",
+        "version": "3.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "node_preamble",
+        "version": "2.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "matcher",
+        "version": "0.12.20",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_multi_server",
+        "version": "3.2.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_core",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync_storage_testing",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "lints",
+        "version": "6.1.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_storage",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync_storage_sqflite",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "sqflite_common_ffi",
+        "version": "2.4.5",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "synchronized",
+        "version": "3.5.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_common",
+        "version": "2.5.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqlite3",
+        "version": "3.8.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "native_toolchain_c",
+        "version": "0.19.5",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "process",
+        "version": "5.0.6",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "platform",
+        "version": "3.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "hooks",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "record_use",
+        "version": "1.1.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "code_assets",
+        "version": "2.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_sync",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      }
+    ]
+  },
+  "flutter": {
+    "root": "deltasync_mobile_consumer",
+    "packages": [
+      {
+        "name": "deltasync_mobile_consumer",
+        "version": "1.0.0+1",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync_transport",
+        "version": "2.0.0",
+        "kind": "transitive",
+        "source": "path"
+      },
+      {
+        "name": "deltasync_core",
+        "version": "2.0.0",
+        "kind": "transitive",
+        "source": "path"
+      },
+      {
+        "name": "deltasync_sync",
+        "version": "2.0.0",
+        "kind": "transitive",
+        "source": "path"
+      },
+      {
+        "name": "deltasync_storage",
+        "version": "2.0.0",
+        "kind": "transitive",
+        "source": "path"
+      },
+      {
+        "name": "sqflite_common_ffi",
+        "version": "2.4.3",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "meta",
+        "version": "1.18.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "path",
+        "version": "1.9.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "synchronized",
+        "version": "3.4.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_common",
+        "version": "2.5.13+1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqlite3",
+        "version": "3.5.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "crypto",
+        "version": "3.0.7",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "typed_data",
+        "version": "1.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "collection",
+        "version": "1.19.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "native_toolchain_c",
+        "version": "0.19.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pub_semver",
+        "version": "2.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "logging",
+        "version": "1.3.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "hooks",
+        "version": "2.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml",
+        "version": "3.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "string_scanner",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_span",
+        "version": "1.10.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "term_glyph",
+        "version": "1.2.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "record_use",
+        "version": "0.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "glob",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "file",
+        "version": "7.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "async",
+        "version": "2.13.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "code_assets",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web",
+        "version": "1.1.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "ffi",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "flutter_lints",
+        "version": "6.0.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "lints",
+        "version": "6.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "flutter_test",
+        "version": "0.0.0",
+        "kind": "dev",
+        "source": "sdk"
+      },
+      {
+        "name": "stream_channel",
+        "version": "2.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "leak_tracker_flutter_testing",
+        "version": "3.0.10",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "matcher",
+        "version": "0.12.20",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_api",
+        "version": "0.7.12",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stack_trace",
+        "version": "1.12.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "boolean_selector",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "leak_tracker_testing",
+        "version": "3.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "leak_tracker",
+        "version": "11.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "vm_service",
+        "version": "15.3.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "clock",
+        "version": "1.1.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "flutter",
+        "version": "0.0.0",
+        "kind": "direct",
+        "source": "sdk"
+      },
+      {
+        "name": "sky_engine",
+        "version": "0.0.0",
+        "kind": "transitive",
+        "source": "sdk"
+      },
+      {
+        "name": "vector_math",
+        "version": "2.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "material_color_utilities",
+        "version": "0.13.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "characters",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "fake_async",
+        "version": "1.3.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite",
+        "version": "2.4.4+1",
+        "kind": "direct",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_platform_interface",
+        "version": "2.4.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "plugin_platform_interface",
+        "version": "2.1.8",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "platform",
+        "version": "3.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_darwin",
+        "version": "2.4.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_android",
+        "version": "2.4.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_storage_sqflite",
+        "version": "2.0.0",
+        "kind": "direct",
+        "source": "path"
+      },
+      {
+        "name": "deltasync",
+        "version": "2.0.0",
+        "kind": "direct",
+        "source": "path"
+      }
+    ]
+  },
+  "runner": {
+    "root": "deltasync_saropa_pilot",
+    "packages": [
+      {
+        "name": "deltasync_saropa_pilot",
+        "version": "0.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "saropa_lints",
+        "version": "16.7.0",
+        "kind": "direct",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml",
+        "version": "3.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "string_scanner",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_span",
+        "version": "1.10.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "term_glyph",
+        "version": "1.2.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "path",
+        "version": "1.9.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "collection",
+        "version": "1.19.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pub_semver",
+        "version": "2.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "meta",
+        "version": "1.19.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer_plugin",
+        "version": "0.14.8",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "dart_style",
+        "version": "3.1.8",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "package_config",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "args",
+        "version": "2.7.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer",
+        "version": "12.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "watcher",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "async",
+        "version": "2.13.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "glob",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "file",
+        "version": "7.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "crypto",
+        "version": "3.0.7",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "typed_data",
+        "version": "1.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "convert",
+        "version": "3.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "_fe_analyzer_shared",
+        "version": "99.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analysis_server_plugin",
+        "version": "0.3.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml_edit",
+        "version": "2.2.4",
+        "kind": "transitive",
+        "source": "hosted"
+      }
+    ]
+  },
+  "flexible": {
+    "root": "deltasync_saropa_flexible_probe",
+    "packages": [
+      {
+        "name": "deltasync_saropa_flexible_probe",
+        "version": "0.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "test",
+        "version": "1.31.1",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml",
+        "version": "3.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "string_scanner",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_span",
+        "version": "1.10.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "term_glyph",
+        "version": "1.2.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "path",
+        "version": "1.9.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "collection",
+        "version": "1.19.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "webkit_inspection_protocol",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "logging",
+        "version": "1.3.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket_channel",
+        "version": "3.0.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket",
+        "version": "1.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web",
+        "version": "1.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stream_channel",
+        "version": "2.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "async",
+        "version": "2.13.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "meta",
+        "version": "1.19.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "crypto",
+        "version": "3.0.7",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "typed_data",
+        "version": "1.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_core",
+        "version": "0.6.18",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "vm_service",
+        "version": "15.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_api",
+        "version": "0.7.12",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stack_trace",
+        "version": "1.12.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "boolean_selector",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_maps",
+        "version": "0.10.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_map_stack_trace",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pool",
+        "version": "1.5.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "package_config",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "io",
+        "version": "1.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "glob",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "file",
+        "version": "7.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "frontend_server_client",
+        "version": "4.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "coverage",
+        "version": "1.16.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_util",
+        "version": "0.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "ffi",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_config",
+        "version": "0.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "args",
+        "version": "2.7.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer",
+        "version": "12.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "watcher",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pub_semver",
+        "version": "2.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "convert",
+        "version": "3.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "_fe_analyzer_shared",
+        "version": "99.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_web_socket",
+        "version": "3.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf",
+        "version": "1.4.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_parser",
+        "version": "4.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_static",
+        "version": "1.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "mime",
+        "version": "2.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_packages_handler",
+        "version": "3.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "node_preamble",
+        "version": "2.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "matcher",
+        "version": "0.12.20",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_multi_server",
+        "version": "3.2.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "saropa_lints",
+        "version": "16.7.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer_plugin",
+        "version": "0.14.8",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "dart_style",
+        "version": "3.1.8",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analysis_server_plugin",
+        "version": "0.3.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml_edit",
+        "version": "2.2.4",
+        "kind": "transitive",
+        "source": "hosted"
+      }
+    ]
+  },
+  "native": {
+    "root": "deltasync",
+    "packages": [
+      {
+        "name": "deltasync_transport",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "test",
+        "version": "1.33.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "yaml",
+        "version": "3.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "string_scanner",
+        "version": "1.4.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_span",
+        "version": "1.10.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "term_glyph",
+        "version": "1.2.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "path",
+        "version": "1.9.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "collection",
+        "version": "1.19.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "webkit_inspection_protocol",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "logging",
+        "version": "1.3.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket_channel",
+        "version": "3.0.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web_socket",
+        "version": "1.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "web",
+        "version": "1.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stream_channel",
+        "version": "2.1.4",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "async",
+        "version": "2.13.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "meta",
+        "version": "1.19.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "crypto",
+        "version": "3.0.7",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "typed_data",
+        "version": "1.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_core",
+        "version": "0.6.21",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "vm_service",
+        "version": "15.4.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "test_api",
+        "version": "0.7.15",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "stack_trace",
+        "version": "1.12.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "boolean_selector",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_maps",
+        "version": "0.10.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "source_map_stack_trace",
+        "version": "2.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pool",
+        "version": "1.5.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "package_config",
+        "version": "3.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "io",
+        "version": "1.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "glob",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "file",
+        "version": "7.0.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "frontend_server_client",
+        "version": "4.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "coverage",
+        "version": "1.16.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_util",
+        "version": "0.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "ffi",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "cli_config",
+        "version": "0.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "args",
+        "version": "2.7.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "analyzer",
+        "version": "14.6.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "watcher",
+        "version": "1.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "pub_semver",
+        "version": "2.2.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "convert",
+        "version": "3.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "_fe_analyzer_shared",
+        "version": "110.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_web_socket",
+        "version": "3.0.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf",
+        "version": "1.4.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_parser",
+        "version": "4.1.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_static",
+        "version": "1.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "mime",
+        "version": "2.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "shelf_packages_handler",
+        "version": "3.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "node_preamble",
+        "version": "2.0.2",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "matcher",
+        "version": "0.12.20",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "http_multi_server",
+        "version": "3.2.3",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_core",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync_storage_testing",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "lints",
+        "version": "6.1.0",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_storage",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync_storage_sqflite",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "sqflite_common_ffi",
+        "version": "2.4.5",
+        "kind": "dev",
+        "source": "hosted"
+      },
+      {
+        "name": "synchronized",
+        "version": "3.5.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqflite_common",
+        "version": "2.5.14",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "sqlite3",
+        "version": "3.8.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "native_toolchain_c",
+        "version": "0.19.5",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "process",
+        "version": "5.0.6",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "platform",
+        "version": "3.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "hooks",
+        "version": "2.2.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "record_use",
+        "version": "1.1.1",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "code_assets",
+        "version": "2.1.0",
+        "kind": "transitive",
+        "source": "hosted"
+      },
+      {
+        "name": "deltasync_sync",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      },
+      {
+        "name": "deltasync",
+        "version": "2.0.0",
+        "kind": "root",
+        "source": "root"
+      }
+    ]
+  }
+}
