@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add PresentField.decode<T> over the existing isolated query value. Pass null
+  to consumer decoders and propagate failures without defaults or state writes.
 - Add closed FieldQuery results and Replica.query for absence, present values
   including null, and LWW tombstones. Preserve valueAt and persisted formats;
   expose ReplicaState.isDeletedAt for payload-free LWW metadata inspection.

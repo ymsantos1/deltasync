@@ -135,14 +135,14 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-42 entregou consulta tipada de ausência, valor
-presente inclusive null e tombstone LWW, preservando valueAt. Escrita e revisão
-do TCC ficam com o autor, fora deste plano.
+Tarefa ativa: **nenhuma**. R-40 entregou decoder opcional no resultado presente
+da consulta R-42, com valor bruto e erros preservados. Escrita e revisão do TCC
+ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
-selecionável: **R-40**, para oferecer decoder opcional sobre a consulta existente.
-R-33/R-41 também estão prontas; esta execução encerra em R-42.
+selecionável: **R-41**, para eventos seletivos e consolidação de emissão interna.
+R-33 também está pronta; esta execução encerra em R-40.
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
 Publicação real e instalação das versões do pub.dev permanecem com o autor.
@@ -254,7 +254,7 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-37](06_PHASE6_MANUTENCAO_1_0_1.md#r-37) | Oferecer consulta leve de pendências | concluída | SHOULD | R-32, R-39 |
 | [R-38](06_PHASE6_MANUTENCAO_1_0_1.md#r-38) | Implementar lote público com commit local atômico | concluída | SHOULD | R-39 |
 | [R-39](06_PHASE6_MANUTENCAO_1_0_1.md#r-39) | Remover superfície legada preservando migração de dados | concluída | SHOULD | R-30, R-31 |
-| [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | pronta | SHOULD | R-42 |
+| [R-40](06_PHASE6_MANUTENCAO_1_0_1.md#r-40) | Oferecer leitura com decoder opcional | concluída | SHOULD | R-42 |
 | [R-41](06_PHASE6_MANUTENCAO_1_0_1.md#r-41) | Oferecer eventos seletivos e consolidar canais internos | pronta | SHOULD | R-37, R-38 |
 | [R-42](06_PHASE6_MANUTENCAO_1_0_1.md#r-42) | Distinguir ausência, valor null e tombstone na consulta | concluída | SHOULD | R-39 |
 

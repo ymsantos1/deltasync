@@ -21,6 +21,19 @@ final class PresentField extends FieldQuery {
   const PresentField._(this.kind, this.value) : super._();
   final CrdtKind kind;
   final Object? value;
+
+  /// Converts this already isolated value using a consumer-supplied decoder.
+  ///
+  /// Invokes [decoder] once, synchronously, including when [value] is null.
+  /// Returns T unchanged (including a nullable result) and propagates failures
+  /// without defaults or wrapping. The raw [value] remains available.
+  ///
+  /// Only present fields offer conversion: handle AbsentField/DeletedField in
+  /// separate branches of [FieldQuery]. Input collections remain read-only;
+  /// mutability and domain validation of the returned model belong to the app.
+  /// This method holds no replica/engine reference and performs no writes or I/O.
+  /// The decoder is responsible for its own external side effects.
+  T decode<T>(T Function(Object? value) decoder) => decoder(value);
 }
 
 /// Current LWW winner is a tombstone. No value is exposed or garbage collected.

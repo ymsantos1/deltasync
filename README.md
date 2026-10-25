@@ -47,6 +47,12 @@ null para ausência, LWW null e tombstone. Consulte o
 [exemplo de consulta explícita](https://github.com/ymsantos1/deltasync/blob/main/example/field_query_example.dart)
 e o [contrato de leitura e migração](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md#consulta-explícita-de-campo--r-42).
 
+No ramo presente, `field.decode(Model.fromValue)` converte opcionalmente o valor
+isolado para um modelo do consumidor. O decoder recebe também null legítimo e
+propaga erros; `field.value` mantém acesso ao valor bruto. Ausência e remoção
+continuam em ramos próprios. Veja o
+[exemplo de modelo e tratamento de erro](https://github.com/ymsantos1/deltasync/blob/main/example/field_decoder_example.dart).
+
 ```dart
 import 'package:deltasync/deltasync.dart';
 

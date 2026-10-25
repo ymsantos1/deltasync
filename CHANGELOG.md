@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add optional PresentField.decode<T> for consumer model conversion, preserving
+  raw values, explicit absent/deleted branches and unwrapped decoder failures.
 - Add typed field queries distinguishing absence, present null and retained LWW
   deletion in Replica, SyncEngine and LocalBatch; preserve valueAt semantics.
 - Add scoped local batches with one atomic snapshot/outbox commit, rollback on

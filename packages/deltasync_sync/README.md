@@ -19,6 +19,12 @@ or network waits, it reads the last adopted commit; failed commits never expose
 their candidate. `LocalBatch.query` instead reads provisional edits and expires
 with the editor. Presence/deletion does not depend on outbox entries or ACK.
 
+Convert an already present result with `field.decode(Model.fromValue)` or keep
+its raw `value`. Conversion uses the isolated query value, performs no engine
+write/I/O, and propagates failures to the caller without emitting an engine
+error or undoing a prior commit. Handle absent/deleted cases explicitly. A saved
+result can still be converted after dispose; obtaining a new query cannot.
+
 Use `await engine.batch((batch) { ... })` for related local edits with one atomic
 snapshot/outbox commit. The scoped LocalBatch delegates native CRDT mutations and
 reads; its callback must finish synchronously without I/O or other engine calls.

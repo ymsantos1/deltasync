@@ -33,6 +33,13 @@ not mutate clocks or state and reads only the addressed field. Model conversion
 belongs in the application's `PresentField` branch; see the
 [field query example](https://github.com/ymsantos1/deltasync/blob/main/example/field_query_example.dart).
 
+Optionally call `field.decode(Model.fromValue)` in the `PresentField` branch.
+The consumer supplies `T Function(Object?)`; the method returns T, passes null
+as a legitimate input, and propagates decoder failures unchanged. The original
+read-only `field.value` remains available. Absent/deleted fields have no decoder
+method. Model/schema validation and output mutability belong to the consumer;
+see the [decoder example](https://github.com/ymsantos1/deltasync/blob/main/example/field_decoder_example.dart).
+
 This package does not persist or send changes. Use `deltasync` / `SyncEngine`
 for atomic local commits, an outbox and remote acknowledgement. Counter IDs and
 compact MV formats have compatibility limits described in the

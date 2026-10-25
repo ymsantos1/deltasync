@@ -1,0 +1,124 @@
+{
+  "task": "R-40",
+  "beforeRevision": "0e17a2a964b7adb8fcb0974dd6301e1168cfcc8d",
+  "sdk": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n",
+  "isolatedDirectory": "/tmp/deltasync-r40-consumer-ylbjxa69",
+  "records": [
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "/tmp/deltasync-r40-consumer-ylbjxa69",
+      "exitCode": 0,
+      "output": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ deltasync 2.0.0 from path /projetos/tcc/deltasync\n! deltasync_core 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage (overridden)\n! deltasync_sync 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_transport (overridden)\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ pool 1.5.3\n+ pub_semver 2.2.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 50 dependencies!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-r40-consumer-ylbjxa69",
+      "exitCode": 0,
+      "output": "Analyzing test...\nNo issues found!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r40-consumer-ylbjxa69",
+      "exitCode": 0,
+      "output": "00:00 +0: loading test/consumer_test.dart\n00:00 +0: test/consumer_test.dart: external model conversion handles absence, null, deletion and failure\n00:00 +1: test/consumer_test.dart: decoder cannot mutate input or hide exception as a successful read\n00:00 +2: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "/tmp/deltasync-r40-consumer-ylbjxa69/invalid_decode.dart"
+      ],
+      "cwd": "/tmp/deltasync-r40-consumer-ylbjxa69",
+      "exitCode": 3,
+      "output": "Analyzing invalid_decode.dart...\n\n  error - invalid_decode.dart:2:40 - The method 'decode' isn't defined for the type 'AbsentField'. Try correcting the name to the name of an existing method, or defining a method named 'decode'. - undefined_method\n  error - invalid_decode.dart:3:42 - The method 'decode' isn't defined for the type 'DeletedField'. Try correcting the name to the name of an existing method, or defining a method named 'decode'. - undefined_method\n\n2 issues found.\n"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/tmp/deltasync-r40-before-p__lpaa6"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/scripts/api_inventory.dart",
+        "/projetos/tcc/deltasync"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Inventory parsed and compared; see apiDifferences"
+    }
+  ],
+  "apiDifferences": {
+    "deltasync": {
+      "addedSymbols": [],
+      "addedMembers": {
+        "PresentField": [
+          "/// Converts this already isolated value using a consumer-supplied decoder. /// /// Invokes [decoder] once, synchronously, including when [value] is null. /// Returns T unchanged (including a nullable result) and propagates failures /// without defaults or wrapping. The raw [value] remains available. /// /// Only present fields offer conversion: handle AbsentField/DeletedField in /// separate branches of [FieldQuery]. Input collections remain read-only; /// mutability and domain validation of the returned model belong to the app. /// This method holds no replica/engine reference and performs no writes or I/O. /// The decoder is responsible for its own external side effects. T decode<T>(T Function(Object? value) decoder)"
+        ]
+      }
+    },
+    "deltasync_core": {
+      "addedSymbols": [],
+      "addedMembers": {
+        "PresentField": [
+          "/// Converts this already isolated value using a consumer-supplied decoder. /// /// Invokes [decoder] once, synchronously, including when [value] is null. /// Returns T unchanged (including a nullable result) and propagates failures /// without defaults or wrapping. The raw [value] remains available. /// /// Only present fields offer conversion: handle AbsentField/DeletedField in /// separate branches of [FieldQuery]. Input collections remain read-only; /// mutability and domain validation of the returned model belong to the app. /// This method holds no replica/engine reference and performs no writes or I/O. /// The decoder is responsible for its own external side effects. T decode<T>(T Function(Object? value) decoder)"
+        ]
+      }
+    },
+    "deltasync_storage": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_transport": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_sync": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_storage_sqflite": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_storage_testing": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    }
+  },
+  "sourceSha256": "f8ec91b085f4a55ac591de4ec7ce3c0fdf3af72022b851a1ad418b4538dc7056",
+  "limits": [
+    "Independent path dependencies, not hosted artifacts",
+    "Language 3.12; reference SDK shown above, not minimum runtime proof"
+  ]
+}

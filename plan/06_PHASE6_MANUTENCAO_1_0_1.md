@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-42 concluídas.
-R-33/R-40/R-41 prontas; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-24; R-30/R-31/R-32/R-37/R-38/R-39/R-40/R-42 concluídas.
+R-33/R-41 prontas; demais tarefas ainda não iniciadas.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -473,7 +473,7 @@ Evidência de conclusão: [execução R-39](TRACEABILITY.md#execucao-r-39-2026-1
 
 ## R-40 — Oferecer leitura com decoder opcional
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-42
 
@@ -481,19 +481,25 @@ Alvo: 1.0.1. Converter valores por contrato público sem conhecer modelos do app
 
 Critérios:
 
-- [ ] Oferecer conveniência de leitura com decoder fornecido pelo consumidor,
+- [x] Oferecer conveniência de leitura com decoder fornecido pelo consumidor,
   preservando acesso ao JSON e sem schema, codegen ou repositório genérico.
   Centralizar o percurso de consulta existente e explicitar entrada/retorno.
-- [ ] Definir comportamento para ausência, valor null, tombstone e falha no
+- [x] Definir comportamento para ausência, valor null, tombstone e falha no
   decoder; não converter automaticamente dado inválido em sucesso ou valor padrão.
-- [ ] Provar isolamento de coleções aninhadas e ausência de mutação de estado,
+- [x] Provar isolamento de coleções aninhadas e ausência de mutação de estado,
   clocks ou outbox durante conversão, inclusive quando o decoder falha.
-- [ ] Exercitar modelo simples e JSON incompatível com ele, com erros tratados
+- [x] Exercitar modelo simples e JSON incompatível com ele, com erros tratados
   no consumidor; validar lifecycle e consumo pela facade.
 
 Validação: consultas core/sync/facade e exemplo tipado, com decoder que falha e
 valores aninhados; não confundir validação JSON com regra de domínio.
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-40](TRACEABILITY.md#execucao-r-40-2026-10-24),
+[contrato/reprodução](evidence/r40/README.md),
+[validação e correções](evidence/r40/validation.json) e
+[consumidor/inventários](evidence/r40/consumer-validation.json). 225 testes em
+core/sync/facade e dois externos aprovados; exemplo e compilação negativa
+conferidos. Revisão própria após correções, sem revisão independente.
+Próxima recomendada R-41; fase 6/VAL-17 continuam abertos.
 
 <a id="r-41"></a>
 

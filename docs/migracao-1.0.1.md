@@ -59,8 +59,8 @@ Adote `query` apenas onde a distinção importa. `PresentField.value` continua
 Conversão e validação do modelo pertencem ao consumidor. Execute o decoder
 apenas no ramo presente, passando também null legítimo; trate ausência e remoção
 nos próprios ramos e propague falhas do decoder, sem convertê-las em ausência ou
-sucesso. A conveniência de decoder opcional será entregue em R-40; esta tarefa
-oferece o contrato que ela deve reutilizar, sem antecipar API ou schema.
+sucesso. A conveniência de R-40 é `PresentField.decode<T>`; consulte o contrato
+abaixo. A consulta bruta e suas três variantes permanecem disponíveis.
 
 Na engine, aguarde `start()` antes da consulta síncrona; antes disso, durante
 inicialização ou após `dispose`, a leitura lança `StateError`. Durante await de
@@ -84,6 +84,62 @@ chamado `query`. Adicionar uma variante futura exigirá migrar switches exaustiv
 Veja o [exemplo executável](../example/field_query_example.dart). As provas de
 core, facade, commit falho e reabertura SQLite ficam no
 [registro R-42](../plan/TRACEABILITY.md#execucao-r-42-2026-10-24).
+
+## Decoder opcional no resultado presente — R-40
+
+A conversão é opcional por leitura: use `field.value` para o valor bruto ou
+`field.decode<T>(T Function(Object? value) decoder)` para obter o modelo do app.
+O tipo T é inferido pelo retorno do decoder ou indicado pelo consumidor. A mesma
+conveniência serve aos resultados de Replica, SyncEngine e LocalBatch; não há
+novo percurso de consulta, hierarquia de resultados, schema ou estado em cache.
+
+```dart
+Profile? readProfile(SyncEngine engine, String address) {
+  return switch (engine.query(address)) {
+    AbsentField() => null, // Política do app para endereço ainda não configurado.
+    DeletedField() => throw StateError('Perfil removido'),
+    PresentField field => field.decode(Profile.fromValue),
+  };
+}
+```
+
+`Profile` e `Profile.fromValue(Object?)` pertencem ao consumidor. O
+[exemplo completo](../example/field_decoder_example.dart) implementa o modelo,
+rejeita JSON incompatível, trata a falha e define política explícita para null.
+Um JSON válido para a biblioteca pode ser inválido para esse modelo.
+
+| Caso | Conversão |
+|---|---|
+| Ausente | `AbsentField` não oferece decode; consumidor trata seu ramo |
+| Tombstone LWW | `DeletedField` não oferece decode; consumidor trata seu ramo |
+| Presente, inclusive null | Decoder recebe o valor exatamente uma vez; null não é ignorado |
+| Retorno nullable | Retorno null legítimo é devolvido; resultado original continua presente |
+| Erro no decoder | Exceção propaga sem wrapping, valor padrão ou conversão em ausência/sucesso |
+
+O método invoca o callback sincronamente sobre o valor já isolado da consulta,
+sem novo acesso à réplica, ao storage ou à rede. Coleções de entrada continuam
+somente leitura, inclusive aninhadas. Para produzir modelo mutável, copie os
+dados no decoder; mutabilidade/validação do resultado T pertencem ao consumidor.
+O resultado de consulta retido continua estável e pode ser convertido depois
+de novas edições, fechamento do editor ou dispose da engine. Já obter nova
+consulta continua sujeito ao lifecycle e ao escopo do editor definidos em R-42.
+
+Conversão não grava nem confirma nada, não altera clocks/outbox e não emite
+evento de commit ou erro da engine. Capture a falha no chamador; ela não desfaz
+um commit anterior. Se um decoder lançar dentro de callback de lote e o erro
+escapar, aplicam-se as regras existentes de abortar o lote por exceção do
+callback. Preferir preparar/validar os dados do modelo antes de iniciar edições.
+Não execute I/O ou mutações capturadas pelo decoder: efeitos externos do callback
+pertencem ao app e não podem ser desfeitos pela biblioteca.
+
+API adicionada somente a `PresentField`; assinaturas de query/valueAt,
+variantes de FieldQuery e formatos permanecem. `PresentField` já era final e
+tinha construtor privado. Switches R-42 não precisam de novos casos. Um membro
+de instância tem precedência sobre uma extension chamada decode do consumidor;
+renomeie essa conveniência ou use invocação explícita da extension. Para
+manutenção, a conversão vive em `PresentField.decode` na library de Replica;
+estado, delta/join, commit e restauração mantêm seus donos anteriores. Veja as
+[evidências R-40](../plan/TRACEABILITY.md#execucao-r-40-2026-10-24).
 
 ## Resumo de pendências em adaptadores — R-37
 

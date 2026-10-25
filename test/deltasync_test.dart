@@ -3,6 +3,38 @@ import 'package:test/test.dart';
 
 void main() {
   test(
+    'facade exposes typed decoder while preserving presence branches',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-decoder'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.start();
+      String read(String address) => switch (engine.query(address)) {
+        AbsentField() => 'absent',
+        DeletedField() => 'deleted',
+        PresentField field => field.decode<String>((value) {
+          if (value == null) return 'present null';
+          if (value is! Map || value['name'] is! String) {
+            throw FormatException('Invalid name');
+          }
+          return value['name'] as String;
+        }),
+      };
+      expect(read('field'), 'absent');
+      await engine.setDelta('field', null);
+      expect(read('field'), 'present null');
+      await engine.setDelta('field', {'name': 'Ada'});
+      expect(read('field'), 'Ada');
+      await engine.setDelta('field', {'name': 42});
+      expect(() => read('field'), throwsFormatException);
+      await engine.removeDelta('field');
+      expect(read('field'), 'deleted');
+    },
+  );
+  test(
     'facade exports exhaustive field query through engine and batch',
     () async {
       final engine = SyncEngine.withStorage(

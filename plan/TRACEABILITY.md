@@ -5724,3 +5724,67 @@ locais; `git diff --check` passou. Conferidos 20 hashes, lock inalterado, dois
 relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
 âncora da execução. Evidências anteriores preservadas. Revisão documental final
 sem achados impeditivos; nenhum código mudou após a matriz aprovada.
+
+<a id="execucao-r-40-2026-10-24"></a>
+
+## Execução R-40 — Decoder opcional, 2026-10-24
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 0e17a2a964b7adb8fcb0974dd6301e1168cfcc8d; R-42 concluída e R-40 pronta/recomendada. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios da fase, DEC-64/RISK-40/41 e guia Dart sobre null safety, padrões, class modifiers/extensions e SDK. Conferidos FieldQuery, valor isolado, ciclo de query/start/dispose e editor. Selecionada conveniência no resultado presente para reutilizar percurso canônico e manter os ramos de ausência/remoção.
+Implementação: PresentField.decode<T> invoca T Function(Object?) uma vez sobre value já isolado, inclusive null, retorna T e propaga erro sem wrapping/default. Valor bruto permanece disponível; ausente/removido não oferecem decode. Mesmo resultado atende Replica/SyncEngine/LocalBatch sem novos métodos de engine, tipos, variantes, schema ou cache. Adicionados testes core/sync/facade, modelo/exemplo público, guia/READMEs/changelogs e fixture externa/inventários. Modelos e validação continuam no consumidor.
+Review: aprovado
+Achados: revisão do próprio agente, não independente, incluindo arquivos novos e instrumento. Corrigidos lint de bloco if no modelo de teste e expectativa externa de quatro pendências para três mutações locais; falha preservada e fixture corrigida sem mudar produto. Guia complementado com precedência de membro de instância sobre extension decode do consumidor. Após correções, revistos deltas, comportamento de null/erro, mutabilidade de saída, lifecycle e rollback do lote; nenhum impeditivo restante.
+Validação: aprovada
+Comandos: loop de dart format/analyze/test em raiz, packages/deltasync_core e packages/deltasync_sync; python3 -B plan/evidence/r40/validate_consumer.py --dart dart --report /tmp/deltasync-r40-consumer.json; dart run example/field_decoder_example.dart. 225 testes, respectivamente 17/132/76, três formatos sem mudanças e três análises limpas. Dois testes externos e análise aprovados; prova negativa rejeita decode em ausente/removido. Sete inventários confirmam somente PresentField.decode como adição em core/facade. Comandos completos, saídas, falha corrigida, ambiente e hashes nos artefatos; focados repetidos não somam ao total.
+Critérios: C1 pelo membro opcional no resultado existente, T Function(Object?) para T, valor bruto preservado e modelo/schema no app; C2 por ramos explícitos de ausência/remoção, null passado ao decoder, retorno nullable e exceção original propagada; C3 por oito tipos, tentativa de mutação aninhada, modelo mutável de saída e snapshots/clocks/outbox intactos em sucesso/falha, sem eventos de commit/erro da engine; C4 por Profile válido/JSON incompatível, erro tratado no exemplo/consumidor, query antes/durante start e após dispose, resultado retido, editor e facade.
+Manutenção: critérios marcados, índice/fase/trace atualizados; DEC-65 e RISK-40/41 registram contrato e limites. R-41 recomendada, R-33 também pronta; nenhuma tarefa ativa ou próxima implementação iniciada. Fase 6/VAL-17 continuam abertos. Checker estrutural e diff executados após manutenção.
+Limitações: Dart 3.13.5/Linux x86_64; sem SDK mínimo 3.12.x ou Android novo. Validação proporcional de core/sync/facade, não gate completo da release; sem nova prova SQLite porque persistência/formatos não mudaram e recuperação durável não é critério R-40. Consumidor externo usa path/resolução independente offline, não hosted. Callback pode capturar efeitos externos que a biblioteca não desfaz; modelo/validação/mutabilidade de saída pertencem ao app. Sem mudanças de variantes/query/valueAt, joins, commit/ACK, adaptadores, dados, SDK/versões, Compass, commit ou publicação.
+
+### Contrato, falhas e consumo
+
+O [contrato e reprodução](evidence/r40/README.md) apresenta os pontos únicos de
+manutenção. [validation.json](evidence/r40/validation.json) contém logs reais,
+hashes e correções. Preferido um membro em PresentField, tipo final já controlado
+pela biblioteca: a conveniência trabalha sobre a consulta feita e seu Object?
+isolado, sem estado nem despacho adicional. Isso preserva switches e permite
+aplicações escolherem converter ou inspecionar o bruto em cada leitura.
+
+Core exercita inferência de T, resultado nullable, null legítimo e ramos explícitos
+de ausência/remoção sem invocar decoder. Profile valida seu próprio schema; modelo
+mutável copia tags sem alterar entrada. Exceção de domínio, erro de tentativa de
+mutar lista aninhada e erro arbitrário propagam; a exceção arbitrária preserva
+identidade. Conversão dos oito tipos mantém snapshot/clocks e valor bruto.
+
+Sync confere snapshot ativo/persistido e outbox intactos após sucesso/erro,
+sem notificação de commit ou errors. Push falho não impede converter resultado
+retido nem editar depois. Lifecycle é aplicado ao obter consulta; resultado
+retido não segura engine/editor e permanece convertível após dispose/fechamento.
+Decoder que falha e escapa do callback aborta a candidata do lote pelo mecanismo
+existente; resultado válido lê edições provisórias. Não há tradução de erro de
+modelo em sucesso de edição nem rollback de commit anterior por falha de leitura.
+
+O [exemplo](../example/field_decoder_example.dart) mostra missing, valid, null,
+deleted e invalid, captura erro de modelo e preserva JSON bruto. O
+[consumidor externo](evidence/r40/consumer_test.dart.txt) usa somente facade,
+modelo próprio, retorno inferido e cópia mutável; sua primeira expectativa de
+contagem estava incorreta. Após correção de quatro para três, dois testes
+passaram. A falha anterior permanece no relatório, sem ocultar histórico.
+[consumer-validation.json](evidence/r40/consumer-validation.json) registra
+compilação negativa e sete inventários com única adição esperada; nenhuma
+assinatura anterior removida/modificada ou classe/variante nova. Evidências
+congeladas anteriores permanecem intactas.
+
+### Manutenção
+
+R-40 concluída; R-41 recomendada sem iniciá-la. O
+[guia de migração](../docs/migracao-1.0.1.md#decoder-opcional-no-resultado-presente--r-40)
+explica entrada/retorno, modelo inválido, resultado retido, efeitos externos e
+precedência do novo membro sobre extension do consumidor. DEC-65/RISK-40/41
+distinguem conversão, commit e falha de sync. Gate integral permanece VAL-17.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 494 links
+locais; `git diff --check` passou. Conferidos 14 hashes, lock/HEAD inalterados,
+dois relatórios JSON, sintaxe Python, whitespace dos arquivos novos, IDs únicos e
+âncora da execução. Evidências anteriores preservadas. Revisão documental final
+sem achados impeditivos; produção/testes não mudaram após a matriz aprovada.

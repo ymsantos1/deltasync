@@ -471,6 +471,23 @@ erro como ausência. Nenhum formato, join ou contrato de adaptador mudou; colis�
 com método query em subclasses externas e futura expansão de variantes exigem
 atenção de migração. Ver [R-42](TRACEABILITY.md#execucao-r-42-2026-10-24).
 
+DEC-65 — Decoder opcional R-40, 2026-10-24: PresentField.decode<T> recebe
+T Function(Object?) e retorna T sem wrapping, valor padrão ou novo acesso ao
+estado. Converte o valor já isolado exatamente uma vez, inclusive null legítimo;
+retorno nullable permanece decisão do consumidor. Ausente/removido não oferecem
+decode, exigindo tratar os ramos existentes de FieldQuery. Valor bruto permanece
+disponível. Um membro na variante presente atende Replica/engine/editor e mantém
+um percurso de consulta, sem classes, generificação da hierarquia, schema ou
+adaptadores adicionais. Preferido membro sobre extension por ser conveniência
+pequena do tipo controlado pela biblioteca; não há despacho novo ou override.
+Resultado pode ser convertido após edições/dispose; nova consulta ainda respeita
+lifecycle. Modelo, validação, mutabilidade de saída e efeitos externos do decoder
+pertencem ao consumidor. Erro de leitura propaga ao chamador sem desfazer commit
+anterior ou emitir falha da engine; erro que escapar do callback de lote segue
+seu rollback existente. Novo membro pode sombrear extension decode do consumidor;
+guia orienta migração. Sem mudanças de query/valueAt, variantes, joins, commit,
+ACK ou formatos. Ver [R-40](TRACEABILITY.md#execucao-r-40-2026-10-24).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
