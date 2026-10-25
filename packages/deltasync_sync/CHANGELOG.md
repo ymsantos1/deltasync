@@ -1,4 +1,9 @@
-## Unreleased
+## 1.0.1
+
+**Upgrade review required:** this intentionally breaking patch consolidates the
+source previously labeled 2.0.0. Update all DeltaSync packages together and read
+the migration guide before upgrading from 1.0.0. Dart ^3.13.0 is required.
+Package renumbering does not change JSON/schema or remove historical readers.
 
 - Require Dart ^3.13.0; align formatter with the declared language version.
 - Add commitsFor and isolated processed-address metadata for local/batch/remote
@@ -15,7 +20,10 @@
 - Assemble outbox changes in one pass, preserving ID conflict checks and order
   while avoiding repeated prefix merges for large offline batches.
 
-## 2.0.0
+### Retained capabilities
+
+These capabilities already existed at the 1.0.0 baseline. They are retained,
+not new format changes or new runtime validation performed for this renumbering.
 
 - Integrate durable mutations and reconciliation for all eight CRDTs.
 - Separate commits from network waits; restore state/outbox before accepting edits.

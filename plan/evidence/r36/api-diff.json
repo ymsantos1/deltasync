@@ -1,0 +1,245 @@
+{
+  "deltasync": {
+    "removed": [
+      "MemoryPendingDeltaStore",
+      "Operation",
+      "PendingDeltaStore",
+      "migrateLegacyOperation"
+    ],
+    "added": [
+      "AbsentField",
+      "DeletedField",
+      "FieldQuery",
+      "LocalBatch",
+      "OutboxSummary",
+      "PresentField"
+    ],
+    "changed": {
+      "OutboxEntry": {
+        "headerBefore": "class OutboxEntry",
+        "headerAfter": "class OutboxEntry",
+        "removedMembers": [
+          "@Deprecated('Use changeIds for native CRDT changes.') String get operationId"
+        ],
+        "addedMembers": []
+      },
+      "ReplicaState": {
+        "headerBefore": "class ReplicaState",
+        "headerAfter": "class ReplicaState",
+        "removedMembers": [],
+        "addedMembers": [
+          "bool isDeletedAt(String address)"
+        ]
+      },
+      "Delta": {
+        "headerBefore": "class Delta",
+        "headerAfter": "class Delta",
+        "removedMembers": [
+          "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+          "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)"
+        ],
+        "addedMembers": []
+      },
+      "SyncCommitEvent": {
+        "headerBefore": "class SyncCommitEvent extends SyncObservation",
+        "headerAfter": "class SyncCommitEvent extends SyncObservation",
+        "removedMembers": [
+          "const SyncCommitEvent({required this.origin})"
+        ],
+        "addedMembers": [
+          "SyncCommitEvent({required this.origin, required Iterable<String> addresses})",
+          "final Set<String> addresses;"
+        ]
+      },
+      "ReplicaStorage": {
+        "headerBefore": "abstract interface class ReplicaStorage",
+        "headerAfter": "abstract interface class ReplicaStorage",
+        "removedMembers": [],
+        "addedMembers": [
+          "Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      },
+      "MemoryStorage": {
+        "headerBefore": "class MemoryStorage implements ReplicaStorage",
+        "headerAfter": "class MemoryStorage implements ReplicaStorage",
+        "removedMembers": [],
+        "addedMembers": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      },
+      "SyncEngine": {
+        "headerBefore": "class SyncEngine",
+        "headerAfter": "class SyncEngine",
+        "removedMembers": [
+          "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+          "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+          "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+          "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+          "final ReplicaStorage? storage;"
+        ],
+        "addedMembers": [
+          "FieldQuery query(String address)",
+          "Future<Delta> batch(FutureOr<void> Function(LocalBatch batch) mutate)",
+          "Future<OutboxSummary> pendingSummary({String? recipientPeerId})",
+          "Stream<SyncCommitEvent> commitsFor(String address)",
+          "SyncEngine({ required Replica replica, required this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+          "final ReplicaStorage storage;"
+        ]
+      },
+      "Replica": {
+        "headerBefore": "class Replica",
+        "headerAfter": "class Replica",
+        "removedMembers": [
+          "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+          "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)",
+          "void mergeSnapshotJson(Map<String, Object?> json)"
+        ],
+        "addedMembers": [
+          "FieldQuery query(String address)",
+          "Set<String> mergeSnapshotJson(Map<String, Object?> json)"
+        ]
+      }
+    }
+  },
+  "deltasync_core": {
+    "removed": [
+      "Operation",
+      "migrateLegacyOperation"
+    ],
+    "added": [
+      "AbsentField",
+      "DeletedField",
+      "FieldQuery",
+      "PresentField"
+    ],
+    "changed": {
+      "ReplicaState": {
+        "headerBefore": "class ReplicaState",
+        "headerAfter": "class ReplicaState",
+        "removedMembers": [],
+        "addedMembers": [
+          "bool isDeletedAt(String address)"
+        ]
+      },
+      "Delta": {
+        "headerBefore": "class Delta",
+        "headerAfter": "class Delta",
+        "removedMembers": [
+          "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+          "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)"
+        ],
+        "addedMembers": []
+      },
+      "Replica": {
+        "headerBefore": "class Replica",
+        "headerAfter": "class Replica",
+        "removedMembers": [
+          "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+          "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)",
+          "void mergeSnapshotJson(Map<String, Object?> json)"
+        ],
+        "addedMembers": [
+          "FieldQuery query(String address)",
+          "Set<String> mergeSnapshotJson(Map<String, Object?> json)"
+        ]
+      }
+    }
+  },
+  "deltasync_storage": {
+    "removed": [
+      "MemoryPendingDeltaStore",
+      "PendingDeltaStore"
+    ],
+    "added": [
+      "OutboxSummary"
+    ],
+    "changed": {
+      "ReplicaStorage": {
+        "headerBefore": "abstract interface class ReplicaStorage",
+        "headerAfter": "abstract interface class ReplicaStorage",
+        "removedMembers": [],
+        "addedMembers": [
+          "Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      },
+      "MemoryStorage": {
+        "headerBefore": "class MemoryStorage implements ReplicaStorage",
+        "headerAfter": "class MemoryStorage implements ReplicaStorage",
+        "removedMembers": [],
+        "addedMembers": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      },
+      "OutboxEntry": {
+        "headerBefore": "class OutboxEntry",
+        "headerAfter": "class OutboxEntry",
+        "removedMembers": [
+          "@Deprecated('Use changeIds for native CRDT changes.') String get operationId"
+        ],
+        "addedMembers": []
+      }
+    }
+  },
+  "deltasync_transport": {
+    "removed": [],
+    "added": [],
+    "changed": {}
+  },
+  "deltasync_sync": {
+    "removed": [],
+    "added": [
+      "LocalBatch"
+    ],
+    "changed": {
+      "SyncEngine": {
+        "headerBefore": "class SyncEngine",
+        "headerAfter": "class SyncEngine",
+        "removedMembers": [
+          "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+          "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+          "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+          "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+          "final ReplicaStorage? storage;"
+        ],
+        "addedMembers": [
+          "FieldQuery query(String address)",
+          "Future<Delta> batch(FutureOr<void> Function(LocalBatch batch) mutate)",
+          "Future<OutboxSummary> pendingSummary({String? recipientPeerId})",
+          "Stream<SyncCommitEvent> commitsFor(String address)",
+          "SyncEngine({ required Replica replica, required this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+          "final ReplicaStorage storage;"
+        ]
+      },
+      "SyncCommitEvent": {
+        "headerBefore": "class SyncCommitEvent extends SyncObservation",
+        "headerAfter": "class SyncCommitEvent extends SyncObservation",
+        "removedMembers": [
+          "const SyncCommitEvent({required this.origin})"
+        ],
+        "addedMembers": [
+          "SyncCommitEvent({required this.origin, required Iterable<String> addresses})",
+          "final Set<String> addresses;"
+        ]
+      }
+    }
+  },
+  "deltasync_storage_sqflite": {
+    "removed": [],
+    "added": [],
+    "changed": {
+      "SqfliteReplicaStorage": {
+        "headerBefore": "class SqfliteReplicaStorage implements ReplicaStorage",
+        "headerAfter": "class SqfliteReplicaStorage implements ReplicaStorage",
+        "removedMembers": [],
+        "addedMembers": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      }
+    }
+  },
+  "deltasync_storage_testing": {
+    "removed": [],
+    "added": [],
+    "changed": {}
+  }
+}

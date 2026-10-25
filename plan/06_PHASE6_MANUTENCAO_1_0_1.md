@@ -1,7 +1,7 @@
 # Fase 6 — Consolidação completa para 1.0.1
 
-Estado: em andamento em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
-R-35 pronta; demais tarefas ainda não iniciadas.
+Estado: em andamento em 2026-10-25; R-30/R-31/R-32/R-33/R-34/R-35/R-36/R-37/R-38/R-39/R-40/R-41/R-42 concluídas.
+VAL-17 pronta; gate completo ainda não executado.
 Objetivo: aplicar toda a análise à biblioteca em 1.0.1, incluindo correções,
 novas APIs, remoção de legado, medições, ferramentas e documentação de migração.
 Origem: pedido do autor para planejar os pontos da análise geral da biblioteca,
@@ -271,7 +271,7 @@ R-35 liberada; fase 6/VAL-17 continuam abertos.
 
 ## R-35 — Simplificar guia durável e esclarecer contratos públicos
 
-Status: pronta
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-34, R-37, R-38, R-39, R-40, R-41, R-42
 
@@ -280,26 +280,26 @@ Não implementar regras de notas nem alterar consumidor externo.
 
 Critérios:
 
-- [ ] Abrir README com percurso durável curto usando SyncEngine e SQLite;
+- [x] Abrir README com percurso durável curto usando SyncEngine e SQLite;
   reusar exemplos existentes e manter variante volátil explicitamente identificada.
   Mover histórico/medições detalhados para docs pertinentes com links atualizados,
   preservando evidências, anchors existentes e informação de compatibilidade.
-- [ ] Mostrar configuração, identidade/endereço estáveis, edição, consulta,
+- [x] Mostrar configuração, identidade/endereço estáveis, edição, consulta,
   sincronização e encerramento/restauração. Distinguir commit local, pendência,
   ACK do peer configurado e propagação a outros participantes não garantida.
-- [ ] Exercitar com fixture geral uma consulta de pendências que falha depois
+- [x] Exercitar com fixture geral uma consulta de pendências que falha depois
   de commit bem-sucedido; mostrar tratamento independente da falha de status.
   Mostrar validação de modelo no consumidor para JSON estruturalmente válido,
   sem schema de domínio no core ou promessa de rollback após sucesso local.
-- [ ] Documentar ownership de engine/transporte/storage, streams sem replay,
+- [x] Documentar ownership de engine/transporte/storage, streams sem replay,
   listeners, retry de abertura, dispose e agendamento de push pelo consumidor.
   Usar consulta leve de pendências e eventos seletivos para evitar reconstruir
   deltas/atualizar toda a interface a cada edição.
-- [ ] Mapear pontos de manutenção: estado/mutação/join no core, commit/restauração
+- [x] Mapear pontos de manutenção: estado/mutação/join no core, commit/restauração
   em sync/storage, atomicidade SQL no adaptador e codecs nas respectivas camadas.
   Explicar extensão de storage/transport, oito tipos fechados integrados e
   necessidade de alterar core/codec/testes para integrar um CRDT adicional.
-- [ ] Documentar remoções e migração de fonte/adaptadores 1.0.0 para 1.0.1;
+- [x] Documentar remoções e migração de fonte/adaptadores 1.0.0 para 1.0.1;
   destacar a quebra deliberada apesar da numeração patch. Mostrar decoder,
   lote local atômico, eventos seletivos e consulta explícita de estado de campo.
   Explicar LWW por valor inteiro, par fixo por engine e responsabilidades de
@@ -307,13 +307,20 @@ Critérios:
 
 Validação: links/anchors, exemplos executados e fixtures de falha/consumo;
 análise/testes dos pacotes tocados se houver exemplo ou teste Dart novo.
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-35](TRACEABILITY.md#execucao-r-35-2026-10-25)
+e [artefatos](evidence/r35/README.md). README durável reduzido de 805 a 195 linhas,
+17 âncoras anteriores e nove do guia preservadas; histórico movido sem perda.
+Revisão após correções e formato/análise dos sete pacotes aprovados; 312 testes,
+dois do enlace e 11 de política, exemplos/CLI entre processos e snippet real do
+README com reabertura SQLite. Fixture geral separa commit/status/modelo e preserva
+snapshot/outbox. Não houve mudança de API, payload, manifests ou SDK; numeração
+continua com R-36. Fase 6/VAL-17 permanecem abertos.
 
 <a id="r-36"></a>
 
 ## R-36 — Preparar metadados da release 1.0.1
 
-Status: planejada
+Status: concluída
 MoSCoW: SHOULD
 Dependências: R-35
 
@@ -322,30 +329,37 @@ e preparação de distribuição existente. Não publicar, criar tags ou fazer m
 
 Critérios:
 
-- [ ] Atualizar os sete pacotes para 1.0.1 somente após as tarefas de produto;
+- [x] Atualizar os sete pacotes para 1.0.1 somente após as tarefas de produto;
   ajustar limites inferiores internos para exigir 1.0.1 onde a correção for
   necessária, mantendo resolução consistente dos sete artefatos distribuídos.
-- [ ] Registrar mudanças realmente entregues em changelogs únicos; preservar
+- [x] Registrar mudanças realmente entregues em changelogs únicos; preservar
   histórico 1.0.0, SDK suportado e dependências externas salvo decisão validada.
   Identificar APIs novas/removidas e requisitos de migração efetivamente validados;
   não anunciar leitor abandonado ou Saropa adotado sem evidência.
-- [ ] Atualizar docs/publicacao.md e exemplos de dependência; preparar diretórios
+- [x] Atualizar docs/publicacao.md e exemplos de dependência; preparar diretórios
   novos com prepare_release.py, mantendo fontes, licença, filtros e inventário.
   Ferramentas de CI/lint não podem virar dependência runtime do consumidor.
-- [ ] Conferir exports/assinaturas, classes implementáveis, enums e variantes
+- [x] Conferir exports/assinaturas, classes implementáveis, enums e variantes
   de evento contra o mapa de R-30; documentar todas as quebras autorizadas e seus
   substitutos. Manter formatos JSON/schema e leitores; a renumeração dos pacotes
   não altera dados. Destacar nos sete releases que 1.0.1 exige revisão do upgrade.
 
 Validação: manifests/changelogs, resolução local e inspeção dos diretórios
 preparados. O teste completo dos artefatos pertence à VAL-17.
-Evidência de conclusão: ainda não registrada.
+Evidência de conclusão: [execução R-36](TRACEABILITY.md#execucao-r-36-2026-10-25)
+e [preparação/inventários](evidence/r36/README.md). Sete versões 1.0.1, 17
+constraints ^1.0.1, SDK/externas preservados, changelogs únicos e aviso de quebra.
+Resoluções Dart/Flutter locais e dart analyze aprovados; 85 arquivos e 48 fontes
+de lib conferidos byte a byte. Sete superfícies comparadas com R-30, dez enums e
+cinco variantes existentes preservados. R-35/evidências anteriores preservadas.
+Revisão após correções e validação aprovadas; sem upload/dry-run ou teste hosted
+nesta tarefa. VAL-17 pronta; fase 6 permanece aberta.
 
 <a id="val-17"></a>
 
 ## VAL-17 — Validar migração e artefatos da 1.0.1
 
-Status: planejada
+Status: pronta
 MoSCoW: SHOULD
 Dependências: R-36
 
@@ -354,8 +368,10 @@ Este é o gate da release de manutenção; não substitui registros históricos.
 
 Critérios:
 
-- [ ] Executar formato/análise/testes dos sete pacotes no SDK mínimo e no SDK
-  de referência definidos em R-30. Revalidar os oito CRDTs, histórias geradas,
+- [ ] Executar formato/análise/testes dos sete pacotes na faixa mínima e no SDK
+  de referência vigentes em R-33/DEC-67 (^3.13.0; referência 3.13.5), que substituem
+  a matriz histórica R-30. Registrar patches efetivamente executados, sem alegar
+  runtime 3.13.0 ou 3.12 não executado. Revalidar os oito CRDTs, histórias geradas,
   concorrência, ACK parcial/perdido, edição durante falha e recuperação SQLite.
 - [ ] Consumir fixtures 1.0.0 preservando estado, clocks, contextos, tombstones,
   IDs/outbox e próxima mutação após restauração. Confirmar mesmo formato de escrita

@@ -44,7 +44,10 @@ foi excluído da análise. A validação local usa checkouts separados por job.
 
 Os exemplos novos usam somente contratos públicos. A CLI de reconciliação roda
 reset/offline/reconnect em diretório temporário próprio, sem tocar bancos do
-consumidor. O exemplo Flutter tem resolução separada, lockfile obrigatório
+consumidor. O exemplo `commit_status_example.dart` também roda em subdiretório
+temporário próprio; a fixture da raiz injeta falha de consulta após commit SQLite
+e verifica reabertura, outbox e erro de modelo sem relatar perda da edição.
+O exemplo Flutter tem resolução separada, lockfile obrigatório
 (`pub get --enforce-lockfile`) e seus próprios testes. A biblioteca não versiona
 lockfile; seu job resolve o grafo compatível a cada checkout limpo.
 Os dois builds usam `lib/main.dart` e `lib/main_eight.dart`; não instalam APK,

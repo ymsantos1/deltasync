@@ -545,6 +545,19 @@ dependência adicional de R-35 nem retira escopo da release. Lint não prova CRD
 atomicidade, recuperação, autenticação ou ausência de vulnerabilidade. Ver
 [relatório](evidence/r34/README.md) e [execução](TRACEABILITY.md#execucao-r-34-2026-10-25).
 
+DEC-69 — Preparação 1.0.1 R-36, 2026-10-25: alinhar sete manifests e 17 constraints
+internas em 1.0.1/^1.0.1 após as tarefas de produto, sem tocar SDK ^3.13.0,
+dependências externas ou fontes de biblioteca. Consolidar o rascunho de changelog
+2.0.0 em 1.0.1, identificando capacidades retidas e preservando histórico 1.0.0.
+Quebra de fonte deliberada é destacada em todos os pacotes e no mapa das sete
+superfícies; formatos/readers/schema não são renumerados. Diretórios novos têm
+85 arquivos inspecionados com inventário; isso não substitui VAL-17, dry-run,
+consumo hosted ou publicação. Referência SDK de VAL-17 segue R-33/DEC-67 e a
+orientação do autor de evitar 3.12; R-30 permanece registro histórico imutável.
+Worktree R-35 não commitada foi preservada, sem stash/reset. Sem publicação/tag/
+merge/push autorizado por esta preparação. Ver
+[R-36](TRACEABILITY.md#execucao-r-36-2026-10-25).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
@@ -552,7 +565,7 @@ atomicidade, recuperação, autenticação ou ausência de vulnerabilidade. Ver
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
 | OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
-| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42 | Todas as APIs entram na 1.0.1. R-30 fixou superfícies e mapa de impacto/substitutos existentes; nomes/assinaturas das conveniências novas serão fechados nas tarefas responsáveis e atualizados no mapa. Quebras de interface/switches exigem fixture migrada; decisão de versão resolvida em DEC-55. |
+| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42, R-36 | Resolvida em R-36/DEC-69: APIs/assinaturas fechadas nas tarefas e sete superfícies conferidas com R-30. Migração enumera substitutos e restrições das variantes; versão deliberada 1.0.1 mantida. VAL-17 ainda deve aprovar consumidores/dados/artefatos; fechamento do mapa não aprova o gate. |
 | OPEN-09 | R-34 | Resolvida por DEC-68: piloto essential 16.7.0 concluiu por adiamento fundamentado. Recommended/CI/advisories permanecem; sem instalação permanente ou downgrade. Novo piloto e controle positivo Dart/Flutter exigidos antes de reconsiderar adoção, sem bloquear R-35. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas

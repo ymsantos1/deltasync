@@ -5966,3 +5966,90 @@ aprovou 474 verificações de evidência; `python3 scripts/check_plan.py` aprovo
 Hashes, códigos de saída, whitespace dos arquivos novos, decisão e status foram
 conferidos novamente após correções. Fonte, manifests/configurações, HEAD e
 evidências históricas permanecem intactos. Nenhuma tarefa subsequente iniciada.
+
+<a id="execucao-r-35-2026-10-25"></a>
+
+## Execução R-35 — Guia durável e consumo público, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: worktree limpa em 9fc0f68629e794c962fb9a74e163d8ebe27da27f; R-35 pronta, todas as sete dependências concluídas. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, contratos/fontes e testes públicos de consulta/decoder/resumo/lote/eventos, DEC-62 a DEC-68, riscos de pós-commit/lifecycle e trechos SDK/patterns/contratos da referência Dart. Identificado README extenso, contagem por pendingDelta e orientação antiga sem separação de erro de status. Escopo autorizado: lib, docs/exemplos/fixture/CI do consumidor geral; Compass e renumeração R-36 ficam fora. Um agente, sem delegação.
+Implementação: README abre com percurso SQLite; referência e medições movidas para docs, mantendo anchors e informação histórica. Guia/READMEs/migração esclarecem modelo, commit/status/ACK, lote, consulta/decoder, eventos seletivos e manutenção. Novo exemplo executável reutiliza decoder/modelo existente; fixture geral usa SQLite real e fault injection em métodos públicos, sem src nem domínio no core. CLI offline passa a consultas pontuais/resumo leve e deixa de inferir confirmação de ausência de pendências. CI inclui novo exemplo em diretório temporário. Sem mudança de lib/src, API pública, formatos, manifests ou SDK. Primeiro check da fixture passou três casos; revisão e validação finais ainda pendentes.
+Review: aprovado
+Achados: revisão do próprio implementador em etapa distinta, não independente. Corrigidas orientações herdadas que copiavam réplica inteira, contavam payloads para UI e inferiam ACK da outbox vazia. Removido exemplo linear de awaits que poderia agrupar status com falha de edição; referência aponta o fluxo com catches separados. Ajustadas versões/contexto histórico e redação de compatibilidade. Fixture reforçada para conferir conteúdo exato do modelo inválido no snapshot salvo. Revistos os deltas após correções/formatter, scripts e arquivos novos; sem achados impeditivos restantes. Confirmadas 17 âncoras anteriores do README, nove do guia, 49 links GitHub locais e preservação literal da comparação histórica Compass.
+Validação: aprovada
+Comandos: dart format --output=none --set-exit-if-changed lib test, dart analyze e dart test --reporter expanded na raiz e em cada um dos seis subpacotes; formato dos dois exemplos tocados, dart test example/support/peer_link_test.dart --reporter expanded e python3 -B -m unittest discover -s scripts/tests -v. Cinco exemplos existentes executados; novo exemplo em dois processos com mesmo banco; CLI SQLite reset/offline/reconnect em três processos; bloco real do README extraído e executado com dart run --packages=.dart_tool/package_config.json /tmp/deltasync-r35-readme-probe.dart. Trinta e nove comandos finais, diretórios/saídas/hashes/versões em evidence/r35/validation.json. Verificados links/âncoras locais/GitHub mapeados ao checkout, históricos, sintaxe Python, fonte e escopo.
+Resultados: sete pacotes aprovados com 312 testes (21/134/83/14/40/10/10), mais dois do enlace e 11 de política CI. Os três casos novos integram os 21 da facade, sem somar execução preliminar. SQLite real preservou commit/outbox após falha de resumo e rede, fechamento/reabertura e nova edição; erro de modelo preservou payload exato. CLI restaurou estado/pendências em processos separados e reconciliou com ACK durável. Probe do README confirmou snapshot e dois IDs únicos após reabertura. Formato/análise passaram. Falha inicial de format por escrita do wrapper Dart fora do sandbox foi resolvida por execução autorizada, mantendo comando dart/SDK 3.13.5; sem fallback 3.12.
+Critérios: C1 por README SQLite, reuso de exemplos/decoder, referência/medições movidas e 17+9 âncoras preservadas; C2 por configuração/identidades/consulta/commit/ACK e execução durável; C3 por fixture geral de falha pós-commit, modelo inválido e controle negativo de commit falho, sem domínio no core; C4 por ownership/retry/lifecycle/streams sem replay, resumo por peer e eventos seletivos; C5 por mapa dos oito CRDTs/camadas/codecs e contratos públicos/extensão integrada sem plugins; C6 por guia de migração e aviso de quebra deliberada, decoder/lote/query/eventos e limites de LWW/par fixo/TLS/atomicidade local.
+Manutenção: seis critérios marcados; índice/fase/evidências atualizados, RISK-40 registra mitigação entregue. Decisões DEC-62 a DEC-68 mantidas, sem nova mudança de API/arquitetura ou decisão acadêmica. R-36 pronta/recomendada sem iniciar renumeração; nenhuma tarefa ativa. Fase 6/VAL-17 continuam abertos.
+Limitações: Dart 3.13.5/Linux x64/SQLite FFI com resolução existente (test 1.33.0/analyzer 14.5.0/sqlite3 3.7.1), sem instalação limpa/advisory online novo, build/runtime Flutter/Android/iOS ou CI remoto nesta tarefa. As falhas de resumo/commit da fixture são injetadas em métodos públicos; commit falha antes da transação, sem alegar nova prova de rollback após writes. Fonte pública/API/formatos/manifests/SDK e evidências históricas permanecem intactos. URLs GitHub foram conferidos localmente, não publicados. Sem Compass, publicação, renumeração, commit ou tarefa subsequente.
+
+### Entrega e evidências
+
+O [relatório](evidence/r35/README.md), o
+[registro dos comandos](evidence/r35/validation.json) e a
+[preservação documental](evidence/r35/documentation.json) ligam critérios a
+resultados reais. [Probe do README](evidence/r35/readme_probe.dart.txt) contém o
+snippet efetivamente compilado mais harness de reabertura; não é nova API ou
+teste da lib distribuída. Históricos movidos para docs não foram recalculados.
+
+README e guias usam somente contratos públicos. O modelo do exemplo pertence ao
+consumidor e reutiliza o decoder existente. Não há nova classe de domínio no
+core ou framework de adaptação. As leituras pontuais/resumo e filtros públicos
+substituem cópias/reconstruções desnecessárias no exemplo; estado/outbox/joins e
+persistência mantêm seus donos. SDK e contratos não foram alterados para produzir
+uma entrega documental. A nova chamada no runner CI reutiliza o diretório
+temporário já existente; os testes de política e a execução do exemplo passaram,
+sem alegar execução integral/remota do workflow.
+
+Após manutenção, `python3 scripts/check_plan.py` aprovou 70 tarefas e 541 links
+locais, com R-36 pronta; `git diff --check` passou. Conferidos 16 hashes dos
+documentos/fontes entregues, JSON e whitespace dos arquivos novos, HEAD intacto,
+ausência de alteração em lib/manifests e preservação das evidências anteriores.
+Revisão documental final sem impeditivos. Nenhum código mudou depois da matriz
+aprovada; R-36 permanece sem execução.
+
+<a id="execucao-r-36-2026-10-25"></a>
+
+## Execução R-36 — Metadados e preparação 1.0.1, 2026-10-25
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: R-35 concluída e R-36 pronta. Worktree contém a entrega R-35 ainda não commitada sobre 9fc0f68629e794c962fb9a74e163d8ebe27da27f; capturados status e hashes dos 298 arquivos iniciais antes de editar, sem stash/commit/reset. Lidos AGENTS/RUNBOOK, cinco skills completas, critérios, preparação/publicação, R-30/mapa de API, decisões de quebra/SDK e riscos. Referência Dart consultada para modificadores, variantes e versões; documentação oficial Pub/workspaces conferida. Escopo: metadados, exemplos de dependência, inventário e diretórios; sem publicação, tags, merges ou gate completo VAL-17.
+Implementação: sete versões 1.0.1 e 17 constraints internas ^1.0.1; dependências externas/SDK preservados. Changelogs consolidados em uma entrada 1.0.1 por pacote, com aviso de upgrade e capacidades pré-existentes identificadas; histórico 1.0.0 preservado. README/guia/publicação e dependências de consumo atualizados sem apagar conteúdo R-35. Flutter lock acompanha as seis bibliotecas locais usadas pelo app, sem alterar entradas externas. Inventário AST normalizado compara sete superfícies com a revisão 1.0.0 de R-30 e classifica assinaturas/implementadores/enums/variantes, sem confundir comentário com assinatura. Preparação/inspeção finais ainda pendentes.
+Review: aprovado
+Achados: revisão própria em etapa distinta, não independente. Rascunho 2.0.0 consolidado sem anunciar retirada de readers ou capacidades antigas como formato novo. Corrigidas redação de disponibilidade no pub e classificação AST que inicialmente contava comentários como assinatura; instrumento temporário usa offset posterior à documentação e compara mesma revisão histórica, mantendo os dados R-30 intactos. Conferidos sete exports, substitutos, novos tipos fechados, modificadores e ausência de alteração dos dez enums/cinco variantes existentes. Revistos os deltas após correções; sem impeditivos restantes. R-35 preservada; metadados das superfícies de dependência são os únicos trechos anteriores ajustados por esta tarefa.
+Validação: aprovada
+Comandos: dart pub get --offline na raiz; flutter pub get --offline no exemplo; dart pub deps --json, dart pub workspace list --json, dart --version e dart analyze. Instrumento AST derivado do existente executado com dart --packages=.dart_tool/package_config.json contra extração Git da revisão 1e969182e8e172a8858a48ecf83a1feb2c21a455 e árvore atual. python3 -B scripts/prepare_release.py preparou /tmp/deltasync-release-parent-cgx9_tyj/release. Inspeção Python conferiu conteúdo/hashes/constraints, SDK/externas, histórico e escopo; JSON/whitespace/links também aprovados. Comandos/saídas/versões e resultados em evidence/r36/validation.json. Sem testes runtime/dry-runs/consumer hosted nesta tarefa; pertencem ao próximo gate.
+Resultados: sete membros locais em 1.0.1 e 17 constraints ^1.0.1; normalizar somente versões internas reproduz exatamente os manifests iniciais. Sete changelogs únicos com alerta e histórico preservado. Diretórios têm 85 arquivos/48 fontes de lib, sem cache/tests/plan/lock; fontes/licença/README/changelog e manifest standalone correspondem à árvore preparada. Dez enums e cinco variantes existentes intactos; diferenças de exports/membros são as esperadas R-37/R-38/R-39/R-40/R-41/R-42. Análise Dart aprovada; Flutter lock mudou somente seis versões locais, sem alteração externa. Conferidos hashes iniciais de R-35/evidências e prefixo integral do registro anterior; sem perda de código/análise.
+Critérios: C1 por sete manifests/17 constraints e resolução consistente; C2 por changelogs consolidados/avisos, história 1.0.0, SDK/externas preservados e Saropa adiado sem leitor abandonado anunciado; C3 por publicação/consumo atualizados, prepare_release existente inalterado e 85 arquivos/hashes/filtragem inspecionados, sem CI/lint no runtime; C4 por comparação AST das sete superfícies com R-30, mapa de substitutos/modificadores/enums/variantes e fontes de writer/reader/schema intactas na renumeração. Nomes e APIs novos não surgiram nesta tarefa; foram conferidos, não reimplementados.
+Manutenção: quatro critérios marcados; índice/fase/trace atualizados, DEC-69/OPEN-08 registram fechamento do mapa e preparação, RISK-36/38 mantêm distinção entre candidatos e gate. VAL-17 pronta, não iniciada; referência de SDK corrigida para R-33/DEC-67 conforme orientação do autor, sem alterar baseline R-30. Nenhuma tarefa ativa; fase 6 segue aberta. Commit/publicação continuam com o autor.
+Limitações: Dart 3.13.5/Linux, resolução offline já existente; nenhuma execução 3.12/patch 3.13.0, consulta advisory nova, suíte completa, build/runtime Flutter ou prova de instalação pública nesta tarefa. Pastas preparadas são candidatas; dry-runs, migração de dados/consumidores e validação hosted sem paths/overrides pertencem a VAL-17. Os resultados R-28/R-35 permanecem históricos. Sem upload, tag, merge, push ou commit automático.
+
+### Evidências e continuidade
+
+[Relatório](evidence/r36/README.md), [validação](evidence/r36/validation.json),
+[comparação de API](evidence/r36/api-diff.json),
+[inventário preparado](evidence/r36/inventory.json) e
+[resolução local](evidence/r36/resolution.json) ligam critérios aos candidatos.
+[Instrumento AST](evidence/r36/api_inventory.dart.txt) preserva a distinção entre
+assinatura e comentário sem mudar os dados/ferramentas congelados de R-30.
+A preparação remove somente configuração de workspace nos manifests; licenças,
+fontes e filtros são mantidos. O mecanismo de distribuição existente não precisou
+ser ampliado; exemplos completos/docs/planos continuam fora do pacote publicado.
+
+O diff desta execução é identificado contra os hashes da worktree R-35 inicial,
+não apenas contra HEAD, que ainda não continha a entrega anterior. Código R-35,
+scripts, 48 fontes de lib e evidências existentes ficaram intactos; README/guia/
+dependências receberam os ajustes de release explicitados. Todos os changelogs
+pedem revisão do upgrade incompatível; documentação distingue metadados, dados e
+publicação real. VAL-17 permanece responsável por aprovar a release completa.
+
+Após manutenção, `python3 -B scripts/check_plan.py` aprovou 70 tarefas e 557 links
+locais, com VAL-17 pronta; `git diff --check` passou. Conferidos hashes finais dos
+candidatos e dos 48 arquivos de lib, metadados/resolução, hierarquias novas,
+enums/variantes, histórico, links, whitespace e preservação R-35. Fechamento de
+dependências runtime da facade tem somente os cinco pacotes Dart, sem ferramenta
+CI/lint ou test; storage_testing mantém sua finalidade de suíte de desenvolvimento.
+Revisão final documental sem impeditivos; candidatos permanecem inalterados desde
+a inspeção aprovada. Nenhum trabalho de VAL-17 foi iniciado.

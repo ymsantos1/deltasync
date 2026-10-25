@@ -2,8 +2,16 @@
 
 A consolidação planejada para 1.0.1 remove APIs públicas. Por escolha expressa
 do autor, esse número inclui quebras normalmente reservadas a uma versão major.
-Não considere o upgrade compatível apenas pelo número. Os manifests ainda serão
-ajustados em R-36; esta mudança não publica nem renumera pacotes ou dados.
+Não considere o upgrade compatível apenas pelo número. R-36 alinha os sete
+manifests em 1.0.1 e as dependências internas em ^1.0.1. Isso não publica pacotes,
+renumera dados ou dispensa a validação integral dos artefatos em VAL-17.
+
+O [guia de integração](guia-integracao.md) reúne o percurso atual: SQLite,
+identidade estável, lote local, consulta/decoder, eventos seletivos e ownership.
+O [exemplo de commit/status](../example/commit_status_example.dart) e sua
+[fixture SQLite](../test/integration_guide_test.dart) mostram falha de contagem
+após sucesso local sem repetir a edição, além de JSON válido com modelo inválido.
+Esse tratamento pertence ao consumidor; não há rollback após um commit já salvo.
 
 ## Substituições de fonte
 
@@ -25,7 +33,8 @@ Consulte a [política de CI e advisories](ci.md).
 | `Operation`, `migrateLegacyOperation` exportados | Métodos nativos e `DeltaCodec.decode` para registros históricos versionados | Não importar `src`; o DTO/conversor histórico são detalhes internos |
 
 `DeltaChange`, `ReplicaStorage` e os contratos de transporte continuam
-implementáveis pelos consumidores. Seus membros não mudaram nesta tarefa.
+implementáveis pelos consumidores. R-39 não alterou seus membros; a consolidação
+também inclui as mudanças R-37/R-41 detalhadas abaixo, que exigem adaptar fonte.
 Adaptadores de storage devem implementar `loadReplica`, `saveReplica`, `commit`,
 `commitRemote`, `enqueue`, `pending`, `pendingSummary`, `markSent` e `acknowledge`. Execute a suíte
 de `deltasync_storage_testing`, além de provas de rollback/reabertura no seu banco.
@@ -464,6 +473,40 @@ Leitores anteriores a essa referência podem não entender formatos causais mais
 recentes, como o contexto MV compacto. Nenhuma garantia adicional de downgrade
 foi introduzida. Outras tarefas desta release ainda exigem VAL-17 antes da
 distribuição; R-39 não certifica antecipadamente seus formatos ou artefatos.
+
+## Conferência das sete superfícies — R-36
+
+A comparação AST contra a revisão 1.0.0 congelada em R-30 confere exports,
+assinaturas, modificadores, enums e variantes. Comentários de documentação e
+movimentos internos de arquivo não são tratados como quebra de assinatura.
+O inventário completo e a classificação estão em
+[R-36](../plan/evidence/r36/README.md). A renumeração desta tarefa não altera
+nenhuma declaração Dart; mudanças abaixo foram implementadas nas tarefas anteriores.
+
+| Superfície | Diferenças e caminho de consumo |
+|---|---|
+| deltasync | Reexporta a união das mudanças de core/storage/sync abaixo; transporte permanece igual |
+| deltasync_core | Remove Operation/migrateLegacyOperation públicos, Replica.set/remove e Delta.crdt/crdtChanges. Usar LwwDelta/DeltaCodec, setDelta/removeDelta, Delta/changes. Acrescenta FieldQuery e três variantes, PresentField.decode e Replica.query/ReplicaState.isDeletedAt. mergeSnapshotJson retorna Set<String>, exigindo alterar overrides void |
+| deltasync_storage | Remove PendingDeltaStore/MemoryPendingDeltaStore e operationId; usar ReplicaStorage e entryId/changeIds. Acrescenta OutboxSummary e pendingSummary obrigatório; MemoryStorage implementa consulta. Leituras de dados históricos permanecem |
+| deltasync_sync | Remove store/set/remove, exige storage não nullable no construtor sem nome e mantém withStorage. Acrescenta LocalBatch/batch, query, pendingSummary e commitsFor. SyncCommitEvent exige addresses e deixa de ser const; implementações externas fornecem o getter |
+| deltasync_transport | Nenhuma diferença declarada de API contra R-30; não introduzir ACK/protocolo novo ao atualizar a versão |
+| deltasync_storage_sqflite | Acrescenta implementação pública de pendingSummary; sem modificação de schema/formatos por essa consulta ou pela renumeração |
+| deltasync_storage_testing | Nenhuma diferença declarada de assinatura; suíte passa a exigir comportamento de pendingSummary dos adaptadores |
+
+Classes/interface existentes mantêm seus modificadores de extensão. Os enums
+existentes, inclusive seus labels e valores de wire, e as cinco variantes de
+SyncObservation permanecem. FieldQuery é sealed, suas três variantes são final
+com criação controlada pela lib; LocalBatch é final e tem construtor privado.
+Essas restrições são intencionais: consumidor trata resultados/editor recebidos,
+sem implementar novas variantes nem herdar o editor. OutboxSummary é valor
+de consulta com contagens validadas. Métodos novos também podem colidir com
+subclasses/extensions do consumidor; revisar source, não só chamadas diretas.
+
+O mínimo de SDK sobe para ^3.13.0 conforme R-33; execução de referência 3.13.5.
+Isso é requisito de ambiente separado da comparação de assinaturas. Constraints
+internas ^1.0.1 impedem resolver 1.0.0 para um contrato que já exige as mudanças.
+Manifests de consumidores devem alinhar os pacotes usados; não usar um override
+para esconder mistura de versões. Publicação real e gate completo ficam separados.
 
 ## Prova reproduzível
 

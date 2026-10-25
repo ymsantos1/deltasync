@@ -1,10 +1,14 @@
 # deltasync_core
 
+Version 1.0.1 requires upgrade review despite its patch number. The release
+aligns all DeltaSync packages and includes intentional source breaks; see the
+[migration guide](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md).
+
 Pure Dart CRDT state, deltas, clocks and replica identity for DeltaSync.
 Supports LWW-Register, MV-Register, G-Counter, PN-Counter, G-Set, 2P-Set, OR-Set
 and OR-Map. No Flutter, storage or network dependency.
 
-Add `deltasync_core: ^2.0.0` to your dependencies:
+Add `deltasync_core: ^1.0.1` to your dependencies:
 
 ```dart
 import 'package:deltasync_core/deltasync_core.dart';
@@ -45,6 +49,14 @@ for atomic local commits, an outbox and remote acknowledgement. Counter IDs and
 compact MV formats have compatibility limits described in the
 [integration and migration documentation](https://github.com/ymsantos1/deltasync#readme).
 Destructive garbage collection and code generation are outside this release.
+
+LWW resolves the whole value, including a JSON object; it does not merge its
+attributes or text edits. Choose stable addresses for independently resolved
+fields. The eight kinds form a closed integrated catalog: another kind requires
+core routing, delta/snapshot codecs, engine entry points and convergence/recovery
+tests, not an external plugin registration. Consumer model adapters remain
+composition outside the core. See the
+[maintenance map](https://github.com/ymsantos1/deltasync/blob/main/docs/referencia-tecnica.md#onde-alterar-cada-tipo).
 
 `mergeSnapshotJson` returns the peer snapshot's processed bound addresses as a
 detached/read-only set, including empty CRDTs and tombstones. It does not report

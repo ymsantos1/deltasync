@@ -1,0 +1,40 @@
+{
+  "README.md": [
+    "compatibilidade-de-api-e-formatos",
+    "confirmação-e-retry",
+    "custo-de-contexto-e-outbox",
+    "custos-dos-percursos-locais",
+    "deltasync",
+    "demonstração-offline-com-sqlite",
+    "escopo-da-persistência",
+    "exemplos",
+    "medição-de-tamanho",
+    "onde-alterar-cada-tipo",
+    "pacotes",
+    "percurso-de-integração-e-manutenção",
+    "planejamento",
+    "releases",
+    "storage",
+    "uso",
+    "validação"
+  ],
+  "docs/guia-integracao.md": [
+    "1-configurar-armazenamento-e-identidade",
+    "2-mapear-modelos-e-escolher-crdt",
+    "3-editar-e-consultar",
+    "4-observar-falhas-e-pendências",
+    "5-sincronizar-e-confirmar",
+    "6-encerrar-e-restaurar",
+    "esforço-observado-no-compass",
+    "integração-e-manutenção",
+    "pontos-de-manutenção-e-compatibilidade"
+  ],
+  "githubLinksResolvedLocally": 49,
+  "historicalMeasurementsPreserved": true,
+  "compassComparisonPreserved": true,
+  "publicLibrariesManifestsFrozenEvidenceUnchanged": true,
+  "rootReadmeLines": {
+    "before": 805,
+    "after": 195
+  }
+}

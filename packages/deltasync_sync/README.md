@@ -1,9 +1,13 @@
 # deltasync_sync
 
+Version 1.0.1 requires upgrade review despite its patch number. The release
+aligns all DeltaSync packages and includes intentional source breaks; see the
+[migration guide](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md).
+
 Pure Dart coordination of local CRDT mutations, atomic storage commits, pending
 outbox entries, incoming deltas and remote acknowledgements.
-Add `deltasync_sync: ^2.0.0`, `deltasync_core: ^2.0.0`,
-`deltasync_storage: ^2.0.0` and your transport adapter's dependencies.
+Add `deltasync_sync: ^1.0.1`, `deltasync_core: ^1.0.1`,
+`deltasync_storage: ^1.0.1` and your transport adapter's dependencies.
 The `deltasync` facade re-exports the four public contracts for convenience.
 
 Construct `SyncEngine.withStorage` with a `Replica`, `ReplicaStorage` and
@@ -45,8 +49,12 @@ Storage failure preserves committed state/IDs. Batches still send/ACK per change
 so local atomicity does not promise distributed transactions. See the
 [batch example](https://github.com/ymsantos1/deltasync/blob/main/example/local_batch_example.dart).
 
-Local mutation completion means local commit. `pendingDelta()` reports changes
-awaiting delivery. `push()` attempts delivery; only an `appliedAndPersisted` ACK
+Local mutation completion means local commit. Use `pendingSummary` to count
+pending/sent entries without building a delta; pass the engine's peer ID to count
+only that link (no filter counts all peers). Sent entries still await ACK.
+Handle a summary/model conversion failure after the save separately: it cannot
+undo the completed commit and must not trigger a repeated edit. `pendingDelta()`
+remains available to inspect retained payloads. `push()` attempts delivery; only an `appliedAndPersisted` ACK
 from the expected peer confirms changes and removes their outbox entries.
 Network waits do not block local editing. Retry policy belongs to the consumer.
 
@@ -54,7 +62,12 @@ For incoming traffic, `receiveEnvelope()` validates routing, commits remote stat
 and returns an acknowledgement. With `IncomingAcknowledgingDeltaTransport`, the
 engine also sends that ACK through the adapter; otherwise the caller sends the
 returned response after success. Dispose
-the engine when finished; the consumer also owns storage/transport resources.
+the engine when finished, after cancelling application listeners. Drain it before
+closing concrete transport/storage resources, including when disposal fails.
+The engine does not close those resources. Retry start on transient open failure
+before disposal; a disposed engine is terminal. New composition with the same
+database/identity restores prior state/outbox. See the
+[commit/status example](https://github.com/ymsantos1/deltasync/blob/main/example/commit_status_example.dart).
 
 MemoryStorage is volatile. Use a durable adapter and stable replica IDs to recover
 across process restarts. This package does not provide peer discovery, production

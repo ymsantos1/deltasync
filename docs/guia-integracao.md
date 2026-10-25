@@ -1,185 +1,258 @@
 # Integração e manutenção
 
-DeltaSync fornece oito CRDTs, mutações com deltas, commit local e sincronização
-para um peer fixo. Modelos, identidade da instalação, rede e interface pertencem
-ao consumidor. Este guia técnico não altera a proposta acadêmica.
+DeltaSync fornece oito CRDTs, commit local com outbox e sincronização para um
+peer fixo por engine. Comece pelo [percurso SQLite](../README.md#uso).
+Modelo, instalação, rede e interface pertencem ao consumidor.
 
 ## 1. Configurar armazenamento e identidade
 
-Use a facade `package:deltasync/deltasync.dart`. Para durabilidade, acrescente
-o pacote `deltasync_storage_sqflite` e forneça uma DatabaseFactory compatível
-com o alvo. Core, sync e contrato de storage continuam Dart puro.
+Use `package:deltasync/deltasync.dart` e acrescente `deltasync_storage_sqflite`
+para durabilidade. Passe DatabaseFactory compatível com o alvo e caminho
+persistente do banco. No Flutter, inicialize o binding da plataforma e use
+`databaseFactory` do sqflite; no Dart desktop, inicialize sqflite_common_ffi.
+Veja o [exemplo Flutter](../example/flutter_mobile/README.md) e a
+[CLI SQLite](../example/offline_reconciliation.dart). MemoryStorage é **volátil**;
+use-o apenas quando perder dados ao descartar a instância for aceitável.
 
-O [exemplo Flutter](../example/flutter_mobile/README.md) mostra dependências,
-inicialização do sqflite e comandos do PATH. O
-[exemplo CLI](../example/offline_reconciliation.dart) usa SQLite FFI.
-MemoryStorage é volátil; não comprova recuperação após reiniciar o processo.
+O mínimo declarado é Dart ^3.13.0; a referência executada é 3.13.5. Os manifests
+do checkout estão alinhados em 1.0.1 pela R-36, sem publicação automática.
+Não derive compatibilidade da numeração: há
+[quebras deliberadas de fonte](migracao-1.0.1.md), incluindo adaptadores próprios.
 
-Escolha um replicaId estável por instalação e mantenha-o entre aberturas.
-Não clone o banco para criar outra réplica. Mudanças pendentes ficam vinculadas
-ao peer configurado; trocar transporte para outro peer não transfere a outbox.
-O cenário atual cobre um par fixo. Muitos dispositivos exigem roteamento e
-confirmação por destinatário; não compartilhe identidades.
+Escolha replicaId único por instalação independente e estável entre aberturas.
+Não clone um banco para criar outra réplica ativa com a mesma identidade.
+Escolha também peerReplicaId estável para o transporte; trocar o peer não move
+entradas antigas da outbox. A biblioteca cobre um par fixo por engine, sem
+roteamento/descoberta de peers nem confirmação de propagação aos demais.
 
-Componha `SyncEngine.withStorage(replica: ..., storage: ..., transport: ...)`
-e aguarde `engine.start()` antes de consultar. Falha de abertura permite repetir
-start nos mesmos objetos; schema desconhecido não deve ser apagado para tentar
-novamente. Mutações também aguardam a restauração inicial.
+Componha `SyncEngine.withStorage(replica: ..., storage: ..., transport: ...)`.
+Aguarde `start()` para leituras síncronas. Mutações também aguardam inicialização.
+Falha transitória de abertura permite repetir start nos mesmos objetos enquanto
+não descartados; apresente retry na aplicação. Schema desconhecido continua
+falhando e preserva dados: não apague o banco para simular recuperação.
 
 ## 2. Mapear modelos e escolher CRDT
 
-Escolha endereço estável e tipo por campo conforme a semântica desejada.
-LWW escolhe um vencedor; MV mantém versões concorrentes; counters e sets possuem
-contratos próprios. Não altere o tipo de um endereço já vinculado.
-Consulte [semântica dos tipos](../README.md#onde-alterar-cada-tipo).
+Defina endereço estável e tipo por campo, compartilhados pelos peers e após
+restauração; não inclua versão temporária de tela ou instante local no endereço.
+Um endereço vinculado não pode trocar de tipo silenciosamente.
 
-No Compass, Booking é convertido em chave de viagem com destino e datas de
-calendário; a nota é LWW `{'text': texto}`. Essa conversão pertence ao app.
-IDs temporários locais e fuso não identificam a nota. A biblioteca não conhece
-Booking nem gera adaptadores de modelos. JSON deve respeitar os tipos suportados.
+- LWW escolhe **um valor inteiro**, inclusive um objeto JSON. Não faz merge de
+  atributos nem edição colaborativa de texto. Separe endereços quando campos
+  precisarem de resolução independente.
+- MV-Register mantém versões concorrentes até uma escrita observá-las.
+- Counters, G/2P/OR-Set e OR-Map têm invariantes próprias. Consulte o
+  [mapa dos oito tipos](referencia-tecnica.md#onde-alterar-cada-tipo).
+
+O app valida modelos e regras de negócio antes das próprias edições e depois de
+ler dados remotos. JSON estruturalmente aceito pode ser inválido para o domínio:
+`{'name': 42, 'tags': []}` é JSON válido, mas não é o Profile do
+[exemplo de decoder](../example/field_decoder_example.dart), que exige nome string
+e lista de strings. Não há schema de domínio no core nem adaptador gerado.
+No Compass, Booking/chave de viagem/calendário e regras de notas pertencem ao app;
+o [fork](https://github.com/ymsantos1/samples-for-tcc) é ilustração, não contrato geral.
 
 ## 3. Editar e consultar
 
-Após configurar/iniciar a engine:
+A mutação pública termina depois do commit atômico de snapshot/outbox e adoção
+da candidata. Esse retorno confirma **salvo localmente**, sem confirmar envio.
+Use caminhos separados para mutação, consulta de status e conversão de modelo:
 
 ```dart
-await engine.setDelta(address, {'text': text});
-final note = engine.valueAt(address);
-final pending = await engine.pendingDelta();
+try {
+  await engine.setDelta('profile', profileJson);
+} catch (error) {
+  showSaveFailure(error);
+  return;
+}
+showSavedLocally();
+try {
+  final summary = await engine.pendingSummary(
+    recipientPeerId: engine.transport.peerReplicaId,
+  );
+  showPending(summary.totalCount);
+} catch (error) {
+  showStatusUnavailable(error); // Commit anterior continua salvo.
+}
 ```
 
-A mutação termina depois de snapshot/outbox serem persistidos atomicamente e
-o estado candidato ser adotado. Isso confirma commit local, sem provar envio.
-Consulta síncrona lê um campo adotado após commit, sem copiar toda a réplica.
-Durante commit em andamento, devolve o último estado adotado.
+As funções de apresentação acima pertencem ao app. O
+[fluxo executável](../example/commit_status_example.dart) usa a mesma separação.
+A [fixture geral SQLite](../test/integration_guide_test.dart) injeta falha só no
+resumo após um commit real, verifica sucesso local/evento/outbox, fecha/reabre o
+banco e continua editando. Também distingue falha do próprio commit e erro de modelo.
+Falha de consulta não deve disparar repetição automática da edição: counters e
+outros comandos poderiam produzir uma nova mudança legítima.
 
-Ausente, LWW null e tombstone retornam null; counters vinculados retornam int,
-MV/sets retornam Set<Object?> e OR-Map retorna Map<String, Set<Object?>>.
-Coleções aninhadas são isoladas/somente leitura. Antes de start ou após dispose,
-valueAt lança StateError. APIs anteriores de leitura permanecem disponíveis.
+`pendingSummary` conta pending/sent sem montar deltas. Sem filtro, inclui todos
+os peers; passe o peer da engine para status do enlace atual. `sent` ainda aguarda
+ACK; erro na consulta significa status desconhecido, não outbox vazia nem edição
+perdida. `pendingDelta` continua disponível para inspecionar o conteúdo pendente,
+mas não é necessário para um contador visual. Não mantenha cache paralelo de outbox.
+
+`engine.query(address)` distingue:
+
+| Variante | Significado |
+|---|---|
+| AbsentField | Endereço sem tipo vinculado |
+| PresentField | Valor isolado, inclusive LWW null; demais tipos podem conter zero/vazio |
+| DeletedField | Tombstone LWW atual, preservado para merge/restauração |
+
+Use switch exaustivo e converta somente o ramo presente:
+
+```dart
+String describe(FieldQuery result) => switch (result) {
+  AbsentField() => 'não configurado',
+  DeletedField() => 'removido',
+  PresentField field => switch (field.decode(Profile.fromValue)) {
+    null => 'null presente', // Política explícita do modelo deste app.
+    Profile(:final name) => name,
+  },
+};
+```
+
+Profile é o modelo do consumidor demonstrado no exemplo. Trate FormatException
+do decoder na camada de apresentação; não converta erro em ausência ou sucesso.
+Um erro de leitura após commit não desfaz esse commit. `field.value` preserva a
+leitura bruta para inspeção/migração. Valores consultados são isolados; coleções
+aninhadas são somente leitura. `valueAt` é a conveniência que retorna null para
+ausência, LWW null e tombstone; use query quando essa distinção importar.
+Durante um await de commit/rede, consulta lê o último estado **adotado**, não a
+candidata. Antes de start e após dispose, query/valueAt lançam StateError.
+
+Para campos relacionados, use um lote local:
+
+```dart
+await engine.batch((batch) {
+  batch.setDelta('profile/name', 'Ada');
+  batch.incrementGCounter('profile/revisions');
+  print(batch.query('profile/name')); // Candidata, ainda não persistida.
+});
+```
+
+Callback é síncrono, sem I/O ou outras chamadas à engine. Lote vazio, callback
+async, erro de edição mesmo capturado ou falha de commit abortam o lote. Editor
+expira antes do await do storage. Atomicidade é local; ACK/envio seguem por
+mudança. Efeitos externos do callback/decoder não são desfeitos. Veja o
+[exemplo de lote](../example/local_batch_example.dart).
 
 ## 4. Observar falhas e pendências
 
-Use `engine.observations` para uma assinatura tipada, sem polling nem cache de
-snapshot/pendências paralelo. Inscreva-se antes de start para receber
-SyncRestoredEvent; assinatura tardia não recebe replay e deve consultar valor e
-pendingDelta inicialmente. A outbox permanece fonte de pendências.
+Assine `engine.commitsFor(address)` para atualizar só campos pertinentes e
+`observations` para estado da sessão. Leia query e pendingSummary após eventos,
+tratando suas falhas separadamente. Não copie réplica inteira para atualizar um
+campo. `SyncCommitEvent.addresses` informa endereços processados, inclusive replay
+ou escrita sem efeito visível; leia o valor atual, não um valor histórico do evento.
+Veja o [exemplo seletivo](../example/selective_observation_example.dart).
 
-SyncCommitEvent sinaliza commit local/remoto; SyncPushResult reutiliza o resultado
-de push após confirmação da outbox; SyncPushFailure informa erro de push;
-SyncFailure reutiliza falhas recebidas. Restore não implica ACK nem restaura
-mensagens de confirmação da sessão anterior. Resultado recebido/vazio não prova
-confirmação durável de pendências; examine acknowledgedIds e pendingDelta.
+Streams são broadcast assíncronos, sem replay. Assine antes de start para
+SyncRestoredEvent; listener tardio deve hidratar valor/status explicitamente.
+Commits não notificam restauração ou ACK. Ordem é por assinatura; listeners
+distintos não têm ordem relativa garantida e não governam commit. Pausar filtros
+pode acumular eventos não selecionados: retome/cancele antes de aguardar dispose.
 
-Os streams commits/errors existentes mantêm contratos. observations é broadcast
-assíncrono; listeners não governam commits. Falhas de chamadas diretas diferentes
-de push continuam nas Futures, inclusive falha de busca no adaptador.
-Depois de cancelar listeners (especialmente pausados), aguarde dispose.
-O stream fecha após drenar operações aceitas; nenhuma observação é persistida.
+| Canal/resultado | O que indica |
+|---|---|
+| Future da mutação | Commit local concluído ou erro da chamada |
+| commits / commitsFor | Commit local/remoto e endereços processados |
+| observations | Restore, commit, resultado/falha de push e falha de recepção |
+| errors | Falha de callback/stream remoto; não substitui catch de chamadas diretas |
+| pendingSummary | Contagem atual na outbox, sem prova de envio/ACK |
+| SyncPushResult | Lote enviado, ACK e IDs reconhecidos após persistência local do ACK |
 
-Aguarde mutações/push/applyRemote e trate seus erros no chamador. O stream
-`errors` informa falhas de recepção/callback remoto; não substitui try/catch
-das chamadas diretas. Uma falha de rede conserva outbox e não impede editar.
-
-`commits` é broadcast sem replay e sinaliza adoção local/remota bem-sucedida.
-Ao receber evento, consulte valueAt; restauração inicial não emite esse evento.
-O evento não informa ACK. Conte pendências com pendingDelta e mantenha estado
-visual distinto para salvo localmente, pendente e confirmado remotamente.
-Após reinício, restaure valor/outbox; mensagem de confirmação da sessão pode
-reiniciar sem indicar perda de commit anterior.
+Falhas de chamadas diretas são tratadas por suas Futures. Uma falha de rede não
+impede nova edição local. Após reinício, recupere estado e outbox; mensagens
+transitórias de confirmação da sessão não são persistidas nem repetidas.
 
 ## 5. Sincronizar e confirmar
 
-Chame `engine.push()` após reconexão ou ação do usuário. A aplicação agenda retry;
-não há timer/worker automático. `push(force: true)` ignora backoff/limite.
-Resultado contém lote enviado, ACK e IDs reconhecidos. Lote vazio com
-fullyAcknowledged verdadeiro não comprova envio de pendências filtradas.
+O app decide quando chamar `push()` por ação manual ou reconexão e agenda retry.
+Não há timer, worker ou busca de rede automática. A política de backoff filtra
+entradas elegíveis na próxima chamada; `push(force: true)` ignora atraso/limite.
+Espera de rede fica fora da fila de commits, permitindo editar durante falhas.
+O adaptador precisa limitar esperas; dispose drena operações aceitas.
 
-O adaptador serializa envelope com DeltaEnvelope.toJson/fromJson e ACK com
-DeltaAcknowledgement.toJson/fromJson. ACK mantém peerReplicaId, stage e
-changeIds; campos conhecidos inválidos geram FormatException, extras são ignorados,
-IDs repetidos são deduplicados e lista vazia é válida.
+Concluir `send` indica transmissão local. ACK `received` indica recebimento;
+somente `appliedAndPersisted` do peer configurado confirma IDs e permite removê-los
+da outbox correspondente. ACK parcial só limpa IDs reconhecidos daquele lote/peer.
+Sem ACK, pendência permanece para reenvio. Um push vazio pode ter
+`fullyAcknowledged == true` por vacuidade; não prova envio de pendências filtradas.
+Nada disso confirma propagação a outros participantes ou autoriza GC causal.
 
-Decoder não autentica remetente nem comprova commit. Validar peer/destinatário,
-aplicar e aguardar persistência precede emitir appliedAndPersisted.
-received indica apenas recebimento e não remove outbox. Remover somente IDs
-do lote/destinatário reconhecidos; perda de ACK exige reenvio seguro.
+Receba envelopes por `receiveEnvelope`, tanto no incoming quanto em pull externo.
+O método valida peer/destinatário, faz join, aguarda commit remoto/adoção e retorna
+ACK. Se o transporte implementar IncomingAcknowledgingDeltaTransport, a engine
+também envia o ACK; sem esse contrato, o chamador o envia após sucesso e o stream
+não o envia automaticamente. Falha ao enviar ACK preserva commit e admite replay.
 
-No pull do Compass, o consumidor busca envelope e chama receiveEnvelope.
-Esse método valida peer/destinatário, aguarda commit/adoção e envia ACK pelo
-contrato opcional IncomingAcknowledgingDeltaTransport. O mesmo percurso atende
-incoming; sem esse contrato, retorna ACK para envio pelo chamador e o stream
-mantém comportamento anterior sem envio automático de ACK.
-GET entrega sem remover pendências do servidor. Rede/timeouts continuam no
-adaptador HTTP. Falha ao enviar ACK preserva commit e permite replay; no stream,
-errors informa a falha, sem prometer rollback. Protocolos não entram no core.
-ACK aguarda fora da fila de commits; edição local continua possível. Dispose
-drena recepções aceitas, inclusive envio de ACK; adaptador deve limitar espera
-e fechar seus recursos após a drenagem. observations oferece acompanhamento da sessão.
+Use os codecs públicos de DeltaEnvelope/DeltaAcknowledgement. Decodificar JSON
+não autentica remetente nem comprova persistência. Autenticação, TLS, autorização,
+timeouts, endpoint, busca e política de retry pertencem ao adaptador/app. Não
+reportar appliedAndPersisted se o peer não puder provar commit durável.
 
 ## 6. Encerrar e restaurar
 
-Cancele listeners da aplicação, aguarde engine.dispose, feche transporte e
-storage em finally. Dispose é terminal e aguarda operações aceitas; não descarte
-recursos enquanto o commit ainda está em execução. Ao reabrir, crie composição
-nova com o mesmo banco/identidade e aguarde start. Não use clear-data para provar
-recuperação. O repositório de notas do Compass exemplifica esse ownership.
+Quem compõe os recursos é responsável por fechá-los. SyncEngine controla sua
+assinatura incoming e seus streams; não fecha transporte/storage do consumidor.
+Cancele listeners da aplicação, aguarde `engine.dispose()` e então libere os
+recursos concretos do transporte e `storage.close()`, usando finally para tentar
+liberar os demais mesmo se um encerramento falhar. Não descarte banco/rede durante
+um commit ou ACK aceito. O contrato DeltaTransport não exige método close;
+o adaptador concreto define sua própria liberação.
+
+Dispose é terminal; falhas de abertura antes dele admitem retry, não reutilização
+de uma engine descartada. Para reabrir, crie nova composição com banco e replicaId
+anteriores, aguarde start e hidrate as consultas. Não use clear-data como recuperação.
+Execute a CLI offline em processos separados para validar persistência real:
+
+```sh
+dart run example/offline_reconciliation.dart reset <diretorio-da-demo>
+dart run example/offline_reconciliation.dart offline <diretorio-da-demo>
+dart run example/offline_reconciliation.dart reconnect <diretorio-da-demo>
+```
+
+Reset apaga apenas os bancos dessa demonstração: use diretório próprio.
+No percurso normal do app não há reset. SQLite FFI/Linux não comprova runtime
+Android/iOS; o exemplo Flutter documenta suas evidências de plataforma.
 
 ## Pontos de manutenção e compatibilidade
 
-| Regra | Dono |
+| Regra | Dono e ponto de alteração |
 |---|---|
-| Modelo, endereço, identidade da instalação e UI | Consumidor |
-| Estado, mutação, delta e join | Replica e CRDT concreto |
-| Consulta pontual dos oito tipos | Replica.valueAt; lifecycle em SyncEngine.valueAt |
-| Formatos de envelope e ACK | deltasync_transport; validação de peer no fluxo |
-| Commit/adoção, outbox e restauração | SyncEngine e ReplicaStorage |
-| Atomicidade SQLite e abertura do banco | Adaptador sqflite |
-| Busca/envio, timeouts e protocolo | Adaptador do consumidor |
+| Modelo, identidade/endereço, autenticação, agendamento e UI | Consumidor; conveniências por composição/conversões próprias |
+| Estado/mutação/delta/join de cada tipo | Core: Replica e CRDT concreto; veja [mapa](referencia-tecnica.md#onde-alterar-cada-tipo) |
+| Snapshot/restauração/versão no core | replica/contents.dart e replica/snapshot_codec.dart |
+| Codec de delta / envelope e ACK | Core DeltaCodec / deltasync_transport, respectivamente |
+| Candidata, adoção, lifecycle, fila e eventos | SyncEngine; sync/serial_commit_queue.dart |
+| Construção de snapshot/outbox e restauração durável | sync/replica_persistence.dart; ReplicaStorage |
+| Retry/seleção/envio/ACK | sync/outbound_sync.dart; protocolo real no adaptador |
+| Transação/rollback, schema e abertura SQLite | deltasync_storage_sqflite |
 
-R-24/R-25 são aditivas: construtores/views anteriores, snapshots e schema não
-mudam. Para criar outro storage, execute a suíte pública
-`replicaStorageContractTests`; para outro transporte, implemente os contratos
-públicos e preserve confirmação após commit. Não sobrescreva internos.
-Veja [mapa de manutenção](../README.md#onde-alterar-cada-tipo) e
-[compatibilidade](../README.md#compatibilidade-de-api-e-formatos).
+Implemente os contratos públicos de storage/transport; não importe src nem
+sobrescreva internos. Novo storage executa `replicaStorageContractTests` de
+deltasync_storage_testing e acrescenta provas de rollback/reabertura no backend
+real. Inclua pendingSummary, consistência por peer e semântica de falha; não
+simule durabilidade com memória. Para transporte, preserve roteamento, codec e
+ACK depois de commit; testes em processo não provam autenticação/rede física.
 
-Não há codegen obrigatório. Conveniências futuras exigem uso concreto e contratos
-estáveis; quantidade de classes/linhas não é meta. Evidência no Compass cobre
-notas e um par fixo, sem estudo de usabilidade com participantes.
+Os oito tipos são um catálogo integrado fechado, não um registro extensível de
+plugins. Um novo CRDT integrado exige contrato/mudança tipada, CrdtKind/labels
+estáveis, codec versionado, roteamento/mutação/consulta e snapshot no core,
+entrada pública na engine/editor quando pertinente e testes de join/ordem/
+duplicação/recuperação. Planeje compatibilidade de leitores, switches e forks.
+Isso não autoriza adicionar tipo ao escopo atual. Composição de modelos do app
+continua externa; ObjectCrdt, codegen/build_runner e GC destrutivo ficam futuros.
+
+As remoções de fonte, novo membro obrigatório de storage, decoder, lote,
+eventos e consulta explícita estão no [guia 1.0.0 para 1.0.1](migracao-1.0.1.md).
+A numeração patch deliberadamente não promete compatibilidade. Dados antigos
+exigem readers e migração próprios; não altere payloads ou apague banco para
+contornar erro. Veja a [referência completa](referencia-tecnica.md#compatibilidade-de-api-e-formatos)
+e os [checks locais](ci.md). O piloto Saropa foi adiado; advisories e testes
+continuam separados do lint.
 
 ## Esforço observado no Compass
 
-Comparação mantém funcionalidade de notas, SQLite, UI e backend HTTP do VAL-13.
-Contagem inclui imports, comentários e linhas vazias; não representa mínimo
-necessário para integrar a biblioteca.
-
-| Categoria | VAL-13 | Após R-24/R-25 |
-|---|---:|---:|
-| Inicialização/configuração Dart | 58 | 58 |
-| Repositório de notas | 106 | 106 |
-| Transporte HTTP | 83 | 72 |
-| UI e encaixe na tela existente | 115 | 115 |
-| Servidor Dart | 141 | 137 |
-| Total de produção | 503 | 488 |
-| Testes adicionais do consumidor | 410 | 435 |
-
-Codec público eliminou 15 linhas de produção no consumidor. Consulta pontual
-substituiu expressão com cópias por valueAt, sem reduzir linhas do repositório.
-Biblioteca acrescentou 65 linhas de produção, incluindo documentação das duas
-APIs; parsing e consulta passam a ter donos gerais, com regressões próprias.
-Testes cresceram ao verificar ACK inválido por HTTP. Configuração Android,
-dependências e documentação ficam fora desses totais.
-
-Bootstrap, domínio, interface e canal real ainda exigem código próprio.
-Após R-26, validação/commit/ACK ficam em receiveEnvelope; busca e ação de
-sincronizar continuam no consumidor. R-27 oferece observações da sessão com os
-mesmos resultados de push, commits e erros, sem duplicar estado persistido.
-Esta comparação mostra manutenção e consumo; não mede tempo de integração de
-terceiros, esforço acadêmico ou usabilidade com participantes.
-
-R-26 reduziu a produção do consumidor para 479 linhas. R-27 acrescentou
-assinatura e tratamento de observações: repositório 101 para 125 linhas, total
-de produção novamente 503. O ganho desta etapa é reagir a commits externos
-ao fluxo da tela sem polling, usando os contratos comuns. Não é redução de LOC.
-As contagens anteriores da tabela são históricas, posteriores a R-24/R-25.
+As contagens e comparações anteriores foram preservadas em
+[medições e histórico](medicoes.md#esforço-observado-no-compass). Elas ilustram
+manutenção de um consumidor, sem medir esforço de terceiros ou usabilidade.

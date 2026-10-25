@@ -1,13 +1,13 @@
 name: deltasync_storage
 description: Storage contracts and volatile test implementation for DeltaSync.
-version: 2.0.0
+version: 1.0.1
 repository: https://github.com/ymsantos1/deltasync/tree/main/packages/deltasync_storage
 issue_tracker: https://github.com/ymsantos1/deltasync/issues
 resolution: workspace
 environment:
   sdk: ^3.13.0
 dependencies:
-  deltasync_core: ^2.0.0
+  deltasync_core: ^1.0.1
 
 dev_dependencies:
   test: ^1.25.6

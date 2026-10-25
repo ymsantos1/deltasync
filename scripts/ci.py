@@ -178,6 +178,7 @@ def dart_job(dart):
     with tempfile.TemporaryDirectory(prefix='deltasync-ci-offline-') as directory:
         for stage in ('reset', 'offline', 'reconnect'):
             run([dart, 'run', 'example/offline_reconciliation.dart', stage, directory])
+        run([dart, 'run', 'example/commit_status_example.dart', str(Path(directory) / 'status')])
     run([dart, 'test', 'example/support/peer_link_test.dart', '--reporter', 'expanded'])
 
 
