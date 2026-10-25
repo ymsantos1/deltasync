@@ -4,7 +4,7 @@ Revisão: 2026-10-25. Fonte principal de tarefas, escopo e andamento.
 
 ## Navegação
 
-- [Contexto arquitetural](../proposta.md) e [PDF acadêmico](<../referencia/Proposta TCC.pdf>).
+- [Contexto arquitetural](../proposta.md) e [PDF acadêmico](<../referencia/Proposta TCC.pdf>) (contexto local para os agentes).
 - [Fase 1: simplificação e correções](01_PHASE1_CORRECOES.md).
 - [Fase 2: CRDTs](02_PHASE2_CRDTS.md).
 - [Fase 3: persistência](03_PHASE3_PERSISTENCIA.md).

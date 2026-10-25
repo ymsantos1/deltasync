@@ -76,6 +76,12 @@ class AdvisoryTests(unittest.TestCase):
 
 
 class JobTests(unittest.TestCase):
+    def test_policy_forwards_only_explicit_local_reference_exception(self):
+        for extra in ([], ['--allow-missing-tcc-reference']):
+            with self.subTest(extra=extra), patch.object(ci, 'run') as run:
+                self.assertEqual(ci.main(['policy', *extra]), 0)
+                run.assert_any_call([ci.sys.executable, 'scripts/check_plan.py', *extra])
+
     def test_workspace_paths_are_validated_from_dart_json(self):
         bad = (None, {'packages': []}, {'packages': [None]}, {'packages': [{'path': 42}]},
                {'packages': [{'path': '/tmp'}]},

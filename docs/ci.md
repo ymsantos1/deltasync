@@ -32,6 +32,15 @@ checkout limpo; no pull request padrão do Actions, esse diff é o merge com a b
 Actionlint valida separadamente o YAML e as expressões do workflow; o script
 não simula um runner do GitHub nem afirma execução remota.
 
+O PDF acadêmico em `referencia/` é contexto local para os agentes, ignorado pelo
+Git. Seus links permanecem nos documentos de trabalho; usuários da biblioteca
+não precisam obter esse arquivo. A checagem local continua estrita por padrão.
+O Actions executa `python3 -B scripts/ci.py policy --allow-missing-tcc-reference`:
+a opção dispensa somente a ausência de `referencia/Proposta TCC.pdf`. Outros
+arquivos ausentes continuam reprovando; se o PDF existir, seus links são
+verificados normalmente. O checker também aceita essa opção diretamente para
+reproduzir o job público, sem mudar o comando local dos agentes.
+
 Em Dart, `dart pub get` sempre roda, seguido de `dart pub workspace list --json`.
 Essa lista canônica define quais pacotes recebem formato, análise e testes;
 adicionar um pacote Dart ao workspace não exige copiar outra lista no workflow.

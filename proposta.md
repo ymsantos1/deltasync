@@ -3,8 +3,9 @@
 ## Relação com a proposta acadêmica
 
 Este arquivo registra o contexto arquitetural atual; não é a transcrição integral
-da [proposta acadêmica em PDF](<referencia/Proposta TCC.pdf>). A revisão de
-2026-09-27, o estado da implementação e as entregas estão em
+da [proposta acadêmica em PDF](<referencia/Proposta TCC.pdf>), referência local
+para contextualizar o trabalho dos agentes. A revisão de 2026-09-27, o estado
+da implementação e as entregas estão em
 [plan/README.md](plan/README.md). Correções técnicas estão na
 [fase 1](plan/01_PHASE1_CORRECOES.md); evidências em
 [TRACEABILITY.md](plan/TRACEABILITY.md).

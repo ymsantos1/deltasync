@@ -199,7 +199,11 @@ def main(argv=None):
     parser.add_argument('job', choices=('dart', 'flutter', 'policy'))
     parser.add_argument('--dart', default='dart')
     parser.add_argument('--flutter', default='flutter')
+    parser.add_argument('--allow-missing-tcc-reference', action='store_true',
+                        help='Policy only: allow the absent private TCC PDF in public checkouts')
     args = parser.parse_args(argv)
+    if args.allow_missing_tcc_reference and args.job != 'policy':
+        parser.error('--allow-missing-tcc-reference is only valid for policy')
     try:
         if args.job == 'dart':
             dart_job(args.dart)
@@ -207,7 +211,10 @@ def main(argv=None):
             flutter_job(args.dart, args.flutter)
         else:
             run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'scripts/tests', '-v'])
-            run([sys.executable, 'scripts/check_plan.py'])
+            plan_command = [sys.executable, 'scripts/check_plan.py']
+            if args.allow_missing_tcc_reference:
+                plan_command.append('--allow-missing-tcc-reference')
+            run(plan_command)
             run(['git', 'diff', '--check'])
             run(['git', 'diff', '--check', 'HEAD^', 'HEAD'])
     except subprocess.CalledProcessError as error:

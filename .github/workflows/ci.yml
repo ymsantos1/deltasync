@@ -66,4 +66,4 @@ jobs:
           printf '%s  %s\n' '023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757' "$RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
           "$RUNNER_TEMP/actionlint" .github/workflows/ci.yml
-      - run: python3 -B scripts/ci.py policy
+      - run: python3 -B scripts/ci.py policy --allow-missing-tcc-reference

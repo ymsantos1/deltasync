@@ -6138,3 +6138,54 @@ Após manutenção, `python3 -B scripts/check_plan.py` aprovou 71 tarefas e 590
 links locais, sem próxima pronta; `git diff --check` passou. Conferidos JSON,
 whitespace novo, hashes das fontes/testes finais, 103 evidências anteriores e
 85 arquivos preparados. HEAD preservado, sem commit ou publicação automática.
+
+## Manutenção documental — Referência acadêmica local e CI, 2026-10-25
+
+Autor reportou falha do job policy no GitHub Actions e autorizou retirar vínculos
+ao PDF acadêmico local. Os 11 testes de política passaram no log informado;
+o checker falhou porque referencia/ é ignorado e não existe no checkout remoto.
+Removidos os três links em proposta/índice/trace e um quarto na análise de
+arquitetura. O contexto histórico permanece em texto, sem exigir o arquivo local.
+Nenhuma alteração no checker, workflow, biblioteca, status de tarefas ou artefatos.
+
+Aplicados plan-maintainer e plan-validator. Revisão própria dos quatro documentos
+sem impeditivos; não é revisão independente. Clone temporário contendo somente
+arquivos versionados reproduziu os mesmos três erros antes da correção. Depois
+de copiar os documentos corrigidos, python3 -B scripts/ci.py policy passou:
+11 testes, checker com 71 tarefas/587 links e git diff --check, inclusive HEAD^/HEAD.
+Confirmada ausência de referencia/ durante a prova. As mensagens GHSA-fixture-only
+e offline pertencem aos controles negativos aprovados, não a falhas desse job.
+Após manutenção, checker e diff conferidos novamente. Não houve nova execução
+remota da CI ou testes Dart, pois a mudança é somente documental; nenhum commit,
+upload ou publicação automática.
+
+## Ajuste da correção de CI — Preservar fontes locais dos agentes, 2026-10-25
+
+Autor esclareceu que as referências acadêmicas devem continuar disponíveis aos
+agentes locais, sem se tornarem obrigação de usuários ou do Actions. A remoção
+documental anterior foi substituída: quatro links ao PDF estão restaurados,
+identificados como contexto local. O arquivo privado continua ignorado pelo Git.
+
+Aplicados surgical-patch, code-reviewer, plan-validator e plan-maintainer.
+Check_plan permanece estrito por padrão. Nova opção explícita
+--allow-missing-tcc-reference dispensa somente a ausência do caminho exato do
+PDF local; outros links continuam obrigatórios e arquivos existentes continuam
+validados. Ci.py encaminha a opção somente no job policy e o workflow público
+a informa. Docs/ci explica a distinção sem alterar contratos da biblioteca.
+
+Regressões reproduziram ausência do PDF e falharam antes da nova opção. Após a
+correção, 15 testes passaram, incluindo modo padrão estrito, exceção restrita,
+rejeição de outros arquivos ausentes, verificação de anchors se o arquivo existe
+e encaminhamento explícito pelo runner. Revisão própria distinta, não
+independente, sem impeditivos; comparação do diff preserva demais gates,
+advisories, tarefas e dependências. Nenhuma mudança em lib/SDK/manifests ou nos
+candidatos preparados. A validação final usa checkout sem arquivos ignorados,
+policy com a mesma opção do workflow, checker local e actionlint. Execução
+remota do GitHub não foi disparada; não há commit/publicação automática.
+
+Resultado final: checkout público sem referencia/ reprova corretamente no modo
+estrito (exit 1) e aprova policy com a opção do workflow (exit 0), com 15 testes.
+A opção em job Dart é rejeitada antes de executar checks (exit 2). Checker local
+aprovou 71 tarefas/590 links, actionlint 1.7.7 e git diff --check passaram.
+Revisão do delta final sem impeditivos; não houve alteração de código após essas
+provas, somente este registro de resultados.
