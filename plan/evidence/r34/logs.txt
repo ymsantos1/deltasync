@@ -1,0 +1,724 @@
+root-baseline-1
+stdout:
+Analyzing deltasync-r34-pilot-3t91igsc...
+No issues found!
+
+stderr (progress omitted):
+
+
+root-baseline-2
+stdout:
+Analyzing deltasync-r34-pilot-3t91igsc...
+No issues found!
+
+stderr (progress omitted):
+
+
+root-saropa-1
+stdout:
+40 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 19 files...
+
+  Files: 0/19 | 0.4s | 0/s | Issues: 0 | deltasync_example.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 4/s │ Issues: 30 │ peer_link.dart
+  Files: 10/19 | 5.6s | 2/s | Issues: 31 | peer_link_test.dart
+
+⠿ Files: 14 │ Time: 8s │ Rate: 3/s │ Issues: 31 │ api_inventory.dart
+
+
+
+root-saropa-2
+stdout:
+40 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 19 files...
+
+  Files: 0/19 | 0.4s | 0/s | Issues: 0 | deltasync_example.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 4/s │ Issues: 30 │ peer_link.dart
+  Files: 10/19 | 5.5s | 2/s | Issues: 31 | peer_link_test.dart
+
+⠿ Files: 14 │ Time: 8s │ Rate: 3/s │ Issues: 31 │ api_inventory.dart
+
+
+
+packages_deltasync_core-baseline-1
+stdout:
+Analyzing deltasync_core...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_core-baseline-2
+stdout:
+Analyzing deltasync_core...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_core-saropa-1
+stdout:
+46 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 44 files...
+
+  Files: 0/44 | 0.4s | 0/s | Issues: 0 | deltasync_core.dart
+
+⠿ Files: 10 │ Time: 0s │ Rate: 13/s │ Issues: 10 │ identity.dart
+  Files: 10/44 | 3.7s | 3/s | Issues: 10 | value.dart
+
+⠿ Files: 20 │ Time: 1s │ Rate: 14/s │ Issues: 29 │ pn_counter.dart
+  Files: 20/44 | 4.3s | 5/s | Issues: 35 | replica.dart
+
+⠿ Files: 30 │ Time: 3s │ Rate: 13/s │ Issues: 46 │ crdt_history_properties_test.dart
+  Files: 30/44 | 6.1s | 5/s | Issues: 46 | crdt_interfaces_test.dart
+
+⠿ Files: 40 │ Time: 4s │ Rate: 12/s │ Issues: 46 │ replica_query_test.dart
+  Files: 40/44 | 7.2s | 6/s | Issues: 46 | snapshot_addresses_test.dart
+
+
+
+packages_deltasync_core-saropa-2
+stdout:
+46 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 44 files...
+
+  Files: 0/44 | 0.4s | 0/s | Issues: 0 | deltasync_core.dart
+
+⠿ Files: 10 │ Time: 0s │ Rate: 13/s │ Issues: 10 │ identity.dart
+  Files: 10/44 | 3.7s | 3/s | Issues: 10 | value.dart
+
+⠿ Files: 20 │ Time: 1s │ Rate: 14/s │ Issues: 29 │ pn_counter.dart
+  Files: 20/44 | 4.3s | 5/s | Issues: 35 | replica.dart
+
+⠿ Files: 30 │ Time: 3s │ Rate: 13/s │ Issues: 46 │ crdt_history_properties_test.dart
+  Files: 30/44 | 6.1s | 5/s | Issues: 46 | crdt_interfaces_test.dart
+
+⠿ Files: 40 │ Time: 4s │ Rate: 12/s │ Issues: 46 │ replica_query_test.dart
+  Files: 40/44 | 7.3s | 5/s | Issues: 46 | snapshot_addresses_test.dart
+
+
+
+packages_deltasync_sync-baseline-1
+stdout:
+Analyzing deltasync_sync...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_sync-baseline-2
+stdout:
+Analyzing deltasync_sync...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_sync-saropa-1
+stdout:
+11 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 17 files...
+
+  Files: 0/17 | 0.3s | 0/s | Issues: 0 | deltasync_sync.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 5/s │ Issues: 11 │ local_batch_test.dart
+  Files: 10/17 | 5.0s | 2/s | Issues: 11 | observations_test.dart
+
+
+
+packages_deltasync_sync-saropa-2
+stdout:
+11 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 17 files...
+
+  Files: 0/17 | 0.4s | 0/s | Issues: 0 | deltasync_sync.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 5/s │ Issues: 11 │ local_batch_test.dart
+  Files: 10/17 | 5.1s | 2/s | Issues: 11 | observations_test.dart
+
+
+
+packages_deltasync_storage-baseline-1
+stdout:
+Analyzing deltasync_storage...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage-baseline-2
+stdout:
+Analyzing deltasync_storage...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage-saropa-1
+stdout:
+11 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 6 files...
+
+  Files: 0/6 | 0.3s | 0/s | Issues: 0 | deltasync_storage.dart
+
+
+
+packages_deltasync_storage-saropa-2
+stdout:
+11 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 6 files...
+
+  Files: 0/6 | 0.3s | 0/s | Issues: 0 | deltasync_storage.dart
+
+
+
+packages_deltasync_storage_sqflite-baseline-1
+stdout:
+Analyzing deltasync_storage_sqflite...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage_sqflite-baseline-2
+stdout:
+Analyzing deltasync_storage_sqflite...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage_sqflite-saropa-1
+stdout:
+8 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 8 files...
+
+  Files: 0/8 | 0.4s | 0/s | Issues: 0 | deltasync_storage_sqflite.dart
+
+
+
+packages_deltasync_storage_sqflite-saropa-2
+stdout:
+8 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 8 files...
+
+  Files: 0/8 | 0.4s | 0/s | Issues: 0 | deltasync_storage_sqflite.dart
+
+
+
+packages_deltasync_storage_testing-baseline-1
+stdout:
+Analyzing deltasync_storage_testing...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage_testing-baseline-2
+stdout:
+Analyzing deltasync_storage_testing...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_storage_testing-saropa-1
+stdout:
+24 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 3 files...
+
+  Files: 0/3 | 0.3s | 0/s | Issues: 0 | deltasync_storage_testing.dart
+
+
+
+packages_deltasync_storage_testing-saropa-2
+stdout:
+24 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 3 files...
+
+  Files: 0/3 | 0.3s | 0/s | Issues: 0 | deltasync_storage_testing.dart
+
+
+
+packages_deltasync_transport-baseline-1
+stdout:
+Analyzing deltasync_transport...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_transport-baseline-2
+stdout:
+Analyzing deltasync_transport...
+No issues found!
+
+stderr (progress omitted):
+
+
+packages_deltasync_transport-saropa-1
+stdout:
+1 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 6 files...
+
+  Files: 0/6 | 0.3s | 0/s | Issues: 0 | deltasync_transport.dart
+
+
+
+packages_deltasync_transport-saropa-2
+stdout:
+1 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 6 files...
+
+  Files: 0/6 | 0.3s | 0/s | Issues: 0 | deltasync_transport.dart
+
+
+
+example_flutter_mobile-baseline-1
+stdout:
+Analyzing flutter_mobile...
+No issues found! (ran in 7.4s)
+
+stderr (progress omitted):
+
+
+example_flutter_mobile-baseline-2
+stdout:
+Analyzing flutter_mobile...
+No issues found! (ran in 2.1s)
+
+stderr (progress omitted):
+
+
+example_flutter_mobile-saropa-1
+stdout:
+25 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 13 files...
+
+  Files: 0/13 | 0.4s | 0/s | Issues: 0 | demo_page.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 4/s │ Issues: 25 │ eight_page_test.dart
+  Files: 10/13 | 16.7s | 1/s | Issues: 25 | eight_peer_test.dart
+
+
+
+example_flutter_mobile-saropa-2
+stdout:
+25 diagnostics; coordinates in diagnostics.json
+stderr (progress omitted):
+Loaded 334 rules for tier: essential
+Scanning 13 files...
+
+  Files: 0/13 | 0.4s | 0/s | Issues: 0 | demo_page.dart
+
+⠿ Files: 10 │ Time: 2s │ Rate: 4/s │ Issues: 25 │ eight_page_test.dart
+  Files: 10/13 | 15.9s | 1/s | Issues: 25 | eight_peer_test.dart
+
+
+
+exact.log
+Resolving dependencies...
+Because test >=1.31.2 depends on analyzer >=13.0.0 <15.0.0 and saropa_lints >=14.0.3 depends on analyzer ^12.1.0, test >=1.31.2 is incompatible with saropa_lints >=14.0.3.
+So, because deltasync_saropa_exact_probe depends on both saropa_lints 16.7.0 and test 1.33.0, version solving failed.
+
+
+You can try the following suggestion to make the pubspec resolve:
+* Consider downgrading your constraint on test: dart pub add dev:test:^1.31.1
+
+
+flexible.log
+Resolving dependencies...
+Downloading packages...
++ _fe_analyzer_shared 99.0.0 (110.0.0 available)
++ analysis_server_plugin 0.3.14 (0.3.25 available)
++ analyzer 12.1.0 (14.6.0 available)
++ analyzer_plugin 0.14.8 (0.14.19 available)
++ args 2.7.0
++ async 2.13.1
++ boolean_selector 2.1.2
++ cli_config 0.2.0
++ cli_util 0.6.0
++ collection 1.19.1
++ convert 3.1.2
++ coverage 1.16.0
++ crypto 3.0.7
++ dart_style 3.1.8 (3.1.14 available)
++ ffi 2.2.0
++ file 7.0.1
++ frontend_server_client 4.2.0
++ glob 2.2.0
++ http_multi_server 3.2.3
++ http_parser 4.1.2
++ io 1.1.0
++ logging 1.3.0
++ matcher 0.12.20
++ meta 1.19.0
++ mime 2.1.0
++ node_preamble 2.0.2
++ package_config 2.2.0 (3.0.0 available)
++ path 1.9.1
++ pool 1.5.3
++ pub_semver 2.2.1
++ saropa_lints 16.7.0
++ shelf 1.4.3
++ shelf_packages_handler 3.0.2
++ shelf_static 1.2.0
++ shelf_web_socket 3.0.0
++ source_map_stack_trace 2.1.2
++ source_maps 0.10.14
++ source_span 1.10.2
++ stack_trace 1.12.2
++ stream_channel 2.1.4
++ string_scanner 1.4.1
++ term_glyph 1.2.2
++ test 1.31.1 (1.33.0 available)
++ test_api 0.7.12 (0.7.15 available)
++ test_core 0.6.18 (0.6.21 available)
++ typed_data 1.4.0
++ vm_service 15.4.0
++ watcher 1.2.1
++ web 1.1.2
++ web_socket 1.0.1
++ web_socket_channel 3.0.3
++ webkit_inspection_protocol 1.2.1
++ yaml 3.1.4
++ yaml_edit 2.2.4
+Changed 54 dependencies!
+9 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+
+
+fixture-commands.log
+{"label": "pub", "command": ["dart", "pub", "get"], "exitCode": 0}
+{"label": "baseline", "command": ["dart", "analyze"], "exitCode": 2}
+{"label": "saropa", "command": ["dart", "run", "saropa_lints:scan", "{fixture}", "--tier", "essential", "--resolve", "--format", "json"], "exitCode": 1}
+
+
+fixture-baseline.stdout
+Analyzing deltasync-r34-fixture...
+
+warning - lib/probe.dart:24:46 - Two keys in a map literal shouldn't be equal. Change or remove the duplicate key. - equal_keys_in_map
+   info - lib/probe.dart:14:5 - Use 'rethrow' to rethrow a caught exception. Try replacing the 'throw' with a 'rethrow'. - use_rethrow_when_possible
+
+2 issues found.
+
+
+native-init.log
+{native} 0   no
+  youtube_player_flutter no        —    no
+
+Lifecycle filtered: 1 rules (beta: 1, deprecated: 0)
+Enable specific lifecycle-filtered rules in analysis_options_custom.yaml RULE OVERRIDES if needed.
+✓ Added analysis settings to {native}/analysis_options_custom.yaml
+Auto-detected packages from pubspec.yaml:  (pure Dart)
+Platforms disabled: macos, web, windows, linux (43 rules affected)
+Packages disabled: bloc, provider, riverpod, getx, flutter_hooks, equatable, freezed, firebase, isar, hive, shared_preferences, sqflite, drift, dio, graphql, supabase, get_it, workmanager, url_launcher, geolocator, qr_scanner, quick_actions, in_app_review, home_widget, device_calendar, device_calendar_plus, file_picker, local_auth, geocoding, image_picker, google_maps_flutter, audioplayers, flutter_map, youtube_player_flutter, cached_network_image, permission_handler, http, app_links, receive_sharing_intent, sign_in_with_apple, lottie, flutter_animate, awesome_notifications, share_plus, sensors_plus, flutter_svg, connectivity_plus, google_sign_in, webview_flutter, flame (480 rules affected)
+⚠ --reset: discarding customizations
+
+Rules: 254 enabled / 2132 disabled (89%)
+Severity: 101 errors · 147 warnings · 6 info
+
+✓ Written to: analysis_options.yaml
+✓ Added non-Dart directory excludes to analyzer section
+
+Post-write validation
+[PASS] plugins: section present
+[PASS] version: key present
+[PASS] diagnostics: section present
+[WARN] Rule count — 254 rules found, expected ~2386
+
+
+Log: reports/20261025/20261025_030553_saropa_lints_init.log
+
+Run `dart analyze` to check your project.
+
+{native}/example/flutter_mobile 0  no        —    no
+
+Lifecycle filtered: 1 rules (beta: 1, deprecated: 0)
+Enable specific lifecycle-filtered rules in analysis_options_custom.yaml RULE OVERRIDES if needed.
+✓ Added analysis settings to {native}/example/flutter_mobile/analysis_options_custom.yaml
+Auto-detected packages from pubspec.yaml:  (Flutter project)
+Platforms disabled: macos, web, windows, linux (43 rules affected)
+Packages disabled: bloc, provider, riverpod, getx, flutter_hooks, equatable, freezed, firebase, isar, hive, shared_preferences, sqflite, drift, dio, graphql, supabase, get_it, workmanager, url_launcher, geolocator, qr_scanner, quick_actions, in_app_review, home_widget, device_calendar, device_calendar_plus, file_picker, local_auth, geocoding, image_picker, google_maps_flutter, audioplayers, flutter_map, youtube_player_flutter, cached_network_image, permission_handler, http, app_links, receive_sharing_intent, sign_in_with_apple, lottie, flutter_animate, awesome_notifications, share_plus, sensors_plus, flutter_svg, connectivity_plus, google_sign_in, webview_flutter, flame (480 rules affected)
+⚠ --reset: discarding customizations
+
+Rules: 254 enabled / 2132 disabled (89%)
+Severity: 101 errors · 147 warnings · 6 info
+
+✓ Written to: analysis_options.yaml
+✓ Added non-Dart directory excludes to analyzer section
+
+Post-write validation
+[PASS] plugins: section present
+[PASS] version: key present
+[PASS] diagnostics: section present
+[WARN] Rule count — 254 rules found, expected ~2386
+
+
+Log: reports/20261025/20261025_030554_saropa_lints_init.log
+
+Run `dart analyze` to check your project.
+
+
+
+deps.log
+baseline [('test', '1.33.0'), ('test_api', '0.7.15'), ('analyzer', '14.6.0'), ('lints', '6.1.0')]
+flutter [('flutter_lints', '6.0.0'), ('lints', '6.1.0'), ('test_api', '0.7.12')]
+runner [('saropa_lints', '16.7.0'), ('analyzer', '12.1.0')]
+flexible [('test', '1.31.1'), ('test_api', '0.7.12'), ('analyzer', '12.1.0'), ('saropa_lints', '16.7.0')]
+native [('test', '1.33.0'), ('test_api', '0.7.15'), ('analyzer', '14.6.0'), ('lints', '6.1.0')]
+Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on "linux_x64"
+
+Flutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision abaf9c5237 (2 weeks ago) • 2026-10-08 09:51:21 -0700
+Engine • hash d8a2d6c768c334d53e16277f837970ffa1e2de81 (revision deb287481e) (17 days ago) • 2026-10-07 17:09:12.000Z
+Tools • Dart 3.13.5 • DevTools 2.60.0
+
+
+
+native.log (messages/progress omitted; locations and codes retained)
+{native} ['dart', 'pub', 'get']
+{native}/example/flutter_mobile ['flutter', 'pub', 'get', '--enforce-lockfile']
+{native}/packages/deltasync_storage ['dart', 'analyze']
+Analyzing deltasync_storage...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 127MB.
+No issues found!
+{native}/example/flutter_mobile ['flutter', 'analyze', '--no-pub']
+Analyzing flutter_mobile...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 112MB.
+No issues found! (ran in 49.3s)
+
+native-full.log (messages/progress omitted; locations and codes retained)
+{native}/packages/deltasync_storage ['dart', 'analyze']
+Analyzing deltasync_storage...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 129MB.
+warning - lib/src/replica_storage_contract.dart:72:9 - avoid_losing_stack_trace
+warning - lib/src/replica_storage_contract.dart:90:9 - avoid_losing_stack_trace
+warning - lib/src/replica_storage_contract.dart:92:9 - avoid_losing_stack_trace
+warning - lib/src/replica_storage_contract.dart:169:34 - avoid_unsafe_collection_methods
+warning - lib/src/replica_storage_contract.dart:172:25 - avoid_unsafe_collection_methods
+warning - lib/src/replica_storage_contract.dart:225:7 - avoid_losing_stack_trace
+warning - lib/src/replica_storage_contract.dart:227:7 - avoid_losing_stack_trace
+warning - lib/src/replica_storage_contract.dart:233:12 - avoid_unsafe_collection_methods
+   info - lib/src/memory_storage.dart:134:21 - avoid_null_assertion
+9 issues found.
+{native}/example/flutter_mobile ['flutter', 'analyze', '--no-pub']
+Analyzing flutter_mobile...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 120MB.
+No issues found! (ran in 2.2s)
+
+native-generated.log (messages/progress omitted; locations and codes retained)
+{native} ['dart', 'analyze']
+Analyzing deltasync-r34-native...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 119MB.
+  error - example/measure_crdt_cost.dart:278:16 - avoid_path_traversal
+  error - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:229:38 - avoid_dynamic_sql
+  error - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:229:38 - require_sqflite_whereargs
+  error - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:293:28 - avoid_dynamic_sql
+  error - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:299:28 - avoid_dynamic_sql
+  error - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:309:28 - avoid_dynamic_sql
+  error - packages/deltasync_sync/lib/src/sync_engine.dart:133:43 - require_stream_controller_close
+warning - example/field_query_example.dart:23:3 - avoid_assert_in_production
+warning - example/field_query_example.dart:24:3 - avoid_assert_in_production
+warning - example/field_query_example.dart:25:3 - avoid_assert_in_production
+warning - example/measure_crdt_cost.dart:21:32 - avoid_unsafe_collection_methods
+warning - example/measure_crdt_cost.dart:278:16 - require_file_path_sanitization
+warning - example/measure_crdt_cost.dart:284:13 - avoid_unsafe_collection_methods
+warning - example/measure_crdt_cost.dart:284:29 - avoid_unsafe_collection_methods
+warning - example/measure_crdt_cost.dart:385:28 - avoid_unsafe_collection_methods
+warning - example/measure_crdt_cost.dart:404:28 - avoid_unsafe_collection_methods
+warning - example/measure_crdt_cost.dart:412:27 - avoid_unsafe_collection_methods
+warning - example/offline_reconciliation.dart:169:5 - avoid_parameter_mutation
+warning - packages/deltasync_core/lib/src/g_set.dart:78:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/g_set.dart:226:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/json_set_value.dart:14:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/json_set_value.dart:53:7 - require_catch_logging
+warning - packages/deltasync_core/lib/src/json_set_value.dart:62:7 - require_catch_logging
+warning - packages/deltasync_core/lib/src/lww_delta.dart:73:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/mv_register.dart:107:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/mv_register.dart:278:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/mv_register.dart:343:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_map.dart:172:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_map.dart:473:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_map.dart:513:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_set.dart:124:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_set.dart:308:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/or_set.dart:351:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:42:11 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:104:11 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:130:11 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:157:9 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:188:11 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:281:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/replica/delta_validation.dart:283:5 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/two_p_set.dart:103:7 - avoid_losing_stack_trace
+warning - packages/deltasync_core/lib/src/two_p_set.dart:264:7 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:72:9 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:90:9 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:92:9 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:169:34 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:172:25 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:180:18 - prefer_utc_for_storage
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:181:35 - prefer_utc_for_storage
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:225:7 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:227:7 - avoid_losing_stack_trace
+warning - packages/deltasync_storage/lib/src/replica_storage_contract.dart:233:12 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:335:19 - prefer_utc_for_storage
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:136:11 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:159:22 - avoid_unsafe_where_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:193:22 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:206:9 - avoid_swallowing_exceptions
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:206:9 - require_catch_logging
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:211:11 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:219:9 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:223:10 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:279:22 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:298:16 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:320:26 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:346:16 - avoid_unsafe_collection_methods
+warning - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:355:32 - avoid_unsafe_collection_methods
+warning - packages/deltasync_sync/lib/src/sync/local_batch.dart:32:7 - avoid_catch_all
+warning - packages/deltasync_sync/lib/src/sync/serial_commit_queue.dart:13:9 - avoid_catch_all
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:176:7 - avoid_catch_all
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:447:7 - avoid_catch_all
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:447:7 - avoid_swallowing_exceptions
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:447:7 - require_catch_logging
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:452:7 - avoid_catch_all
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:452:7 - avoid_swallowing_exceptions
+warning - packages/deltasync_sync/lib/src/sync_engine.dart:452:7 - require_catch_logging
+warning - packages/deltasync_transport/lib/src/delta_envelope.dart:69:7 - avoid_losing_stack_trace
+warning - plan/evidence/r30/api_inventory.dart:14:26 - avoid_unsafe_collection_methods
+warning - plan/evidence/r30/api_inventory.dart:20:20 - avoid_unsafe_collection_methods
+warning - plan/evidence/r30/api_inventory.dart:20:66 - avoid_unsafe_collection_methods
+warning - scripts/api_inventory.dart:14:26 - avoid_unsafe_collection_methods
+warning - scripts/api_inventory.dart:20:20 - avoid_unsafe_collection_methods
+warning - scripts/api_inventory.dart:20:66 - avoid_unsafe_collection_methods
+   info - example/measure_crdt_cost.dart:249:21 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:250:20 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:251:37 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:255:34 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:258:20 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:262:11 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:263:10 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:268:20 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:272:10 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:273:10 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:404:28 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:433:19 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:433:20 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:695:9 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:787:30 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:801:28 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:811:31 - avoid_null_assertion
+   info - example/measure_crdt_cost.dart:814:31 - avoid_null_assertion
+   info - example/support/peer_link.dart:4:1 - document_analyzer_ignore_rationale
+   info - packages/deltasync_core/lib/src/g_counter.dart:130:34 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:204:9 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:211:7 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:214:61 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:225:39 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:227:16 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:230:37 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/g_counter.dart:231:16 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/lww_register.dart:20:38 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/or_map.dart:126:17 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/or_map.dart:127:22 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/or_map.dart:311:21 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/or_map.dart:316:30 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/or_map.dart:380:22 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:217:7 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:220:62 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:238:39 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:243:16 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:250:37 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/pn_counter.dart:251:16 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/replica.dart:354:45 - avoid_null_assertion
+   info - packages/deltasync_core/lib/src/replica/contents.dart:134:53 - avoid_null_assertion
+   info - packages/deltasync_storage/lib/src/memory_storage.dart:134:21 - avoid_null_assertion
+   info - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:265:1 - document_analyzer_ignore_rationale
+   info - packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart:326:16 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:78:1 - document_analyzer_ignore_rationale
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:103:14 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:132:11 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:198:22 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:200:15 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:213:29 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:216:14 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:256:14 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:319:29 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:343:16 - avoid_null_assertion
+   info - packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart:377:11 - avoid_null_assertion
+   info - packages/deltasync_sync/lib/src/sync/outbound_sync.dart:41:11 - avoid_null_assertion
+   info - plan/evidence/r30/api_inventory.dart:105:27 - avoid_null_assertion
+   info - scripts/api_inventory.dart:101:39 - avoid_null_assertion
+   info - scripts/api_inventory.dart:109:27 - avoid_null_assertion
+141 issues found.
+{native}/example/flutter_mobile ['flutter', 'analyze', '--no-pub']
+Analyzing flutter_mobile...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 121MB.
+No issues found! (ran in 1.7s)
+
+native-flutter-no-parent-exclude.log (messages/progress omitted; locations and codes retained)
+Analyzing flutter_mobile...
+[saropa_lints] Memory management armed: 25 caches registered, soft relief at 512MB estimated, hard RSS cap at 8192MB (adaptive (60% of system RAM)), panic at 28760MB. Baseline RSS: 120MB.
+No issues found! (ran in 1.4s)
+
+native plugin.log
+2026-10-25T03:00:48.900233Z | --- saropa_lints plugin session started ---
+2026-10-25T03:00:47.724492Z | Plugin.register() — registering rules with analyzer
+2026-10-25T03:00:47.744390Z | registerSaropaLintRules: registered 2386 rules (2386 candidates, 0 disabled)
+2026-10-25T03:00:47.744414Z | Plugin.start() — loading initial config
+2026-10-25T03:00:47.744472Z | analysis_options.yaml not found at {native}/packages/deltasync_storage — saropa_lints will not enable any rules until config is reloaded from the project root.
+2026-10-25T03:00:47.744489Z | Runtime tier cap: essential (from default in-process cap (set SAROPA_TIER to raise it; full coverage runs via `dart run saropa_lints scan`)) — rules above this strictness band are skipped.
+2026-10-25T03:00:47.744491Z | Config loaded from {native}/packages/deltasync_storage — enabledRules: 0
+2026-10-25T03:00:48.902506Z | Light lane applied: enabled rule count 42 → 4. The remaining rules still run on save via the saropa_lints scan daemon.
+2026-10-25T03:00:48.902530Z | Config loaded from {native} — enabledRules: 4
+2026-10-25T03:00:48.923344Z | [memory] RSS 208MB (cap 8192MB, soft 5734MB, plugin ~0MB)
+2026-10-25T03:02:07.396572Z | --- saropa_lints plugin session started ---
+2026-10-25T03:02:06.441287Z | Plugin.register() — registering rules with analyzer
+2026-10-25T03:02:06.458068Z | registerSaropaLintRules: registered 2386 rules (2386 candidates, 0 disabled)
+2026-10-25T03:02:06.458090Z | Plugin.start() — loading initial config
+2026-10-25T03:02:06.458127Z | analysis_options.yaml not found at {native}/packages/deltasync_storage — saropa_lints will not enable any rules until config is reloaded from the project root.
+2026-10-25T03:02:06.458142Z | Runtime tier cap: essential (from default in-process cap (set SAROPA_TIER to raise it; full coverage runs via `dart run saropa_lints scan`)) — rules above this strictness band are skipped.
+2026-10-25T03:02:06.458144Z | Config loaded from {native}/packages/deltasync_storage — enabledRules: 0
+2026-10-25T03:02:07.399005Z | Config loaded from {native} — enabledRules: 42
+2026-10-25T03:02:07.417961Z | [memory] RSS 215MB (cap 8192MB, soft 5734MB, plugin ~0MB)
+2026-10-25T03:06:08.199133Z | --- saropa_lints plugin session started ---
+2026-10-25T03:06:07.025813Z | Plugin.register() — registering rules with analyzer
+2026-10-25T03:06:07.039337Z | registerSaropaLintRules: registered 2386 rules (2386 candidates, 0 disabled)
+2026-10-25T03:06:07.039354Z | Plugin.start() — loading initial config
+2026-10-25T03:06:07.049876Z | Config loaded from {native} — enabledRules: 254
+2026-10-25T03:06:08.205940Z | Config loaded from {native} — enabledRules: 254
+2026-10-25T03:06:08.215696Z | [memory] RSS 315MB (cap 8192MB, soft 5734MB, plugin ~0MB)

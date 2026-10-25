@@ -1,0 +1,52 @@
+// @dart=3.12
+import 'package:deltasync/deltasync.dart';
+import 'package:test/test.dart';
+
+void updateProfile(LocalBatch batch) {
+  batch.setDelta('profile/name', 'Ada');
+  batch.setDelta('profile/preferences', {'theme': 'dark'});
+  batch.incrementGCounter('profile/revisions');
+}
+
+void main() {
+  SyncEngine open() => SyncEngine.withStorage(
+    replica: Replica('external-batch'),
+    storage: MemoryStorage(),
+    transport: _Transport(),
+  );
+
+  test('external named synchronous callback uses public batch API', () async {
+    final engine = open();
+    addTearDown(engine.dispose);
+    final Delta changes = await engine.batch(updateProfile);
+    expect(changes.changes, hasLength(3));
+    expect(engine.valueAt('profile/name'), 'Ada');
+    expect(engine.valueAt('profile/revisions'), 1);
+    expect((await engine.pendingSummary()).pendingCount, 3);
+  });
+
+  test('external captured editor is closed and failed callback is atomic', () async {
+    final engine = open();
+    addTearDown(engine.dispose);
+    late LocalBatch saved;
+    await expectLater(engine.batch((batch) {
+      saved = batch;
+      updateProfile(batch);
+      throw StateError('application validation failed');
+    }), throwsStateError);
+    expect(() => saved.setDelta('late', true), throwsStateError);
+    expect(engine.valueAt('profile/name'), isNull);
+    expect((await engine.pendingSummary()).totalCount, 0);
+    final next = await engine.batch(updateProfile);
+    expect(next.changes.first.id, 'external-batch:delta:1');
+  });
+}
+
+class _Transport implements DeltaTransport {
+  @override
+  String get peerReplicaId => 'peer';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async {}
+}

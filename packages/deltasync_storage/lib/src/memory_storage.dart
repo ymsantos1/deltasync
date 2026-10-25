@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:deltasync_core/deltasync_core.dart';
+
 import 'replica_storage_contract.dart';
 
 /// Volatile in-memory implementation for tests, examples and prototypes.
@@ -95,6 +96,29 @@ class MemoryStorage implements ReplicaStorage {
           entry.recipientPeerId == recipientPeerId &&
           ids.contains(entry.entryId),
     );
+  }
+
+  @override
+  Future<OutboxSummary> pendingSummary(
+    String replicaId, {
+    String? recipientPeerId,
+  }) async {
+    var pending = 0;
+    var sent = 0;
+    for (final entry in _outbox[replicaId]?.values ?? <OutboxEntry>[]) {
+      if (recipientPeerId != null && entry.recipientPeerId != recipientPeerId) {
+        continue;
+      }
+      switch (entry.status) {
+        case OutboxStatus.pending:
+          pending++;
+        case OutboxStatus.sent:
+          sent++;
+        case OutboxStatus.confirmed:
+          break;
+      }
+    }
+    return OutboxSummary(pendingCount: pending, sentCount: sent);
   }
 
   @override

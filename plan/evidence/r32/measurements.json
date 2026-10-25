@@ -1,0 +1,2176 @@
+{
+  "task": "R-32",
+  "environment": {
+    "sdk": "3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"",
+    "os": "linux",
+    "osVersion": "Linux 7.3.0-4-garuda #1 SMP PREEMPT_DYNAMIC Fri, 23 Oct 2026 19:31:33 +0000",
+    "abi": "linux_x64",
+    "processors": 12
+  },
+  "seed": 20261024,
+  "fixedMilliseconds": 1730000000000,
+  "warmupRunsPerCaseAndBackend": 2,
+  "measuredRunsPerCaseAndBackend": 5,
+  "queryRepetitionsPerSample": 5,
+  "heapMeasured": false,
+  "allocationsMeasured": false,
+  "memoryMetric": "ProcessInfo.currentRss/maxRss; whole process, including native SQLite; not heap or allocated bytes",
+  "sizeMetric": "UTF-8 JSON bytes; values/metadata projections are not an additive partition or a recoverable backup",
+  "metadataProjection": "Global clock/HLC/delta sequence; per-CRDT sequences, MV contexts/version dots, retained change identity/dots/observations (including nested OR-Map changes); excludes domain values",
+  "timingScope": "Fresh identical storage per run; setup/checks outside timers; engineStart includes restore/replay/save and SQLite reopen; pushPreparation includes read/filter/merge/markSent, excludes queue/network; query times are batches",
+  "mutationScope": "Overwrite existing LWW field with the same value; still advances clock/ID; engineMutation starts after restoration and includes commit/adopt",
+  "queryScope": "Engine count includes both peers; storage status selects one peer; valueAt selects one LWW string; these are distinct operations",
+  "sqliteFileScope": "Main/WAL/SHM after close, preparation and one new mutation; no vacuum or reclaimable-space measurement; not the pre-operation JSON sizes",
+  "restorationScope": "Canonical snapshot already contains pending effects; replay is intentionally idempotent; storage was closed/reopened, OS caches were not cleared",
+  "workloads": [
+    {
+      "case": "base",
+      "backend": "memory-volatile",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 1062,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 6878,
+        "storageSnapshotJsonBytes": 6923,
+        "outboxJsonBytes": 6682
+      },
+      "medianMicroseconds": {
+        "fork": 393,
+        "nativeMutation": 29,
+        "adopt": 308,
+        "snapshot": 173,
+        "snapshotJsonEncode": 94,
+        "snapshotDecode": 340,
+        "engineStartWithOutbox": 15641,
+        "pendingCountViaEngineBatch": 1650,
+        "countStatusViaStorageBatch": 40,
+        "valueAtBatch": 24,
+        "pushPreparation": 434,
+        "engineMutation": 959
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 561,
+            "nativeMutation": 30,
+            "adopt": 400,
+            "snapshot": 320,
+            "snapshotJsonEncode": 128,
+            "snapshotDecode": 424,
+            "engineStartWithOutbox": 17937,
+            "pendingCountViaEngineBatch": 1684,
+            "countStatusViaStorageBatch": 40,
+            "valueAtBatch": 27,
+            "pushPreparation": 495,
+            "engineMutation": 1074
+          },
+          "verified": true,
+          "processRssBytesBefore": 269750272,
+          "processRssBytesAfter": 270348288,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 393,
+            "nativeMutation": 29,
+            "adopt": 319,
+            "snapshot": 528,
+            "snapshotJsonEncode": 95,
+            "snapshotDecode": 340,
+            "engineStartWithOutbox": 15998,
+            "pendingCountViaEngineBatch": 1650,
+            "countStatusViaStorageBatch": 35,
+            "valueAtBatch": 20,
+            "pushPreparation": 435,
+            "engineMutation": 959
+          },
+          "verified": true,
+          "processRssBytesBefore": 270348288,
+          "processRssBytesAfter": 274284544,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 328,
+            "nativeMutation": 24,
+            "adopt": 308,
+            "snapshot": 173,
+            "snapshotJsonEncode": 93,
+            "snapshotDecode": 814,
+            "engineStartWithOutbox": 14294,
+            "pendingCountViaEngineBatch": 1378,
+            "countStatusViaStorageBatch": 36,
+            "valueAtBatch": 19,
+            "pushPreparation": 405,
+            "engineMutation": 918
+          },
+          "verified": true,
+          "processRssBytesBefore": 274288640,
+          "processRssBytesAfter": 275165184,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 619,
+            "nativeMutation": 32,
+            "adopt": 302,
+            "snapshot": 168,
+            "snapshotJsonEncode": 94,
+            "snapshotDecode": 285,
+            "engineStartWithOutbox": 13023,
+            "pendingCountViaEngineBatch": 3236,
+            "countStatusViaStorageBatch": 40,
+            "valueAtBatch": 25,
+            "pushPreparation": 434,
+            "engineMutation": 1567
+          },
+          "verified": true,
+          "processRssBytesBefore": 275169280,
+          "processRssBytesAfter": 274681856,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 306,
+            "nativeMutation": 24,
+            "adopt": 283,
+            "snapshot": 173,
+            "snapshotJsonEncode": 92,
+            "snapshotDecode": 272,
+            "engineStartWithOutbox": 15641,
+            "pendingCountViaEngineBatch": 1647,
+            "countStatusViaStorageBatch": 44,
+            "valueAtBatch": 24,
+            "pushPreparation": 420,
+            "engineMutation": 956
+          },
+          "verified": true,
+          "processRssBytesBefore": 274681856,
+          "processRssBytesAfter": 275283968,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "base",
+      "backend": "sqlite-ffi",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 1062,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 6878,
+        "storageSnapshotJsonBytes": 6923,
+        "outboxJsonBytes": 6682
+      },
+      "medianMicroseconds": {
+        "fork": 254,
+        "nativeMutation": 27,
+        "adopt": 215,
+        "snapshot": 132,
+        "snapshotJsonEncode": 98,
+        "snapshotDecode": 192,
+        "engineStartWithOutbox": 12993,
+        "pendingCountViaEngineBatch": 5905,
+        "countStatusViaStorageBatch": 3146,
+        "valueAtBatch": 24,
+        "pushPreparation": 4680,
+        "engineMutation": 2038
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 300,
+            "nativeMutation": 29,
+            "adopt": 244,
+            "snapshot": 162,
+            "snapshotJsonEncode": 99,
+            "snapshotDecode": 245,
+            "engineStartWithOutbox": 14881,
+            "pendingCountViaEngineBatch": 7211,
+            "countStatusViaStorageBatch": 3146,
+            "valueAtBatch": 24,
+            "pushPreparation": 4545,
+            "engineMutation": 2318
+          },
+          "verified": true,
+          "processRssBytesBefore": 283688960,
+          "processRssBytesAfter": 284200960,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 40960,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 247,
+            "nativeMutation": 25,
+            "adopt": 215,
+            "snapshot": 132,
+            "snapshotJsonEncode": 106,
+            "snapshotDecode": 192,
+            "engineStartWithOutbox": 12993,
+            "pendingCountViaEngineBatch": 6216,
+            "countStatusViaStorageBatch": 4082,
+            "valueAtBatch": 24,
+            "pushPreparation": 5091,
+            "engineMutation": 2159
+          },
+          "verified": true,
+          "processRssBytesBefore": 284200960,
+          "processRssBytesAfter": 284745728,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 40960,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 254,
+            "nativeMutation": 27,
+            "adopt": 342,
+            "snapshot": 145,
+            "snapshotJsonEncode": 98,
+            "snapshotDecode": 209,
+            "engineStartWithOutbox": 12751,
+            "pendingCountViaEngineBatch": 5434,
+            "countStatusViaStorageBatch": 2930,
+            "valueAtBatch": 40,
+            "pushPreparation": 4993,
+            "engineMutation": 2022
+          },
+          "verified": true,
+          "processRssBytesBefore": 284745728,
+          "processRssBytesAfter": 285319168,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 40960,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 277,
+            "nativeMutation": 29,
+            "adopt": 192,
+            "snapshot": 124,
+            "snapshotJsonEncode": 92,
+            "snapshotDecode": 190,
+            "engineStartWithOutbox": 14090,
+            "pendingCountViaEngineBatch": 5905,
+            "countStatusViaStorageBatch": 3730,
+            "valueAtBatch": 25,
+            "pushPreparation": 4680,
+            "engineMutation": 2038
+          },
+          "verified": true,
+          "processRssBytesBefore": 285388800,
+          "processRssBytesAfter": 285384704,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 40960,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 230,
+            "nativeMutation": 27,
+            "adopt": 191,
+            "snapshot": 129,
+            "snapshotJsonEncode": 94,
+            "snapshotDecode": 186,
+            "engineStartWithOutbox": 12595,
+            "pendingCountViaEngineBatch": 5467,
+            "countStatusViaStorageBatch": 2678,
+            "valueAtBatch": 24,
+            "pushPreparation": 4433,
+            "engineMutation": 1569
+          },
+          "verified": true,
+          "processRssBytesBefore": 285384704,
+          "processRssBytesAfter": 285974528,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 40960,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "fields-64",
+      "backend": "memory-volatile",
+      "fields": 64,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 4248,
+        "causalMetadataProjectionJsonBytes": 15103,
+        "replicaSnapshotJsonBytes": 23928,
+        "storageSnapshotJsonBytes": 23973,
+        "outboxJsonBytes": 6684
+      },
+      "medianMicroseconds": {
+        "fork": 431,
+        "nativeMutation": 28,
+        "adopt": 379,
+        "snapshot": 347,
+        "snapshotJsonEncode": 288,
+        "snapshotDecode": 403,
+        "engineStartWithOutbox": 18596,
+        "pendingCountViaEngineBatch": 710,
+        "countStatusViaStorageBatch": 33,
+        "valueAtBatch": 19,
+        "pushPreparation": 266,
+        "engineMutation": 1426
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 453,
+            "nativeMutation": 28,
+            "adopt": 409,
+            "snapshot": 347,
+            "snapshotJsonEncode": 300,
+            "snapshotDecode": 440,
+            "engineStartWithOutbox": 21060,
+            "pendingCountViaEngineBatch": 658,
+            "countStatusViaStorageBatch": 27,
+            "valueAtBatch": 18,
+            "pushPreparation": 266,
+            "engineMutation": 1719
+          },
+          "verified": true,
+          "processRssBytesBefore": 288493568,
+          "processRssBytesAfter": 288468992,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 431,
+            "nativeMutation": 27,
+            "adopt": 379,
+            "snapshot": 335,
+            "snapshotJsonEncode": 288,
+            "snapshotDecode": 403,
+            "engineStartWithOutbox": 20142,
+            "pendingCountViaEngineBatch": 924,
+            "countStatusViaStorageBatch": 30,
+            "valueAtBatch": 19,
+            "pushPreparation": 540,
+            "engineMutation": 1444
+          },
+          "verified": true,
+          "processRssBytesBefore": 288468992,
+          "processRssBytesAfter": 290344960,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 427,
+            "nativeMutation": 104,
+            "adopt": 818,
+            "snapshot": 369,
+            "snapshotJsonEncode": 304,
+            "snapshotDecode": 428,
+            "engineStartWithOutbox": 17602,
+            "pendingCountViaEngineBatch": 701,
+            "countStatusViaStorageBatch": 34,
+            "valueAtBatch": 19,
+            "pushPreparation": 235,
+            "engineMutation": 1294
+          },
+          "verified": true,
+          "processRssBytesBefore": 290357248,
+          "processRssBytesAfter": 290058240,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 397,
+            "nativeMutation": 23,
+            "adopt": 356,
+            "snapshot": 319,
+            "snapshotJsonEncode": 284,
+            "snapshotDecode": 400,
+            "engineStartWithOutbox": 18596,
+            "pendingCountViaEngineBatch": 729,
+            "countStatusViaStorageBatch": 73,
+            "valueAtBatch": 19,
+            "pushPreparation": 242,
+            "engineMutation": 1426
+          },
+          "verified": true,
+          "processRssBytesBefore": 290058240,
+          "processRssBytesAfter": 290836480,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 467,
+            "nativeMutation": 31,
+            "adopt": 371,
+            "snapshot": 349,
+            "snapshotJsonEncode": 287,
+            "snapshotDecode": 397,
+            "engineStartWithOutbox": 17028,
+            "pendingCountViaEngineBatch": 710,
+            "countStatusViaStorageBatch": 33,
+            "valueAtBatch": 20,
+            "pushPreparation": 319,
+            "engineMutation": 1299
+          },
+          "verified": true,
+          "processRssBytesBefore": 290836480,
+          "processRssBytesAfter": 290992128,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "fields-64",
+      "backend": "sqlite-ffi",
+      "fields": 64,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 4248,
+        "causalMetadataProjectionJsonBytes": 15103,
+        "replicaSnapshotJsonBytes": 23928,
+        "storageSnapshotJsonBytes": 23973,
+        "outboxJsonBytes": 6684
+      },
+      "medianMicroseconds": {
+        "fork": 476,
+        "nativeMutation": 29,
+        "adopt": 362,
+        "snapshot": 342,
+        "snapshotJsonEncode": 322,
+        "snapshotDecode": 406,
+        "engineStartWithOutbox": 20875,
+        "pendingCountViaEngineBatch": 4186,
+        "countStatusViaStorageBatch": 2422,
+        "valueAtBatch": 23,
+        "pushPreparation": 3929,
+        "engineMutation": 2807
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 401,
+            "nativeMutation": 29,
+            "adopt": 362,
+            "snapshot": 342,
+            "snapshotJsonEncode": 347,
+            "snapshotDecode": 413,
+            "engineStartWithOutbox": 21981,
+            "pendingCountViaEngineBatch": 4158,
+            "countStatusViaStorageBatch": 3407,
+            "valueAtBatch": 23,
+            "pushPreparation": 3782,
+            "engineMutation": 2772
+          },
+          "verified": true,
+          "processRssBytesBefore": 293011456,
+          "processRssBytesAfter": 294158336,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 57344,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 476,
+            "nativeMutation": 28,
+            "adopt": 367,
+            "snapshot": 336,
+            "snapshotJsonEncode": 296,
+            "snapshotDecode": 386,
+            "engineStartWithOutbox": 20052,
+            "pendingCountViaEngineBatch": 4186,
+            "countStatusViaStorageBatch": 2412,
+            "valueAtBatch": 22,
+            "pushPreparation": 3929,
+            "engineMutation": 2807
+          },
+          "verified": true,
+          "processRssBytesBefore": 294158336,
+          "processRssBytesAfter": 294432768,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 57344,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 403,
+            "nativeMutation": 29,
+            "adopt": 350,
+            "snapshot": 339,
+            "snapshotJsonEncode": 300,
+            "snapshotDecode": 405,
+            "engineStartWithOutbox": 20875,
+            "pendingCountViaEngineBatch": 4221,
+            "countStatusViaStorageBatch": 2648,
+            "valueAtBatch": 34,
+            "pushPreparation": 4616,
+            "engineMutation": 3351
+          },
+          "verified": true,
+          "processRssBytesBefore": 294432768,
+          "processRssBytesAfter": 323764224,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 57344,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 495,
+            "nativeMutation": 30,
+            "adopt": 361,
+            "snapshot": 351,
+            "snapshotJsonEncode": 1449,
+            "snapshotDecode": 406,
+            "engineStartWithOutbox": 21399,
+            "pendingCountViaEngineBatch": 3917,
+            "countStatusViaStorageBatch": 2422,
+            "valueAtBatch": 25,
+            "pushPreparation": 4848,
+            "engineMutation": 2389
+          },
+          "verified": true,
+          "processRssBytesBefore": 323764224,
+          "processRssBytesAfter": 297316352,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 57344,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 523,
+            "nativeMutation": 61,
+            "adopt": 432,
+            "snapshot": 452,
+            "snapshotJsonEncode": 322,
+            "snapshotDecode": 442,
+            "engineStartWithOutbox": 20143,
+            "pendingCountViaEngineBatch": 4759,
+            "countStatusViaStorageBatch": 2084,
+            "valueAtBatch": 21,
+            "pushPreparation": 3377,
+            "engineMutation": 3197
+          },
+          "verified": true,
+          "processRssBytesBefore": 297316352,
+          "processRssBytesAfter": 297418752,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 57344,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "fields-256",
+      "backend": "memory-volatile",
+      "fields": 256,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 17012,
+        "causalMetadataProjectionJsonBytes": 57980,
+        "replicaSnapshotJsonBytes": 92285,
+        "storageSnapshotJsonBytes": 92330,
+        "outboxJsonBytes": 6688
+      },
+      "medianMicroseconds": {
+        "fork": 1389,
+        "nativeMutation": 32,
+        "adopt": 1402,
+        "snapshot": 1349,
+        "snapshotJsonEncode": 1026,
+        "snapshotDecode": 1296,
+        "engineStartWithOutbox": 59677,
+        "pendingCountViaEngineBatch": 589,
+        "countStatusViaStorageBatch": 22,
+        "valueAtBatch": 19,
+        "pushPreparation": 262,
+        "engineMutation": 4878
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 1313,
+            "nativeMutation": 31,
+            "adopt": 1739,
+            "snapshot": 1377,
+            "snapshotJsonEncode": 1026,
+            "snapshotDecode": 1296,
+            "engineStartWithOutbox": 66999,
+            "pendingCountViaEngineBatch": 668,
+            "countStatusViaStorageBatch": 22,
+            "valueAtBatch": 19,
+            "pushPreparation": 223,
+            "engineMutation": 5639
+          },
+          "verified": true,
+          "processRssBytesBefore": 325197824,
+          "processRssBytesAfter": 308948992,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 1389,
+            "nativeMutation": 32,
+            "adopt": 1472,
+            "snapshot": 1481,
+            "snapshotJsonEncode": 1077,
+            "snapshotDecode": 1349,
+            "engineStartWithOutbox": 55706,
+            "pendingCountViaEngineBatch": 646,
+            "countStatusViaStorageBatch": 21,
+            "valueAtBatch": 20,
+            "pushPreparation": 262,
+            "engineMutation": 5399
+          },
+          "verified": true,
+          "processRssBytesBefore": 308948992,
+          "processRssBytesAfter": 309043200,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 1430,
+            "nativeMutation": 31,
+            "adopt": 1282,
+            "snapshot": 1322,
+            "snapshotJsonEncode": 2368,
+            "snapshotDecode": 1530,
+            "engineStartWithOutbox": 63186,
+            "pendingCountViaEngineBatch": 589,
+            "countStatusViaStorageBatch": 22,
+            "valueAtBatch": 17,
+            "pushPreparation": 214,
+            "engineMutation": 4878
+          },
+          "verified": true,
+          "processRssBytesBefore": 309043200,
+          "processRssBytesAfter": 309465088,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 1363,
+            "nativeMutation": 41,
+            "adopt": 1402,
+            "snapshot": 1349,
+            "snapshotJsonEncode": 992,
+            "snapshotDecode": 1230,
+            "engineStartWithOutbox": 59677,
+            "pendingCountViaEngineBatch": 538,
+            "countStatusViaStorageBatch": 22,
+            "valueAtBatch": 19,
+            "pushPreparation": 262,
+            "engineMutation": 4047
+          },
+          "verified": true,
+          "processRssBytesBefore": 309465088,
+          "processRssBytesAfter": 309043200,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 1392,
+            "nativeMutation": 52,
+            "adopt": 1318,
+            "snapshot": 1295,
+            "snapshotJsonEncode": 1012,
+            "snapshotDecode": 1268,
+            "engineStartWithOutbox": 57383,
+            "pendingCountViaEngineBatch": 561,
+            "countStatusViaStorageBatch": 21,
+            "valueAtBatch": 18,
+            "pushPreparation": 298,
+            "engineMutation": 4095
+          },
+          "verified": true,
+          "processRssBytesBefore": 309043200,
+          "processRssBytesAfter": 309137408,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "fields-256",
+      "backend": "sqlite-ffi",
+      "fields": 256,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 17012,
+        "causalMetadataProjectionJsonBytes": 57980,
+        "replicaSnapshotJsonBytes": 92285,
+        "storageSnapshotJsonBytes": 92330,
+        "outboxJsonBytes": 6688
+      },
+      "medianMicroseconds": {
+        "fork": 1422,
+        "nativeMutation": 37,
+        "adopt": 1415,
+        "snapshot": 1418,
+        "snapshotJsonEncode": 1022,
+        "snapshotDecode": 1301,
+        "engineStartWithOutbox": 72765,
+        "pendingCountViaEngineBatch": 3494,
+        "countStatusViaStorageBatch": 1835,
+        "valueAtBatch": 20,
+        "pushPreparation": 3898,
+        "engineMutation": 7028
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 1422,
+            "nativeMutation": 34,
+            "adopt": 1415,
+            "snapshot": 1615,
+            "snapshotJsonEncode": 1372,
+            "snapshotDecode": 1303,
+            "engineStartWithOutbox": 72765,
+            "pendingCountViaEngineBatch": 3494,
+            "countStatusViaStorageBatch": 1825,
+            "valueAtBatch": 21,
+            "pushPreparation": 3951,
+            "engineMutation": 6872
+          },
+          "verified": true,
+          "processRssBytesBefore": 310505472,
+          "processRssBytesAfter": 310071296,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 126976,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 1909,
+            "nativeMutation": 50,
+            "adopt": 1403,
+            "snapshot": 1418,
+            "snapshotJsonEncode": 1046,
+            "snapshotDecode": 1301,
+            "engineStartWithOutbox": 71677,
+            "pendingCountViaEngineBatch": 3550,
+            "countStatusViaStorageBatch": 1857,
+            "valueAtBatch": 20,
+            "pushPreparation": 3735,
+            "engineMutation": 7663
+          },
+          "verified": true,
+          "processRssBytesBefore": 310071296,
+          "processRssBytesAfter": 310972416,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 126976,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 1397,
+            "nativeMutation": 46,
+            "adopt": 1420,
+            "snapshot": 1330,
+            "snapshotJsonEncode": 1008,
+            "snapshotDecode": 1273,
+            "engineStartWithOutbox": 73604,
+            "pendingCountViaEngineBatch": 4743,
+            "countStatusViaStorageBatch": 2413,
+            "valueAtBatch": 75,
+            "pushPreparation": 4138,
+            "engineMutation": 6744
+          },
+          "verified": true,
+          "processRssBytesBefore": 310972416,
+          "processRssBytesAfter": 310681600,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 126976,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 1376,
+            "nativeMutation": 34,
+            "adopt": 1573,
+            "snapshot": 2198,
+            "snapshotJsonEncode": 1022,
+            "snapshotDecode": 1261,
+            "engineStartWithOutbox": 74218,
+            "pendingCountViaEngineBatch": 3308,
+            "countStatusViaStorageBatch": 1815,
+            "valueAtBatch": 16,
+            "pushPreparation": 3898,
+            "engineMutation": 7028
+          },
+          "verified": true,
+          "processRssBytesBefore": 310681600,
+          "processRssBytesAfter": 309846016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 126976,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 1480,
+            "nativeMutation": 37,
+            "adopt": 1339,
+            "snapshot": 1257,
+            "snapshotJsonEncode": 996,
+            "snapshotDecode": 1700,
+            "engineStartWithOutbox": 70586,
+            "pendingCountViaEngineBatch": 3485,
+            "countStatusViaStorageBatch": 1835,
+            "valueAtBatch": 17,
+            "pushPreparation": 3564,
+            "engineMutation": 7193
+          },
+          "verified": true,
+          "processRssBytesBefore": 309850112,
+          "processRssBytesAfter": 310710272,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 126976,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "value-256",
+      "backend": "memory-volatile",
+      "fields": 16,
+      "valueAsciiBytes": 256,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 3366,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 9566,
+        "storageSnapshotJsonBytes": 9611,
+        "outboxJsonBytes": 8602
+      },
+      "medianMicroseconds": {
+        "fork": 136,
+        "nativeMutation": 24,
+        "adopt": 113,
+        "snapshot": 109,
+        "snapshotJsonEncode": 91,
+        "snapshotDecode": 145,
+        "engineStartWithOutbox": 5236,
+        "pendingCountViaEngineBatch": 482,
+        "countStatusViaStorageBatch": 16,
+        "valueAtBatch": 20,
+        "pushPreparation": 156,
+        "engineMutation": 444
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 134,
+            "nativeMutation": 23,
+            "adopt": 114,
+            "snapshot": 108,
+            "snapshotJsonEncode": 90,
+            "snapshotDecode": 143,
+            "engineStartWithOutbox": 5131,
+            "pendingCountViaEngineBatch": 500,
+            "countStatusViaStorageBatch": 18,
+            "valueAtBatch": 20,
+            "pushPreparation": 169,
+            "engineMutation": 516
+          },
+          "verified": true,
+          "processRssBytesBefore": 309821440,
+          "processRssBytesAfter": 309821440,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 136,
+            "nativeMutation": 26,
+            "adopt": 112,
+            "snapshot": 109,
+            "snapshotJsonEncode": 91,
+            "snapshotDecode": 146,
+            "engineStartWithOutbox": 5545,
+            "pendingCountViaEngineBatch": 515,
+            "countStatusViaStorageBatch": 16,
+            "valueAtBatch": 19,
+            "pushPreparation": 155,
+            "engineMutation": 444
+          },
+          "verified": true,
+          "processRssBytesBefore": 309821440,
+          "processRssBytesAfter": 309821440,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 132,
+            "nativeMutation": 22,
+            "adopt": 114,
+            "snapshot": 103,
+            "snapshotJsonEncode": 93,
+            "snapshotDecode": 145,
+            "engineStartWithOutbox": 5573,
+            "pendingCountViaEngineBatch": 482,
+            "countStatusViaStorageBatch": 15,
+            "valueAtBatch": 19,
+            "pushPreparation": 159,
+            "engineMutation": 438
+          },
+          "verified": true,
+          "processRssBytesBefore": 309821440,
+          "processRssBytesAfter": 309821440,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 141,
+            "nativeMutation": 24,
+            "adopt": 113,
+            "snapshot": 110,
+            "snapshotJsonEncode": 89,
+            "snapshotDecode": 140,
+            "engineStartWithOutbox": 5099,
+            "pendingCountViaEngineBatch": 482,
+            "countStatusViaStorageBatch": 16,
+            "valueAtBatch": 20,
+            "pushPreparation": 156,
+            "engineMutation": 459
+          },
+          "verified": true,
+          "processRssBytesBefore": 309821440,
+          "processRssBytesAfter": 309821440,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 141,
+            "nativeMutation": 30,
+            "adopt": 113,
+            "snapshot": 111,
+            "snapshotJsonEncode": 92,
+            "snapshotDecode": 147,
+            "engineStartWithOutbox": 5236,
+            "pendingCountViaEngineBatch": 478,
+            "countStatusViaStorageBatch": 15,
+            "valueAtBatch": 20,
+            "pushPreparation": 156,
+            "engineMutation": 434
+          },
+          "verified": true,
+          "processRssBytesBefore": 309821440,
+          "processRssBytesAfter": 309825536,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "value-256",
+      "backend": "sqlite-ffi",
+      "fields": 16,
+      "valueAsciiBytes": 256,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 3366,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 9566,
+        "storageSnapshotJsonBytes": 9611,
+        "outboxJsonBytes": 8602
+      },
+      "medianMicroseconds": {
+        "fork": 166,
+        "nativeMutation": 32,
+        "adopt": 117,
+        "snapshot": 107,
+        "snapshotJsonEncode": 89,
+        "snapshotDecode": 139,
+        "engineStartWithOutbox": 7437,
+        "pendingCountViaEngineBatch": 2925,
+        "countStatusViaStorageBatch": 1675,
+        "valueAtBatch": 20,
+        "pushPreparation": 3072,
+        "engineMutation": 1354
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 158,
+            "nativeMutation": 27,
+            "adopt": 113,
+            "snapshot": 101,
+            "snapshotJsonEncode": 89,
+            "snapshotDecode": 137,
+            "engineStartWithOutbox": 7676,
+            "pendingCountViaEngineBatch": 2871,
+            "countStatusViaStorageBatch": 1760,
+            "valueAtBatch": 21,
+            "pushPreparation": 4662,
+            "engineMutation": 1354
+          },
+          "verified": true,
+          "processRssBytesBefore": 309825536,
+          "processRssBytesAfter": 309825536,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 45056,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 172,
+            "nativeMutation": 34,
+            "adopt": 117,
+            "snapshot": 107,
+            "snapshotJsonEncode": 90,
+            "snapshotDecode": 139,
+            "engineStartWithOutbox": 7046,
+            "pendingCountViaEngineBatch": 3257,
+            "countStatusViaStorageBatch": 1713,
+            "valueAtBatch": 26,
+            "pushPreparation": 3072,
+            "engineMutation": 1257
+          },
+          "verified": true,
+          "processRssBytesBefore": 309825536,
+          "processRssBytesAfter": 309825536,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 45056,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 178,
+            "nativeMutation": 32,
+            "adopt": 117,
+            "snapshot": 127,
+            "snapshotJsonEncode": 97,
+            "snapshotDecode": 253,
+            "engineStartWithOutbox": 7437,
+            "pendingCountViaEngineBatch": 2925,
+            "countStatusViaStorageBatch": 1627,
+            "valueAtBatch": 20,
+            "pushPreparation": 2857,
+            "engineMutation": 1273
+          },
+          "verified": true,
+          "processRssBytesBefore": 309825536,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 45056,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 160,
+            "nativeMutation": 39,
+            "adopt": 122,
+            "snapshot": 107,
+            "snapshotJsonEncode": 89,
+            "snapshotDecode": 138,
+            "engineStartWithOutbox": 7746,
+            "pendingCountViaEngineBatch": 2851,
+            "countStatusViaStorageBatch": 1665,
+            "valueAtBatch": 19,
+            "pushPreparation": 3057,
+            "engineMutation": 1516
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 45056,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 166,
+            "nativeMutation": 29,
+            "adopt": 115,
+            "snapshot": 106,
+            "snapshotJsonEncode": 89,
+            "snapshotDecode": 139,
+            "engineStartWithOutbox": 7212,
+            "pendingCountViaEngineBatch": 2958,
+            "countStatusViaStorageBatch": 1675,
+            "valueAtBatch": 20,
+            "pushPreparation": 4035,
+            "engineMutation": 1393
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 45056,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "value-1024",
+      "backend": "memory-volatile",
+      "fields": 16,
+      "valueAsciiBytes": 1024,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 12582,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 20318,
+        "storageSnapshotJsonBytes": 20363,
+        "outboxJsonBytes": 16282
+      },
+      "medianMicroseconds": {
+        "fork": 185,
+        "nativeMutation": 42,
+        "adopt": 165,
+        "snapshot": 133,
+        "snapshotJsonEncode": 99,
+        "snapshotDecode": 227,
+        "engineStartWithOutbox": 7104,
+        "pendingCountViaEngineBatch": 560,
+        "countStatusViaStorageBatch": 16,
+        "valueAtBatch": 43,
+        "pushPreparation": 185,
+        "engineMutation": 573
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 188,
+            "nativeMutation": 35,
+            "adopt": 168,
+            "snapshot": 148,
+            "snapshotJsonEncode": 106,
+            "snapshotDecode": 513,
+            "engineStartWithOutbox": 7183,
+            "pendingCountViaEngineBatch": 554,
+            "countStatusViaStorageBatch": 16,
+            "valueAtBatch": 42,
+            "pushPreparation": 311,
+            "engineMutation": 573
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 182,
+            "nativeMutation": 48,
+            "adopt": 166,
+            "snapshot": 133,
+            "snapshotJsonEncode": 97,
+            "snapshotDecode": 227,
+            "engineStartWithOutbox": 7104,
+            "pendingCountViaEngineBatch": 561,
+            "countStatusViaStorageBatch": 21,
+            "valueAtBatch": 43,
+            "pushPreparation": 180,
+            "engineMutation": 565
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 185,
+            "nativeMutation": 42,
+            "adopt": 165,
+            "snapshot": 125,
+            "snapshotJsonEncode": 99,
+            "snapshotDecode": 208,
+            "engineStartWithOutbox": 7052,
+            "pendingCountViaEngineBatch": 560,
+            "countStatusViaStorageBatch": 16,
+            "valueAtBatch": 48,
+            "pushPreparation": 185,
+            "engineMutation": 636
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 181,
+            "nativeMutation": 37,
+            "adopt": 162,
+            "snapshot": 151,
+            "snapshotJsonEncode": 110,
+            "snapshotDecode": 249,
+            "engineStartWithOutbox": 7329,
+            "pendingCountViaEngineBatch": 571,
+            "countStatusViaStorageBatch": 16,
+            "valueAtBatch": 39,
+            "pushPreparation": 188,
+            "engineMutation": 737
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 196,
+            "nativeMutation": 46,
+            "adopt": 157,
+            "snapshot": 127,
+            "snapshotJsonEncode": 97,
+            "snapshotDecode": 218,
+            "engineStartWithOutbox": 7074,
+            "pendingCountViaEngineBatch": 557,
+            "countStatusViaStorageBatch": 15,
+            "valueAtBatch": 43,
+            "pushPreparation": 184,
+            "engineMutation": 572
+          },
+          "verified": true,
+          "processRssBytesBefore": 309878784,
+          "processRssBytesAfter": 309878784,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "value-1024",
+      "backend": "sqlite-ffi",
+      "fields": 16,
+      "valueAsciiBytes": 1024,
+      "pendingEntries": 16,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 8,
+      "sizes": {
+        "visibleValuesJsonBytes": 12582,
+        "causalMetadataProjectionJsonBytes": 4413,
+        "replicaSnapshotJsonBytes": 20318,
+        "storageSnapshotJsonBytes": 20363,
+        "outboxJsonBytes": 16282
+      },
+      "medianMicroseconds": {
+        "fork": 220,
+        "nativeMutation": 42,
+        "adopt": 158,
+        "snapshot": 126,
+        "snapshotJsonEncode": 98,
+        "snapshotDecode": 207,
+        "engineStartWithOutbox": 9497,
+        "pendingCountViaEngineBatch": 3298,
+        "countStatusViaStorageBatch": 1808,
+        "valueAtBatch": 40,
+        "pushPreparation": 3214,
+        "engineMutation": 1501
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 238,
+            "nativeMutation": 43,
+            "adopt": 158,
+            "snapshot": 126,
+            "snapshotJsonEncode": 95,
+            "snapshotDecode": 207,
+            "engineStartWithOutbox": 9868,
+            "pendingCountViaEngineBatch": 3202,
+            "countStatusViaStorageBatch": 1775,
+            "valueAtBatch": 41,
+            "pushPreparation": 3214,
+            "engineMutation": 1501
+          },
+          "verified": true,
+          "processRssBytesBefore": 309846016,
+          "processRssBytesAfter": 309846016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 65536,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 205,
+            "nativeMutation": 36,
+            "adopt": 157,
+            "snapshot": 122,
+            "snapshotJsonEncode": 96,
+            "snapshotDecode": 197,
+            "engineStartWithOutbox": 9415,
+            "pendingCountViaEngineBatch": 3461,
+            "countStatusViaStorageBatch": 1808,
+            "valueAtBatch": 41,
+            "pushPreparation": 2850,
+            "engineMutation": 1420
+          },
+          "verified": true,
+          "processRssBytesBefore": 309846016,
+          "processRssBytesAfter": 309846016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 65536,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 220,
+            "nativeMutation": 42,
+            "adopt": 162,
+            "snapshot": 340,
+            "snapshotJsonEncode": 125,
+            "snapshotDecode": 268,
+            "engineStartWithOutbox": 9407,
+            "pendingCountViaEngineBatch": 3298,
+            "countStatusViaStorageBatch": 1732,
+            "valueAtBatch": 40,
+            "pushPreparation": 3141,
+            "engineMutation": 1513
+          },
+          "verified": true,
+          "processRssBytesBefore": 309846016,
+          "processRssBytesAfter": 310370304,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 65536,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 208,
+            "nativeMutation": 36,
+            "adopt": 158,
+            "snapshot": 123,
+            "snapshotJsonEncode": 98,
+            "snapshotDecode": 199,
+            "engineStartWithOutbox": 9731,
+            "pendingCountViaEngineBatch": 4498,
+            "countStatusViaStorageBatch": 1854,
+            "valueAtBatch": 40,
+            "pushPreparation": 3221,
+            "engineMutation": 1401
+          },
+          "verified": true,
+          "processRssBytesBefore": 310370304,
+          "processRssBytesAfter": 310358016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 65536,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 229,
+            "nativeMutation": 52,
+            "adopt": 184,
+            "snapshot": 130,
+            "snapshotJsonEncode": 114,
+            "snapshotDecode": 221,
+            "engineStartWithOutbox": 9497,
+            "pendingCountViaEngineBatch": 3147,
+            "countStatusViaStorageBatch": 1953,
+            "valueAtBatch": 40,
+            "pushPreparation": 3316,
+            "engineMutation": 1577
+          },
+          "verified": true,
+          "processRssBytesBefore": 310358016,
+          "processRssBytesAfter": 310358016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 65536,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "pending-64",
+      "backend": "memory-volatile",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 64,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 32,
+      "sizes": {
+        "visibleValuesJsonBytes": 1134,
+        "causalMetadataProjectionJsonBytes": 6205,
+        "replicaSnapshotJsonBytes": 9618,
+        "storageSnapshotJsonBytes": 9663,
+        "outboxJsonBytes": 26664
+      },
+      "medianMicroseconds": {
+        "fork": 164,
+        "nativeMutation": 21,
+        "adopt": 135,
+        "snapshot": 120,
+        "snapshotJsonEncode": 115,
+        "snapshotDecode": 152,
+        "engineStartWithOutbox": 21242,
+        "pendingCountViaEngineBatch": 1347,
+        "countStatusViaStorageBatch": 29,
+        "valueAtBatch": 10,
+        "pushPreparation": 443,
+        "engineMutation": 583
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 162,
+            "nativeMutation": 26,
+            "adopt": 137,
+            "snapshot": 123,
+            "snapshotJsonEncode": 114,
+            "snapshotDecode": 155,
+            "engineStartWithOutbox": 21242,
+            "pendingCountViaEngineBatch": 1344,
+            "countStatusViaStorageBatch": 29,
+            "valueAtBatch": 10,
+            "pushPreparation": 443,
+            "engineMutation": 793
+          },
+          "verified": true,
+          "processRssBytesBefore": 310358016,
+          "processRssBytesAfter": 309833728,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 164,
+            "nativeMutation": 22,
+            "adopt": 131,
+            "snapshot": 120,
+            "snapshotJsonEncode": 115,
+            "snapshotDecode": 148,
+            "engineStartWithOutbox": 21106,
+            "pendingCountViaEngineBatch": 1348,
+            "countStatusViaStorageBatch": 29,
+            "valueAtBatch": 10,
+            "pushPreparation": 977,
+            "engineMutation": 486
+          },
+          "verified": true,
+          "processRssBytesBefore": 309833728,
+          "processRssBytesAfter": 310358016,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 165,
+            "nativeMutation": 21,
+            "adopt": 135,
+            "snapshot": 121,
+            "snapshotJsonEncode": 115,
+            "snapshotDecode": 160,
+            "engineStartWithOutbox": 21109,
+            "pendingCountViaEngineBatch": 1756,
+            "countStatusViaStorageBatch": 43,
+            "valueAtBatch": 12,
+            "pushPreparation": 449,
+            "engineMutation": 583
+          },
+          "verified": true,
+          "processRssBytesBefore": 310358016,
+          "processRssBytesAfter": 310341632,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 164,
+            "nativeMutation": 21,
+            "adopt": 135,
+            "snapshot": 117,
+            "snapshotJsonEncode": 118,
+            "snapshotDecode": 152,
+            "engineStartWithOutbox": 21892,
+            "pendingCountViaEngineBatch": 1347,
+            "countStatusViaStorageBatch": 25,
+            "valueAtBatch": 10,
+            "pushPreparation": 432,
+            "engineMutation": 494
+          },
+          "verified": true,
+          "processRssBytesBefore": 310341632,
+          "processRssBytesAfter": 310341632,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 161,
+            "nativeMutation": 19,
+            "adopt": 131,
+            "snapshot": 117,
+            "snapshotJsonEncode": 117,
+            "snapshotDecode": 151,
+            "engineStartWithOutbox": 22285,
+            "pendingCountViaEngineBatch": 1345,
+            "countStatusViaStorageBatch": 25,
+            "valueAtBatch": 10,
+            "pushPreparation": 439,
+            "engineMutation": 750
+          },
+          "verified": true,
+          "processRssBytesBefore": 310341632,
+          "processRssBytesAfter": 310337536,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "pending-64",
+      "backend": "sqlite-ffi",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 64,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 32,
+      "sizes": {
+        "visibleValuesJsonBytes": 1134,
+        "causalMetadataProjectionJsonBytes": 6205,
+        "replicaSnapshotJsonBytes": 9618,
+        "storageSnapshotJsonBytes": 9663,
+        "outboxJsonBytes": 26664
+      },
+      "medianMicroseconds": {
+        "fork": 176,
+        "nativeMutation": 20,
+        "adopt": 138,
+        "snapshot": 120,
+        "snapshotJsonEncode": 115,
+        "snapshotDecode": 148,
+        "engineStartWithOutbox": 24629,
+        "pendingCountViaEngineBatch": 7853,
+        "countStatusViaStorageBatch": 3679,
+        "valueAtBatch": 12,
+        "pushPreparation": 8931,
+        "engineMutation": 1352
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 174,
+            "nativeMutation": 19,
+            "adopt": 139,
+            "snapshot": 120,
+            "snapshotJsonEncode": 114,
+            "snapshotDecode": 145,
+            "engineStartWithOutbox": 24448,
+            "pendingCountViaEngineBatch": 8155,
+            "countStatusViaStorageBatch": 4058,
+            "valueAtBatch": 12,
+            "pushPreparation": 8931,
+            "engineMutation": 1474
+          },
+          "verified": true,
+          "processRssBytesBefore": 310398976,
+          "processRssBytesAfter": 309362688,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 73728,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 174,
+            "nativeMutation": 21,
+            "adopt": 135,
+            "snapshot": 116,
+            "snapshotJsonEncode": 116,
+            "snapshotDecode": 144,
+            "engineStartWithOutbox": 24290,
+            "pendingCountViaEngineBatch": 7850,
+            "countStatusViaStorageBatch": 3656,
+            "valueAtBatch": 12,
+            "pushPreparation": 8743,
+            "engineMutation": 1352
+          },
+          "verified": true,
+          "processRssBytesBefore": 309362688,
+          "processRssBytesAfter": 309403648,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 73728,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 176,
+            "nativeMutation": 19,
+            "adopt": 138,
+            "snapshot": 123,
+            "snapshotJsonEncode": 115,
+            "snapshotDecode": 297,
+            "engineStartWithOutbox": 24791,
+            "pendingCountViaEngineBatch": 7853,
+            "countStatusViaStorageBatch": 3679,
+            "valueAtBatch": 11,
+            "pushPreparation": 8730,
+            "engineMutation": 1278
+          },
+          "verified": true,
+          "processRssBytesBefore": 309403648,
+          "processRssBytesAfter": 309354496,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 73728,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 177,
+            "nativeMutation": 20,
+            "adopt": 138,
+            "snapshot": 116,
+            "snapshotJsonEncode": 124,
+            "snapshotDecode": 150,
+            "engineStartWithOutbox": 26431,
+            "pendingCountViaEngineBatch": 7548,
+            "countStatusViaStorageBatch": 3853,
+            "valueAtBatch": 13,
+            "pushPreparation": 9477,
+            "engineMutation": 1591
+          },
+          "verified": true,
+          "processRssBytesBefore": 309354496,
+          "processRssBytesAfter": 309354496,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 73728,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 183,
+            "nativeMutation": 22,
+            "adopt": 140,
+            "snapshot": 120,
+            "snapshotJsonEncode": 114,
+            "snapshotDecode": 148,
+            "engineStartWithOutbox": 24629,
+            "pendingCountViaEngineBatch": 8173,
+            "countStatusViaStorageBatch": 3407,
+            "valueAtBatch": 11,
+            "pushPreparation": 9866,
+            "engineMutation": 1315
+          },
+          "verified": true,
+          "processRssBytesBefore": 309354496,
+          "processRssBytesAfter": 309354496,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 73728,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    },
+    {
+      "case": "pending-256",
+      "backend": "memory-volatile",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 256,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 128,
+      "sizes": {
+        "visibleValuesJsonBytes": 1446,
+        "causalMetadataProjectionJsonBytes": 13462,
+        "replicaSnapshotJsonBytes": 20691,
+        "storageSnapshotJsonBytes": 20736,
+        "outboxJsonBytes": 106950
+      },
+      "medianMicroseconds": {
+        "fork": 301,
+        "nativeMutation": 19,
+        "adopt": 257,
+        "snapshot": 228,
+        "snapshotJsonEncode": 236,
+        "snapshotDecode": 266,
+        "engineStartWithOutbox": 153115,
+        "pendingCountViaEngineBatch": 5110,
+        "countStatusViaStorageBatch": 48,
+        "valueAtBatch": 12,
+        "pushPreparation": 1610,
+        "engineMutation": 889
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 300,
+            "nativeMutation": 19,
+            "adopt": 257,
+            "snapshot": 229,
+            "snapshotJsonEncode": 236,
+            "snapshotDecode": 275,
+            "engineStartWithOutbox": 158636,
+            "pendingCountViaEngineBatch": 5183,
+            "countStatusViaStorageBatch": 48,
+            "valueAtBatch": 11,
+            "pushPreparation": 1606,
+            "engineMutation": 1001
+          },
+          "verified": true,
+          "processRssBytesBefore": 309354496,
+          "processRssBytesAfter": 309346304,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 301,
+            "nativeMutation": 19,
+            "adopt": 254,
+            "snapshot": 226,
+            "snapshotJsonEncode": 234,
+            "snapshotDecode": 256,
+            "engineStartWithOutbox": 153115,
+            "pendingCountViaEngineBatch": 5110,
+            "countStatusViaStorageBatch": 48,
+            "valueAtBatch": 13,
+            "pushPreparation": 2096,
+            "engineMutation": 975
+          },
+          "verified": true,
+          "processRssBytesBefore": 309346304,
+          "processRssBytesAfter": 309346304,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 300,
+            "nativeMutation": 19,
+            "adopt": 256,
+            "snapshot": 228,
+            "snapshotJsonEncode": 234,
+            "snapshotDecode": 257,
+            "engineStartWithOutbox": 155954,
+            "pendingCountViaEngineBatch": 5302,
+            "countStatusViaStorageBatch": 49,
+            "valueAtBatch": 12,
+            "pushPreparation": 1649,
+            "engineMutation": 876
+          },
+          "verified": true,
+          "processRssBytesBefore": 309346304,
+          "processRssBytesAfter": 307781632,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 321,
+            "nativeMutation": 28,
+            "adopt": 315,
+            "snapshot": 257,
+            "snapshotJsonEncode": 251,
+            "snapshotDecode": 287,
+            "engineStartWithOutbox": 152207,
+            "pendingCountViaEngineBatch": 4962,
+            "countStatusViaStorageBatch": 47,
+            "valueAtBatch": 11,
+            "pushPreparation": 1610,
+            "engineMutation": 889
+          },
+          "verified": true,
+          "processRssBytesBefore": 307781632,
+          "processRssBytesAfter": 307822592,
+          "processMaxRssBytes": 334667776
+        },
+        {
+          "microseconds": {
+            "fork": 305,
+            "nativeMutation": 25,
+            "adopt": 266,
+            "snapshot": 227,
+            "snapshotJsonEncode": 243,
+            "snapshotDecode": 266,
+            "engineStartWithOutbox": 150827,
+            "pendingCountViaEngineBatch": 4902,
+            "countStatusViaStorageBatch": 48,
+            "valueAtBatch": 12,
+            "pushPreparation": 1554,
+            "engineMutation": 879
+          },
+          "verified": true,
+          "processRssBytesBefore": 307822592,
+          "processRssBytesAfter": 307822592,
+          "processMaxRssBytes": 334667776
+        }
+      ]
+    },
+    {
+      "case": "pending-256",
+      "backend": "sqlite-ffi",
+      "fields": 16,
+      "valueAsciiBytes": 64,
+      "pendingEntries": 256,
+      "pendingKinds": [
+        "lww",
+        "g-counter",
+        "pn-counter",
+        "g-set",
+        "2p-set",
+        "mv-register",
+        "or-set",
+        "or-map"
+      ],
+      "selectedPeerEntries": 128,
+      "sizes": {
+        "visibleValuesJsonBytes": 1446,
+        "causalMetadataProjectionJsonBytes": 13462,
+        "replicaSnapshotJsonBytes": 20691,
+        "storageSnapshotJsonBytes": 20736,
+        "outboxJsonBytes": 106950
+      },
+      "medianMicroseconds": {
+        "fork": 327,
+        "nativeMutation": 30,
+        "adopt": 285,
+        "snapshot": 250,
+        "snapshotJsonEncode": 245,
+        "snapshotDecode": 300,
+        "engineStartWithOutbox": 168325,
+        "pendingCountViaEngineBatch": 28681,
+        "countStatusViaStorageBatch": 11919,
+        "valueAtBatch": 12,
+        "pushPreparation": 28568,
+        "engineMutation": 2077
+      },
+      "samples": [
+        {
+          "microseconds": {
+            "fork": 323,
+            "nativeMutation": 31,
+            "adopt": 454,
+            "snapshot": 253,
+            "snapshotJsonEncode": 251,
+            "snapshotDecode": 259,
+            "engineStartWithOutbox": 170982,
+            "pendingCountViaEngineBatch": 30647,
+            "countStatusViaStorageBatch": 11462,
+            "valueAtBatch": 12,
+            "pushPreparation": 30881,
+            "engineMutation": 2219
+          },
+          "verified": true,
+          "processRssBytesBefore": 308146176,
+          "processRssBytesAfter": 308305920,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 233472,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 325,
+            "nativeMutation": 27,
+            "adopt": 258,
+            "snapshot": 237,
+            "snapshotJsonEncode": 240,
+            "snapshotDecode": 300,
+            "engineStartWithOutbox": 168531,
+            "pendingCountViaEngineBatch": 28038,
+            "countStatusViaStorageBatch": 11919,
+            "valueAtBatch": 12,
+            "pushPreparation": 29579,
+            "engineMutation": 2077
+          },
+          "verified": true,
+          "processRssBytesBefore": 308305920,
+          "processRssBytesAfter": 308301824,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 233472,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 374,
+            "nativeMutation": 30,
+            "adopt": 285,
+            "snapshot": 250,
+            "snapshotJsonEncode": 243,
+            "snapshotDecode": 278,
+            "engineStartWithOutbox": 162874,
+            "pendingCountViaEngineBatch": 29043,
+            "countStatusViaStorageBatch": 12470,
+            "valueAtBatch": 14,
+            "pushPreparation": 28310,
+            "engineMutation": 2132
+          },
+          "verified": true,
+          "processRssBytesBefore": 308301824,
+          "processRssBytesAfter": 308301824,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 233472,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 339,
+            "nativeMutation": 35,
+            "adopt": 305,
+            "snapshot": 252,
+            "snapshotJsonEncode": 252,
+            "snapshotDecode": 300,
+            "engineStartWithOutbox": 166430,
+            "pendingCountViaEngineBatch": 28135,
+            "countStatusViaStorageBatch": 11711,
+            "valueAtBatch": 12,
+            "pushPreparation": 28568,
+            "engineMutation": 1998
+          },
+          "verified": true,
+          "processRssBytesBefore": 308301824,
+          "processRssBytesAfter": 308826112,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 233472,
+            "wal": 0,
+            "shm": 0
+          }
+        },
+        {
+          "microseconds": {
+            "fork": 327,
+            "nativeMutation": 27,
+            "adopt": 274,
+            "snapshot": 222,
+            "snapshotJsonEncode": 245,
+            "snapshotDecode": 317,
+            "engineStartWithOutbox": 168325,
+            "pendingCountViaEngineBatch": 28681,
+            "countStatusViaStorageBatch": 12800,
+            "valueAtBatch": 12,
+            "pushPreparation": 28013,
+            "engineMutation": 1978
+          },
+          "verified": true,
+          "processRssBytesBefore": 308826112,
+          "processRssBytesAfter": 308822016,
+          "processMaxRssBytes": 334667776,
+          "sqliteFilesAfterCloseBytes": {
+            "main": 233472,
+            "wal": 0,
+            "shm": 0
+          }
+        }
+      ]
+    }
+  ]
+}

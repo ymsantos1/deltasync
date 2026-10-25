@@ -13,6 +13,11 @@
 
 include: package:lints/recommended.yaml
 
+# The Flutter example has its own SDK resolution and dedicated analysis job.
+analyzer:
+  exclude:
+    - example/flutter_mobile/**
+
 # Uncomment the following section to specify additional rules.
 
 # linter:

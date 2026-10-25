@@ -338,9 +338,8 @@ void main() {
     final second = original.write('current');
     final encoded = original.toJson();
     expect(
-      _expandCompactContext(
-        encoded['context'] as Map,
-      ).any((item) => item['counter'] == first.dot.counter),
+      _expandCompactContext(encoded['context'] as Map)
+          .any((item) => item['counter'] == first.dot.counter),
       isTrue,
     );
     expect(encoded['versions'], hasLength(1));

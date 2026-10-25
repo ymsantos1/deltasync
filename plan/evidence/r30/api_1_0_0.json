@@ -1,0 +1,1747 @@
+{
+  "deltasync": {
+    "DeltaCrdt": {
+      "source": "packages/deltasync_core/lib/src/crdt.dart",
+      "declaration": "/// Common contract for CRDTs whose synchronization unit is a delta. /// /// Concrete CRDTs define the shape of [D]. Applying the same delta more than /// once must produce the same state as applying it once. abstract interface class DeltaCrdt<V, D>",
+      "members": [
+        "V get value",
+        "void applyDelta(D delta)",
+        "void mergeState(covariant DeltaCrdt<V, D> other)",
+        "Map<String, Object?> toJson()"
+      ]
+    },
+    "Delta": {
+      "source": "packages/deltasync_core/lib/src/delta.dart",
+      "declaration": "/// Immutable batch of native CRDT changes. class Delta",
+      "members": [
+        "Delta(Iterable<DeltaChange> changes)",
+        "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)",
+        "const Delta.empty()",
+        "final List<DeltaChange> changes;",
+        "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+        "bool get isEmpty",
+        "Map<String, Object?> toJson()",
+        "/// Decodes native batches and migrates historical operation batches when /// explicitly enabled by a versioned codec. factory Delta.fromJson( Map<String, Object?> json, { bool allowLegacyOperations = false, bool allowLegacyCounterIdentity = false, bool allowCompactContext = true, })",
+        "Delta merge(Delta other)"
+      ]
+    },
+    "DeltaCodec": {
+      "source": "packages/deltasync_core/lib/src/delta_codec.dart",
+      "declaration": "/// Versioned wire/storage codec for [Delta]. class DeltaCodec",
+      "members": [
+        "static const int currentVersion = 4;",
+        "static Map<String, Object?> encode(Delta delta)",
+        "static Delta decode(Map<String, Object?> json)"
+      ]
+    },
+    "DeltaChange": {
+      "source": "packages/deltasync_core/lib/src/delta_change.dart",
+      "declaration": "/// Protocol-neutral change produced by a Delta-CRDT. /// /// [id] is useful for transport, retry and tracing. CRDTs must still make /// repeated application safe without relying on external deduplication. abstract interface class DeltaChange",
+      "members": [
+        "String get id",
+        "CrdtKind get kind",
+        "String get crdtId",
+        "String get replicaId",
+        "Map<String, Object?> toJson()"
+      ]
+    },
+    "CrdtKind": {
+      "source": "packages/deltasync_core/lib/src/delta_change.dart",
+      "declaration": "enum CrdtKind",
+      "members": [
+        "lww('lww')",
+        "gCounter('g-counter')",
+        "pnCounter('pn-counter')",
+        "gSet('g-set')",
+        "twoPSet('2p-set')",
+        "mvRegister('mv-register')",
+        "orSet('or-set')",
+        "orMap('or-map')",
+        "const CrdtKind(this.wireName)",
+        "final String wireName;",
+        "static CrdtKind fromWire(String value)"
+      ]
+    },
+    "HlcTimestamp": {
+      "source": "packages/deltasync_core/lib/src/hlc.dart",
+      "declaration": "/// Hybrid Logical Clock timestamp. /// /// Physical time orders normally; logical counter preserves deterministic /// ordering when physical time is equal or moves backwards. class HlcTimestamp implements Comparable<HlcTimestamp>",
+      "members": [
+        "const HlcTimestamp(this.physicalMilliseconds, this.logical)",
+        "final int physicalMilliseconds;",
+        "final int logical;",
+        "@override int compareTo(HlcTimestamp other)",
+        "Map<String, Object?> toJson()",
+        "factory HlcTimestamp.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "HlcClock": {
+      "source": "packages/deltasync_core/lib/src/hlc.dart",
+      "declaration": "/// Mutable Hybrid Logical Clock used to create and observe timestamps. class HlcClock",
+      "members": [
+        "HlcClock({int Function()? nowMilliseconds, HlcTimestamp? initial})",
+        "HlcTimestamp get current",
+        "/// Copies clock state while retaining its injected physical-time source. HlcClock copy()",
+        "void restore(HlcTimestamp timestamp)",
+        "HlcTimestamp tick()",
+        "HlcTimestamp observe(HlcTimestamp remote)"
+      ]
+    },
+    "ReplicaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable identity of a replica. class ReplicaId implements Comparable<ReplicaId>",
+      "members": [
+        "ReplicaId(String value)",
+        "final String value;",
+        "@override int compareTo(ReplicaId other)",
+        "@override String toString()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "Dot": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Causal event identity: one replica and one strictly positive counter. class Dot",
+      "members": [
+        "const Dot({required this.replicaId, required this.counter, this.crdtId})",
+        "final String replicaId;",
+        "final int counter;",
+        "final String? crdtId;",
+        "Map<String, Object?> toJson()",
+        "factory Dot.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "crdtDeltaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable message ID for an addressed CRDT change and replica sequence. String crdtDeltaId( String type, String crdtId, String replicaId, int sequence, )"
+    },
+    "counterDeltaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable message ID for a counter delta, namespaced by CRDT and replica. String counterDeltaId(String type, String crdtId, String replicaId, int dot)"
+    },
+    "copyJsonValue": {
+      "source": "packages/deltasync_core/lib/src/json/value.dart",
+      "declaration": "/// Copies JSON-compatible values, optionally freezing every nested collection. /// /// Rejects non-string map keys, non-finite numbers, and non-JSON objects. Object? copyJsonValue(Object? value, {bool freeze = false})"
+    },
+    "GCounterDelta": {
+      "source": "packages/deltasync_core/lib/src/g_counter.dart",
+      "declaration": "/// Delta carrying the monotonic component value of a G-Counter. class GCounterDelta implements DeltaChange",
+      "members": [
+        "const GCounterDelta({ required this.id, required this.replicaId, required this.crdtId, required this.value, this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final int value;",
+        "final Dot? dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory GCounterDelta.fromJson( Map<String, Object?> json, { bool allowLegacyIdentity = false, })",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "GCounter": {
+      "source": "packages/deltasync_core/lib/src/g_counter.dart",
+      "declaration": "/// Grow-only counter with one monotonic component per replica. class GCounter implements DeltaCrdt<int, GCounterDelta>",
+      "members": [
+        "GCounter( String replicaId, { required this.crdtId, Map<String, int> components = const {}, Map<String, int>? sequences, int? sequence, })",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override int get value",
+        "Map<String, int> get components",
+        "GCounterDelta increment([int amount = 1])",
+        "@override void applyDelta(GCounterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<int, GCounterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<GCounterDelta> exportChanges({bool requireSequences = true})"
+      ]
+    },
+    "GSetDelta": {
+      "source": "packages/deltasync_core/lib/src/g_set.dart",
+      "declaration": "/// One batch of values added to an addressed G-Set. class GSetDelta implements DeltaChange",
+      "members": [
+        "GSetDelta({ required this.id, required this.replicaId, required this.crdtId, required Iterable<Object?> elements, required this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final List<Object?> elements;",
+        "final Dot dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory GSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "GSet": {
+      "source": "packages/deltasync_core/lib/src/g_set.dart",
+      "declaration": "/// Grow-only set of JSON values, identified by a stable application address. /// /// Each add creates an addressed event so callers can persist and exchange the /// incremental additions. State merge unions events; [value] deduplicates equal /// JSON values. Repeated adds are harmless and never remove existing values; /// events that add no new value do not enlarge materialized state. class GSet implements DeltaCrdt<Set<Object?>, GSetDelta>",
+      "members": [
+        "GSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element] and returns its incremental change. GSetDelta add(Object? element)",
+        "/// Adds [elements] as one incremental change. GSetDelta addAll(Iterable<Object?> elements)",
+        "@override void applyDelta(GSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, GSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory GSet.fromJson(Map<String, Object?> json)",
+        "/// Returns additions needed to bootstrap or reconcile materialized state. Iterable<GSetDelta> exportChanges()"
+      ]
+    },
+    "TwoPSetAction": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// Operation encoded by an addressed 2P-Set delta. enum TwoPSetAction",
+      "members": [
+        "add('add')",
+        "remove('remove')",
+        "const TwoPSetAction(this.wireName)",
+        "final String wireName;",
+        "static TwoPSetAction fromWire(String value)"
+      ]
+    },
+    "TwoPSetDelta": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// A batch of additions or permanent removals at one stable CRDT address. class TwoPSetDelta implements DeltaChange",
+      "members": [
+        "TwoPSetDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required Iterable<Object?> elements, required this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final TwoPSetAction action;",
+        "final List<Object?> elements;",
+        "final Dot dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory TwoPSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "TwoPSet": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// Two-phase set for JSON values. Added and removed sets grow monotonically; /// membership is the additions minus permanent removal tombstones. class TwoPSet implements DeltaCrdt<Set<Object?>, TwoPSetDelta>",
+      "members": [
+        "TwoPSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element]. A previously removed value remains absent. TwoPSetDelta add(Object? element)",
+        "/// Adds [elements] in one delta; removals are permanent. TwoPSetDelta addAll(Iterable<Object?> elements)",
+        "/// Permanently removes [element], including when removal arrives first. TwoPSetDelta remove(Object? element)",
+        "/// Permanently removes [elements] in one delta. TwoPSetDelta removeAll(Iterable<Object?> elements)",
+        "@override void applyDelta(TwoPSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, TwoPSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory TwoPSet.fromJson(Map<String, Object?> json)",
+        "/// Returns compact add/removal representatives for bootstrap and merge. Iterable<TwoPSetDelta> exportChanges()"
+      ]
+    },
+    "MvRegisterDelta": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "/// One write and the exact causal dots it had observed. class MvRegisterDelta implements DeltaChange",
+      "members": [
+        "MvRegisterDelta({ required String id, required String replicaId, required String crdtId, required Dot dot, required Object? value, required Iterable<Dot> context, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final Dot dot;",
+        "final Object? value;",
+        "/// Exact observed dots. Access expands compact prefixes into a list. List<Dot> get context",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory MvRegisterDelta.fromJson( Map<String, Object?> json, { bool allowCompactContext = true, })"
+      ]
+    },
+    "MvRegister": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "/// Multi-value register. Exact observed dots preserve causality across gaps. class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta>",
+      "members": [
+        "MvRegister(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Writes value, replacing only versions whose dots this replica observed. MvRegisterDelta write(Object? value)",
+        "@override void applyDelta(MvRegisterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, MvRegisterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<MvRegisterDelta> exportChanges()",
+        "/// Restores state only if the local sequence cannot reuse an observed dot. factory MvRegister.fromJson( Map<String, Object?> json, { bool allowCompactContext = true, })",
+        "CrdtKind get kind"
+      ]
+    },
+    "maxOf": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "int maxOf(int a, int b)"
+    },
+    "OrSetAction": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// Operation encoded by an OR-Set delta. enum OrSetAction",
+      "members": [
+        "add('add')",
+        "remove('remove')",
+        "const OrSetAction(this.wireName)",
+        "final String wireName;",
+        "static OrSetAction fromWire(String value)"
+      ]
+    },
+    "OrSetDelta": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// One OR-Set add tag or removal of the exact tags observed by that removal. class OrSetDelta implements DeltaChange",
+      "members": [
+        "OrSetDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required this.dot, Object? element, Iterable<Dot> observedDots = const [], })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final OrSetAction action;",
+        "final Dot dot;",
+        "final Object? element;",
+        "final List<Dot> observedDots;",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory OrSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "OrSet": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// Observed-remove set. Each add has unique dot tag; removals retain only tags /// they observed, so concurrent additions and later re-additions remain visible. class OrSet implements DeltaCrdt<Set<Object?>, OrSetDelta>",
+      "members": [
+        "OrSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element] with a fresh dot tag and returns the transportable delta. OrSetDelta add(Object? element)",
+        "/// Removes only add tags for [element] currently observed by this replica. OrSetDelta remove(Object? element)",
+        "@override void applyDelta(OrSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, OrSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory OrSet.fromJson(Map<String, Object?> json)",
+        "/// Exports add tags and exact removal contexts for bootstrap and merge. Iterable<OrSetDelta> exportChanges()"
+      ]
+    },
+    "OrMapAction": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// Operation carried by an OR-Map delta. enum OrMapAction",
+      "members": [
+        "addKey('add-key')",
+        "removeKey('remove-key')",
+        "addValue('add-value')",
+        "const OrMapAction(this.wireName)",
+        "final String wireName;",
+        "static OrMapAction fromWire(String value)"
+      ]
+    },
+    "OrMapDelta": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// One key tag, exact observed removal, or update to a key's nested G-Set. class OrMapDelta implements DeltaChange",
+      "members": [
+        "OrMapDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required this.dot, required this.key, Iterable<Dot> observedDots = const [], this.keyDot, this.valueChange, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final OrMapAction action;",
+        "final Dot dot;",
+        "final String key;",
+        "final List<Dot> observedDots;",
+        "final Dot? keyDot;",
+        "final GSetDelta? valueChange;",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory OrMapDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "OrMap": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// Add-wins map whose value at each key incarnation is a grow-only set. /// /// Key presence is controlled only by add/remove key deltas. Value updates /// union through G-Set; they do not recreate a removed key. Each key tag owns /// one nested G-Set, so old value deltas remain hidden after removal/recreation. class OrMap implements DeltaCrdt<Map<String, Set<Object?>>, OrMapDelta>",
+      "members": [
+        "OrMap(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Map<String, Set<Object?>> get value",
+        "/// Adds a fresh key incarnation and returns its key-presence delta. OrMapDelta addKey(String key)",
+        "/// Removes only key incarnations currently observed for [key]. OrMapDelta removeKey(String key)",
+        "/// Adds [element] to each observed G-Set value for [key]. List<OrMapDelta> addValue(String key, Object? element)",
+        "@override void applyDelta(OrMapDelta delta)",
+        "@override void mergeState( covariant DeltaCrdt<Map<String, Set<Object?>>, OrMapDelta> other, )",
+        "@override Map<String, Object?> toJson()",
+        "factory OrMap.fromJson(Map<String, Object?> json)",
+        "Iterable<OrMapDelta> exportChanges()"
+      ]
+    },
+    "PnCounterDelta": {
+      "source": "packages/deltasync_core/lib/src/pn_counter.dart",
+      "declaration": "/// Delta carrying positive and negative monotonic components of a PN-Counter. class PnCounterDelta implements DeltaChange",
+      "members": [
+        "const PnCounterDelta({ required this.id, required this.replicaId, required this.crdtId, required this.positive, required this.negative, this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final int positive;",
+        "final int negative;",
+        "final Dot? dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory PnCounterDelta.fromJson( Map<String, Object?> json, { bool allowLegacyIdentity = false, })",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "PnCounter": {
+      "source": "packages/deltasync_core/lib/src/pn_counter.dart",
+      "declaration": "/// Positive-negative counter built from two grow-only component maps. class PnCounter implements DeltaCrdt<int, PnCounterDelta>",
+      "members": [
+        "PnCounter( String replicaId, { required this.crdtId, Map<String, int> positive = const {}, Map<String, int> negative = const {}, Map<String, int>? sequences, int? sequence, })",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override int get value",
+        "Map<String, int> get positive",
+        "Map<String, int> get negative",
+        "PnCounterDelta increment([int amount = 1])",
+        "PnCounterDelta decrement([int amount = 1])",
+        "@override void applyDelta(PnCounterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<int, PnCounterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<PnCounterDelta> exportChanges({bool requireSequences = true})"
+      ]
+    },
+    "LwwRegister": {
+      "source": "packages/deltasync_core/lib/src/lww_register.dart",
+      "declaration": "/// Last-write-wins register with one native HLC winner and retained tombstone. class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>>",
+      "members": [
+        "/// [decodeValue] converts a JSON copy to [T] when [T] is a typed collection. /// It must accept valid persisted JSON and return a JSON-compatible value. LwwRegister({this.decodeValue})",
+        "final T? Function(Object?)? decodeValue;",
+        "bool get hasValue",
+        "bool get isDeleted",
+        "@override T? get value",
+        "LwwDelta<T>? get winner",
+        "@override void applyDelta(LwwDelta<T> delta)",
+        "@override void mergeState(covariant LwwRegister<T> other)",
+        "@override Map<String, Object?> toJson()"
+      ]
+    },
+    "LwwDelta": {
+      "source": "packages/deltasync_core/lib/src/lww_delta.dart",
+      "declaration": "/// Delta produced by an LWW register. /// /// [id] identifies the delta for transport and tracing. Register correctness /// comes from timestamp plus replica tie-breaking, not from ID deduplication. class LwwDelta<T> implements DeltaChange",
+      "members": [
+        "LwwDelta({ required this.key, required this.id, required this.replicaId, required this.timestamp, required T? value, this.decodeValue, this.deleted = false, this.dot, })",
+        "final String key;",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "final HlcTimestamp timestamp;",
+        "final T? Function(Object?)? decodeValue;",
+        "/// Fresh copy; modifying it cannot change this delta. T? get value",
+        "final bool deleted;",
+        "final Dot? dot;",
+        "/// [decodeValue] converts copied JSON to [T] for typed collections. factory LwwDelta.fromJson( Map<String, Object?> json, { T? Function(Object?)? decodeValue, })",
+        "@override CrdtKind get kind",
+        "@override String get crdtId",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "Operation": {
+      "source": "packages/deltasync_core/lib/src/operation.dart",
+      "declaration": "/// Legacy operation shape accepted only by explicit version 1/2 migration. @Deprecated('Legacy codec input only; create native DeltaChange values.') class Operation",
+      "members": [
+        "Operation({ required this.id, required this.replicaId, required this.type, required this.vectorClock, Map<String, Object?> payload = const {}, })",
+        "factory Operation.fromJson(Map<String, Object?> json)",
+        "final String id;",
+        "final String replicaId;",
+        "final String type;",
+        "final VectorClock vectorClock;",
+        "final Map<String, Object?> payload;",
+        "Map<String, Object?> toJson()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "migrateLegacyOperation": {
+      "source": "packages/deltasync_core/lib/src/operation.dart",
+      "declaration": "/// Converts one version 1/2 LWW operation into a native delta. /// /// The legacy vector-clock weight becomes a synthetic HLC physical value; /// replica ID and operation ID retain the old deterministic tie-break order. LwwDelta<Object?> migrateLegacyOperation(Operation operation)"
+    },
+    "Replica": {
+      "source": "packages/deltasync_core/lib/src/replica.dart",
+      "declaration": "/// Local CRDT replica. Storage and transport stay outside core. class Replica",
+      "members": [
+        "Replica(String id, {VectorClock? initialClock, HlcClock? hlc})",
+        "final String id;",
+        "/// Detached read-only state; mutations must go through this Replica. ReplicaState get state",
+        "/// Returns the isolated value of one address without copying other fields. /// /// Missing addresses, LWW null values and LWW tombstones return null, as in /// indexing [ReplicaState]. Bound counters return int, sets/registers /// return `Set<Object?>` (except LWW), and OR-Map returns `Map<String, Set<Object?>>`. /// Nested collections are read-only and detached from future mutations. Object? valueAt(String address)",
+        "VectorClock get clock",
+        "HlcTimestamp get hlcTimestamp",
+        "/// Value of addressed G-Counter, or zero before its first change. int gCounterValue(String crdtId)",
+        "/// Value of addressed PN-Counter, or zero before its first change. int pnCounterValue(String crdtId)",
+        "/// Read-only value of addressed G-Set, empty before its first addition. Set<Object?> gSetValue(String crdtId)",
+        "/// Read-only value of addressed 2P-Set, empty before its first addition. Set<Object?> twoPSetValue(String crdtId)",
+        "Set<Object?> mvRegisterValue(String crdtId)",
+        "/// Read-only value of addressed OR-Set, empty before its first change. Set<Object?> orSetValue(String crdtId)",
+        "/// Read-only map value; each present key contains its nested G-Set value. Map<String, Set<Object?>> orMapValue(String crdtId)",
+        "void restoreMetadata({ required VectorClock clock, required HlcTimestamp hlc, })",
+        "/// Creates isolated working copy for a transaction or rollback boundary. Replica fork()",
+        "/// Replaces this replica with an already committed isolated candidate. void adopt(Replica candidate)",
+        "/// Compact, versioned materialized state for durable snapshots. Map<String, Object?> toSnapshotJson()",
+        "/// Reconstructs materialized state without replaying prior delta history. static Replica fromSnapshotJson(Map<String, Object?> json)",
+        "void apply(Delta delta)",
+        "/// Exports current winners and cumulative counter components for bootstrap. /// It is not a durable operation log or peer-specific ACK history. Delta export()",
+        "/// Compact, versioned materialized state for bootstrap and storage. Map<String, Object?> exportSnapshot()",
+        "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. void mergeSnapshotJson(Map<String, Object?> json)",
+        "/// Creates and applies native LWW delta. LwwDelta<Object?> setDelta(String key, Object? value)",
+        "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)",
+        "/// Creates and applies native LWW delete tombstone. LwwDelta<Object?> removeDelta(String key)",
+        "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+        "/// Increments G-Counter at stable application-defined [crdtId]. GCounterDelta incrementGCounter(String crdtId, [int amount = 1])",
+        "/// Increments addressed PN-Counter and returns its transportable delta. PnCounterDelta incrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Decrements addressed PN-Counter and returns its transportable delta. PnCounterDelta decrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Adds [element] to the addressed G-Set and returns its delta. GSetDelta addGSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed G-Set as one delta. GSetDelta addAllGSet(String crdtId, Iterable<Object?> elements)",
+        "/// Adds [element] to the addressed 2P-Set and returns its delta. TwoPSetDelta addTwoPSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed 2P-Set in one delta. TwoPSetDelta addAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+        "/// Permanently removes [element] from the addressed 2P-Set. TwoPSetDelta removeTwoPSet(String crdtId, Object? element)",
+        "/// Permanently removes [elements] from the addressed 2P-Set in one delta. TwoPSetDelta removeAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+        "/// Writes an addressed MV-Register value and returns its causal delta. MvRegisterDelta writeMvRegister(String crdtId, Object? value)",
+        "/// Adds [element] to the addressed OR-Set with a unique observed-remove tag. OrSetDelta addOrSet(String crdtId, Object? element)",
+        "/// Removes only OR-Set add tags for [element] already observed locally. OrSetDelta removeOrSet(String crdtId, Object? element)",
+        "/// Adds a fresh OR-Map key incarnation with an empty G-Set value. OrMapDelta addOrMapKey(String crdtId, String key)",
+        "/// Removes only observed OR-Map key incarnations. OrMapDelta removeOrMapKey(String crdtId, String key)",
+        "/// Adds value to nested G-Set at each key incarnation observed locally. List<OrMapDelta> addOrMapValue(String crdtId, String key, Object? value)"
+      ]
+    },
+    "ReplicaState": {
+      "source": "packages/deltasync_core/lib/src/replica_state.dart",
+      "declaration": "/// Materialized state produced by applying changes in any order. class ReplicaState",
+      "members": [
+        "ReplicaState()",
+        "Set<String> get addresses",
+        "Map<String, Object?> get values",
+        "Object? operator [](String key)",
+        "void applyDelta(LwwDelta<Object?> delta)",
+        "ReplicaState copy()",
+        "CrdtKind? kindAt(String address)",
+        "LwwDelta<Object?>? winnerAt(String address)",
+        "void bind(String address, CrdtKind kind)",
+        "/// Encodes each native winning register, including tombstones. Map<String, Object?> toSnapshotJson()",
+        "HlcTimestamp? restoreSnapshotJson(Map<String, Object?> json)",
+        "void replaceWith(ReplicaState other)",
+        "void mergeState(ReplicaState other)"
+      ]
+    },
+    "ClockRelation": {
+      "source": "packages/deltasync_core/lib/src/vector_clock.dart",
+      "declaration": "enum ClockRelation",
+      "members": [
+        "equal",
+        "before",
+        "after",
+        "concurrent"
+      ]
+    },
+    "VectorClock": {
+      "source": "packages/deltasync_core/lib/src/vector_clock.dart",
+      "declaration": "/// Causal version vector indexed by replica identifier. /// /// Missing and zero components compare equal; JSON retains supplied zeros. class VectorClock",
+      "members": [
+        "VectorClock([Map<String, int> entries = const {}])",
+        "final Map<String, int> entries;",
+        "VectorClock tick(String replicaId)",
+        "VectorClock merge(VectorClock other)",
+        "ClockRelation compare(VectorClock other)",
+        "Map<String, Object?> toJson()",
+        "factory VectorClock.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "PendingDeltaStore": {
+      "source": "packages/deltasync_storage/lib/src/pending_delta_store.dart",
+      "declaration": "/// Legacy adapter for pending delta persistence. Implement with SQLite, files, /// etc. Unlike `ReplicaStorage`, this contract has no per-change ACK or retry /// metadata, so `SyncEngine` retains sent deltas and may send them repeatedly. /// Prefer `ReplicaStorage` for confirmation and retry control. @Deprecated('Use ReplicaStorage for atomic state and outbox commits.') abstract interface class PendingDeltaStore",
+      "members": [
+        "Future<Delta> read(String replicaId)",
+        "Future<void> write(String replicaId, Delta delta)"
+      ]
+    },
+    "MemoryPendingDeltaStore": {
+      "source": "packages/deltasync_storage/lib/src/pending_delta_store.dart",
+      "declaration": "/// Volatile in-memory adapter useful for tests and examples. /// /// Data is lost when the process ends. This legacy adapter is not suitable for /// persistence or recovery after restart. @Deprecated('Use MemoryStorage for the ReplicaStorage contract.') class MemoryPendingDeltaStore implements PendingDeltaStore",
+      "members": [
+        "@override Future<Delta> read(String replicaId)",
+        "@override Future<void> write(String replicaId, Delta delta)"
+      ]
+    },
+    "ReplicaSnapshot": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Materialized state and metadata required to restore one replica. class ReplicaSnapshot",
+      "members": [
+        "factory ReplicaSnapshot.fromReplica(Replica replica)",
+        "ReplicaSnapshot({ required this.replicaId, required Map<String, Object?> snapshot, })",
+        "/// Reads snapshots written before the canonical versioned payload. @Deprecated('Use the canonical snapshot constructor.') ReplicaSnapshot.legacy({ required this.replicaId, required Map<String, Object?> state, required VectorClock clock, Map<String, Object?> metadata = const {}, })",
+        "final String replicaId;",
+        "final int version;",
+        "final Map<String, Object?>? snapshot;",
+        "final Map<String, Object?>? legacyState;",
+        "final VectorClock? legacyClock;",
+        "final Map<String, Object?>? legacyMetadata;",
+        "/// Encodes only the current, canonical storage format. Map<String, Object?> toJson()",
+        "/// Reads canonical v2 or legacy v1 snapshots with explicit validation. factory ReplicaSnapshot.fromJson(Map<String, Object?> json)"
+      ]
+    },
+    "OutboxStatus": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// `sent` counts attempts including the current unconfirmed transmission. /// `confirmed` is read for legacy stores; ACK normally removes the entry. enum OutboxStatus",
+      "members": [
+        "pending('pending')",
+        "sent('sent')",
+        "@Deprecated('ACK removes entries; retained only for legacy records.') confirmed('confirmed')",
+        "const OutboxStatus(this.wireName)",
+        "final String wireName;",
+        "static OutboxStatus fromWire(String value)"
+      ]
+    },
+    "OutboxEntry": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Local operation waiting for confirmation from one stable peer. class OutboxEntry",
+      "members": [
+        "OutboxEntry({ required Delta delta, required this.recipientPeerId, this.status = OutboxStatus.pending, this.attempts = 0, DateTime? createdAt, DateTime? sentAt, })",
+        "final String recipientPeerId;",
+        "Delta get delta",
+        "final OutboxStatus status;",
+        "final int attempts;",
+        "final DateTime createdAt;",
+        "final DateTime? sentAt;",
+        "List<String> get changeIds",
+        "/// Legacy singular alias. New code should use [changeIds]. @Deprecated('Use changeIds for native CRDT changes.') String get operationId",
+        "String get entryId",
+        "Map<String, Object?> toJson()",
+        "/// Decodes current v2 entries. Legacy v1 entries require explicit peer binding /// because their original destination was not stored. factory OutboxEntry.fromJson( Map<String, Object?> json, { String? legacyRecipientPeerId, })",
+        "String get replicaId"
+      ]
+    },
+    "ReplicaStorage": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Domain-oriented persistence contract. Implementations may use any backend. abstract interface class ReplicaStorage",
+      "members": [
+        "Future<ReplicaSnapshot?> loadReplica(String replicaId)",
+        "/// Atomically persists materialized replica state and its new outbox entries. /// Implementations must expose either all changes or none after failure. /// A repeated ID for the same peer is accepted only with equivalent delta /// content; divergent content fails atomically. Equivalent repeats retain /// the existing entry and its send metadata. Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries)",
+        "/// Atomically replaces materialized state after a remote merge. Future<void> commitRemote(ReplicaSnapshot snapshot)",
+        "/// Saves initial/bootstrap state without adding local pending changes. /// Local edits must use atomic [commit]. Future<void> saveReplica(ReplicaSnapshot snapshot)",
+        "/// Imports one pending change outside a local mutation transaction. /// Normal edits must use atomic [commit]. /// For an existing peer/ID, equivalent content keeps the original entry; /// divergent content fails without changing the outbox. Future<void> enqueue(OutboxEntry entry)",
+        "/// Lists all peers' entries, or only entries addressed to [recipientPeerId]. Future<List<OutboxEntry>> pending( String replicaId, { String? recipientPeerId, })",
+        "/// Marks only this peer's entries sent without removing them, allowing retry. /// Implementations record the attempt count and send time for retry policy. Future<void> markSent( String replicaId, String recipientPeerId, Iterable<String> operationIds, )",
+        "/// Confirms only [operationIds] addressed to [recipientPeerId]. /// /// Entries whose IDs are not acknowledged remain pending. Future<void> acknowledge( String replicaId, String recipientPeerId, Iterable<String> operationIds, )"
+      ]
+    },
+    "MemoryStorage": {
+      "source": "packages/deltasync_storage/lib/src/memory_storage.dart",
+      "declaration": "/// Volatile in-memory implementation for tests, examples and prototypes. /// /// Data is lost when the process ends. Applications requiring recovery after /// restart must provide a persistent [ReplicaStorage] adapter. class MemoryStorage implements ReplicaStorage",
+      "members": [
+        "@override Future<ReplicaSnapshot?> loadReplica(String replicaId)",
+        "@override Future<void> saveReplica(ReplicaSnapshot snapshot)",
+        "@override Future<void> commitRemote(ReplicaSnapshot snapshot)",
+        "@override Future<void> commit( ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries, )",
+        "@override Future<void> enqueue(OutboxEntry entry)",
+        "@override Future<List<OutboxEntry>> pending( String replicaId, { String? recipientPeerId, })",
+        "@override Future<void> acknowledge( String replicaId, String recipientPeerId, Iterable<String> operationIds, )",
+        "@override Future<void> markSent( String replicaId, String recipientPeerId, Iterable<String> operationIds, )"
+      ]
+    },
+    "SyncEngine": {
+      "source": "packages/deltasync_sync/lib/src/sync_engine.dart",
+      "declaration": "/// Coordinates local CRDT changes, pending persistence, and remote deltas. class SyncEngine",
+      "members": [
+        "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+        "SyncEngine.withStorage({ required Replica replica, required ReplicaStorage storage, required DeltaTransport transport, SyncRetryPolicy retryPolicy = const SyncRetryPolicy(), })",
+        "/// Detached view. Available after restoration; mutations cannot bypass commits. Replica get replica",
+        "/// Reads one committed field without forking the replica or copying its state. /// /// Call after awaiting [start]. Throws StateError before restoration or after /// disposal. During an in-flight commit, reads the last successfully adopted /// value; network waits do not block this synchronous query. /// Result types and null semantics follow [Replica.valueAt]. Collections are /// detached and read-only. This read does not imply remote acknowledgement. Object? valueAt(String address)",
+        "/// Current initialization, running or terminal lifecycle state. SyncEngineLifecycle get lifecycle",
+        "/// Failures from transport stream callbacks; awaited methods throw to callers. /// This stream does not report successful commits or push progress. Stream<SyncFailure> get errors",
+        "/// Non-replaying notifications after a local or remote commit is adopted. /// Read [replica] for the latest state; this event does not imply remote ACK. /// The stream closes when [dispose] completes. Stream<SyncCommitEvent> get commits",
+        "/// Non-replaying session events: restored, committed, push result/failure and /// incoming failure. Existing commits/errors streams retain their contracts. /// Read pendingDelta/valueAt after events; commit never means remote ACK. /// Subscribe before start for restoration, or query after start when joining /// later. Push results follow durable local outbox acknowledgement. /// Listeners run asynchronously and cannot govern commits. Cancel subscriptions /// before dispose if paused; the stream closes after accepted work drains. Stream<SyncObservation> get observations",
+        "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+        "final ReplicaStorage? storage;",
+        "final DeltaTransport transport;",
+        "final SyncRetryPolicy retryPolicy;",
+        "/// Restores state and subscribes to remote changes. Repeated calls after /// success are harmless; failed starts can be retried. Future<void> start()",
+        "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+        "/// Applies remote changes after a serialized snapshot commit succeeds. Future<void> applyRemote(Delta delta)",
+        "/// Validates, durably applies and acknowledges a stream or pulled envelope. /// /// Network fetching belongs to the adapter. If transport implements /// [IncomingAcknowledgingDeltaTransport], sends ACK after commit/adoption, /// outside the commit queue. Otherwise returns the ACK for the caller to send. /// A send failure throws but leaves committed state intact for safe replay. /// Existing local outbox is preserved. Disposal drains accepted calls, including /// ACK sends; adapters must bound network waits. Calls after disposal fail. Future<DeltaAcknowledgement> receiveEnvelope(DeltaEnvelope envelope)",
+        "/// Merges a peer's materialized snapshot for bootstrap or recovery. Future<void> applyRemoteSnapshot(Map<String, Object?> snapshot)",
+        "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+        "Future<LwwDelta<Object?>> setDelta(String key, Object? value)",
+        "Future<LwwDelta<Object?>> removeDelta(String key)",
+        "/// Increments G-Counter at stable application-defined [crdtId]. Future<GCounterDelta> incrementGCounter(String crdtId, [int amount = 1])",
+        "/// Increments PN-Counter at stable application-defined [crdtId]. Future<PnCounterDelta> incrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Decrements PN-Counter at stable application-defined [crdtId]. Future<PnCounterDelta> decrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Adds [element] to the addressed G-Set and commits its change to the outbox. Future<GSetDelta> addGSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed G-Set as one committed change. Future<GSetDelta> addAllGSet(String crdtId, Iterable<Object?> elements)",
+        "/// Adds [element] to the addressed 2P-Set and commits its change to the outbox. Future<TwoPSetDelta> addTwoPSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed 2P-Set as one committed change. Future<TwoPSetDelta> addAllTwoPSet( String crdtId, Iterable<Object?> elements, )",
+        "/// Permanently removes [element] from the addressed 2P-Set. Future<TwoPSetDelta> removeTwoPSet(String crdtId, Object? element)",
+        "/// Permanently removes [elements] from the addressed 2P-Set in one change. Future<TwoPSetDelta> removeAllTwoPSet( String crdtId, Iterable<Object?> elements, )",
+        "/// Writes an MV-Register version and commits its causal delta to the outbox. Future<MvRegisterDelta> writeMvRegister(String crdtId, Object? value)",
+        "/// Adds an OR-Set value and commits its unique tag to the outbox. Future<OrSetDelta> addOrSet(String crdtId, Object? element)",
+        "/// Removes OR-Set tags observed by this replica and commits removal context. Future<OrSetDelta> removeOrSet(String crdtId, Object? element)",
+        "/// Creates a key in an OR-Map with a nested G-Set value. Future<OrMapDelta> addOrMapKey(String crdtId, String key)",
+        "/// Removes key incarnations observed by this replica. Future<OrMapDelta> removeOrMapKey(String crdtId, String key)",
+        "/// Adds a value to nested G-Sets for observed key incarnations. Future<List<OrMapDelta>> addOrMapValue( String crdtId, String key, Object? value, )",
+        "/// Sends eligible pending changes without holding the commit queue during I/O. /// The caller schedules each push; this engine has no background retry timer. /// With [ReplicaStorage], normal calls select new entries and sent entries /// whose delay has elapsed and attempts remain below the cap. [force] bypasses /// those filters. /// Result lists IDs durably acknowledged by an acknowledging transport. Future<SyncPushResult> push({bool force = false})",
+        "/// Locally retained changes, including sent but unacknowledged changes. The /// deprecated store cannot remove entries even after a remote ACK. Future<Delta> pendingDelta()",
+        "Future<void> dispose()"
+      ]
+    },
+    "SyncFailureSource": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "enum SyncFailureSource",
+      "members": [
+        "incomingDelta",
+        "incomingStream"
+      ]
+    },
+    "SyncCommitOrigin": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "enum SyncCommitOrigin",
+      "members": [
+        "local",
+        "remote"
+      ]
+    },
+    "SyncObservation": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Session events for observing sync without duplicating durable state. /// Query pendingDelta/valueAt for current data; events are not replayed. sealed class SyncObservation",
+      "members": [
+        "const SyncObservation()"
+      ]
+    },
+    "SyncRestoredEvent": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Initialization finished; restored outbox may still contain pending changes. class SyncRestoredEvent extends SyncObservation",
+      "members": [
+        "const SyncRestoredEvent()"
+      ]
+    },
+    "SyncPushFailure": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// A push failed. Committed state/outbox remain available for retry. /// Other directly awaited failures still belong to their calling Future. class SyncPushFailure extends SyncObservation",
+      "members": [
+        "const SyncPushFailure({required this.error, required this.stackTrace})",
+        "final Object error;",
+        "final StackTrace stackTrace;"
+      ]
+    },
+    "SyncCommitEvent": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Notification after a local mutation or remote merge is committed and adopted. /// It signals state availability, not remote acknowledgement. class SyncCommitEvent extends SyncObservation",
+      "members": [
+        "const SyncCommitEvent({required this.origin})",
+        "final SyncCommitOrigin origin;"
+      ]
+    },
+    "SyncFailure": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Failure delivered by `SyncEngine.errors` from an incoming transport callback. class SyncFailure extends SyncObservation",
+      "members": [
+        "const SyncFailure({ required this.source, required this.error, required this.stackTrace, })",
+        "final SyncFailureSource source;",
+        "final Object error;",
+        "final StackTrace stackTrace;"
+      ]
+    },
+    "SyncPushResult": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Result of one push attempt. A null [acknowledgement] means only local send /// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage /// retains changes even when remote ACK is received. class SyncPushResult extends SyncObservation",
+      "members": [
+        "SyncPushResult({ required this.sent, required Iterable<String> acknowledgedIds, this.acknowledgement, })",
+        "static SyncPushResult get empty",
+        "final Delta sent;",
+        "final Set<String> acknowledgedIds;",
+        "final DeltaAcknowledgement? acknowledgement;",
+        "/// True if every change in [sent] was durably acknowledged; also true if empty. bool get fullyAcknowledged"
+      ]
+    },
+    "SyncRetryPolicy": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Eligibility policy for unconfirmed [ReplicaStorage] entries on each push. /// /// The caller schedules retries; this policy does not start a timer. New pending /// entries are eligible on the next push. Sent entries wait for the exponential /// delay and stop being selected once [maxAttempts] is reached, if configured. /// `push(force: true)` bypasses both filters. The legacy [PendingDeltaStore] /// path has no attempt metadata; every push retries its retained delta. class SyncRetryPolicy",
+      "members": [
+        "const SyncRetryPolicy({ this.baseDelay = const Duration(seconds: 1), this.maxDelay = const Duration(minutes: 1), this.maxAttempts, })",
+        "final Duration baseDelay;",
+        "final Duration maxDelay;",
+        "final int? maxAttempts;",
+        "Duration delayFor(int attempts)"
+      ]
+    },
+    "SyncEngineLifecycle": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Public lifecycle of a `SyncEngine`. A failed start returns to [created] and /// may be retried; [disposed] is terminal. enum SyncEngineLifecycle",
+      "members": [
+        "created",
+        "starting",
+        "started",
+        "disposed"
+      ]
+    },
+    "DeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Network-agnostic transport for versioned DeltaSync messages. /// HTTP and WebSocket adapters belong to apps. abstract interface class DeltaTransport",
+      "members": [
+        "/// Stable identity of the single remote peer this transport is bound to. String get peerReplicaId",
+        "/// Sends an envelope. Completion means transport send finished, not remote ACK. Future<void> send(DeltaEnvelope envelope)",
+        "/// Incoming envelopes preserve sender and encoded delta metadata. Stream<DeltaEnvelope> get incoming"
+      ]
+    },
+    "AcknowledgingDeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Optional transport contract that reports the remote peer's ACK stage. /// /// Receipt alone never permits outbox cleanup. The sync engine removes IDs only /// from an [DeltaAcknowledgement] at [DeltaAckStage.appliedAndPersisted] from /// the configured peer. A normal [DeltaTransport.send] completion means local /// transmission finished, not receipt or remote application. abstract interface class AcknowledgingDeltaTransport implements DeltaTransport",
+      "members": [
+        "/// Sends [envelope] and returns the peer's latest explicit ACK stage. Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope)"
+      ]
+    },
+    "IncomingAcknowledgingDeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Optional adapter that sends acknowledgements for incoming envelopes. /// The engine invokes this only after the remote snapshot commit succeeds. abstract interface class IncomingAcknowledgingDeltaTransport implements DeltaTransport",
+      "members": [
+        "Future<void> acknowledge(DeltaAcknowledgement acknowledgement)"
+      ]
+    },
+    "DeltaEnvelope": {
+      "source": "packages/deltasync_transport/lib/src/delta_envelope.dart",
+      "declaration": "/// Versioned transport envelope carrying one [Delta] batch. /// /// [senderReplicaId] identifies the current sender. It may differ from the /// origin replicas in [delta], for example when forwarding changes. /// [recipientReplicaId] binds delivery and ACKs to one stable peer. class DeltaEnvelope",
+      "members": [
+        "DeltaEnvelope({ required this.senderReplicaId, required this.recipientReplicaId, required this.delta, this.version = currentVersion, })",
+        "static const int currentVersion = 2;",
+        "final int version;",
+        "final String senderReplicaId;",
+        "final String recipientReplicaId;",
+        "final Delta delta;",
+        "/// Encodes envelope version 2 with the current [DeltaCodec] representation. Map<String, Object?> toJson()",
+        "factory DeltaEnvelope.fromJson( Map<String, Object?> json, { String? legacyRecipientReplicaId, })"
+      ]
+    },
+    "DeltaAckStage": {
+      "source": "packages/deltasync_transport/lib/src/delta_acknowledgement.dart",
+      "declaration": "/// Explicit progress reported by the peer for a set of delta change IDs. enum DeltaAckStage",
+      "members": [
+        "received('received')",
+        "appliedAndPersisted('applied-and-persisted')",
+        "const DeltaAckStage(this.wireName)",
+        "final String wireName;",
+        "static DeltaAckStage fromWire(String value)"
+      ]
+    },
+    "DeltaAcknowledgement": {
+      "source": "packages/deltasync_transport/lib/src/delta_acknowledgement.dart",
+      "declaration": "/// Acknowledgement bound to one stable peer and delivery stage. class DeltaAcknowledgement",
+      "members": [
+        "DeltaAcknowledgement({ required this.peerReplicaId, required this.stage, required Iterable<String> changeIds, })",
+        "final String peerReplicaId;",
+        "final DeltaAckStage stage;",
+        "final Set<String> changeIds;",
+        "/// Encodes the existing ACK wire format with stable stage labels. /// The returned map and ID list are detached from this acknowledgement. Map<String, Object?> toJson()",
+        "/// Decodes an ACK, rejecting malformed peers, stages and IDs. /// /// Empty ID lists are valid; repeated IDs are deduplicated. Unknown additional /// fields are ignored. Invalid known fields throw [FormatException]. /// Decoding alone does not authorize outbox removal: the caller must bind the /// peer to the sent batch and require [DeltaAckStage.appliedAndPersisted]. factory DeltaAcknowledgement.fromJson(Map<String, Object?> json)"
+      ]
+    }
+  },
+  "deltasync_core": {
+    "DeltaCrdt": {
+      "source": "packages/deltasync_core/lib/src/crdt.dart",
+      "declaration": "/// Common contract for CRDTs whose synchronization unit is a delta. /// /// Concrete CRDTs define the shape of [D]. Applying the same delta more than /// once must produce the same state as applying it once. abstract interface class DeltaCrdt<V, D>",
+      "members": [
+        "V get value",
+        "void applyDelta(D delta)",
+        "void mergeState(covariant DeltaCrdt<V, D> other)",
+        "Map<String, Object?> toJson()"
+      ]
+    },
+    "Delta": {
+      "source": "packages/deltasync_core/lib/src/delta.dart",
+      "declaration": "/// Immutable batch of native CRDT changes. class Delta",
+      "members": [
+        "Delta(Iterable<DeltaChange> changes)",
+        "@Deprecated('Use Delta(changes) for native changes.') Delta.crdt(Iterable<DeltaChange> changes)",
+        "const Delta.empty()",
+        "final List<DeltaChange> changes;",
+        "@Deprecated('Delta.changes now contains native CRDT changes.') List<DeltaChange> get crdtChanges",
+        "bool get isEmpty",
+        "Map<String, Object?> toJson()",
+        "/// Decodes native batches and migrates historical operation batches when /// explicitly enabled by a versioned codec. factory Delta.fromJson( Map<String, Object?> json, { bool allowLegacyOperations = false, bool allowLegacyCounterIdentity = false, bool allowCompactContext = true, })",
+        "Delta merge(Delta other)"
+      ]
+    },
+    "DeltaCodec": {
+      "source": "packages/deltasync_core/lib/src/delta_codec.dart",
+      "declaration": "/// Versioned wire/storage codec for [Delta]. class DeltaCodec",
+      "members": [
+        "static const int currentVersion = 4;",
+        "static Map<String, Object?> encode(Delta delta)",
+        "static Delta decode(Map<String, Object?> json)"
+      ]
+    },
+    "DeltaChange": {
+      "source": "packages/deltasync_core/lib/src/delta_change.dart",
+      "declaration": "/// Protocol-neutral change produced by a Delta-CRDT. /// /// [id] is useful for transport, retry and tracing. CRDTs must still make /// repeated application safe without relying on external deduplication. abstract interface class DeltaChange",
+      "members": [
+        "String get id",
+        "CrdtKind get kind",
+        "String get crdtId",
+        "String get replicaId",
+        "Map<String, Object?> toJson()"
+      ]
+    },
+    "CrdtKind": {
+      "source": "packages/deltasync_core/lib/src/delta_change.dart",
+      "declaration": "enum CrdtKind",
+      "members": [
+        "lww('lww')",
+        "gCounter('g-counter')",
+        "pnCounter('pn-counter')",
+        "gSet('g-set')",
+        "twoPSet('2p-set')",
+        "mvRegister('mv-register')",
+        "orSet('or-set')",
+        "orMap('or-map')",
+        "const CrdtKind(this.wireName)",
+        "final String wireName;",
+        "static CrdtKind fromWire(String value)"
+      ]
+    },
+    "HlcTimestamp": {
+      "source": "packages/deltasync_core/lib/src/hlc.dart",
+      "declaration": "/// Hybrid Logical Clock timestamp. /// /// Physical time orders normally; logical counter preserves deterministic /// ordering when physical time is equal or moves backwards. class HlcTimestamp implements Comparable<HlcTimestamp>",
+      "members": [
+        "const HlcTimestamp(this.physicalMilliseconds, this.logical)",
+        "final int physicalMilliseconds;",
+        "final int logical;",
+        "@override int compareTo(HlcTimestamp other)",
+        "Map<String, Object?> toJson()",
+        "factory HlcTimestamp.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "HlcClock": {
+      "source": "packages/deltasync_core/lib/src/hlc.dart",
+      "declaration": "/// Mutable Hybrid Logical Clock used to create and observe timestamps. class HlcClock",
+      "members": [
+        "HlcClock({int Function()? nowMilliseconds, HlcTimestamp? initial})",
+        "HlcTimestamp get current",
+        "/// Copies clock state while retaining its injected physical-time source. HlcClock copy()",
+        "void restore(HlcTimestamp timestamp)",
+        "HlcTimestamp tick()",
+        "HlcTimestamp observe(HlcTimestamp remote)"
+      ]
+    },
+    "ReplicaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable identity of a replica. class ReplicaId implements Comparable<ReplicaId>",
+      "members": [
+        "ReplicaId(String value)",
+        "final String value;",
+        "@override int compareTo(ReplicaId other)",
+        "@override String toString()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "Dot": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Causal event identity: one replica and one strictly positive counter. class Dot",
+      "members": [
+        "const Dot({required this.replicaId, required this.counter, this.crdtId})",
+        "final String replicaId;",
+        "final int counter;",
+        "final String? crdtId;",
+        "Map<String, Object?> toJson()",
+        "factory Dot.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "crdtDeltaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable message ID for an addressed CRDT change and replica sequence. String crdtDeltaId( String type, String crdtId, String replicaId, int sequence, )"
+    },
+    "counterDeltaId": {
+      "source": "packages/deltasync_core/lib/src/identity.dart",
+      "declaration": "/// Stable message ID for a counter delta, namespaced by CRDT and replica. String counterDeltaId(String type, String crdtId, String replicaId, int dot)"
+    },
+    "copyJsonValue": {
+      "source": "packages/deltasync_core/lib/src/json/value.dart",
+      "declaration": "/// Copies JSON-compatible values, optionally freezing every nested collection. /// /// Rejects non-string map keys, non-finite numbers, and non-JSON objects. Object? copyJsonValue(Object? value, {bool freeze = false})"
+    },
+    "GCounterDelta": {
+      "source": "packages/deltasync_core/lib/src/g_counter.dart",
+      "declaration": "/// Delta carrying the monotonic component value of a G-Counter. class GCounterDelta implements DeltaChange",
+      "members": [
+        "const GCounterDelta({ required this.id, required this.replicaId, required this.crdtId, required this.value, this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final int value;",
+        "final Dot? dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory GCounterDelta.fromJson( Map<String, Object?> json, { bool allowLegacyIdentity = false, })",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "GCounter": {
+      "source": "packages/deltasync_core/lib/src/g_counter.dart",
+      "declaration": "/// Grow-only counter with one monotonic component per replica. class GCounter implements DeltaCrdt<int, GCounterDelta>",
+      "members": [
+        "GCounter( String replicaId, { required this.crdtId, Map<String, int> components = const {}, Map<String, int>? sequences, int? sequence, })",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override int get value",
+        "Map<String, int> get components",
+        "GCounterDelta increment([int amount = 1])",
+        "@override void applyDelta(GCounterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<int, GCounterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<GCounterDelta> exportChanges({bool requireSequences = true})"
+      ]
+    },
+    "GSetDelta": {
+      "source": "packages/deltasync_core/lib/src/g_set.dart",
+      "declaration": "/// One batch of values added to an addressed G-Set. class GSetDelta implements DeltaChange",
+      "members": [
+        "GSetDelta({ required this.id, required this.replicaId, required this.crdtId, required Iterable<Object?> elements, required this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final List<Object?> elements;",
+        "final Dot dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory GSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "GSet": {
+      "source": "packages/deltasync_core/lib/src/g_set.dart",
+      "declaration": "/// Grow-only set of JSON values, identified by a stable application address. /// /// Each add creates an addressed event so callers can persist and exchange the /// incremental additions. State merge unions events; [value] deduplicates equal /// JSON values. Repeated adds are harmless and never remove existing values; /// events that add no new value do not enlarge materialized state. class GSet implements DeltaCrdt<Set<Object?>, GSetDelta>",
+      "members": [
+        "GSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element] and returns its incremental change. GSetDelta add(Object? element)",
+        "/// Adds [elements] as one incremental change. GSetDelta addAll(Iterable<Object?> elements)",
+        "@override void applyDelta(GSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, GSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory GSet.fromJson(Map<String, Object?> json)",
+        "/// Returns additions needed to bootstrap or reconcile materialized state. Iterable<GSetDelta> exportChanges()"
+      ]
+    },
+    "TwoPSetAction": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// Operation encoded by an addressed 2P-Set delta. enum TwoPSetAction",
+      "members": [
+        "add('add')",
+        "remove('remove')",
+        "const TwoPSetAction(this.wireName)",
+        "final String wireName;",
+        "static TwoPSetAction fromWire(String value)"
+      ]
+    },
+    "TwoPSetDelta": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// A batch of additions or permanent removals at one stable CRDT address. class TwoPSetDelta implements DeltaChange",
+      "members": [
+        "TwoPSetDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required Iterable<Object?> elements, required this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final TwoPSetAction action;",
+        "final List<Object?> elements;",
+        "final Dot dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory TwoPSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "TwoPSet": {
+      "source": "packages/deltasync_core/lib/src/two_p_set.dart",
+      "declaration": "/// Two-phase set for JSON values. Added and removed sets grow monotonically; /// membership is the additions minus permanent removal tombstones. class TwoPSet implements DeltaCrdt<Set<Object?>, TwoPSetDelta>",
+      "members": [
+        "TwoPSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element]. A previously removed value remains absent. TwoPSetDelta add(Object? element)",
+        "/// Adds [elements] in one delta; removals are permanent. TwoPSetDelta addAll(Iterable<Object?> elements)",
+        "/// Permanently removes [element], including when removal arrives first. TwoPSetDelta remove(Object? element)",
+        "/// Permanently removes [elements] in one delta. TwoPSetDelta removeAll(Iterable<Object?> elements)",
+        "@override void applyDelta(TwoPSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, TwoPSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory TwoPSet.fromJson(Map<String, Object?> json)",
+        "/// Returns compact add/removal representatives for bootstrap and merge. Iterable<TwoPSetDelta> exportChanges()"
+      ]
+    },
+    "MvRegisterDelta": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "/// One write and the exact causal dots it had observed. class MvRegisterDelta implements DeltaChange",
+      "members": [
+        "MvRegisterDelta({ required String id, required String replicaId, required String crdtId, required Dot dot, required Object? value, required Iterable<Dot> context, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final Dot dot;",
+        "final Object? value;",
+        "/// Exact observed dots. Access expands compact prefixes into a list. List<Dot> get context",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory MvRegisterDelta.fromJson( Map<String, Object?> json, { bool allowCompactContext = true, })"
+      ]
+    },
+    "MvRegister": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "/// Multi-value register. Exact observed dots preserve causality across gaps. class MvRegister implements DeltaCrdt<Set<Object?>, MvRegisterDelta>",
+      "members": [
+        "MvRegister(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Writes value, replacing only versions whose dots this replica observed. MvRegisterDelta write(Object? value)",
+        "@override void applyDelta(MvRegisterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, MvRegisterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<MvRegisterDelta> exportChanges()",
+        "/// Restores state only if the local sequence cannot reuse an observed dot. factory MvRegister.fromJson( Map<String, Object?> json, { bool allowCompactContext = true, })",
+        "CrdtKind get kind"
+      ]
+    },
+    "maxOf": {
+      "source": "packages/deltasync_core/lib/src/mv_register.dart",
+      "declaration": "int maxOf(int a, int b)"
+    },
+    "OrSetAction": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// Operation encoded by an OR-Set delta. enum OrSetAction",
+      "members": [
+        "add('add')",
+        "remove('remove')",
+        "const OrSetAction(this.wireName)",
+        "final String wireName;",
+        "static OrSetAction fromWire(String value)"
+      ]
+    },
+    "OrSetDelta": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// One OR-Set add tag or removal of the exact tags observed by that removal. class OrSetDelta implements DeltaChange",
+      "members": [
+        "OrSetDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required this.dot, Object? element, Iterable<Dot> observedDots = const [], })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final OrSetAction action;",
+        "final Dot dot;",
+        "final Object? element;",
+        "final List<Dot> observedDots;",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory OrSetDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "OrSet": {
+      "source": "packages/deltasync_core/lib/src/or_set.dart",
+      "declaration": "/// Observed-remove set. Each add has unique dot tag; removals retain only tags /// they observed, so concurrent additions and later re-additions remain visible. class OrSet implements DeltaCrdt<Set<Object?>, OrSetDelta>",
+      "members": [
+        "OrSet(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Set<Object?> get value",
+        "/// Adds [element] with a fresh dot tag and returns the transportable delta. OrSetDelta add(Object? element)",
+        "/// Removes only add tags for [element] currently observed by this replica. OrSetDelta remove(Object? element)",
+        "@override void applyDelta(OrSetDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<Set<Object?>, OrSetDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "factory OrSet.fromJson(Map<String, Object?> json)",
+        "/// Exports add tags and exact removal contexts for bootstrap and merge. Iterable<OrSetDelta> exportChanges()"
+      ]
+    },
+    "OrMapAction": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// Operation carried by an OR-Map delta. enum OrMapAction",
+      "members": [
+        "addKey('add-key')",
+        "removeKey('remove-key')",
+        "addValue('add-value')",
+        "const OrMapAction(this.wireName)",
+        "final String wireName;",
+        "static OrMapAction fromWire(String value)"
+      ]
+    },
+    "OrMapDelta": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// One key tag, exact observed removal, or update to a key's nested G-Set. class OrMapDelta implements DeltaChange",
+      "members": [
+        "OrMapDelta({ required this.id, required this.replicaId, required this.crdtId, required this.action, required this.dot, required this.key, Iterable<Dot> observedDots = const [], this.keyDot, this.valueChange, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final OrMapAction action;",
+        "final Dot dot;",
+        "final String key;",
+        "final List<Dot> observedDots;",
+        "final Dot? keyDot;",
+        "final GSetDelta? valueChange;",
+        "@override CrdtKind get kind",
+        "@override Map<String, Object?> toJson()",
+        "factory OrMapDelta.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "OrMap": {
+      "source": "packages/deltasync_core/lib/src/or_map.dart",
+      "declaration": "/// Add-wins map whose value at each key incarnation is a grow-only set. /// /// Key presence is controlled only by add/remove key deltas. Value updates /// union through G-Set; they do not recreate a removed key. Each key tag owns /// one nested G-Set, so old value deltas remain hidden after removal/recreation. class OrMap implements DeltaCrdt<Map<String, Set<Object?>>, OrMapDelta>",
+      "members": [
+        "OrMap(String replicaId, {required this.crdtId})",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override Map<String, Set<Object?>> get value",
+        "/// Adds a fresh key incarnation and returns its key-presence delta. OrMapDelta addKey(String key)",
+        "/// Removes only key incarnations currently observed for [key]. OrMapDelta removeKey(String key)",
+        "/// Adds [element] to each observed G-Set value for [key]. List<OrMapDelta> addValue(String key, Object? element)",
+        "@override void applyDelta(OrMapDelta delta)",
+        "@override void mergeState( covariant DeltaCrdt<Map<String, Set<Object?>>, OrMapDelta> other, )",
+        "@override Map<String, Object?> toJson()",
+        "factory OrMap.fromJson(Map<String, Object?> json)",
+        "Iterable<OrMapDelta> exportChanges()"
+      ]
+    },
+    "PnCounterDelta": {
+      "source": "packages/deltasync_core/lib/src/pn_counter.dart",
+      "declaration": "/// Delta carrying positive and negative monotonic components of a PN-Counter. class PnCounterDelta implements DeltaChange",
+      "members": [
+        "const PnCounterDelta({ required this.id, required this.replicaId, required this.crdtId, required this.positive, required this.negative, this.dot, })",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "@override final String crdtId;",
+        "final int positive;",
+        "final int negative;",
+        "final Dot? dot;",
+        "@override CrdtKind get kind",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "factory PnCounterDelta.fromJson( Map<String, Object?> json, { bool allowLegacyIdentity = false, })",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "PnCounter": {
+      "source": "packages/deltasync_core/lib/src/pn_counter.dart",
+      "declaration": "/// Positive-negative counter built from two grow-only component maps. class PnCounter implements DeltaCrdt<int, PnCounterDelta>",
+      "members": [
+        "PnCounter( String replicaId, { required this.crdtId, Map<String, int> positive = const {}, Map<String, int> negative = const {}, Map<String, int>? sequences, int? sequence, })",
+        "final String replicaId;",
+        "final String crdtId;",
+        "@override int get value",
+        "Map<String, int> get positive",
+        "Map<String, int> get negative",
+        "PnCounterDelta increment([int amount = 1])",
+        "PnCounterDelta decrement([int amount = 1])",
+        "@override void applyDelta(PnCounterDelta delta)",
+        "@override void mergeState(covariant DeltaCrdt<int, PnCounterDelta> other)",
+        "@override Map<String, Object?> toJson()",
+        "Iterable<PnCounterDelta> exportChanges({bool requireSequences = true})"
+      ]
+    },
+    "LwwRegister": {
+      "source": "packages/deltasync_core/lib/src/lww_register.dart",
+      "declaration": "/// Last-write-wins register with one native HLC winner and retained tombstone. class LwwRegister<T> implements DeltaCrdt<T?, LwwDelta<T>>",
+      "members": [
+        "/// [decodeValue] converts a JSON copy to [T] when [T] is a typed collection. /// It must accept valid persisted JSON and return a JSON-compatible value. LwwRegister({this.decodeValue})",
+        "final T? Function(Object?)? decodeValue;",
+        "bool get hasValue",
+        "bool get isDeleted",
+        "@override T? get value",
+        "LwwDelta<T>? get winner",
+        "@override void applyDelta(LwwDelta<T> delta)",
+        "@override void mergeState(covariant LwwRegister<T> other)",
+        "@override Map<String, Object?> toJson()"
+      ]
+    },
+    "LwwDelta": {
+      "source": "packages/deltasync_core/lib/src/lww_delta.dart",
+      "declaration": "/// Delta produced by an LWW register. /// /// [id] identifies the delta for transport and tracing. Register correctness /// comes from timestamp plus replica tie-breaking, not from ID deduplication. class LwwDelta<T> implements DeltaChange",
+      "members": [
+        "LwwDelta({ required this.key, required this.id, required this.replicaId, required this.timestamp, required T? value, this.decodeValue, this.deleted = false, this.dot, })",
+        "final String key;",
+        "@override final String id;",
+        "@override final String replicaId;",
+        "final HlcTimestamp timestamp;",
+        "final T? Function(Object?)? decodeValue;",
+        "/// Fresh copy; modifying it cannot change this delta. T? get value",
+        "final bool deleted;",
+        "final Dot? dot;",
+        "/// [decodeValue] converts copied JSON to [T] for typed collections. factory LwwDelta.fromJson( Map<String, Object?> json, { T? Function(Object?)? decodeValue, })",
+        "@override CrdtKind get kind",
+        "@override String get crdtId",
+        "String get type",
+        "@override Map<String, Object?> toJson()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "Operation": {
+      "source": "packages/deltasync_core/lib/src/operation.dart",
+      "declaration": "/// Legacy operation shape accepted only by explicit version 1/2 migration. @Deprecated('Legacy codec input only; create native DeltaChange values.') class Operation",
+      "members": [
+        "Operation({ required this.id, required this.replicaId, required this.type, required this.vectorClock, Map<String, Object?> payload = const {}, })",
+        "factory Operation.fromJson(Map<String, Object?> json)",
+        "final String id;",
+        "final String replicaId;",
+        "final String type;",
+        "final VectorClock vectorClock;",
+        "final Map<String, Object?> payload;",
+        "Map<String, Object?> toJson()",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    },
+    "migrateLegacyOperation": {
+      "source": "packages/deltasync_core/lib/src/operation.dart",
+      "declaration": "/// Converts one version 1/2 LWW operation into a native delta. /// /// The legacy vector-clock weight becomes a synthetic HLC physical value; /// replica ID and operation ID retain the old deterministic tie-break order. LwwDelta<Object?> migrateLegacyOperation(Operation operation)"
+    },
+    "Replica": {
+      "source": "packages/deltasync_core/lib/src/replica.dart",
+      "declaration": "/// Local CRDT replica. Storage and transport stay outside core. class Replica",
+      "members": [
+        "Replica(String id, {VectorClock? initialClock, HlcClock? hlc})",
+        "final String id;",
+        "/// Detached read-only state; mutations must go through this Replica. ReplicaState get state",
+        "/// Returns the isolated value of one address without copying other fields. /// /// Missing addresses, LWW null values and LWW tombstones return null, as in /// indexing [ReplicaState]. Bound counters return int, sets/registers /// return `Set<Object?>` (except LWW), and OR-Map returns `Map<String, Set<Object?>>`. /// Nested collections are read-only and detached from future mutations. Object? valueAt(String address)",
+        "VectorClock get clock",
+        "HlcTimestamp get hlcTimestamp",
+        "/// Value of addressed G-Counter, or zero before its first change. int gCounterValue(String crdtId)",
+        "/// Value of addressed PN-Counter, or zero before its first change. int pnCounterValue(String crdtId)",
+        "/// Read-only value of addressed G-Set, empty before its first addition. Set<Object?> gSetValue(String crdtId)",
+        "/// Read-only value of addressed 2P-Set, empty before its first addition. Set<Object?> twoPSetValue(String crdtId)",
+        "Set<Object?> mvRegisterValue(String crdtId)",
+        "/// Read-only value of addressed OR-Set, empty before its first change. Set<Object?> orSetValue(String crdtId)",
+        "/// Read-only map value; each present key contains its nested G-Set value. Map<String, Set<Object?>> orMapValue(String crdtId)",
+        "void restoreMetadata({ required VectorClock clock, required HlcTimestamp hlc, })",
+        "/// Creates isolated working copy for a transaction or rollback boundary. Replica fork()",
+        "/// Replaces this replica with an already committed isolated candidate. void adopt(Replica candidate)",
+        "/// Compact, versioned materialized state for durable snapshots. Map<String, Object?> toSnapshotJson()",
+        "/// Reconstructs materialized state without replaying prior delta history. static Replica fromSnapshotJson(Map<String, Object?> json)",
+        "void apply(Delta delta)",
+        "/// Exports current winners and cumulative counter components for bootstrap. /// It is not a durable operation log or peer-specific ACK history. Delta export()",
+        "/// Compact, versioned materialized state for bootstrap and storage. Map<String, Object?> exportSnapshot()",
+        "/// Joins a peer snapshot without replacing this replica's identity. /// /// Useful for initial bootstrap when a peer lacks deltas. The merge is /// isolated: malformed or conflicting state leaves this replica unchanged. void mergeSnapshotJson(Map<String, Object?> json)",
+        "/// Creates and applies native LWW delta. LwwDelta<Object?> setDelta(String key, Object? value)",
+        "@Deprecated('Use setDelta; returned change is a native LwwDelta.') LwwDelta<Object?> set(String key, Object? value)",
+        "/// Creates and applies native LWW delete tombstone. LwwDelta<Object?> removeDelta(String key)",
+        "@Deprecated('Use removeDelta; returned change is a native LwwDelta.') LwwDelta<Object?> remove(String key)",
+        "/// Increments G-Counter at stable application-defined [crdtId]. GCounterDelta incrementGCounter(String crdtId, [int amount = 1])",
+        "/// Increments addressed PN-Counter and returns its transportable delta. PnCounterDelta incrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Decrements addressed PN-Counter and returns its transportable delta. PnCounterDelta decrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Adds [element] to the addressed G-Set and returns its delta. GSetDelta addGSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed G-Set as one delta. GSetDelta addAllGSet(String crdtId, Iterable<Object?> elements)",
+        "/// Adds [element] to the addressed 2P-Set and returns its delta. TwoPSetDelta addTwoPSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed 2P-Set in one delta. TwoPSetDelta addAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+        "/// Permanently removes [element] from the addressed 2P-Set. TwoPSetDelta removeTwoPSet(String crdtId, Object? element)",
+        "/// Permanently removes [elements] from the addressed 2P-Set in one delta. TwoPSetDelta removeAllTwoPSet(String crdtId, Iterable<Object?> elements)",
+        "/// Writes an addressed MV-Register value and returns its causal delta. MvRegisterDelta writeMvRegister(String crdtId, Object? value)",
+        "/// Adds [element] to the addressed OR-Set with a unique observed-remove tag. OrSetDelta addOrSet(String crdtId, Object? element)",
+        "/// Removes only OR-Set add tags for [element] already observed locally. OrSetDelta removeOrSet(String crdtId, Object? element)",
+        "/// Adds a fresh OR-Map key incarnation with an empty G-Set value. OrMapDelta addOrMapKey(String crdtId, String key)",
+        "/// Removes only observed OR-Map key incarnations. OrMapDelta removeOrMapKey(String crdtId, String key)",
+        "/// Adds value to nested G-Set at each key incarnation observed locally. List<OrMapDelta> addOrMapValue(String crdtId, String key, Object? value)"
+      ]
+    },
+    "ReplicaState": {
+      "source": "packages/deltasync_core/lib/src/replica_state.dart",
+      "declaration": "/// Materialized state produced by applying changes in any order. class ReplicaState",
+      "members": [
+        "ReplicaState()",
+        "Set<String> get addresses",
+        "Map<String, Object?> get values",
+        "Object? operator [](String key)",
+        "void applyDelta(LwwDelta<Object?> delta)",
+        "ReplicaState copy()",
+        "CrdtKind? kindAt(String address)",
+        "LwwDelta<Object?>? winnerAt(String address)",
+        "void bind(String address, CrdtKind kind)",
+        "/// Encodes each native winning register, including tombstones. Map<String, Object?> toSnapshotJson()",
+        "HlcTimestamp? restoreSnapshotJson(Map<String, Object?> json)",
+        "void replaceWith(ReplicaState other)",
+        "void mergeState(ReplicaState other)"
+      ]
+    },
+    "ClockRelation": {
+      "source": "packages/deltasync_core/lib/src/vector_clock.dart",
+      "declaration": "enum ClockRelation",
+      "members": [
+        "equal",
+        "before",
+        "after",
+        "concurrent"
+      ]
+    },
+    "VectorClock": {
+      "source": "packages/deltasync_core/lib/src/vector_clock.dart",
+      "declaration": "/// Causal version vector indexed by replica identifier. /// /// Missing and zero components compare equal; JSON retains supplied zeros. class VectorClock",
+      "members": [
+        "VectorClock([Map<String, int> entries = const {}])",
+        "final Map<String, int> entries;",
+        "VectorClock tick(String replicaId)",
+        "VectorClock merge(VectorClock other)",
+        "ClockRelation compare(VectorClock other)",
+        "Map<String, Object?> toJson()",
+        "factory VectorClock.fromJson(Map<String, Object?> json)",
+        "@override bool operator ==(Object other)",
+        "@override int get hashCode"
+      ]
+    }
+  },
+  "deltasync_storage": {
+    "PendingDeltaStore": {
+      "source": "packages/deltasync_storage/lib/src/pending_delta_store.dart",
+      "declaration": "/// Legacy adapter for pending delta persistence. Implement with SQLite, files, /// etc. Unlike `ReplicaStorage`, this contract has no per-change ACK or retry /// metadata, so `SyncEngine` retains sent deltas and may send them repeatedly. /// Prefer `ReplicaStorage` for confirmation and retry control. @Deprecated('Use ReplicaStorage for atomic state and outbox commits.') abstract interface class PendingDeltaStore",
+      "members": [
+        "Future<Delta> read(String replicaId)",
+        "Future<void> write(String replicaId, Delta delta)"
+      ]
+    },
+    "MemoryPendingDeltaStore": {
+      "source": "packages/deltasync_storage/lib/src/pending_delta_store.dart",
+      "declaration": "/// Volatile in-memory adapter useful for tests and examples. /// /// Data is lost when the process ends. This legacy adapter is not suitable for /// persistence or recovery after restart. @Deprecated('Use MemoryStorage for the ReplicaStorage contract.') class MemoryPendingDeltaStore implements PendingDeltaStore",
+      "members": [
+        "@override Future<Delta> read(String replicaId)",
+        "@override Future<void> write(String replicaId, Delta delta)"
+      ]
+    },
+    "ReplicaSnapshot": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Materialized state and metadata required to restore one replica. class ReplicaSnapshot",
+      "members": [
+        "factory ReplicaSnapshot.fromReplica(Replica replica)",
+        "ReplicaSnapshot({ required this.replicaId, required Map<String, Object?> snapshot, })",
+        "/// Reads snapshots written before the canonical versioned payload. @Deprecated('Use the canonical snapshot constructor.') ReplicaSnapshot.legacy({ required this.replicaId, required Map<String, Object?> state, required VectorClock clock, Map<String, Object?> metadata = const {}, })",
+        "final String replicaId;",
+        "final int version;",
+        "final Map<String, Object?>? snapshot;",
+        "final Map<String, Object?>? legacyState;",
+        "final VectorClock? legacyClock;",
+        "final Map<String, Object?>? legacyMetadata;",
+        "/// Encodes only the current, canonical storage format. Map<String, Object?> toJson()",
+        "/// Reads canonical v2 or legacy v1 snapshots with explicit validation. factory ReplicaSnapshot.fromJson(Map<String, Object?> json)"
+      ]
+    },
+    "OutboxStatus": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// `sent` counts attempts including the current unconfirmed transmission. /// `confirmed` is read for legacy stores; ACK normally removes the entry. enum OutboxStatus",
+      "members": [
+        "pending('pending')",
+        "sent('sent')",
+        "@Deprecated('ACK removes entries; retained only for legacy records.') confirmed('confirmed')",
+        "const OutboxStatus(this.wireName)",
+        "final String wireName;",
+        "static OutboxStatus fromWire(String value)"
+      ]
+    },
+    "OutboxEntry": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Local operation waiting for confirmation from one stable peer. class OutboxEntry",
+      "members": [
+        "OutboxEntry({ required Delta delta, required this.recipientPeerId, this.status = OutboxStatus.pending, this.attempts = 0, DateTime? createdAt, DateTime? sentAt, })",
+        "final String recipientPeerId;",
+        "Delta get delta",
+        "final OutboxStatus status;",
+        "final int attempts;",
+        "final DateTime createdAt;",
+        "final DateTime? sentAt;",
+        "List<String> get changeIds",
+        "/// Legacy singular alias. New code should use [changeIds]. @Deprecated('Use changeIds for native CRDT changes.') String get operationId",
+        "String get entryId",
+        "Map<String, Object?> toJson()",
+        "/// Decodes current v2 entries. Legacy v1 entries require explicit peer binding /// because their original destination was not stored. factory OutboxEntry.fromJson( Map<String, Object?> json, { String? legacyRecipientPeerId, })",
+        "String get replicaId"
+      ]
+    },
+    "ReplicaStorage": {
+      "source": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Domain-oriented persistence contract. Implementations may use any backend. abstract interface class ReplicaStorage",
+      "members": [
+        "Future<ReplicaSnapshot?> loadReplica(String replicaId)",
+        "/// Atomically persists materialized replica state and its new outbox entries. /// Implementations must expose either all changes or none after failure. /// A repeated ID for the same peer is accepted only with equivalent delta /// content; divergent content fails atomically. Equivalent repeats retain /// the existing entry and its send metadata. Future<void> commit(ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries)",
+        "/// Atomically replaces materialized state after a remote merge. Future<void> commitRemote(ReplicaSnapshot snapshot)",
+        "/// Saves initial/bootstrap state without adding local pending changes. /// Local edits must use atomic [commit]. Future<void> saveReplica(ReplicaSnapshot snapshot)",
+        "/// Imports one pending change outside a local mutation transaction. /// Normal edits must use atomic [commit]. /// For an existing peer/ID, equivalent content keeps the original entry; /// divergent content fails without changing the outbox. Future<void> enqueue(OutboxEntry entry)",
+        "/// Lists all peers' entries, or only entries addressed to [recipientPeerId]. Future<List<OutboxEntry>> pending( String replicaId, { String? recipientPeerId, })",
+        "/// Marks only this peer's entries sent without removing them, allowing retry. /// Implementations record the attempt count and send time for retry policy. Future<void> markSent( String replicaId, String recipientPeerId, Iterable<String> operationIds, )",
+        "/// Confirms only [operationIds] addressed to [recipientPeerId]. /// /// Entries whose IDs are not acknowledged remain pending. Future<void> acknowledge( String replicaId, String recipientPeerId, Iterable<String> operationIds, )"
+      ]
+    },
+    "MemoryStorage": {
+      "source": "packages/deltasync_storage/lib/src/memory_storage.dart",
+      "declaration": "/// Volatile in-memory implementation for tests, examples and prototypes. /// /// Data is lost when the process ends. Applications requiring recovery after /// restart must provide a persistent [ReplicaStorage] adapter. class MemoryStorage implements ReplicaStorage",
+      "members": [
+        "@override Future<ReplicaSnapshot?> loadReplica(String replicaId)",
+        "@override Future<void> saveReplica(ReplicaSnapshot snapshot)",
+        "@override Future<void> commitRemote(ReplicaSnapshot snapshot)",
+        "@override Future<void> commit( ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries, )",
+        "@override Future<void> enqueue(OutboxEntry entry)",
+        "@override Future<List<OutboxEntry>> pending( String replicaId, { String? recipientPeerId, })",
+        "@override Future<void> acknowledge( String replicaId, String recipientPeerId, Iterable<String> operationIds, )",
+        "@override Future<void> markSent( String replicaId, String recipientPeerId, Iterable<String> operationIds, )"
+      ]
+    }
+  },
+  "deltasync_transport": {
+    "DeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Network-agnostic transport for versioned DeltaSync messages. /// HTTP and WebSocket adapters belong to apps. abstract interface class DeltaTransport",
+      "members": [
+        "/// Stable identity of the single remote peer this transport is bound to. String get peerReplicaId",
+        "/// Sends an envelope. Completion means transport send finished, not remote ACK. Future<void> send(DeltaEnvelope envelope)",
+        "/// Incoming envelopes preserve sender and encoded delta metadata. Stream<DeltaEnvelope> get incoming"
+      ]
+    },
+    "AcknowledgingDeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Optional transport contract that reports the remote peer's ACK stage. /// /// Receipt alone never permits outbox cleanup. The sync engine removes IDs only /// from an [DeltaAcknowledgement] at [DeltaAckStage.appliedAndPersisted] from /// the configured peer. A normal [DeltaTransport.send] completion means local /// transmission finished, not receipt or remote application. abstract interface class AcknowledgingDeltaTransport implements DeltaTransport",
+      "members": [
+        "/// Sends [envelope] and returns the peer's latest explicit ACK stage. Future<DeltaAcknowledgement> sendAndAwaitAck(DeltaEnvelope envelope)"
+      ]
+    },
+    "IncomingAcknowledgingDeltaTransport": {
+      "source": "packages/deltasync_transport/lib/src/delta_transport.dart",
+      "declaration": "/// Optional adapter that sends acknowledgements for incoming envelopes. /// The engine invokes this only after the remote snapshot commit succeeds. abstract interface class IncomingAcknowledgingDeltaTransport implements DeltaTransport",
+      "members": [
+        "Future<void> acknowledge(DeltaAcknowledgement acknowledgement)"
+      ]
+    },
+    "DeltaEnvelope": {
+      "source": "packages/deltasync_transport/lib/src/delta_envelope.dart",
+      "declaration": "/// Versioned transport envelope carrying one [Delta] batch. /// /// [senderReplicaId] identifies the current sender. It may differ from the /// origin replicas in [delta], for example when forwarding changes. /// [recipientReplicaId] binds delivery and ACKs to one stable peer. class DeltaEnvelope",
+      "members": [
+        "DeltaEnvelope({ required this.senderReplicaId, required this.recipientReplicaId, required this.delta, this.version = currentVersion, })",
+        "static const int currentVersion = 2;",
+        "final int version;",
+        "final String senderReplicaId;",
+        "final String recipientReplicaId;",
+        "final Delta delta;",
+        "/// Encodes envelope version 2 with the current [DeltaCodec] representation. Map<String, Object?> toJson()",
+        "factory DeltaEnvelope.fromJson( Map<String, Object?> json, { String? legacyRecipientReplicaId, })"
+      ]
+    },
+    "DeltaAckStage": {
+      "source": "packages/deltasync_transport/lib/src/delta_acknowledgement.dart",
+      "declaration": "/// Explicit progress reported by the peer for a set of delta change IDs. enum DeltaAckStage",
+      "members": [
+        "received('received')",
+        "appliedAndPersisted('applied-and-persisted')",
+        "const DeltaAckStage(this.wireName)",
+        "final String wireName;",
+        "static DeltaAckStage fromWire(String value)"
+      ]
+    },
+    "DeltaAcknowledgement": {
+      "source": "packages/deltasync_transport/lib/src/delta_acknowledgement.dart",
+      "declaration": "/// Acknowledgement bound to one stable peer and delivery stage. class DeltaAcknowledgement",
+      "members": [
+        "DeltaAcknowledgement({ required this.peerReplicaId, required this.stage, required Iterable<String> changeIds, })",
+        "final String peerReplicaId;",
+        "final DeltaAckStage stage;",
+        "final Set<String> changeIds;",
+        "/// Encodes the existing ACK wire format with stable stage labels. /// The returned map and ID list are detached from this acknowledgement. Map<String, Object?> toJson()",
+        "/// Decodes an ACK, rejecting malformed peers, stages and IDs. /// /// Empty ID lists are valid; repeated IDs are deduplicated. Unknown additional /// fields are ignored. Invalid known fields throw [FormatException]. /// Decoding alone does not authorize outbox removal: the caller must bind the /// peer to the sent batch and require [DeltaAckStage.appliedAndPersisted]. factory DeltaAcknowledgement.fromJson(Map<String, Object?> json)"
+      ]
+    }
+  },
+  "deltasync_sync": {
+    "SyncEngine": {
+      "source": "packages/deltasync_sync/lib/src/sync_engine.dart",
+      "declaration": "/// Coordinates local CRDT changes, pending persistence, and remote deltas. class SyncEngine",
+      "members": [
+        "SyncEngine({ required Replica replica, @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store, this.storage, required this.transport, this.retryPolicy = const SyncRetryPolicy(), })",
+        "SyncEngine.withStorage({ required Replica replica, required ReplicaStorage storage, required DeltaTransport transport, SyncRetryPolicy retryPolicy = const SyncRetryPolicy(), })",
+        "/// Detached view. Available after restoration; mutations cannot bypass commits. Replica get replica",
+        "/// Reads one committed field without forking the replica or copying its state. /// /// Call after awaiting [start]. Throws StateError before restoration or after /// disposal. During an in-flight commit, reads the last successfully adopted /// value; network waits do not block this synchronous query. /// Result types and null semantics follow [Replica.valueAt]. Collections are /// detached and read-only. This read does not imply remote acknowledgement. Object? valueAt(String address)",
+        "/// Current initialization, running or terminal lifecycle state. SyncEngineLifecycle get lifecycle",
+        "/// Failures from transport stream callbacks; awaited methods throw to callers. /// This stream does not report successful commits or push progress. Stream<SyncFailure> get errors",
+        "/// Non-replaying notifications after a local or remote commit is adopted. /// Read [replica] for the latest state; this event does not imply remote ACK. /// The stream closes when [dispose] completes. Stream<SyncCommitEvent> get commits",
+        "/// Non-replaying session events: restored, committed, push result/failure and /// incoming failure. Existing commits/errors streams retain their contracts. /// Read pendingDelta/valueAt after events; commit never means remote ACK. /// Subscribe before start for restoration, or query after start when joining /// later. Push results follow durable local outbox acknowledgement. /// Listeners run asynchronously and cannot govern commits. Cancel subscriptions /// before dispose if paused; the stream closes after accepted work drains. Stream<SyncObservation> get observations",
+        "@Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') final PendingDeltaStore? store;",
+        "final ReplicaStorage? storage;",
+        "final DeltaTransport transport;",
+        "final SyncRetryPolicy retryPolicy;",
+        "/// Restores state and subscribes to remote changes. Repeated calls after /// success are harmless; failed starts can be retried. Future<void> start()",
+        "@Deprecated('Use setDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> set(String key, Object? value)",
+        "/// Applies remote changes after a serialized snapshot commit succeeds. Future<void> applyRemote(Delta delta)",
+        "/// Validates, durably applies and acknowledges a stream or pulled envelope. /// /// Network fetching belongs to the adapter. If transport implements /// [IncomingAcknowledgingDeltaTransport], sends ACK after commit/adoption, /// outside the commit queue. Otherwise returns the ACK for the caller to send. /// A send failure throws but leaves committed state intact for safe replay. /// Existing local outbox is preserved. Disposal drains accepted calls, including /// ACK sends; adapters must bound network waits. Calls after disposal fail. Future<DeltaAcknowledgement> receiveEnvelope(DeltaEnvelope envelope)",
+        "/// Merges a peer's materialized snapshot for bootstrap or recovery. Future<void> applyRemoteSnapshot(Map<String, Object?> snapshot)",
+        "@Deprecated('Use removeDelta; returns native LwwDelta.') Future<LwwDelta<Object?>> remove(String key)",
+        "Future<LwwDelta<Object?>> setDelta(String key, Object? value)",
+        "Future<LwwDelta<Object?>> removeDelta(String key)",
+        "/// Increments G-Counter at stable application-defined [crdtId]. Future<GCounterDelta> incrementGCounter(String crdtId, [int amount = 1])",
+        "/// Increments PN-Counter at stable application-defined [crdtId]. Future<PnCounterDelta> incrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Decrements PN-Counter at stable application-defined [crdtId]. Future<PnCounterDelta> decrementPnCounter(String crdtId, [int amount = 1])",
+        "/// Adds [element] to the addressed G-Set and commits its change to the outbox. Future<GSetDelta> addGSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed G-Set as one committed change. Future<GSetDelta> addAllGSet(String crdtId, Iterable<Object?> elements)",
+        "/// Adds [element] to the addressed 2P-Set and commits its change to the outbox. Future<TwoPSetDelta> addTwoPSet(String crdtId, Object? element)",
+        "/// Adds [elements] to the addressed 2P-Set as one committed change. Future<TwoPSetDelta> addAllTwoPSet( String crdtId, Iterable<Object?> elements, )",
+        "/// Permanently removes [element] from the addressed 2P-Set. Future<TwoPSetDelta> removeTwoPSet(String crdtId, Object? element)",
+        "/// Permanently removes [elements] from the addressed 2P-Set in one change. Future<TwoPSetDelta> removeAllTwoPSet( String crdtId, Iterable<Object?> elements, )",
+        "/// Writes an MV-Register version and commits its causal delta to the outbox. Future<MvRegisterDelta> writeMvRegister(String crdtId, Object? value)",
+        "/// Adds an OR-Set value and commits its unique tag to the outbox. Future<OrSetDelta> addOrSet(String crdtId, Object? element)",
+        "/// Removes OR-Set tags observed by this replica and commits removal context. Future<OrSetDelta> removeOrSet(String crdtId, Object? element)",
+        "/// Creates a key in an OR-Map with a nested G-Set value. Future<OrMapDelta> addOrMapKey(String crdtId, String key)",
+        "/// Removes key incarnations observed by this replica. Future<OrMapDelta> removeOrMapKey(String crdtId, String key)",
+        "/// Adds a value to nested G-Sets for observed key incarnations. Future<List<OrMapDelta>> addOrMapValue( String crdtId, String key, Object? value, )",
+        "/// Sends eligible pending changes without holding the commit queue during I/O. /// The caller schedules each push; this engine has no background retry timer. /// With [ReplicaStorage], normal calls select new entries and sent entries /// whose delay has elapsed and attempts remain below the cap. [force] bypasses /// those filters. /// Result lists IDs durably acknowledged by an acknowledging transport. Future<SyncPushResult> push({bool force = false})",
+        "/// Locally retained changes, including sent but unacknowledged changes. The /// deprecated store cannot remove entries even after a remote ACK. Future<Delta> pendingDelta()",
+        "Future<void> dispose()"
+      ]
+    },
+    "SyncFailureSource": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "enum SyncFailureSource",
+      "members": [
+        "incomingDelta",
+        "incomingStream"
+      ]
+    },
+    "SyncCommitOrigin": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "enum SyncCommitOrigin",
+      "members": [
+        "local",
+        "remote"
+      ]
+    },
+    "SyncObservation": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Session events for observing sync without duplicating durable state. /// Query pendingDelta/valueAt for current data; events are not replayed. sealed class SyncObservation",
+      "members": [
+        "const SyncObservation()"
+      ]
+    },
+    "SyncRestoredEvent": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Initialization finished; restored outbox may still contain pending changes. class SyncRestoredEvent extends SyncObservation",
+      "members": [
+        "const SyncRestoredEvent()"
+      ]
+    },
+    "SyncPushFailure": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// A push failed. Committed state/outbox remain available for retry. /// Other directly awaited failures still belong to their calling Future. class SyncPushFailure extends SyncObservation",
+      "members": [
+        "const SyncPushFailure({required this.error, required this.stackTrace})",
+        "final Object error;",
+        "final StackTrace stackTrace;"
+      ]
+    },
+    "SyncCommitEvent": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Notification after a local mutation or remote merge is committed and adopted. /// It signals state availability, not remote acknowledgement. class SyncCommitEvent extends SyncObservation",
+      "members": [
+        "const SyncCommitEvent({required this.origin})",
+        "final SyncCommitOrigin origin;"
+      ]
+    },
+    "SyncFailure": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Failure delivered by `SyncEngine.errors` from an incoming transport callback. class SyncFailure extends SyncObservation",
+      "members": [
+        "const SyncFailure({ required this.source, required this.error, required this.stackTrace, })",
+        "final SyncFailureSource source;",
+        "final Object error;",
+        "final StackTrace stackTrace;"
+      ]
+    },
+    "SyncPushResult": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Result of one push attempt. A null [acknowledgement] means only local send /// completed; received ACKs do not populate [acknowledgedIds]. Legacy storage /// retains changes even when remote ACK is received. class SyncPushResult extends SyncObservation",
+      "members": [
+        "SyncPushResult({ required this.sent, required Iterable<String> acknowledgedIds, this.acknowledgement, })",
+        "static SyncPushResult get empty",
+        "final Delta sent;",
+        "final Set<String> acknowledgedIds;",
+        "final DeltaAcknowledgement? acknowledgement;",
+        "/// True if every change in [sent] was durably acknowledged; also true if empty. bool get fullyAcknowledged"
+      ]
+    },
+    "SyncRetryPolicy": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Eligibility policy for unconfirmed [ReplicaStorage] entries on each push. /// /// The caller schedules retries; this policy does not start a timer. New pending /// entries are eligible on the next push. Sent entries wait for the exponential /// delay and stop being selected once [maxAttempts] is reached, if configured. /// `push(force: true)` bypasses both filters. The legacy [PendingDeltaStore] /// path has no attempt metadata; every push retries its retained delta. class SyncRetryPolicy",
+      "members": [
+        "const SyncRetryPolicy({ this.baseDelay = const Duration(seconds: 1), this.maxDelay = const Duration(minutes: 1), this.maxAttempts, })",
+        "final Duration baseDelay;",
+        "final Duration maxDelay;",
+        "final int? maxAttempts;",
+        "Duration delayFor(int attempts)"
+      ]
+    },
+    "SyncEngineLifecycle": {
+      "source": "packages/deltasync_sync/lib/src/sync_types.dart",
+      "declaration": "/// Public lifecycle of a `SyncEngine`. A failed start returns to [created] and /// may be retried; [disposed] is terminal. enum SyncEngineLifecycle",
+      "members": [
+        "created",
+        "starting",
+        "started",
+        "disposed"
+      ]
+    }
+  },
+  "deltasync_storage_sqflite": {
+    "SqfliteReplicaStorage": {
+      "source": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+      "declaration": "/// SQLite implementation of [ReplicaStorage]. /// /// Pass `sqflite`'s `databaseFactory` from Flutter, or another compatible /// factory such as `sqflite_common_ffi` on desktop. This package depends only /// on the sqflite API and keeps Flutter out of core, sync, and storage. class SqfliteReplicaStorage implements ReplicaStorage",
+      "members": [
+        "SqfliteReplicaStorage({ required this.databaseFactory, required this.databasePath, })",
+        "static const schemaVersion = 1;",
+        "final DatabaseFactory databaseFactory;",
+        "final String databasePath;",
+        "/// Close this database before copying it. With WAL enabled, copy the database /// together with its `-wal` and `-shm` files, or use SQLite's online backup /// API. A restored copy retains replica IDs; applications must avoid opening /// two active replicas with the same ID unless they intentionally share state. Future<void> close()",
+        "@override Future<ReplicaSnapshot?> loadReplica(String replicaId)",
+        "@override Future<void> saveReplica(ReplicaSnapshot snapshot)",
+        "@override Future<void> commit( ReplicaSnapshot snapshot, Iterable<OutboxEntry> entries, )",
+        "@override Future<void> commitRemote(ReplicaSnapshot snapshot)",
+        "@override Future<void> enqueue(OutboxEntry entry)",
+        "@override Future<List<OutboxEntry>> pending( String replicaId, { String? recipientPeerId, })",
+        "@override Future<void> markSent( String replicaId, String recipientPeerId, Iterable<String> operationIds, )",
+        "@override Future<void> acknowledge( String replicaId, String recipientPeerId, Iterable<String> operationIds, )"
+      ]
+    }
+  },
+  "deltasync_storage_testing": {
+    "ReplicaStorageContractFixture": {
+      "source": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Creates adapters for the shared [ReplicaStorage] contract tests. /// /// [createStorageWithCommitFailure] must inject a failure in the adapter's /// commit path. Persistent adapters should place the failure after writes have /// been staged so the suite verifies rollback of the real transaction. abstract interface class ReplicaStorageContractFixture",
+      "members": [
+        "ReplicaStorage createStorage()",
+        "ReplicaStorage createStorageWithCommitFailure()"
+      ]
+    },
+    "replicaStorageContractTests": {
+      "source": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+      "declaration": "/// Registers shared behavior checks for an adapter implementation. /// /// Adapter packages call this from their own `test/` entry point. Implementors /// stay responsible for mapping snapshots and outbox entries to their backend; /// this suite never switches on concrete CRDT classes. void replicaStorageContractTests({ required String name, required ReplicaStorageContractFixture fixture, })"
+    }
+  }
+}

@@ -54,9 +54,9 @@ void main() {
           }
           final original = [
             for (var writer = 0; writer < 2; writer++)
-              (await stores[writer].pending(
-                ids[writer],
-              )).expand((entry) => entry.delta.changes).toList(),
+              (await stores[writer].pending(ids[writer]))
+                  .expand((entry) => entry.delta.changes)
+                  .toList(),
           ];
           final deliveries = [
             for (final events in original)
@@ -114,9 +114,9 @@ void main() {
               random,
               trace,
             );
-            final pendingIds = (await stores[writer].pending(
-              ids[writer],
-            )).expand((entry) => entry.changeIds).toSet();
+            final pendingIds = (await stores[writer].pending(ids[writer]))
+                .expand((entry) => entry.changeIds)
+                .toSet();
             final nextIds = next.map((change) => change.id).toSet();
             expect(nextIds, hasLength(next.length));
             expect(nextIds.intersection(oldIds), isEmpty);
@@ -130,9 +130,9 @@ void main() {
           transports[0].receiver = engines[1];
           transports[1].receiver = engines[0];
           for (var writer = 0; writer < 2; writer++) {
-            final pendingIds = (await stores[writer].pending(
-              ids[writer],
-            )).expand((entry) => entry.changeIds).toSet();
+            final pendingIds = (await stores[writer].pending(ids[writer]))
+                .expand((entry) => entry.changeIds)
+                .toSet();
             final result = await engines[writer].push(force: true);
             expect(result.acknowledgedIds, pendingIds);
             expect(await stores[writer].pending(ids[writer]), isEmpty);
@@ -200,9 +200,9 @@ void main() {
       expect(next.id, isNot(oldChange.id));
       expect(engine.replica.state.values, {'name': 'Ada', 'next': true});
       expect(
-        (await storage.pending(
-          replicaId,
-        )).map((entry) => entry.entryId).toSet(),
+        (await storage.pending(replicaId))
+            .map((entry) => entry.entryId)
+            .toSet(),
         {oldChange.id, next.id},
       );
       await engine.dispose();
@@ -346,9 +346,9 @@ void main() {
         final savedSnapshot = await reopenedStorage.loadReplica(replicaId);
         expect(savedSnapshot!.snapshot!['version'], 9);
         expect(
-          (await reopenedStorage.pending(
-            replicaId,
-          )).map((entry) => entry.entryId).toSet(),
+          (await reopenedStorage.pending(replicaId))
+              .map((entry) => entry.entryId)
+              .toSet(),
           {second.id, next.id},
         );
 
@@ -362,9 +362,9 @@ void main() {
         await restored.start();
         expect(restored.replica.mvRegisterValue('field'), {'three'});
         expect(
-          (await finalStorage.pending(
-            replicaId,
-          )).map((entry) => entry.entryId).toSet(),
+          (await finalStorage.pending(replicaId))
+              .map((entry) => entry.entryId)
+              .toSet(),
           {second.id, next.id},
         );
         await restored.dispose();
@@ -540,9 +540,9 @@ void main() {
         await sender.removeOrMapKey('or-map', 'removed');
 
         await expectLater(sender.push(), throwsStateError);
-        final pendingIds = (await senderStorage.pending(
-          'sender-all',
-        )).expand((entry) => entry.changeIds).toSet();
+        final pendingIds = (await senderStorage.pending('sender-all'))
+            .expand((entry) => entry.changeIds)
+            .toSet();
         expect(pendingIds, hasLength(12));
         expect(sender.replica.twoPSetValue('two-p-set'), isEmpty);
         expect(sender.replica.orSetValue('or-set'), isEmpty);
@@ -577,9 +577,9 @@ void main() {
         expect(sender.replica.orSetValue('or-set'), isEmpty);
         expect(sender.replica.orMapValue('or-map'), isEmpty);
         expect(
-          (await senderStorage.pending(
-            'sender-all',
-          )).expand((entry) => entry.changeIds).toSet(),
+          (await senderStorage.pending('sender-all'))
+              .expand((entry) => entry.changeIds)
+              .toSet(),
           pendingIds,
         );
         final result = await sender.push(force: true);
@@ -671,130 +671,127 @@ void main() {
       );
     });
 
-    test(
-      'offline replicas reconcile durable changes across reconnect and restart',
-      () async {
-        var storageA = _storage('${directory.path}/offline-a.sqlite');
-        var storageB = _storage('${directory.path}/offline-b.sqlite');
-        final transportA = _PeerTransport('offline-b')..unavailable = true;
-        final transportB = _PeerTransport('offline-a')..unavailable = true;
-        var engineA = _engine('offline-a', storageA, transportA);
-        var engineB = _engine('offline-b', storageB, transportB);
-        await Future.wait([engineA.start(), engineB.start()]);
+    test('offline replicas reconcile durable changes across reconnect and restart', () async {
+      var storageA = _storage('${directory.path}/offline-a.sqlite');
+      var storageB = _storage('${directory.path}/offline-b.sqlite');
+      final transportA = _PeerTransport('offline-b')..unavailable = true;
+      final transportB = _PeerTransport('offline-a')..unavailable = true;
+      var engineA = _engine('offline-a', storageA, transportA);
+      var engineB = _engine('offline-b', storageB, transportB);
+      await Future.wait([engineA.start(), engineB.start()]);
 
-        await engineA.setDelta('owner-a', 'a');
-        await engineA.incrementGCounter('total', 2);
-        await engineA.addOrSet('members', 'from-a');
-        await engineA.removeOrSet('members', 'from-a');
-        await engineB.setDelta('owner-b', 'b');
-        await engineB.incrementGCounter('total', 5);
-        await engineB.addOrSet('members', 'from-b');
-        await expectLater(engineA.push(), throwsStateError);
-        await expectLater(engineB.push(), throwsStateError);
+      await engineA.setDelta('owner-a', 'a');
+      await engineA.incrementGCounter('total', 2);
+      await engineA.addOrSet('members', 'from-a');
+      await engineA.removeOrSet('members', 'from-a');
+      await engineB.setDelta('owner-b', 'b');
+      await engineB.incrementGCounter('total', 5);
+      await engineB.addOrSet('members', 'from-b');
+      await expectLater(engineA.push(), throwsStateError);
+      await expectLater(engineB.push(), throwsStateError);
 
-        final pendingA = (await storageA.pending(
-          'offline-a',
-        )).expand((entry) => entry.changeIds).toSet();
-        final pendingB = (await storageB.pending(
-          'offline-b',
-        )).expand((entry) => entry.changeIds).toSet();
-        expect(pendingA, hasLength(4));
-        expect(pendingB, hasLength(3));
-        await _dispose([engineA, engineB], [storageA, storageB], [
-          transportA,
-          transportB,
-        ]);
+      final pendingA = (await storageA.pending('offline-a'))
+          .expand((entry) => entry.changeIds)
+          .toSet();
+      final pendingB = (await storageB.pending('offline-b'))
+          .expand((entry) => entry.changeIds)
+          .toSet();
+      expect(pendingA, hasLength(4));
+      expect(pendingB, hasLength(3));
+      await _dispose([engineA, engineB], [storageA, storageB], [
+        transportA,
+        transportB,
+      ]);
 
-        // A different configured peer must not consume the durable outbox for B.
-        storageA = _storage('${directory.path}/offline-a.sqlite');
-        final otherPeer = _PeerTransport('offline-c');
-        engineA = _engine('offline-a', storageA, otherPeer);
-        await engineA.start();
-        expect((await engineA.push(force: true)).sent.isEmpty, isTrue);
-        expect(
-          (await storageA.pending(
-            'offline-a',
-          )).expand((entry) => entry.changeIds).toSet(),
-          pendingA,
-        );
-        await engineA.dispose();
-        await storageA.close();
-        await otherPeer.close();
+      // A different configured peer must not consume the durable outbox for B.
+      storageA = _storage('${directory.path}/offline-a.sqlite');
+      final otherPeer = _PeerTransport('offline-c');
+      engineA = _engine('offline-a', storageA, otherPeer);
+      await engineA.start();
+      expect((await engineA.push(force: true)).sent.isEmpty, isTrue);
+      expect(
+        (await storageA.pending('offline-a'))
+            .expand((entry) => entry.changeIds)
+            .toSet(),
+        pendingA,
+      );
+      await engineA.dispose();
+      await storageA.close();
+      await otherPeer.close();
 
-        storageA = _storage('${directory.path}/offline-a.sqlite');
-        storageB = _storage('${directory.path}/offline-b.sqlite');
-        final reopenedTransportA = _PeerTransport('offline-b')
-          ..reverseNextBatch = true
-          ..failAfterDeliveryOnce = true;
-        final reopenedTransportB = _PeerTransport('offline-a');
-        engineA = _engine('offline-a', storageA, reopenedTransportA);
-        engineB = _engine('offline-b', storageB, reopenedTransportB);
-        reopenedTransportA.receiver = engineB;
-        reopenedTransportB.receiver = engineA;
-        await Future.wait([engineA.start(), engineB.start()]);
+      storageA = _storage('${directory.path}/offline-a.sqlite');
+      storageB = _storage('${directory.path}/offline-b.sqlite');
+      final reopenedTransportA = _PeerTransport('offline-b')
+        ..reverseNextBatch = true
+        ..failAfterDeliveryOnce = true;
+      final reopenedTransportB = _PeerTransport('offline-a');
+      engineA = _engine('offline-a', storageA, reopenedTransportA);
+      engineB = _engine('offline-b', storageB, reopenedTransportB);
+      reopenedTransportA.receiver = engineB;
+      reopenedTransportB.receiver = engineA;
+      await Future.wait([engineA.start(), engineB.start()]);
 
-        // Remote commit succeeds but ACK is lost; close and reopen both engines.
-        await expectLater(engineA.push(force: true), throwsStateError);
-        expect(engineB.replica.state.values, {'owner-a': 'a', 'owner-b': 'b'});
-        expect(engineB.replica.gCounterValue('total'), 7);
-        expect(engineB.replica.orSetValue('members'), {'from-b'});
-        await _dispose([engineA, engineB], [storageA, storageB], [
-          reopenedTransportA,
-          reopenedTransportB,
-        ]);
+      // Remote commit succeeds but ACK is lost; close and reopen both engines.
+      await expectLater(engineA.push(force: true), throwsStateError);
+      expect(engineB.replica.state.values, {'owner-a': 'a', 'owner-b': 'b'});
+      expect(engineB.replica.gCounterValue('total'), 7);
+      expect(engineB.replica.orSetValue('members'), {'from-b'});
+      await _dispose([engineA, engineB], [storageA, storageB], [
+        reopenedTransportA,
+        reopenedTransportB,
+      ]);
 
-        storageA = _storage('${directory.path}/offline-a.sqlite');
-        storageB = _storage('${directory.path}/offline-b.sqlite');
-        final finalTransportA = _PeerTransport('offline-b');
-        final finalTransportB = _PeerTransport('offline-a');
-        engineA = _engine('offline-a', storageA, finalTransportA);
-        engineB = _engine('offline-b', storageB, finalTransportB);
-        finalTransportA.receiver = engineB;
-        finalTransportB.receiver = engineA;
-        final ackGate = Completer<void>();
-        finalTransportA.acknowledgementGate = ackGate;
-        await Future.wait([engineA.start(), engineB.start()]);
+      storageA = _storage('${directory.path}/offline-a.sqlite');
+      storageB = _storage('${directory.path}/offline-b.sqlite');
+      final finalTransportA = _PeerTransport('offline-b');
+      final finalTransportB = _PeerTransport('offline-a');
+      engineA = _engine('offline-a', storageA, finalTransportA);
+      engineB = _engine('offline-b', storageB, finalTransportB);
+      finalTransportA.receiver = engineB;
+      finalTransportB.receiver = engineA;
+      final ackGate = Completer<void>();
+      finalTransportA.acknowledgementGate = ackGate;
+      await Future.wait([engineA.start(), engineB.start()]);
 
-        expect(engineB.replica.state.values, {'owner-a': 'a', 'owner-b': 'b'});
-        expect(engineB.replica.gCounterValue('total'), 7);
-        expect(engineB.replica.orSetValue('members'), {'from-b'});
-        expect(
-          (await storageA.pending(
-            'offline-a',
-          )).expand((entry) => entry.changeIds).toSet(),
-          pendingA,
-        );
+      expect(engineB.replica.state.values, {'owner-a': 'a', 'owner-b': 'b'});
+      expect(engineB.replica.gCounterValue('total'), 7);
+      expect(engineB.replica.orSetValue('members'), {'from-b'});
+      expect(
+        (await storageA.pending('offline-a'))
+            .expand((entry) => entry.changeIds)
+            .toSet(),
+        pendingA,
+      );
 
-        final retryA = engineA.push(force: true);
-        await finalTransportA.firstDelivery.future;
-        expect(
-          (await storageA.pending(
-            'offline-a',
-          )).expand((entry) => entry.changeIds).toSet(),
-          pendingA,
-        );
-        final duringAck = await engineA.setDelta('during-ack', 'edited');
-        final retryB = engineB.push(force: true);
-        await finalTransportB.firstDelivery.future;
-        ackGate.complete();
-        await Future.wait([retryA, retryB]);
+      final retryA = engineA.push(force: true);
+      await finalTransportA.firstDelivery.future;
+      expect(
+        (await storageA.pending('offline-a'))
+            .expand((entry) => entry.changeIds)
+            .toSet(),
+        pendingA,
+      );
+      final duringAck = await engineA.setDelta('during-ack', 'edited');
+      final retryB = engineB.push(force: true);
+      await finalTransportB.firstDelivery.future;
+      ackGate.complete();
+      await Future.wait([retryA, retryB]);
 
-        expect(
-          (await storageA.pending(
-            'offline-a',
-          )).expand((entry) => entry.changeIds).toSet(),
-          {duringAck.id},
-        );
-        await engineA.push(force: true);
-        _expectOfflineConvergence(engineA, engineB);
-        expect(await storageA.pending('offline-a'), isEmpty);
-        expect(await storageB.pending('offline-b'), isEmpty);
-        await _dispose([engineA, engineB], [storageA, storageB], [
-          finalTransportA,
-          finalTransportB,
-        ]);
-      },
-    );
+      expect(
+        (await storageA.pending('offline-a'))
+            .expand((entry) => entry.changeIds)
+            .toSet(),
+        {duringAck.id},
+      );
+      await engineA.push(force: true);
+      _expectOfflineConvergence(engineA, engineB);
+      expect(await storageA.pending('offline-a'), isEmpty);
+      expect(await storageB.pending('offline-b'), isEmpty);
+      await _dispose([engineA, engineB], [storageA, storageB], [
+        finalTransportA,
+        finalTransportB,
+      ]);
+    });
 
     test(
       'rolls back compact MV context and outbox when SQLite commit fails',
@@ -818,9 +815,8 @@ void main() {
         expect(await storage.pending('sender'), isEmpty);
         final snapshot = await storage.loadReplica('sender');
         expect(
-          Replica.fromSnapshotJson(
-            snapshot!.snapshot!,
-          ).mvRegisterValue('field'),
+          Replica.fromSnapshotJson(snapshot!.snapshot!)
+              .mvRegisterValue('field'),
           isEmpty,
         );
 

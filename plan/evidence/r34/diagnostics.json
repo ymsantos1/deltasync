@@ -1,0 +1,1164 @@
+[
+  {
+    "file": "example/field_query_example.dart",
+    "line": 23,
+    "column": 3,
+    "rule": "avoid_assert_in_production",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/field_query_example.dart",
+    "line": 24,
+    "column": 3,
+    "rule": "avoid_assert_in_production",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/field_query_example.dart",
+    "line": 25,
+    "column": 3,
+    "rule": "avoid_assert_in_production",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 21,
+    "column": 32,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 249,
+    "column": 21,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 250,
+    "column": 20,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 251,
+    "column": 37,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 255,
+    "column": 34,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 258,
+    "column": 20,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 262,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 263,
+    "column": 10,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 268,
+    "column": 20,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 272,
+    "column": 10,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 273,
+    "column": 10,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 278,
+    "column": 16,
+    "rule": "avoid_path_traversal",
+    "severity": "ERROR"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 278,
+    "column": 16,
+    "rule": "require_file_path_sanitization",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 284,
+    "column": 13,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 284,
+    "column": 29,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 385,
+    "column": 28,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 404,
+    "column": 28,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 404,
+    "column": 28,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 412,
+    "column": 27,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 433,
+    "column": 19,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 433,
+    "column": 20,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 695,
+    "column": 9,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 787,
+    "column": 30,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 801,
+    "column": 28,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 811,
+    "column": 31,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/measure_crdt_cost.dart",
+    "line": 814,
+    "column": 31,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/offline_reconciliation.dart",
+    "line": 169,
+    "column": 5,
+    "rule": "avoid_parameter_mutation",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/support/peer_link.dart",
+    "line": 4,
+    "column": 1,
+    "rule": "document_analyzer_ignore_rationale",
+    "severity": "INFO"
+  },
+  {
+    "file": "plan/evidence/r30/api_inventory.dart",
+    "line": 14,
+    "column": 26,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "plan/evidence/r30/api_inventory.dart",
+    "line": 20,
+    "column": 20,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "plan/evidence/r30/api_inventory.dart",
+    "line": 20,
+    "column": 66,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "plan/evidence/r30/api_inventory.dart",
+    "line": 105,
+    "column": 27,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "scripts/api_inventory.dart",
+    "line": 14,
+    "column": 26,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "scripts/api_inventory.dart",
+    "line": 20,
+    "column": 20,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "scripts/api_inventory.dart",
+    "line": 20,
+    "column": 66,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "scripts/api_inventory.dart",
+    "line": 101,
+    "column": 39,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "scripts/api_inventory.dart",
+    "line": 109,
+    "column": 27,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 130,
+    "column": 34,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 204,
+    "column": 9,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 211,
+    "column": 7,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 214,
+    "column": 61,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 225,
+    "column": 39,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 227,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 230,
+    "column": 37,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_counter.dart",
+    "line": 231,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_set.dart",
+    "line": 78,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/g_set.dart",
+    "line": 226,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/json_set_value.dart",
+    "line": 14,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/json_set_value.dart",
+    "line": 53,
+    "column": 7,
+    "rule": "require_catch_logging",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/json_set_value.dart",
+    "line": 62,
+    "column": 7,
+    "rule": "require_catch_logging",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/lww_delta.dart",
+    "line": 73,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/lww_register.dart",
+    "line": 20,
+    "column": 38,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/mv_register.dart",
+    "line": 107,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/mv_register.dart",
+    "line": 278,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/mv_register.dart",
+    "line": 343,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 126,
+    "column": 17,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 127,
+    "column": 22,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 172,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 311,
+    "column": 21,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 316,
+    "column": 30,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 380,
+    "column": 22,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 473,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_map.dart",
+    "line": 513,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_set.dart",
+    "line": 124,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_set.dart",
+    "line": 308,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/or_set.dart",
+    "line": 351,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 217,
+    "column": 7,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 220,
+    "column": 62,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 238,
+    "column": 39,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 243,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 250,
+    "column": 37,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/pn_counter.dart",
+    "line": 251,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica.dart",
+    "line": 354,
+    "column": 45,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/contents.dart",
+    "line": 134,
+    "column": 53,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 42,
+    "column": 11,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 104,
+    "column": 11,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 130,
+    "column": 11,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 157,
+    "column": 9,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 188,
+    "column": 11,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 281,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/replica/delta_validation.dart",
+    "line": 283,
+    "column": 5,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/two_p_set.dart",
+    "line": 103,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_core/lib/src/two_p_set.dart",
+    "line": 264,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync/local_batch.dart",
+    "line": 32,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync/outbound_sync.dart",
+    "line": 41,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync/serial_commit_queue.dart",
+    "line": 13,
+    "column": 9,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 133,
+    "column": 43,
+    "rule": "require_stream_controller_close",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 176,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 447,
+    "column": 7,
+    "rule": "avoid_swallowing_exceptions",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 447,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 447,
+    "column": 7,
+    "rule": "require_catch_logging",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 452,
+    "column": 7,
+    "rule": "avoid_swallowing_exceptions",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 452,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_sync/lib/src/sync_engine.dart",
+    "line": 452,
+    "column": 7,
+    "rule": "require_catch_logging",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/memory_storage.dart",
+    "line": 134,
+    "column": 21,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 72,
+    "column": 9,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 90,
+    "column": 9,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 92,
+    "column": 9,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 169,
+    "column": 34,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 172,
+    "column": 25,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 180,
+    "column": 18,
+    "rule": "prefer_utc_for_storage",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 181,
+    "column": 35,
+    "rule": "prefer_utc_for_storage",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 225,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 227,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage/lib/src/replica_storage_contract.dart",
+    "line": 233,
+    "column": 12,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 265,
+    "column": 1,
+    "rule": "document_analyzer_ignore_rationale",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 229,
+    "column": 38,
+    "rule": "avoid_dynamic_sql",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 229,
+    "column": 38,
+    "rule": "require_sqflite_whereargs",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 293,
+    "column": 28,
+    "rule": "avoid_dynamic_sql",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 299,
+    "column": 28,
+    "rule": "avoid_dynamic_sql",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 309,
+    "column": 28,
+    "rule": "avoid_dynamic_sql",
+    "severity": "ERROR"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 326,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_sqflite/lib/src/sqflite_replica_storage.dart",
+    "line": 335,
+    "column": 19,
+    "rule": "prefer_utc_for_storage",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 78,
+    "column": 1,
+    "rule": "document_analyzer_ignore_rationale",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 103,
+    "column": 14,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 132,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 136,
+    "column": 11,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 159,
+    "column": 22,
+    "rule": "avoid_unsafe_where_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 193,
+    "column": 22,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 198,
+    "column": 22,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 200,
+    "column": 15,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 206,
+    "column": 9,
+    "rule": "avoid_swallowing_exceptions",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 206,
+    "column": 9,
+    "rule": "require_catch_logging",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 211,
+    "column": 11,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 213,
+    "column": 29,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 216,
+    "column": 14,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 219,
+    "column": 9,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 223,
+    "column": 10,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 256,
+    "column": 14,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 279,
+    "column": 22,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 298,
+    "column": 16,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 319,
+    "column": 29,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 320,
+    "column": 26,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 343,
+    "column": 16,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 346,
+    "column": 16,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 355,
+    "column": 32,
+    "rule": "avoid_unsafe_collection_methods",
+    "severity": "WARNING"
+  },
+  {
+    "file": "packages/deltasync_storage_testing/lib/src/replica_storage_contract.dart",
+    "line": 377,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "packages/deltasync_transport/lib/src/delta_envelope.dart",
+    "line": 69,
+    "column": 7,
+    "rule": "avoid_losing_stack_trace",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 72,
+    "column": 7,
+    "rule": "require_mounted_check_after_await",
+    "severity": "ERROR"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 72,
+    "column": 7,
+    "rule": "require_mounted_check",
+    "severity": "ERROR"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 79,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 83,
+    "column": 11,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 108,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 163,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 299,
+    "column": 25,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_page.dart",
+    "line": 301,
+    "column": 23,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 87,
+    "column": 25,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 97,
+    "column": 20,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 98,
+    "column": 22,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 105,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 108,
+    "column": 9,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 118,
+    "column": 7,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 119,
+    "column": 27,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 127,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 133,
+    "column": 11,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 142,
+    "column": 30,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 149,
+    "column": 9,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/demo_session.dart",
+    "line": 159,
+    "column": 22,
+    "rule": "avoid_null_assertion",
+    "severity": "INFO"
+  },
+  {
+    "file": "example/flutter_mobile/lib/main_eight.dart",
+    "line": 41,
+    "column": 49,
+    "rule": "require_error_handling_graceful",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/main_eight.dart",
+    "line": 35,
+    "column": 5,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/main_eight.dart",
+    "line": 82,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/main_eight.dart",
+    "line": 99,
+    "column": 7,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  },
+  {
+    "file": "example/flutter_mobile/lib/support/http_peer_link.dart",
+    "line": 61,
+    "column": 9,
+    "rule": "avoid_catch_all",
+    "severity": "WARNING"
+  }
+]

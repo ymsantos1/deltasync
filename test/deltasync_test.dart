@@ -2,6 +2,120 @@ import 'package:deltasync/deltasync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'facade selects commits by processed address without replay or sync',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-selective'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      final received = engine.commitsFor('field').first;
+      await engine.setDelta('other', true);
+      await engine.batch((batch) {
+        batch.setDelta('field', null);
+        batch.incrementGCounter('counter');
+      });
+      final event = await received;
+      expect(event.addresses, {'field', 'counter'});
+      expect((engine.query('field') as PresentField).value, isNull);
+      expect((await engine.pendingSummary()).totalCount, 3);
+      expect(() => event.addresses.add('forged'), throwsUnsupportedError);
+    },
+  );
+  test(
+    'facade exposes typed decoder while preserving presence branches',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-decoder'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.start();
+      String read(String address) => switch (engine.query(address)) {
+        AbsentField() => 'absent',
+        DeletedField() => 'deleted',
+        PresentField field => field.decode<String>((value) {
+          if (value == null) return 'present null';
+          if (value is! Map || value['name'] is! String) {
+            throw FormatException('Invalid name');
+          }
+          return value['name'] as String;
+        }),
+      };
+      expect(read('field'), 'absent');
+      await engine.setDelta('field', null);
+      expect(read('field'), 'present null');
+      await engine.setDelta('field', {'name': 'Ada'});
+      expect(read('field'), 'Ada');
+      await engine.setDelta('field', {'name': 42});
+      expect(() => read('field'), throwsFormatException);
+      await engine.removeDelta('field');
+      expect(read('field'), 'deleted');
+    },
+  );
+  test(
+    'facade exports exhaustive field query through engine and batch',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-fields'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.start();
+      String describe(FieldQuery result) => switch (result) {
+        AbsentField() => 'absent',
+        DeletedField() => 'deleted',
+        PresentField(:final kind, :final value) => '$kind:$value',
+      };
+      expect(describe(engine.query('field')), 'absent');
+      await engine.batch((batch) {
+        batch.setDelta('field', null);
+        expect(describe(batch.query('field')), '${CrdtKind.lww}:null');
+      });
+      expect(describe(engine.query('field')), '${CrdtKind.lww}:null');
+      await engine.removeDelta('field');
+      expect(describe(engine.query('field')), 'deleted');
+      expect(engine.valueAt('field'), isNull);
+    },
+  );
+  test('facade exposes scoped batch with a single local commit', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('facade-batch'),
+      storage: MemoryStorage(),
+      transport: _FacadeTransport(),
+    );
+    addTearDown(engine.dispose);
+    final delta = await engine.batch((LocalBatch batch) {
+      batch.setDelta('name', 'Ada');
+      batch.incrementGCounter('revisions');
+    });
+    expect(delta.changes, hasLength(2));
+    expect(engine.valueAt('name'), 'Ada');
+    expect((await engine.pendingSummary()).totalCount, 2);
+  });
+  test(
+    'facade exposes summary counts without constructing a pending batch',
+    () async {
+      final engine = SyncEngine.withStorage(
+        replica: Replica('facade-summary'),
+        storage: MemoryStorage(),
+        transport: _FacadeTransport(),
+      );
+      addTearDown(engine.dispose);
+      await engine.setDelta('field', true);
+      final OutboxSummary summary = await engine.pendingSummary(
+        recipientPeerId: engine.transport.peerReplicaId,
+      );
+      expect(
+        [summary.pendingCount, summary.sentCount, summary.totalCount],
+        [1, 0, 1],
+      );
+    },
+  );
   test('facade exposes restoration observation without implying ACK', () async {
     final engine = SyncEngine.withStorage(
       replica: Replica('facade-observer'),
@@ -23,9 +137,8 @@ void main() {
         transport: _FacadeTransport(),
       );
       addTearDown(engine.dispose);
-      final change = Replica(
-        engine.transport.peerReplicaId,
-      ).setDelta('remote', 'value');
+      final change = Replica(engine.transport.peerReplicaId)
+          .setDelta('remote', 'value');
       final ack = await engine.receiveEnvelope(
         DeltaEnvelope(
           senderReplicaId: engine.transport.peerReplicaId,

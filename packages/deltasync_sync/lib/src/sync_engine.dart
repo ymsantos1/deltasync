@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 
 import 'package:deltasync_core/deltasync_core.dart';
@@ -13,18 +11,16 @@ import 'sync/serial_commit_queue.dart';
 
 export 'sync_types.dart';
 
+part 'sync/local_batch.dart';
+
 /// Coordinates local CRDT changes, pending persistence, and remote deltas.
 class SyncEngine {
   SyncEngine({
     required Replica replica,
-    @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.') this.store,
-    this.storage,
+    required this.storage,
     required this.transport,
     this.retryPolicy = const SyncRetryPolicy(),
   }) : _replica = replica.fork() {
-    if ((store != null) == (storage != null)) {
-      throw ArgumentError('Provide exactly one of storage or store');
-    }
     if (transport.peerReplicaId.isEmpty ||
         transport.peerReplicaId.trim() != transport.peerReplicaId) {
       throw ArgumentError.value(transport.peerReplicaId, 'peerReplicaId');
@@ -62,10 +58,23 @@ class SyncEngine {
   /// Result types and null semantics follow [Replica.valueAt]. Collections are
   /// detached and read-only. This read does not imply remote acknowledgement.
   Object? valueAt(String address) {
+    _ensureQueryable();
+    return _replica.valueAt(address);
+  }
+
+  /// Reads a typed field result after [start], from the last adopted commit.
+  /// During storage/network waits, sees committed state without waiting for I/O.
+  /// Missing, null and LWW deletion semantics follow [Replica.query]. A present
+  /// value does not imply remote ACK. Rejects reads before start/after dispose.
+  FieldQuery query(String address) {
+    _ensureQueryable();
+    return _replica.query(address);
+  }
+
+  void _ensureQueryable() {
     if (_lifecycle != SyncEngineLifecycle.started) {
       throw StateError('SyncEngine query requires a started engine');
     }
-    return _replica.valueAt(address);
   }
 
   /// Current initialization, running or terminal lifecycle state.
@@ -73,12 +82,24 @@ class SyncEngine {
 
   /// Failures from transport stream callbacks; awaited methods throw to callers.
   /// This stream does not report successful commits or push progress.
-  Stream<SyncFailure> get errors => _errors.stream;
+  Stream<SyncFailure> get errors => _observations.stream
+      .where((event) => event is SyncFailure)
+      .cast<SyncFailure>();
 
   /// Non-replaying notifications after a local or remote commit is adopted.
   /// Read [replica] for the latest state; this event does not imply remote ACK.
   /// The stream closes when [dispose] completes.
-  Stream<SyncCommitEvent> get commits => _commits.stream;
+  Stream<SyncCommitEvent> get commits => _observations.stream
+      .where((event) => event is SyncCommitEvent)
+      .cast<SyncCommitEvent>();
+
+  /// Non-replaying commits whose processed input includes [address].
+  /// A filter over [commits], with no reads, polling, cache or automatic sync.
+  /// Read query/valueAt for current state; a delayed event is not a value snapshot.
+  /// Matches the exact CRDT address, not a prefix or a nested OR-Map key.
+  /// Cancel or resume paused subscriptions before awaiting [dispose].
+  Stream<SyncCommitEvent> commitsFor(String address) =>
+      commits.where((event) => event.addresses.contains(address));
 
   /// Non-replaying session events: restored, committed, push result/failure and
   /// incoming failure. Existing commits/errors streams retain their contracts.
@@ -89,9 +110,7 @@ class SyncEngine {
   /// before dispose if paused; the stream closes after accepted work drains.
   Stream<SyncObservation> get observations => _observations.stream;
 
-  @Deprecated('Use SyncEngine.withStorage and ReplicaStorage.')
-  final PendingDeltaStore? store;
-  final ReplicaStorage? storage;
+  final ReplicaStorage storage;
   final DeltaTransport transport;
   StreamSubscription<DeltaEnvelope>? _subscription;
   SyncEngineLifecycle _lifecycle = SyncEngineLifecycle.created;
@@ -99,9 +118,9 @@ class SyncEngine {
   Future<void>? _disposeFuture;
   Future<SyncPushResult>? _pushFuture;
   final SerialCommitQueue _queue = SerialCommitQueue();
+  static final Object _batchZoneKey = Object();
   late final ReplicaPersistence _persistence = ReplicaPersistence(
     storage: storage,
-    store: store,
   );
   late final OutboundSync _outbound = OutboundSync(
     replicaId: _replica.id,
@@ -111,10 +130,6 @@ class SyncEngine {
   );
   int _activeRequests = 0;
   Completer<void>? _activeRequestsDrained;
-  final StreamController<SyncFailure> _errors =
-      StreamController<SyncFailure>.broadcast();
-  final StreamController<SyncCommitEvent> _commits =
-      StreamController<SyncCommitEvent>.broadcast(sync: false);
   final StreamController<SyncObservation> _observations =
       StreamController<SyncObservation>.broadcast(sync: false);
   final SyncRetryPolicy retryPolicy;
@@ -122,6 +137,7 @@ class SyncEngine {
   /// Restores state and subscribes to remote changes. Repeated calls after
   /// success are harmless; failed starts can be retried.
   Future<void> start() {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }
@@ -156,7 +172,7 @@ class SyncEngine {
         _receiveRemote,
         onError: _receiveStreamError,
       );
-      _observations.add(const SyncRestoredEvent());
+      _emit(const SyncRestoredEvent());
     } catch (_) {
       if (_lifecycle != SyncEngineLifecycle.disposed) {
         _lifecycle = SyncEngineLifecycle.created;
@@ -164,10 +180,6 @@ class SyncEngine {
       rethrow;
     }
   }
-
-  @Deprecated('Use setDelta; returns native LwwDelta.')
-  Future<LwwDelta<Object?>> set(String key, Object? value) =>
-      setDelta(key, value);
 
   /// Applies remote changes after a serialized snapshot commit succeeds.
   Future<void> applyRemote(Delta delta) =>
@@ -202,8 +214,10 @@ class SyncEngine {
         return ack;
       });
 
-  Future<void> _applyRemoteReady(Delta delta) =>
-      _commitRemote((candidate) => candidate.apply(delta));
+  Future<void> _applyRemoteReady(Delta delta) => _commitRemote((candidate) {
+    candidate.apply(delta);
+    return delta.changes.map((change) => change.crdtId);
+  });
 
   /// Merges a peer's materialized snapshot for bootstrap or recovery.
   Future<void> applyRemoteSnapshot(Map<String, Object?> snapshot) =>
@@ -212,23 +226,66 @@ class SyncEngine {
             _commitRemote((candidate) => candidate.mergeSnapshotJson(snapshot)),
       );
 
-  Future<void> _commitRemote(void Function(Replica) mutate) =>
+  Future<void> _commitRemote(Iterable<String> Function(Replica) mutate) =>
       _queue.run(() async {
         final candidate = _replica.fork();
-        mutate(candidate);
+        final event = SyncCommitEvent(
+          origin: SyncCommitOrigin.remote,
+          addresses: mutate(candidate),
+        );
         await _persistence.commitRemote(candidate);
         _replica.adopt(candidate);
-        _notifyCommit(SyncCommitOrigin.remote);
+        _emit(event);
       });
-
-  @Deprecated('Use removeDelta; returns native LwwDelta.')
-  Future<LwwDelta<Object?>> remove(String key) => removeDelta(key);
 
   Future<LwwDelta<Object?>> setDelta(String key, Object? value) =>
       _commitLocal((candidate) => candidate.setDelta(key, value));
 
   Future<LwwDelta<Object?>> removeDelta(String key) =>
       _commitLocal((candidate) => candidate.removeDelta(key));
+
+  /// Commits related edits with one candidate and one snapshot/outbox commit.
+  ///
+  /// [mutate] must finish synchronously without I/O or other engine calls. Use
+  /// only the supplied [LocalBatch]; it expires as soon as the callback returns.
+  /// A returned Future, an empty batch, any failed edit (even if caught), or a
+  /// thrown callback aborts the batch. Storage failure leaves committed state,
+  /// pending entries and local IDs unchanged. Callback side effects outside this
+  /// API cannot be rolled back; prepare external data before calling batch.
+  ///
+  /// Returns all emitted changes after local commit/adoption, with one entry per
+  /// change for the configured peer. Sends/ACKs remain per change: this is not a
+  /// distributed transaction. Concurrent edits serialize through the same queue.
+  Future<Delta> batch(FutureOr<void> Function(LocalBatch batch) mutate) =>
+      _commitLocalResult((candidate) {
+        final editing = LocalBatch._(candidate);
+        try {
+          final result = runZoned(
+            () => mutate(editing),
+            zoneValues: {_batchZoneKey: editing},
+          );
+          if (result is Future) {
+            // An invalid async callback may resume later. The editor is closed
+            // below; observe its rejected continuation without an orphan error.
+            unawaited(
+              result.then<void>((_) {}, onError: (Object _, StackTrace _) {}),
+            );
+            throw ArgumentError('Batch callback must be synchronous');
+          }
+          return editing._finish();
+        } finally {
+          editing._close();
+        }
+      }, (delta) => delta.changes);
+
+  void _checkOutsideBatch() {
+    // The scope follows async continuations too, including rejected callbacks.
+    final editing = Zone.current[_batchZoneKey];
+    if (editing is LocalBatch) {
+      editing._failed = true;
+      throw StateError('Use LocalBatch methods inside the batch callback');
+    }
+  }
 
   /// Increments G-Counter at stable application-defined [crdtId].
   Future<GCounterDelta> incrementGCounter(String crdtId, [int amount = 1]) =>
@@ -307,6 +364,7 @@ class SyncEngine {
   /// those filters.
   /// Result lists IDs durably acknowledged by an acknowledging transport.
   Future<SyncPushResult> push({bool force = false}) {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }
@@ -316,13 +374,11 @@ class SyncEngine {
     pushing = start()
         .then((_) => _pushReady(force: force))
         .then((result) {
-          _observations.add(result);
+          _emit(result);
           return result;
         })
         .catchError((Object error, StackTrace stackTrace) {
-          _observations.add(
-            SyncPushFailure(error: error, stackTrace: stackTrace),
-          );
+          _emit(SyncPushFailure(error: error, stackTrace: stackTrace));
           Error.throwWithStackTrace(error, stackTrace);
         })
         .whenComplete(() {
@@ -336,7 +392,7 @@ class SyncEngine {
     final batch = await _queue.run(() => _outbound.prepare(force: force));
     if (batch.delta.isEmpty) return SyncPushResult.empty;
     final result = await _outbound.send(batch);
-    if (storage != null && result.acknowledgedIds.isNotEmpty) {
+    if (result.acknowledgedIds.isNotEmpty) {
       await _queue.run(
         () => _persistence.acknowledge(
           _replica.id,
@@ -348,13 +404,31 @@ class SyncEngine {
     return result;
   }
 
-  /// Locally retained changes, including sent but unacknowledged changes. The
-  /// deprecated store cannot remove entries even after a remote ACK.
+  /// Locally retained changes, including sent but unacknowledged changes.
   Future<Delta> pendingDelta() => _withStarted(
     () => _queue.run(() => _persistence.pendingDelta(_replica.id)),
   );
 
+  /// Counts retained pending/sent entries, without constructing a delta batch.
+  ///
+  /// Null [recipientPeerId] includes all peers, like [pendingDelta]. Pass
+  /// transport.peerReplicaId to query only this engine's configured peer.
+  /// Initialization and the commit queue serialize this read with local writes
+  /// and ACK persistence. Storage errors propagate; an error does not undo an
+  /// earlier successful local commit. Network waits do not hold this queue.
+  /// Counts can change after this Future completes. Disposal rejects new reads.
+  Future<OutboxSummary> pendingSummary({String? recipientPeerId}) =>
+      _withStarted(
+        () => _queue.run(
+          () => storage.pendingSummary(
+            _replica.id,
+            recipientPeerId: recipientPeerId,
+          ),
+        ),
+      );
+
   Future<void> dispose() {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return _disposeFuture ?? Future.value();
     }
@@ -383,8 +457,6 @@ class SyncEngine {
       await drained.future;
     }
     await _queue.drained;
-    await _errors.close();
-    await _commits.close();
     await _observations.close();
   }
 
@@ -404,31 +476,32 @@ class SyncEngine {
       final result = mutate(candidate);
       final changes = changesOf(result).toList();
       if (changes.isEmpty) throw StateError('Local change batch is empty');
+      final event = SyncCommitEvent(
+        origin: SyncCommitOrigin.local,
+        addresses: changes.map((change) => change.crdtId),
+      );
       await _persistence.commitLocal(
         candidate,
         changes,
         transport.peerReplicaId,
       );
       _replica.adopt(candidate);
-      _notifyCommit(SyncCommitOrigin.local);
+      _emit(event);
       return result;
     }),
   );
 
   void _receiveRemote(DeltaEnvelope envelope) {
     unawaited(
-      receiveEnvelope(envelope).then<void>((_) {}).catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
-      }),
+      receiveEnvelope(envelope)
+          .then<void>((_) {})
+          .catchError((Object error, StackTrace stackTrace) {
+            _reportFailure(SyncFailureSource.incomingDelta, error, stackTrace);
+          }),
     );
   }
 
-  void _notifyCommit(SyncCommitOrigin origin) {
-    final event = SyncCommitEvent(origin: origin);
-    if (!_commits.isClosed) _commits.add(event);
+  void _emit(SyncObservation event) {
     if (!_observations.isClosed) _observations.add(event);
   }
 
@@ -446,11 +519,11 @@ class SyncEngine {
       error: error,
       stackTrace: stackTrace,
     );
-    if (!_errors.isClosed) _errors.add(failure);
-    if (!_observations.isClosed) _observations.add(failure);
+    _emit(failure);
   }
 
   Future<T> _withStarted<T>(Future<T> Function() action) {
+    _checkOutsideBatch();
     if (_lifecycle == SyncEngineLifecycle.disposed) {
       return Future.error(StateError('SyncEngine already disposed'));
     }

@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "task": "R-34",
+  "beforeRevision": "2a42a0b9f2143fc36e2b793d4e86867d5217623a",
+  "capturedUtc": "2026-10-25T03:08:45.817153+00:00",
+  "environment": {
+    "platform": "Linux",
+    "architecture": "x86_64",
+    "dart": "3.13.5",
+    "flutter": "3.47.7",
+    "repeats": 2,
+    "preResolved": true,
+    "coldCompilationExcluded": true,
+    "concurrentNativeProbe": true,
+    "memoryMethod": "Linux os.wait4 ru_maxrss in KiB; not summed live tree/system RAM"
+  },
+  "saropa": {
+    "version": "16.7.0",
+    "sdk": ">=3.9.0 <4.0.0",
+    "published": "2026-10-06T18:37:40.861302Z",
+    "archiveUrl": "https://pub.dev/api/archives/saropa_lints-16.7.0.tar.gz",
+    "archiveSha256": "22f997a97a06528394ecaa68a71c75ca3ee50e4243643bb3c1e8eb6f85bdd3fa",
+    "cachedSha256": "22f997a97a06528394ecaa68a71c75ca3ee50e4243643bb3c1e8eb6f85bdd3fa",
+    "runtimeEssentialRules": 334,
+    "nativeTierYamlEnabledRules": 42,
+    "nativeInitEnabledRules": 254,
+    "cliIssueCap": 500,
+    "maximumDiagnosticsPerTarget": 46
+  },
+  "totalDiagnostics": 166,
+  "secondPassIdentical": true,
+  "countsByRule": {
+    "avoid_assert_in_production": 3,
+    "avoid_catch_all": 16,
+    "avoid_dynamic_sql": 4,
+    "avoid_losing_stack_trace": 28,
+    "avoid_null_assertion": 67,
+    "avoid_parameter_mutation": 1,
+    "avoid_path_traversal": 1,
+    "avoid_swallowing_exceptions": 3,
+    "avoid_unsafe_collection_methods": 25,
+    "avoid_unsafe_where_methods": 1,
+    "document_analyzer_ignore_rationale": 3,
+    "prefer_utc_for_storage": 3,
+    "require_catch_logging": 5,
+    "require_error_handling_graceful": 1,
+    "require_file_path_sanitization": 1,
+    "require_mounted_check": 1,
+    "require_mounted_check_after_await": 1,
+    "require_sqflite_whereargs": 1,
+    "require_stream_controller_close": 1
+  },
+  "probes": {
+    "nativeDefault": [
+      {
+        "cwd": "{native}",
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 0
+      },
+      {
+        "cwd": "{native}/example/flutter_mobile",
+        "command": [
+          "flutter",
+          "pub",
+          "get",
+          "--enforce-lockfile"
+        ],
+        "exitCode": 0
+      },
+      {
+        "cwd": "{native}/packages/deltasync_storage",
+        "command": [
+          "dart",
+          "analyze"
+        ],
+        "exitCode": 0
+      },
+      {
+        "cwd": "{native}/example/flutter_mobile",
+        "command": [
+          "flutter",
+          "analyze",
+          "--no-pub"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "nativeFull": [
+      {
+        "cwd": "{native}/packages/deltasync_storage",
+        "command": [
+          "dart",
+          "analyze"
+        ],
+        "exitCode": 2,
+        "elapsedSeconds": 6.883
+      },
+      {
+        "cwd": "{native}/example/flutter_mobile",
+        "command": [
+          "flutter",
+          "analyze",
+          "--no-pub"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 3.578
+      }
+    ],
+    "nativeGenerated": [
+      {
+        "cwd": "{native}",
+        "command": [
+          "dart",
+          "analyze"
+        ],
+        "exitCode": 3,
+        "elapsedSeconds": 7.798
+      },
+      {
+        "cwd": "{native}/example/flutter_mobile",
+        "command": [
+          "flutter",
+          "analyze",
+          "--no-pub"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 3.027
+      }
+    ],
+    "nativeInit": [
+      {
+        "command": [
+          "dart",
+          "run",
+          "saropa_lints:init",
+          "--tier",
+          "essential",
+          "--reset",
+          "--target",
+          "{native}"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": [
+          "dart",
+          "run",
+          "saropa_lints:init",
+          "--tier",
+          "essential",
+          "--reset",
+          "--target",
+          "{native}/example/flutter_mobile"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "fixture": {
+      "baselineExitCode": 2,
+      "saropaExitCode": 1,
+      "diagnostics": [
+        {
+          "line": 13,
+          "rule": "avoid_losing_stack_trace",
+          "severity": "WARNING"
+        },
+        {
+          "line": 13,
+          "rule": "avoid_catch_all",
+          "severity": "WARNING"
+        },
+        {
+          "line": 21,
+          "rule": "avoid_swallowing_exceptions",
+          "severity": "WARNING"
+        },
+        {
+          "line": 21,
+          "rule": "avoid_catch_all",
+          "severity": "WARNING"
+        },
+        {
+          "line": 21,
+          "rule": "require_catch_logging",
+          "severity": "WARNING"
+        },
+        {
+          "line": 24,
+          "rule": "avoid_duplicate_map_keys",
+          "severity": "WARNING"
+        }
+      ],
+      "baselineRules": [
+        "equal_keys_in_map",
+        "use_rethrow_when_possible"
+      ],
+      "notDetected": "leakedController: no controller close"
+    },
+    "exactDependencies": {
+      "test": "1.33.0",
+      "saropa": "16.7.0",
+      "exitCode": 1
+    },
+    "flexibleDependencies": {
+      "test": "1.31.1",
+      "analyzer": "12.1.0",
+      "saropa": "16.7.0",
+      "exitCode": 0
+    },
+    "nativeFlutterWithoutParentExclude": {
+      "command": [
+        "flutter",
+        "analyze",
+        "--no-pub"
+      ],
+      "exitCode": 0,
+      "diagnostics": 0,
+      "conclusion": "Removing parent exclusion did not explain missing native diagnostics; cause unconfirmed"
+    }
+  },
+  "nativeFinalConfig": {
+    "root": {
+      "sha256": "54f60baaf34fb509af81a35f03c890e94d751e5e52908bf9d673c68d342fbb0f",
+      "lines": 343,
+      "includes": [
+        "package:lints/recommended.yaml"
+      ],
+      "version": [
+        "\"16.7.0\""
+      ],
+      "enabledRules": 254
+    },
+    "flutter": {
+      "sha256": "8d426b9151d2a93b8c6c9f6e564b5b3c3a2b824b274ee138dc20382385dabd07",
+      "lines": 342,
+      "includes": [
+        "package:flutter_lints/flutter.yaml"
+      ],
+      "version": [
+        "\"16.7.0\""
+      ],
+      "enabledRules": 254
+    }
+  },
+  "rawLogSha256": {
+    "root-baseline-1.stdout": "1dcc3a81c155cbd08efc48581927ba1702954fbc4532b41c293ffd73fc2e344d",
+    "root-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "root-baseline-2.stdout": "1dcc3a81c155cbd08efc48581927ba1702954fbc4532b41c293ffd73fc2e344d",
+    "root-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "root-saropa-1.stdout": "55649c8d34bc973ede2612d58822e8e657f128026bd75bac22a683b52477052a",
+    "root-saropa-1.stderr": "28ad71bfbff1d6f47ceeef685bfd69e11f08d8b93d5bf50cbe84df37b0fa3f15",
+    "root-saropa-2.stdout": "55649c8d34bc973ede2612d58822e8e657f128026bd75bac22a683b52477052a",
+    "root-saropa-2.stderr": "92c2f9dc15cbef9a119108b722e7a4e6ce42d06de72b4f6230a5cb27a837d0b6",
+    "packages_deltasync_core-baseline-1.stdout": "b42bc3a38bb5cb0fd17b7539bf335ef9933b69b87c8822f817893c694104107f",
+    "packages_deltasync_core-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_core-baseline-2.stdout": "b42bc3a38bb5cb0fd17b7539bf335ef9933b69b87c8822f817893c694104107f",
+    "packages_deltasync_core-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_core-saropa-1.stdout": "c3e5e7444c179963f7b797f4dbd39e030832eb2b731f64cc2fcf9f1742c43388",
+    "packages_deltasync_core-saropa-1.stderr": "e863b7f752133e9d14e5862c2f7cb38f6e76f3955b71ba52bc7393face9cf66b",
+    "packages_deltasync_core-saropa-2.stdout": "c3e5e7444c179963f7b797f4dbd39e030832eb2b731f64cc2fcf9f1742c43388",
+    "packages_deltasync_core-saropa-2.stderr": "abc455257800606394d4109ca7667975ff5cb58c0bbed090f7eae833e33c8707",
+    "packages_deltasync_sync-baseline-1.stdout": "2f2dbc1615a0113fbd17b218e8ecfa47e7ef22c5a872a201a5236d99b9fe7bf1",
+    "packages_deltasync_sync-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_sync-baseline-2.stdout": "2f2dbc1615a0113fbd17b218e8ecfa47e7ef22c5a872a201a5236d99b9fe7bf1",
+    "packages_deltasync_sync-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_sync-saropa-1.stdout": "7fc94d63331757973f83c38109d8c4f58a87232b4567774e0e5111b40f75f02c",
+    "packages_deltasync_sync-saropa-1.stderr": "2874fe8083af98bad8ed99e5c0cbf8a48602660035eb7d4b36bb1c0fe4acf3ea",
+    "packages_deltasync_sync-saropa-2.stdout": "7fc94d63331757973f83c38109d8c4f58a87232b4567774e0e5111b40f75f02c",
+    "packages_deltasync_sync-saropa-2.stderr": "716e655c1082fb074e7f931e1f5637c9439a2f31c2eb2259425e6dc227332bb1",
+    "packages_deltasync_storage-baseline-1.stdout": "11604f785141317dcfdbb9d190f857d8c38ac7baf07cce84defd5d05ee95e4fc",
+    "packages_deltasync_storage-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage-baseline-2.stdout": "11604f785141317dcfdbb9d190f857d8c38ac7baf07cce84defd5d05ee95e4fc",
+    "packages_deltasync_storage-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage-saropa-1.stdout": "00ccdf98d543732e65d9d2206cc0abd53f177dfb54e666f1ac0b3a3f822974ff",
+    "packages_deltasync_storage-saropa-1.stderr": "09575aeba575e7e83f6ab81496220ccf9c9b401b94cb841cabcc96e16f7efeeb",
+    "packages_deltasync_storage-saropa-2.stdout": "00ccdf98d543732e65d9d2206cc0abd53f177dfb54e666f1ac0b3a3f822974ff",
+    "packages_deltasync_storage-saropa-2.stderr": "09575aeba575e7e83f6ab81496220ccf9c9b401b94cb841cabcc96e16f7efeeb",
+    "packages_deltasync_storage_sqflite-baseline-1.stdout": "d05e88c1882ab1abf464cb684abab84b9c6d35bef069c9b4ae51a3269fa5f042",
+    "packages_deltasync_storage_sqflite-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage_sqflite-baseline-2.stdout": "d05e88c1882ab1abf464cb684abab84b9c6d35bef069c9b4ae51a3269fa5f042",
+    "packages_deltasync_storage_sqflite-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage_sqflite-saropa-1.stdout": "442ecf32a5fadd57daba4ddcd0dac1c3e2e5858edf5233792bd6228b911efece",
+    "packages_deltasync_storage_sqflite-saropa-1.stderr": "3294225fe31764aa4fecc34aa137efc386f3f418da536069363d555420f6ea3c",
+    "packages_deltasync_storage_sqflite-saropa-2.stdout": "442ecf32a5fadd57daba4ddcd0dac1c3e2e5858edf5233792bd6228b911efece",
+    "packages_deltasync_storage_sqflite-saropa-2.stderr": "3294225fe31764aa4fecc34aa137efc386f3f418da536069363d555420f6ea3c",
+    "packages_deltasync_storage_testing-baseline-1.stdout": "6bf838f5cbf32e7c330eb975af17577743c5976fef33d74b4914e734b7bd1cf9",
+    "packages_deltasync_storage_testing-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage_testing-baseline-2.stdout": "6bf838f5cbf32e7c330eb975af17577743c5976fef33d74b4914e734b7bd1cf9",
+    "packages_deltasync_storage_testing-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_storage_testing-saropa-1.stdout": "0cc597e54d1023cc7db1e8c890851ea75fede53d87cd60bcf5b2585a264be114",
+    "packages_deltasync_storage_testing-saropa-1.stderr": "c6b876f443fba2ce3cf981c6277f3e9ec24769ea6797c95d81f887832754e0bb",
+    "packages_deltasync_storage_testing-saropa-2.stdout": "0cc597e54d1023cc7db1e8c890851ea75fede53d87cd60bcf5b2585a264be114",
+    "packages_deltasync_storage_testing-saropa-2.stderr": "c6b876f443fba2ce3cf981c6277f3e9ec24769ea6797c95d81f887832754e0bb",
+    "packages_deltasync_transport-baseline-1.stdout": "ff094ff9fa680200dc2646f037e4652ca8f5d64c570434e33b259eaa0fffc8b9",
+    "packages_deltasync_transport-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_transport-baseline-2.stdout": "ff094ff9fa680200dc2646f037e4652ca8f5d64c570434e33b259eaa0fffc8b9",
+    "packages_deltasync_transport-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packages_deltasync_transport-saropa-1.stdout": "67b94156d1ba04dd1846e0ce1ee5adc5a273ef4e15ae7ebddeecd35562fc4c21",
+    "packages_deltasync_transport-saropa-1.stderr": "73042668f8a23668e7cc487846cb8fca081e579243df5c0d11350bda9fdf1536",
+    "packages_deltasync_transport-saropa-2.stdout": "67b94156d1ba04dd1846e0ce1ee5adc5a273ef4e15ae7ebddeecd35562fc4c21",
+    "packages_deltasync_transport-saropa-2.stderr": "73042668f8a23668e7cc487846cb8fca081e579243df5c0d11350bda9fdf1536",
+    "example_flutter_mobile-baseline-1.stdout": "0f175a77ef3398c3967c2357368e8e0c2edf6a49e8aea3f29e0c5861ed80f049",
+    "example_flutter_mobile-baseline-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "example_flutter_mobile-baseline-2.stdout": "f671295eda647f8bf912e5e484dc72864934942444884a3f8e64a05592d7848f",
+    "example_flutter_mobile-baseline-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "example_flutter_mobile-saropa-1.stdout": "9ffa8cfec7fe099032ba0dc0f59af44846c4608e98fdc6353b2a3e9f325d7671",
+    "example_flutter_mobile-saropa-1.stderr": "f591b0b907b6fefd30058ad2b290779e50e53a6230d52fbe4d397bc196591d82",
+    "example_flutter_mobile-saropa-2.stdout": "9ffa8cfec7fe099032ba0dc0f59af44846c4608e98fdc6353b2a3e9f325d7671",
+    "example_flutter_mobile-saropa-2.stderr": "f4a5d5d6c45268bd488702ec9ea69c9d6402c45d3dde6ae09f18166b86e40592",
+    "deltasync-r34-exact.log": "6d88929e1104add71090eda138aa40d177a0eaa23b984d5ae46b4eea6262953f",
+    "deltasync-r34-flexible.log": "0e2f8d64b3a72e317379a49962f712a1a8454dae1dfff5a1749c2292d77ddc31",
+    "deltasync-r34-fixture-commands.log": "2eabf165d0606f4b4299312363e9e5ee5ff6f4905ad1c2053d8a75a15c3cbf17",
+    "deltasync-r34-fixture-baseline.stdout": "c58e99d55cb6b5c0f56da3f38e6f105e5568c295548f57cdf7fd61186c21a791",
+    "deltasync-r34-native-init.log": "b99aedde68e7470143ca9b8f37a1a83f375fbb67c0a6bbd885c651e5a6de1c59",
+    "deltasync-r34-deps.log": "61c1bdb80ee7b30d51c110831bf5b6c4bae6d6fc944e564f453039502af341dc",
+    "deltasync-r34-native.log": "8d145b326d8b4049083914885584b552b035126be884991bb23fabb03e2f6f78",
+    "deltasync-r34-native-full.log": "e2679d5acdd8c6a74f0a117688cf86fae2bf4bdac3e74e2daf9b5fb469bec42d",
+    "deltasync-r34-native-generated.log": "b7e891743b8654644457474d3c5ebf45a0d13fdf38199e4b0528189eb93b18df",
+    "deltasync-r34-native-flutter-no-parent-exclude.log": "8605fc67a8872c5a6bd4d27017b7693c4f003333b77ec98c7370c048e8738691",
+    "native-plugin.log": "2689f91e4cdfdf75c72e01cc84d99d7975174d637a852dd9ba90c5466bd989bb"
+  }
+}

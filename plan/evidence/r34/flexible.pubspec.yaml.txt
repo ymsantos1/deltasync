@@ -1,0 +1,7 @@
+name: deltasync_saropa_flexible_probe
+publish_to: none
+environment:
+  sdk: ^3.13.0
+dev_dependencies:
+  saropa_lints: 16.7.0
+  test: ^1.25.6

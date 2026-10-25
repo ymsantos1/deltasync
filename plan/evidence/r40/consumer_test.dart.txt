@@ -1,0 +1,74 @@
+import 'package:deltasync/deltasync.dart';
+import 'package:test/test.dart';
+
+// The consuming app owns this schema, including its explicit null policy.
+class Profile {
+  Profile(this.name);
+  final String name;
+  static Profile? fromValue(Object? value) {
+    if (value == null) return null;
+    if (value is! Map || value['name'] is! String) {
+      throw FormatException('Invalid profile');
+    }
+    return Profile(value['name'] as String);
+  }
+}
+
+String render(FieldQuery field) {
+  try {
+    return switch (field) {
+      AbsentField() => 'absent',
+      DeletedField() => 'deleted',
+      PresentField present => present.decode(Profile.fromValue)?.name ?? 'present null',
+    };
+  } on FormatException {
+    return 'invalid model';
+  }
+}
+
+void main() {
+  test('external model conversion handles absence, null, deletion and failure', () async {
+    final engine = SyncEngine.withStorage(
+      replica: Replica('consumer'), storage: MemoryStorage(), transport: Offline(),
+    );
+    addTearDown(engine.dispose);
+    await engine.start();
+    expect(render(engine.query('profile')), 'absent');
+    await engine.setDelta('profile', null);
+    expect(render(engine.query('profile')), 'present null');
+    await engine.batch((batch) {
+      batch.setDelta('profile', {'name': 'Ada'});
+      final Profile model = (batch.query('profile') as PresentField).decode((value) => Profile.fromValue(value)!);
+      expect(model.name, 'Ada');
+    });
+    expect(render(engine.query('profile')), 'Ada');
+    await engine.setDelta('profile', {'name': 42});
+    expect(render(engine.query('profile')), 'invalid model');
+    expect(engine.valueAt('profile'), {'name': 42});
+    expect((await engine.pendingSummary()).totalCount, 3);
+    await engine.removeDelta('profile');
+    expect(render(engine.query('profile')), 'deleted');
+  });
+
+  test('decoder cannot mutate input or hide exception as a successful read', () {
+    final replica = Replica('consumer')..setDelta('nested', {'items': [1]});
+    final before = replica.toSnapshotJson();
+    final present = replica.query('nested') as PresentField;
+    expect(() => present.decode((value) => ((value as Map)['items'] as List).clear()), throwsUnsupportedError);
+    final failure = StateError('decoder failed');
+    expect(() => present.decode<Profile>((value) => throw failure), throwsA(same(failure)));
+    expect(replica.toSnapshotJson(), before);
+    final List<int> model = present.decode((value) => List<int>.from((value as Map)['items'] as List));
+    model.add(2);
+    expect(present.value, {'items': [1]});
+  });
+}
+
+class Offline implements DeltaTransport {
+  @override
+  String get peerReplicaId => 'peer';
+  @override
+  Stream<DeltaEnvelope> get incoming => const Stream.empty();
+  @override
+  Future<void> send(DeltaEnvelope envelope) async => throw StateError('offline');
+}

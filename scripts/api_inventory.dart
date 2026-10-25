@@ -1,0 +1,144 @@
+// Maintenance instrument only. analyzer is already selected by the workspace
+// test dependency graph; its exact version is recorded in the executing task evidence.
+// ignore_for_file: depend_on_referenced_packages
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
+
+/// Captures declared public signatures reachable through each package export.
+/// Inherited members are represented by the recorded extends/implements header.
+void main(List<String> arguments) {
+  final root = Directory(arguments.single).absolute.uri;
+  final libraries = <String, Map<String, Object?>>{};
+
+  Uri resolve(Uri from, String target) {
+    if (!target.startsWith('package:')) return from.resolve(target);
+    final parts = target.substring(8).split('/');
+    final prefix = parts.first == 'deltasync' ? '' : 'packages/${parts.first}/';
+    return root.resolve('${prefix}lib/${parts.skip(1).join('/')}');
+  }
+
+  Map<String, Object?> read(Uri uri) {
+    final path = uri.toFilePath();
+    final existing = libraries[path];
+    if (existing != null) return existing;
+    final source = File.fromUri(uri).readAsStringSync();
+    final parsed = parseString(content: source, path: path);
+    if (parsed.errors.isNotEmpty) throw StateError('$path: ${parsed.errors}');
+    final symbols = <String, Object?>{};
+    libraries[path] = symbols;
+    String header(AstNode node, int end) => source
+        .substring(node.offset, end)
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    List<String> members(AstNode body) {
+      final result = <String>[];
+      for (final member in body.childEntities.whereType<AstNode>()) {
+        switch (member) {
+          case ConstructorDeclaration():
+            if (!(member.name?.lexeme.startsWith('_') ?? false)) {
+              result.add(header(member, member.parameters.end));
+            }
+          case MethodDeclaration():
+            if (!member.name.lexeme.startsWith('_')) {
+              result.add(header(member, member.body.offset));
+            }
+          case FieldDeclaration():
+            if (member.fields.variables.any(
+              (variable) => !variable.name.lexeme.startsWith('_'),
+            )) {
+              result.add(member.toSource());
+            }
+          case EnumConstantDeclaration():
+            result.add(member.toSource());
+        }
+      }
+      return result;
+    }
+
+    void add(String name, String declaration, [List<String>? entries]) {
+      if (name.startsWith('_')) return;
+      symbols[name] = {
+        'source': root.relativize(uri),
+        'declaration': declaration,
+        'members': ?entries,
+      };
+    }
+
+    for (final node in parsed.unit.declarations) {
+      switch (node) {
+        case ClassDeclaration():
+          add(
+            node.namePart.typeName.lexeme,
+            header(node, node.body.offset),
+            members(node.body),
+          );
+        case EnumDeclaration():
+          add(
+            node.namePart.typeName.lexeme,
+            header(node, node.body.offset),
+            members(node.body),
+          );
+        case FunctionDeclaration():
+          add(
+            node.name.lexeme,
+            header(node, node.functionExpression.body.offset),
+          );
+        case TopLevelVariableDeclaration():
+          for (final variable in node.variables.variables) {
+            add(variable.name.lexeme, node.toSource());
+          }
+        default:
+          throw StateError('Uninventoried declaration: ${node.runtimeType}');
+      }
+    }
+    // Parts share the parent library's public scope, including scoped editors.
+    for (final directive in parsed.unit.directives.whereType<PartDirective>()) {
+      symbols.addAll(read(uri.resolve(directive.uri.stringValue!)));
+    }
+    for (final directive
+        in parsed.unit.directives.whereType<ExportDirective>()) {
+      if (directive.configurations.isNotEmpty) {
+        throw StateError('Conditional export needs explicit inventory');
+      }
+      final exported = Map<String, Object?>.of(
+        read(resolve(uri, directive.uri.stringValue!)),
+      );
+      for (final combinator in directive.combinators) {
+        if (combinator is ShowCombinator) {
+          final names = combinator.shownNames.map((name) => name.name).toSet();
+          exported.removeWhere((name, _) => !names.contains(name));
+        } else if (combinator is HideCombinator) {
+          final names = combinator.hiddenNames.map((name) => name.name).toSet();
+          exported.removeWhere((name, _) => names.contains(name));
+        }
+      }
+      symbols.addAll(exported);
+    }
+    return symbols;
+  }
+
+  final packages = <String, Object?>{};
+  for (final name in [
+    'deltasync',
+    'deltasync_core',
+    'deltasync_storage',
+    'deltasync_transport',
+    'deltasync_sync',
+    'deltasync_storage_sqflite',
+    'deltasync_storage_testing',
+  ]) {
+    final prefix = name == 'deltasync' ? '' : 'packages/$name/';
+    packages[name] = read(root.resolve('${prefix}lib/$name.dart'));
+  }
+  stdout.writeln(const JsonEncoder.withIndent('  ').convert(packages));
+}
+
+extension on Uri {
+  String relativize(Uri child) =>
+      child.toFilePath().substring(toFilePath().length);
+}

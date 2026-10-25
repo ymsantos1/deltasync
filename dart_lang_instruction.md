@@ -6,7 +6,7 @@ da tarefa. Seu objetivo é reduzir complexidade com segurança de tipos e clarez
 Não exige usar todos os recursos nem autoriza refatorar trechos fora da tarefa.
 
 Class modifiers, records e patterns exigem Dart 3.0+; extension types exigem
-Dart 3.3+. DeltaSync declara SDK `^3.12.0`: conferir a versão mínima do pacote
+Dart 3.3+. DeltaSync declara SDK `^3.13.0`: conferir a versão mínima do pacote
 afetado antes de usar outros recursos. Exemplos são ilustrativos; fragmentos
 dependem do contexto indicado, e antipadrões podem conter erros intencionais.
 

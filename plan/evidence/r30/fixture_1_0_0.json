@@ -1,0 +1,3384 @@
+{
+  "revision": "1e969182e8e172a8858a48ecf83a1feb2c21a455",
+  "packageVersion": "1.0.0",
+  "snapshot": {
+    "version": 2,
+    "replicaId": "baseline-a",
+    "snapshot": {
+      "version": 9,
+      "replicaId": "baseline-a",
+      "clock": {
+        "baseline-a": 4
+      },
+      "hlc": {
+        "physicalMilliseconds": 1730000000000,
+        "logical": 3
+      },
+      "deltaSequence": 4,
+      "lww": {
+        "lww": {
+          "winner": {
+            "type": "lww",
+            "key": "lww",
+            "id": "baseline-a:delta:1",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 0
+            },
+            "value": {
+              "items": [
+                1,
+                true,
+                null
+              ]
+            },
+            "deleted": false,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1
+            }
+          }
+        },
+        "deleted": {
+          "winner": {
+            "type": "lww",
+            "key": "deleted",
+            "id": "baseline-a:delta:3",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 2
+            },
+            "value": null,
+            "deleted": true,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 3
+            }
+          }
+        },
+        "null": {
+          "winner": {
+            "type": "lww",
+            "key": "null",
+            "id": "baseline-a:delta:4",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 3
+            },
+            "value": null,
+            "deleted": false,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 4
+            }
+          }
+        }
+      },
+      "gCounters": {
+        "g": {
+          "replicaId": "baseline-a",
+          "crdtId": "g",
+          "components": {
+            "baseline-a": 3
+          },
+          "sequences": {
+            "baseline-a": 1
+          },
+          "sequence": 1
+        }
+      },
+      "pnCounters": {
+        "pn": {
+          "replicaId": "baseline-a",
+          "crdtId": "pn",
+          "positive": {
+            "baseline-a": 4
+          },
+          "negative": {
+            "baseline-a": 1
+          },
+          "sequences": {
+            "baseline-a": 2
+          },
+          "sequence": 2
+        }
+      },
+      "gSets": {
+        "g-set": {
+          "replicaId": "baseline-a",
+          "crdtId": "g-set",
+          "sequence": 1,
+          "changes": [
+            {
+              "type": "g-set",
+              "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "g-set",
+              "elements": [
+                "red",
+                {
+                  "tag": [
+                    1,
+                    true
+                  ]
+                }
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "g-set"
+              }
+            }
+          ]
+        }
+      },
+      "twoPSets": {
+        "2p-set": {
+          "replicaId": "baseline-a",
+          "crdtId": "2p-set",
+          "sequence": 3,
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "2p-set"
+              }
+            },
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "remove",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "2p-set"
+              }
+            },
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "kept"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "mvRegisters": {
+        "mv": {
+          "replicaId": "baseline-a",
+          "crdtId": "mv",
+          "sequence": 1,
+          "context": {
+            "crdtId": "mv",
+            "replicas": {
+              "baseline-a": {
+                "prefix": 1,
+                "sparse": []
+              },
+              "baseline-b": {
+                "prefix": 1,
+                "sparse": []
+              }
+            }
+          },
+          "versions": [
+            {
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "mv"
+              },
+              "value": "local",
+              "context": {
+                "crdtId": "mv",
+                "replicas": {}
+              }
+            },
+            {
+              "dot": {
+                "replicaId": "baseline-b",
+                "counter": 1,
+                "crdtId": "mv"
+              },
+              "value": "concurrent",
+              "context": {
+                "crdtId": "mv",
+                "replicas": {}
+              }
+            }
+          ]
+        },
+        "mv/compact": {
+          "replicaId": "baseline-a",
+          "crdtId": "mv/compact",
+          "sequence": 2,
+          "context": {
+            "crdtId": "mv/compact",
+            "replicas": {
+              "baseline-a": {
+                "prefix": 2,
+                "sparse": []
+              }
+            }
+          },
+          "versions": [
+            {
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "mv/compact"
+              },
+              "value": "after",
+              "context": {
+                "crdtId": "mv/compact",
+                "replicas": {
+                  "baseline-a": {
+                    "prefix": 1,
+                    "sparse": []
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "orSets": {
+        "or-set": {
+          "replicaId": "baseline-a",
+          "crdtId": "or-set",
+          "sequence": 3,
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-set"
+              },
+              "element": "old"
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-set"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-set"
+                }
+              ]
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-set"
+              },
+              "element": "new"
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-b\",1]",
+              "replicaId": "baseline-b",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-b",
+                "counter": 1,
+                "crdtId": "or-set"
+              },
+              "element": "old"
+            }
+          ]
+        },
+        "gap": {
+          "replicaId": "baseline-a",
+          "crdtId": "gap",
+          "sequence": 1,
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"gap\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "gap",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "gap"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-b",
+                  "counter": 3,
+                  "crdtId": "gap"
+                }
+              ]
+            },
+            {
+              "type": "or-set",
+              "id": "or-set:[\"gap\",\"baseline-b\",3]",
+              "replicaId": "baseline-b",
+              "crdtId": "gap",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-b",
+                "counter": 3,
+                "crdtId": "gap"
+              },
+              "element": "seen-3"
+            }
+          ]
+        }
+      },
+      "orMaps": {
+        "or-map": {
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "sequence": 5,
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            },
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+                "elements": [
+                  "reader"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+                }
+              }
+            },
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "remove-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map"
+                }
+              ]
+            },
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            },
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 5,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+                "elements": [
+                  "writer"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "outbox": [
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "lww",
+              "id": "baseline-a:delta:1",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 0
+              },
+              "value": {
+                "items": [
+                  1,
+                  true,
+                  null
+                ]
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.000Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "g-counter",
+              "id": "g-counter:[\"g\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "g",
+              "value": 3,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "g"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.001Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "pn-counter",
+              "id": "pn-counter:[\"pn\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "pn",
+              "positive": 4,
+              "negative": 0,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "pn"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.002Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "pn-counter",
+              "id": "pn-counter:[\"pn\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "pn",
+              "positive": 4,
+              "negative": 1,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "pn"
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.003Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "g-set",
+              "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "g-set",
+              "elements": [
+                "red",
+                {
+                  "tag": [
+                    1,
+                    true
+                  ]
+                }
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "g-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.004Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.005Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "remove",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.006Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "kept"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.007Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "mv"
+              },
+              "value": "local",
+              "context": {
+                "crdtId": "mv",
+                "replicas": {}
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.008Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-set"
+              },
+              "element": "old"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.009Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-set"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-set"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.010Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-set"
+              },
+              "element": "new"
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.011Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.012Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+                "elements": [
+                  "reader"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.013Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "remove-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.014Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.015Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 5,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+                "elements": [
+                  "writer"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.016Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "deleted",
+              "id": "baseline-a:delta:2",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 1
+              },
+              "value": "before",
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.017Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "deleted",
+              "id": "baseline-a:delta:3",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 2
+              },
+              "value": null,
+              "deleted": true,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.018Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "null",
+              "id": "baseline-a:delta:4",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 3
+              },
+              "value": null,
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.019Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv/compact\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv/compact",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "mv/compact"
+              },
+              "value": "before",
+              "context": {
+                "crdtId": "mv/compact",
+                "replicas": {}
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.020Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv/compact\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv/compact",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "mv/compact"
+              },
+              "value": "after",
+              "context": {
+                "crdtId": "mv/compact",
+                "replicas": {
+                  "baseline-a": {
+                    "prefix": 1,
+                    "sparse": []
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.021Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-a",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"gap\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "gap",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "gap"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-b",
+                  "counter": 3,
+                  "crdtId": "gap"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.022Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "lww",
+              "id": "baseline-a:delta:1",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 0
+              },
+              "value": {
+                "items": [
+                  1,
+                  true,
+                  null
+                ]
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.000Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "g-counter",
+              "id": "g-counter:[\"g\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "g",
+              "value": 3,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "g"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.001Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "pn-counter",
+              "id": "pn-counter:[\"pn\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "pn",
+              "positive": 4,
+              "negative": 0,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "pn"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.002Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "pn-counter",
+              "id": "pn-counter:[\"pn\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "pn",
+              "positive": 4,
+              "negative": 1,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "pn"
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.003Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "g-set",
+              "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "g-set",
+              "elements": [
+                "red",
+                {
+                  "tag": [
+                    1,
+                    true
+                  ]
+                }
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "g-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.004Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.005Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "remove",
+              "elements": [
+                "removed"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.006Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "2p-set",
+              "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "2p-set",
+              "action": "add",
+              "elements": [
+                "kept"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "2p-set"
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.007Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "mv"
+              },
+              "value": "local",
+              "context": {
+                "crdtId": "mv",
+                "replicas": {}
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.008Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-set"
+              },
+              "element": "old"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.009Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-set"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-set"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.010Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-set",
+              "action": "add",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-set"
+              },
+              "element": "new"
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.011Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.012Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+                "elements": [
+                  "reader"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.013Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "remove-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "observedDots": [
+                {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.014Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-key",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "key": "roles"
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.015Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-map",
+              "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map",
+              "action": "add-value",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 5,
+                "crdtId": "or-map"
+              },
+              "key": "roles",
+              "keyDot": {
+                "replicaId": "baseline-a",
+                "counter": 4,
+                "crdtId": "or-map"
+              },
+              "valueChange": {
+                "type": "g-set",
+                "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+                "elements": [
+                  "writer"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.016Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "deleted",
+              "id": "baseline-a:delta:2",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 1
+              },
+              "value": "before",
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.017Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "deleted",
+              "id": "baseline-a:delta:3",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 2
+              },
+              "value": null,
+              "deleted": true,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.018Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "lww",
+              "key": "null",
+              "id": "baseline-a:delta:4",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 3
+              },
+              "value": null,
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.019Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv/compact\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv/compact",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "mv/compact"
+              },
+              "value": "before",
+              "context": {
+                "crdtId": "mv/compact",
+                "replicas": {}
+              }
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.020Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "mv-register",
+              "id": "mv-register:[\"mv/compact\",\"baseline-a\",2]",
+              "replicaId": "baseline-a",
+              "crdtId": "mv/compact",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 2,
+                "crdtId": "mv/compact"
+              },
+              "value": "after",
+              "context": {
+                "crdtId": "mv/compact",
+                "replicas": {
+                  "baseline-a": {
+                    "prefix": 1,
+                    "sparse": []
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "status": "sent",
+      "attempts": 2,
+      "createdAt": "2024-10-27T03:33:20.021Z",
+      "sentAt": "2024-10-27T03:33:21.000Z"
+    },
+    {
+      "version": 2,
+      "recipientPeerId": "peer-b",
+      "delta": {
+        "version": 4,
+        "delta": {
+          "changes": [
+            {
+              "type": "or-set",
+              "id": "or-set:[\"gap\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "gap",
+              "action": "remove",
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "gap"
+              },
+              "observedDots": [
+                {
+                  "replicaId": "baseline-b",
+                  "counter": 3,
+                  "crdtId": "gap"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "status": "pending",
+      "attempts": 0,
+      "createdAt": "2024-10-27T03:33:20.022Z"
+    }
+  ],
+  "delta": {
+    "version": 4,
+    "delta": {
+      "changes": [
+        {
+          "type": "lww",
+          "key": "lww",
+          "id": "baseline-a:delta:1",
+          "replicaId": "baseline-a",
+          "timestamp": {
+            "physicalMilliseconds": 1730000000000,
+            "logical": 0
+          },
+          "value": {
+            "items": [
+              1,
+              true,
+              null
+            ]
+          },
+          "deleted": false,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1
+          }
+        },
+        {
+          "type": "g-counter",
+          "id": "g-counter:[\"g\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "g",
+          "value": 3,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "g"
+          }
+        },
+        {
+          "type": "pn-counter",
+          "id": "pn-counter:[\"pn\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "pn",
+          "positive": 4,
+          "negative": 0,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "pn"
+          }
+        },
+        {
+          "type": "pn-counter",
+          "id": "pn-counter:[\"pn\",\"baseline-a\",2]",
+          "replicaId": "baseline-a",
+          "crdtId": "pn",
+          "positive": 4,
+          "negative": 1,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2,
+            "crdtId": "pn"
+          }
+        },
+        {
+          "type": "g-set",
+          "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "g-set",
+          "elements": [
+            "red",
+            {
+              "tag": [
+                1,
+                true
+              ]
+            }
+          ],
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "g-set"
+          }
+        },
+        {
+          "type": "2p-set",
+          "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "2p-set",
+          "action": "add",
+          "elements": [
+            "removed"
+          ],
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "2p-set"
+          }
+        },
+        {
+          "type": "2p-set",
+          "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+          "replicaId": "baseline-a",
+          "crdtId": "2p-set",
+          "action": "remove",
+          "elements": [
+            "removed"
+          ],
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2,
+            "crdtId": "2p-set"
+          }
+        },
+        {
+          "type": "2p-set",
+          "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+          "replicaId": "baseline-a",
+          "crdtId": "2p-set",
+          "action": "add",
+          "elements": [
+            "kept"
+          ],
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 3,
+            "crdtId": "2p-set"
+          }
+        },
+        {
+          "type": "mv-register",
+          "id": "mv-register:[\"mv\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "mv",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "mv"
+          },
+          "value": "local",
+          "context": {
+            "crdtId": "mv",
+            "replicas": {}
+          }
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-set",
+          "action": "add",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "or-set"
+          },
+          "element": "old"
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-set",
+          "action": "remove",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2,
+            "crdtId": "or-set"
+          },
+          "observedDots": [
+            {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-set"
+            }
+          ]
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-set",
+          "action": "add",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 3,
+            "crdtId": "or-set"
+          },
+          "element": "new"
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "action": "add-key",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "or-map"
+          },
+          "key": "roles"
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "action": "add-value",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2,
+            "crdtId": "or-map"
+          },
+          "key": "roles",
+          "keyDot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "or-map"
+          },
+          "valueChange": {
+            "type": "g-set",
+            "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+            "elements": [
+              "reader"
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+            }
+          }
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "action": "remove-key",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 3,
+            "crdtId": "or-map"
+          },
+          "key": "roles",
+          "observedDots": [
+            {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-map"
+            }
+          ]
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "action": "add-key",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 4,
+            "crdtId": "or-map"
+          },
+          "key": "roles"
+        },
+        {
+          "type": "or-map",
+          "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+          "replicaId": "baseline-a",
+          "crdtId": "or-map",
+          "action": "add-value",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 5,
+            "crdtId": "or-map"
+          },
+          "key": "roles",
+          "keyDot": {
+            "replicaId": "baseline-a",
+            "counter": 4,
+            "crdtId": "or-map"
+          },
+          "valueChange": {
+            "type": "g-set",
+            "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+            "elements": [
+              "writer"
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+            }
+          }
+        },
+        {
+          "type": "lww",
+          "key": "deleted",
+          "id": "baseline-a:delta:2",
+          "replicaId": "baseline-a",
+          "timestamp": {
+            "physicalMilliseconds": 1730000000000,
+            "logical": 1
+          },
+          "value": "before",
+          "deleted": false,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2
+          }
+        },
+        {
+          "type": "lww",
+          "key": "deleted",
+          "id": "baseline-a:delta:3",
+          "replicaId": "baseline-a",
+          "timestamp": {
+            "physicalMilliseconds": 1730000000000,
+            "logical": 2
+          },
+          "value": null,
+          "deleted": true,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 3
+          }
+        },
+        {
+          "type": "lww",
+          "key": "null",
+          "id": "baseline-a:delta:4",
+          "replicaId": "baseline-a",
+          "timestamp": {
+            "physicalMilliseconds": 1730000000000,
+            "logical": 3
+          },
+          "value": null,
+          "deleted": false,
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 4
+          }
+        },
+        {
+          "type": "mv-register",
+          "id": "mv-register:[\"mv/compact\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "mv/compact",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "mv/compact"
+          },
+          "value": "before",
+          "context": {
+            "crdtId": "mv/compact",
+            "replicas": {}
+          }
+        },
+        {
+          "type": "mv-register",
+          "id": "mv-register:[\"mv/compact\",\"baseline-a\",2]",
+          "replicaId": "baseline-a",
+          "crdtId": "mv/compact",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 2,
+            "crdtId": "mv/compact"
+          },
+          "value": "after",
+          "context": {
+            "crdtId": "mv/compact",
+            "replicas": {
+              "baseline-a": {
+                "prefix": 1,
+                "sparse": []
+              }
+            }
+          }
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"gap\",\"baseline-a\",1]",
+          "replicaId": "baseline-a",
+          "crdtId": "gap",
+          "action": "remove",
+          "dot": {
+            "replicaId": "baseline-a",
+            "counter": 1,
+            "crdtId": "gap"
+          },
+          "observedDots": [
+            {
+              "replicaId": "baseline-b",
+              "counter": 3,
+              "crdtId": "gap"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "envelope": {
+    "version": 2,
+    "senderReplicaId": "baseline-a",
+    "recipientReplicaId": "peer-a",
+    "delta": {
+      "version": 4,
+      "delta": {
+        "changes": [
+          {
+            "type": "lww",
+            "key": "lww",
+            "id": "baseline-a:delta:1",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 0
+            },
+            "value": {
+              "items": [
+                1,
+                true,
+                null
+              ]
+            },
+            "deleted": false,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1
+            }
+          },
+          {
+            "type": "g-counter",
+            "id": "g-counter:[\"g\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "g",
+            "value": 3,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "g"
+            }
+          },
+          {
+            "type": "pn-counter",
+            "id": "pn-counter:[\"pn\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "pn",
+            "positive": 4,
+            "negative": 0,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "pn"
+            }
+          },
+          {
+            "type": "pn-counter",
+            "id": "pn-counter:[\"pn\",\"baseline-a\",2]",
+            "replicaId": "baseline-a",
+            "crdtId": "pn",
+            "positive": 4,
+            "negative": 1,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2,
+              "crdtId": "pn"
+            }
+          },
+          {
+            "type": "g-set",
+            "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "g-set",
+            "elements": [
+              "red",
+              {
+                "tag": [
+                  1,
+                  true
+                ]
+              }
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "g-set"
+            }
+          },
+          {
+            "type": "2p-set",
+            "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "2p-set",
+            "action": "add",
+            "elements": [
+              "removed"
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "2p-set"
+            }
+          },
+          {
+            "type": "2p-set",
+            "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+            "replicaId": "baseline-a",
+            "crdtId": "2p-set",
+            "action": "remove",
+            "elements": [
+              "removed"
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2,
+              "crdtId": "2p-set"
+            }
+          },
+          {
+            "type": "2p-set",
+            "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+            "replicaId": "baseline-a",
+            "crdtId": "2p-set",
+            "action": "add",
+            "elements": [
+              "kept"
+            ],
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 3,
+              "crdtId": "2p-set"
+            }
+          },
+          {
+            "type": "mv-register",
+            "id": "mv-register:[\"mv\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "mv",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "mv"
+            },
+            "value": "local",
+            "context": {
+              "crdtId": "mv",
+              "replicas": {}
+            }
+          },
+          {
+            "type": "or-set",
+            "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-set",
+            "action": "add",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-set"
+            },
+            "element": "old"
+          },
+          {
+            "type": "or-set",
+            "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-set",
+            "action": "remove",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2,
+              "crdtId": "or-set"
+            },
+            "observedDots": [
+              {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-set"
+              }
+            ]
+          },
+          {
+            "type": "or-set",
+            "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-set",
+            "action": "add",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 3,
+              "crdtId": "or-set"
+            },
+            "element": "new"
+          },
+          {
+            "type": "or-map",
+            "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "action": "add-key",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-map"
+            },
+            "key": "roles"
+          },
+          {
+            "type": "or-map",
+            "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "action": "add-value",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2,
+              "crdtId": "or-map"
+            },
+            "key": "roles",
+            "keyDot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "or-map"
+            },
+            "valueChange": {
+              "type": "g-set",
+              "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+              "elements": [
+                "reader"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+              }
+            }
+          },
+          {
+            "type": "or-map",
+            "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "action": "remove-key",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 3,
+              "crdtId": "or-map"
+            },
+            "key": "roles",
+            "observedDots": [
+              {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map"
+              }
+            ]
+          },
+          {
+            "type": "or-map",
+            "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "action": "add-key",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 4,
+              "crdtId": "or-map"
+            },
+            "key": "roles"
+          },
+          {
+            "type": "or-map",
+            "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "action": "add-value",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 5,
+              "crdtId": "or-map"
+            },
+            "key": "roles",
+            "keyDot": {
+              "replicaId": "baseline-a",
+              "counter": 4,
+              "crdtId": "or-map"
+            },
+            "valueChange": {
+              "type": "g-set",
+              "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+              "replicaId": "baseline-a",
+              "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+              "elements": [
+                "writer"
+              ],
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1,
+                "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+              }
+            }
+          },
+          {
+            "type": "lww",
+            "key": "deleted",
+            "id": "baseline-a:delta:2",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 1
+            },
+            "value": "before",
+            "deleted": false,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2
+            }
+          },
+          {
+            "type": "lww",
+            "key": "deleted",
+            "id": "baseline-a:delta:3",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 2
+            },
+            "value": null,
+            "deleted": true,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 3
+            }
+          },
+          {
+            "type": "lww",
+            "key": "null",
+            "id": "baseline-a:delta:4",
+            "replicaId": "baseline-a",
+            "timestamp": {
+              "physicalMilliseconds": 1730000000000,
+              "logical": 3
+            },
+            "value": null,
+            "deleted": false,
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 4
+            }
+          },
+          {
+            "type": "mv-register",
+            "id": "mv-register:[\"mv/compact\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "mv/compact",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "mv/compact"
+            },
+            "value": "before",
+            "context": {
+              "crdtId": "mv/compact",
+              "replicas": {}
+            }
+          },
+          {
+            "type": "mv-register",
+            "id": "mv-register:[\"mv/compact\",\"baseline-a\",2]",
+            "replicaId": "baseline-a",
+            "crdtId": "mv/compact",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 2,
+              "crdtId": "mv/compact"
+            },
+            "value": "after",
+            "context": {
+              "crdtId": "mv/compact",
+              "replicas": {
+                "baseline-a": {
+                  "prefix": 1,
+                  "sparse": []
+                }
+              }
+            }
+          },
+          {
+            "type": "or-set",
+            "id": "or-set:[\"gap\",\"baseline-a\",1]",
+            "replicaId": "baseline-a",
+            "crdtId": "gap",
+            "action": "remove",
+            "dot": {
+              "replicaId": "baseline-a",
+              "counter": 1,
+              "crdtId": "gap"
+            },
+            "observedDots": [
+              {
+                "replicaId": "baseline-b",
+                "counter": 3,
+                "crdtId": "gap"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "ack": {
+    "peerReplicaId": "peer-a",
+    "stage": "applied-and-persisted",
+    "changeIds": [
+      "baseline-a:delta:1",
+      "g-counter:[\"g\",\"baseline-a\",1]",
+      "pn-counter:[\"pn\",\"baseline-a\",1]",
+      "pn-counter:[\"pn\",\"baseline-a\",2]"
+    ]
+  },
+  "values": {
+    "lww": {
+      "items": [
+        1,
+        true,
+        null
+      ]
+    },
+    "g": 3,
+    "pn": 3,
+    "g-set": [
+      "red",
+      {
+        "tag": [
+          1,
+          true
+        ]
+      }
+    ],
+    "2p-set": [
+      "kept"
+    ],
+    "mv": [
+      "concurrent",
+      "local"
+    ],
+    "or-set": [
+      "new",
+      "old"
+    ],
+    "or-map": {
+      "roles": [
+        "writer"
+      ]
+    },
+    "deleted": null,
+    "null": null,
+    "gap": [],
+    "mv/compact": [
+      "after"
+    ]
+  },
+  "delayed": {
+    "version": 4,
+    "delta": {
+      "changes": [
+        {
+          "type": "or-set",
+          "id": "or-set:[\"gap\",\"baseline-b\",1]",
+          "replicaId": "baseline-b",
+          "crdtId": "gap",
+          "action": "add",
+          "dot": {
+            "replicaId": "baseline-b",
+            "counter": 1,
+            "crdtId": "gap"
+          },
+          "element": "unseen-1"
+        },
+        {
+          "type": "or-set",
+          "id": "or-set:[\"gap\",\"baseline-b\",2]",
+          "replicaId": "baseline-b",
+          "crdtId": "gap",
+          "action": "add",
+          "dot": {
+            "replicaId": "baseline-b",
+            "counter": 2,
+            "crdtId": "gap"
+          },
+          "element": "unseen-2"
+        }
+      ]
+    }
+  },
+  "legacyCodecV2": {
+    "version": 2,
+    "delta": {
+      "operations": [
+        {
+          "id": "legacy-a:1",
+          "replicaId": "legacy-a",
+          "type": "lww.set",
+          "vectorClock": {
+            "legacy-a": 1
+          },
+          "payload": {
+            "key": "legacy-title",
+            "value": "retained"
+          }
+        }
+      ],
+      "crdtChanges": []
+    }
+  },
+  "legacyStorageV1": {
+    "version": 1,
+    "replicaId": "baseline-a",
+    "state": {},
+    "clock": {
+      "baseline-a": 4
+    },
+    "metadata": {
+      "replicaState": {
+        "version": 9,
+        "replicaId": "baseline-a",
+        "clock": {
+          "baseline-a": 4
+        },
+        "hlc": {
+          "physicalMilliseconds": 1730000000000,
+          "logical": 3
+        },
+        "deltaSequence": 4,
+        "lww": {
+          "lww": {
+            "winner": {
+              "type": "lww",
+              "key": "lww",
+              "id": "baseline-a:delta:1",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 0
+              },
+              "value": {
+                "items": [
+                  1,
+                  true,
+                  null
+                ]
+              },
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 1
+              }
+            }
+          },
+          "deleted": {
+            "winner": {
+              "type": "lww",
+              "key": "deleted",
+              "id": "baseline-a:delta:3",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 2
+              },
+              "value": null,
+              "deleted": true,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 3
+              }
+            }
+          },
+          "null": {
+            "winner": {
+              "type": "lww",
+              "key": "null",
+              "id": "baseline-a:delta:4",
+              "replicaId": "baseline-a",
+              "timestamp": {
+                "physicalMilliseconds": 1730000000000,
+                "logical": 3
+              },
+              "value": null,
+              "deleted": false,
+              "dot": {
+                "replicaId": "baseline-a",
+                "counter": 4
+              }
+            }
+          }
+        },
+        "gCounters": {
+          "g": {
+            "replicaId": "baseline-a",
+            "crdtId": "g",
+            "components": {
+              "baseline-a": 3
+            },
+            "sequences": {
+              "baseline-a": 1
+            },
+            "sequence": 1
+          }
+        },
+        "pnCounters": {
+          "pn": {
+            "replicaId": "baseline-a",
+            "crdtId": "pn",
+            "positive": {
+              "baseline-a": 4
+            },
+            "negative": {
+              "baseline-a": 1
+            },
+            "sequences": {
+              "baseline-a": 2
+            },
+            "sequence": 2
+          }
+        },
+        "gSets": {
+          "g-set": {
+            "replicaId": "baseline-a",
+            "crdtId": "g-set",
+            "sequence": 1,
+            "changes": [
+              {
+                "type": "g-set",
+                "id": "g-set:[\"g-set\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "g-set",
+                "elements": [
+                  "red",
+                  {
+                    "tag": [
+                      1,
+                      true
+                    ]
+                  }
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "g-set"
+                }
+              }
+            ]
+          }
+        },
+        "twoPSets": {
+          "2p-set": {
+            "replicaId": "baseline-a",
+            "crdtId": "2p-set",
+            "sequence": 3,
+            "changes": [
+              {
+                "type": "2p-set",
+                "id": "2p-set:[\"2p-set\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "2p-set",
+                "action": "add",
+                "elements": [
+                  "removed"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "2p-set"
+                }
+              },
+              {
+                "type": "2p-set",
+                "id": "2p-set:[\"2p-set\",\"baseline-a\",2]",
+                "replicaId": "baseline-a",
+                "crdtId": "2p-set",
+                "action": "remove",
+                "elements": [
+                  "removed"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 2,
+                  "crdtId": "2p-set"
+                }
+              },
+              {
+                "type": "2p-set",
+                "id": "2p-set:[\"2p-set\",\"baseline-a\",3]",
+                "replicaId": "baseline-a",
+                "crdtId": "2p-set",
+                "action": "add",
+                "elements": [
+                  "kept"
+                ],
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 3,
+                  "crdtId": "2p-set"
+                }
+              }
+            ]
+          }
+        },
+        "mvRegisters": {
+          "mv": {
+            "replicaId": "baseline-a",
+            "crdtId": "mv",
+            "sequence": 1,
+            "context": {
+              "crdtId": "mv",
+              "replicas": {
+                "baseline-a": {
+                  "prefix": 1,
+                  "sparse": []
+                },
+                "baseline-b": {
+                  "prefix": 1,
+                  "sparse": []
+                }
+              }
+            },
+            "versions": [
+              {
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "mv"
+                },
+                "value": "local",
+                "context": {
+                  "crdtId": "mv",
+                  "replicas": {}
+                }
+              },
+              {
+                "dot": {
+                  "replicaId": "baseline-b",
+                  "counter": 1,
+                  "crdtId": "mv"
+                },
+                "value": "concurrent",
+                "context": {
+                  "crdtId": "mv",
+                  "replicas": {}
+                }
+              }
+            ]
+          },
+          "mv/compact": {
+            "replicaId": "baseline-a",
+            "crdtId": "mv/compact",
+            "sequence": 2,
+            "context": {
+              "crdtId": "mv/compact",
+              "replicas": {
+                "baseline-a": {
+                  "prefix": 2,
+                  "sparse": []
+                }
+              }
+            },
+            "versions": [
+              {
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 2,
+                  "crdtId": "mv/compact"
+                },
+                "value": "after",
+                "context": {
+                  "crdtId": "mv/compact",
+                  "replicas": {
+                    "baseline-a": {
+                      "prefix": 1,
+                      "sparse": []
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "orSets": {
+          "or-set": {
+            "replicaId": "baseline-a",
+            "crdtId": "or-set",
+            "sequence": 3,
+            "changes": [
+              {
+                "type": "or-set",
+                "id": "or-set:[\"or-set\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-set",
+                "action": "add",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-set"
+                },
+                "element": "old"
+              },
+              {
+                "type": "or-set",
+                "id": "or-set:[\"or-set\",\"baseline-a\",2]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-set",
+                "action": "remove",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 2,
+                  "crdtId": "or-set"
+                },
+                "observedDots": [
+                  {
+                    "replicaId": "baseline-a",
+                    "counter": 1,
+                    "crdtId": "or-set"
+                  }
+                ]
+              },
+              {
+                "type": "or-set",
+                "id": "or-set:[\"or-set\",\"baseline-a\",3]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-set",
+                "action": "add",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 3,
+                  "crdtId": "or-set"
+                },
+                "element": "new"
+              },
+              {
+                "type": "or-set",
+                "id": "or-set:[\"or-set\",\"baseline-b\",1]",
+                "replicaId": "baseline-b",
+                "crdtId": "or-set",
+                "action": "add",
+                "dot": {
+                  "replicaId": "baseline-b",
+                  "counter": 1,
+                  "crdtId": "or-set"
+                },
+                "element": "old"
+              }
+            ]
+          },
+          "gap": {
+            "replicaId": "baseline-a",
+            "crdtId": "gap",
+            "sequence": 1,
+            "changes": [
+              {
+                "type": "or-set",
+                "id": "or-set:[\"gap\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "gap",
+                "action": "remove",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "gap"
+                },
+                "observedDots": [
+                  {
+                    "replicaId": "baseline-b",
+                    "counter": 3,
+                    "crdtId": "gap"
+                  }
+                ]
+              },
+              {
+                "type": "or-set",
+                "id": "or-set:[\"gap\",\"baseline-b\",3]",
+                "replicaId": "baseline-b",
+                "crdtId": "gap",
+                "action": "add",
+                "dot": {
+                  "replicaId": "baseline-b",
+                  "counter": 3,
+                  "crdtId": "gap"
+                },
+                "element": "seen-3"
+              }
+            ]
+          }
+        },
+        "orMaps": {
+          "or-map": {
+            "replicaId": "baseline-a",
+            "crdtId": "or-map",
+            "sequence": 5,
+            "changes": [
+              {
+                "type": "or-map",
+                "id": "or-map:[\"or-map\",\"baseline-a\",1]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map",
+                "action": "add-key",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map"
+                },
+                "key": "roles"
+              },
+              {
+                "type": "or-map",
+                "id": "or-map:[\"or-map\",\"baseline-a\",2]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map",
+                "action": "add-value",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 2,
+                  "crdtId": "or-map"
+                },
+                "key": "roles",
+                "keyDot": {
+                  "replicaId": "baseline-a",
+                  "counter": 1,
+                  "crdtId": "or-map"
+                },
+                "valueChange": {
+                  "type": "g-set",
+                  "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",1]\",\"baseline-a\",1]",
+                  "replicaId": "baseline-a",
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]",
+                  "elements": [
+                    "reader"
+                  ],
+                  "dot": {
+                    "replicaId": "baseline-a",
+                    "counter": 1,
+                    "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",1]"
+                  }
+                }
+              },
+              {
+                "type": "or-map",
+                "id": "or-map:[\"or-map\",\"baseline-a\",3]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map",
+                "action": "remove-key",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 3,
+                  "crdtId": "or-map"
+                },
+                "key": "roles",
+                "observedDots": [
+                  {
+                    "replicaId": "baseline-a",
+                    "counter": 1,
+                    "crdtId": "or-map"
+                  }
+                ]
+              },
+              {
+                "type": "or-map",
+                "id": "or-map:[\"or-map\",\"baseline-a\",4]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map",
+                "action": "add-key",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 4,
+                  "crdtId": "or-map"
+                },
+                "key": "roles"
+              },
+              {
+                "type": "or-map",
+                "id": "or-map:[\"or-map\",\"baseline-a\",5]",
+                "replicaId": "baseline-a",
+                "crdtId": "or-map",
+                "action": "add-value",
+                "dot": {
+                  "replicaId": "baseline-a",
+                  "counter": 5,
+                  "crdtId": "or-map"
+                },
+                "key": "roles",
+                "keyDot": {
+                  "replicaId": "baseline-a",
+                  "counter": 4,
+                  "crdtId": "or-map"
+                },
+                "valueChange": {
+                  "type": "g-set",
+                  "id": "g-set:[\"or-map-value:[\\\"or-map\\\",\\\"roles\\\",\\\"baseline-a\\\",4]\",\"baseline-a\",1]",
+                  "replicaId": "baseline-a",
+                  "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]",
+                  "elements": [
+                    "writer"
+                  ],
+                  "dot": {
+                    "replicaId": "baseline-a",
+                    "counter": 1,
+                    "crdtId": "or-map-value:[\"or-map\",\"roles\",\"baseline-a\",4]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

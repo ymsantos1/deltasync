@@ -1,0 +1,163 @@
+{
+  "task": "R-37",
+  "beforeRevision": "f2edf0f4da878dd785c1240536b4537aa081e9d4",
+  "sdk": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n",
+  "isolatedDirectory": "/tmp/deltasync-r37-consumer-56koqxe3",
+  "records": [
+    {
+      "command": [
+        "dart",
+        "--version"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"\n"
+    },
+    {
+      "command": [
+        "dart",
+        "pub",
+        "get",
+        "--offline"
+      ],
+      "cwd": "/tmp/deltasync-r37-consumer-56koqxe3",
+      "exitCode": 0,
+      "output": "Resolving dependencies...\nDownloading packages...\n+ _fe_analyzer_shared 109.0.0\n+ analyzer 14.5.0\n+ args 2.7.0\n+ async 2.13.1\n+ boolean_selector 2.1.2\n+ cli_config 0.2.0\n+ cli_util 0.6.0\n+ code_assets 2.1.0\n+ collection 1.19.1\n+ convert 3.1.2\n+ coverage 1.16.0\n+ crypto 3.0.7\n+ deltasync 2.0.0 from path /projetos/tcc/deltasync\n! deltasync_core 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_core (overridden)\n! deltasync_storage 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage (overridden)\n! deltasync_storage_sqflite 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage_sqflite (overridden)\n! deltasync_storage_testing 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_storage_testing (overridden)\n! deltasync_sync 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_sync (overridden)\n! deltasync_transport 2.0.0 from path /projetos/tcc/deltasync/packages/deltasync_transport (overridden)\n+ ffi 2.2.0\n+ file 7.0.1\n+ frontend_server_client 4.1.0\n+ glob 2.2.0\n+ hooks 2.2.0\n+ http_multi_server 3.2.2\n+ http_parser 4.1.2\n+ io 1.1.0\n+ logging 1.3.0\n+ matcher 0.12.20\n+ meta 1.19.0\n+ mime 2.1.0\n+ native_toolchain_c 0.19.5\n+ node_preamble 2.0.2\n+ package_config 3.0.0\n+ path 1.9.1\n+ platform 3.2.0\n+ pool 1.5.3\n+ process 5.0.6\n+ pub_semver 2.2.1\n+ record_use 1.1.1\n+ shelf 1.4.2\n+ shelf_packages_handler 3.0.2\n+ shelf_static 1.1.3\n+ shelf_web_socket 3.0.0\n+ source_map_stack_trace 2.1.2\n+ source_maps 0.10.14\n+ source_span 1.10.2\n+ sqflite_common 2.5.14\n+ sqflite_common_ffi 2.4.4\n+ sqlite3 3.7.1\n+ stack_trace 1.12.2\n+ stream_channel 2.1.4\n+ string_scanner 1.4.1\n+ synchronized 3.5.0\n+ term_glyph 1.2.2\n+ test 1.33.0\n+ test_api 0.7.15\n+ test_core 0.6.21\n+ typed_data 1.4.0\n+ vm_service 15.3.0\n+ watcher 1.2.1\n+ web 1.1.1\n+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 60 dependencies!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "test"
+      ],
+      "cwd": "/tmp/deltasync-r37-consumer-56koqxe3",
+      "exitCode": 0,
+      "output": "Analyzing test...\nNo issues found!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/tmp/deltasync-r37-consumer-56koqxe3",
+      "exitCode": 0,
+      "output": "Running build hooks...Running build hooks...00:00 +0: loading test/consumer_test.dart\n00:00 +0: test/consumer_test.dart: consumer resolves the explicitly expected source tree\n00:00 +1: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +2: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract summary excludes legacy confirmed entries without sending them\n00:00 +3: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +4: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract remote commit replaces snapshot and preserves local outbox\n00:00 +5: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +6: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract returned data cannot mutate stored snapshot or outbox\n00:00 +7: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract concurrent commits retain every outbox change\n00:00 +8: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract equivalent pending IDs retain send metadata in enqueue and commit\n00:00 +9: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract divergent pending IDs reject enqueue and roll back full commit\n00:00 +10: test/consumer_test.dart: R-37 external implementation ReplicaStorage contract failed commit leaves previous snapshot and outbox unchanged\n00:00 +11: test/consumer_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +12: test/consumer_test.dart: frozen wire/outbox payloads preserve IDs, status and legacy readers\n00:00 +13: test/consumer_test.dart: external adapter exposes scoped summary with partial ACK\n00:00 +14: test/consumer_test.dart: migrated public calls commit, retain pending IDs and apply deletes\n00:00 +15: test/consumer_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +16: test/consumer_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +17: test/consumer_test.dart: legacy snapshot wrapper restores through the public engine boundary\n00:00 +18: All tests passed!\n"
+    },
+    {
+      "command": [
+        "dart",
+        "analyze",
+        "/tmp/deltasync-r37-consumer-56koqxe3/old_consumer_test.dart"
+      ],
+      "cwd": "/tmp/deltasync-r37-consumer-56koqxe3",
+      "exitCode": 3,
+      "output": "Analyzing old_consumer_test.dart...\n\n  error - old_consumer_test.dart:17:7 - Missing concrete implementation of 'ReplicaStorage.pendingSummary'. Try implementing the missing method, or make the class abstract. - non_abstract_class_inherits_abstract_member\n\n1 issue found.\n"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/plan/evidence/r30/api_inventory.dart",
+        "/tmp/deltasync-r37-before-ginpjqzu"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Parsed inventory; additions verified in apiDifferences"
+    },
+    {
+      "command": [
+        "dart",
+        "--packages=.dart_tool/package_config.json",
+        "/projetos/tcc/deltasync/plan/evidence/r30/api_inventory.dart",
+        "/projetos/tcc/deltasync"
+      ],
+      "cwd": "/projetos/tcc/deltasync",
+      "exitCode": 0,
+      "output": "Parsed inventory; additions verified in apiDifferences"
+    }
+  ],
+  "apiDifferences": {
+    "deltasync": {
+      "addedSymbols": [
+        "OutboxSummary"
+      ],
+      "addedMembers": {
+        "ReplicaStorage": [
+          "/// Reads one consistent summary from the outbox without changing its entries. /// Null [recipientPeerId] includes all peers; otherwise filter that peer only. /// Prefer backend metadata/aggregation over loading and decoding CRDT payloads. /// This does not validate delta contents or imply remote acknowledgement. /// Query failures must propagate, never masquerade as an empty outbox. Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ],
+        "MemoryStorage": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ],
+        "SyncEngine": [
+          "/// Counts retained pending/sent entries, without constructing a delta batch. /// /// Null [recipientPeerId] includes all peers, like [pendingDelta]. Pass /// transport.peerReplicaId to query only this engine's configured peer. /// Initialization and the commit queue serialize this read with local writes /// and ACK persistence. Storage errors propagate; an error does not undo an /// earlier successful local commit. Network waits do not hold this queue. /// Counts can change after this Future completes. Disposal rejects new reads. Future<OutboxSummary> pendingSummary({String? recipientPeerId})"
+        ]
+      }
+    },
+    "deltasync_core": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_storage": {
+      "addedSymbols": [
+        "OutboxSummary"
+      ],
+      "addedMembers": {
+        "ReplicaStorage": [
+          "/// Reads one consistent summary from the outbox without changing its entries. /// Null [recipientPeerId] includes all peers; otherwise filter that peer only. /// Prefer backend metadata/aggregation over loading and decoding CRDT payloads. /// This does not validate delta contents or imply remote acknowledgement. /// Query failures must propagate, never masquerade as an empty outbox. Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ],
+        "MemoryStorage": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      }
+    },
+    "deltasync_transport": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    },
+    "deltasync_sync": {
+      "addedSymbols": [],
+      "addedMembers": {
+        "SyncEngine": [
+          "/// Counts retained pending/sent entries, without constructing a delta batch. /// /// Null [recipientPeerId] includes all peers, like [pendingDelta]. Pass /// transport.peerReplicaId to query only this engine's configured peer. /// Initialization and the commit queue serialize this read with local writes /// and ACK persistence. Storage errors propagate; an error does not undo an /// earlier successful local commit. Network waits do not hold this queue. /// Counts can change after this Future completes. Disposal rejects new reads. Future<OutboxSummary> pendingSummary({String? recipientPeerId})"
+        ]
+      }
+    },
+    "deltasync_storage_sqflite": {
+      "addedSymbols": [],
+      "addedMembers": {
+        "SqfliteReplicaStorage": [
+          "@override Future<OutboxSummary> pendingSummary( String replicaId, { String? recipientPeerId, })"
+        ]
+      }
+    },
+    "deltasync_storage_testing": {
+      "addedSymbols": [],
+      "addedMembers": {}
+    }
+  },
+  "frozenSha256": {
+    "plan/evidence/r30/api_inventory.dart": "1b72d7e370ce81567b521bf550db7346863e539d63f8ccddccfb6b4929c88150",
+    "plan/evidence/r30/measure_outbox.dart": "090e0271808ec1b9d3724358dfc2b0bab698aecdb0553de000986db2130965c9",
+    "plan/evidence/r30/capture.py": "ffb85927c038925150b5d214ad08c4aca3de0ba24ec2a70e0fd9a8fc873a5481",
+    "plan/evidence/r30/api_1_0_0.json": "7afff3be91574032c2ec57a402672f7bf976be1c7b0dc9e1d9d0fbcfbb6d28fd",
+    "plan/evidence/r30/fixture_1_0_0.json": "088e79d45c05bc2e8f2da0fb99981333f2dcf4fb3a2a036bd58fe6a3ea737325",
+    "plan/evidence/r30/baseline.json": "2b315aa09cdf80a9630a4d9fd2242aba258d31cc0b9e6793de675cd08fc131c2",
+    "plan/evidence/r30/outbox_baseline.json": "9814b23e967c097cf05192844654919f69b5e0f3e8ccecd01a2ee974a5da6864",
+    "plan/evidence/r30/fixture.dart.txt": "a115fa7b00631ba0c878fd9952334a79f7fb9c113dfd64305800189b3af3de6b",
+    "plan/evidence/r30/consumer_test.dart.txt": "4e0e164425ab0b3c13f3f30077717c4361211d0a6ff0e9af71021b7d8cbc3ca7",
+    "plan/evidence/r30/README.md": "526ae1d7ffeeea56ae9a1c561616c3825835d14174b4934d876a6b492d59cf40",
+    "plan/evidence/r30/validation.json": "ec612fe84f04f92aa584e5ed63072161b3896758adb65a1c4506a43f205c21c9",
+    "plan/evidence/r39/consumer_test.dart.txt": "1ec6a43a94b557bc1eab93379b802547d87c91cb7ff40776ca2634033ac8faad",
+    "plan/evidence/r39/rollback.dart.txt": "9370b2253bd5fda007ca0c21414ba1613a5e64ec46fe2c44f8cf314761dd5864",
+    "plan/evidence/r39/validate.py": "0f12ba34131a9d09f64c5003fb460a049655c18bc8dce280661d420685ec1d40",
+    "plan/evidence/r39/validation.json": "2f0147599367025d2663b8afe0480a9522b634c214388830b1869c2f30996bbe",
+    "plan/evidence/r39/workspace.json": "0fecc6feff8ac66a6e82e615aaf2d26be472f24bde3ed1156e206f3436f34cd0"
+  },
+  "sourceSha256": "06311e5f7cd5b69adb1259aedab174b710d1c2808516817863a1255fd0e56585",
+  "limits": [
+    "Independent path resolution, not hosted artifact validation",
+    "Dart 3.13.5 reference; no SDK 3.12.x/Android runtime"
+  ]
+}

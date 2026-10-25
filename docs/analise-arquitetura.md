@@ -24,7 +24,7 @@ tipo ao fluxo completo.
 
 ## Fontes e evidências
 
-- [PDF original](<../referencia/Proposta TCC.pdf>), capítulos 6 e 7.
+- [PDF original](<../referencia/Proposta TCC.pdf>), capítulos 6 e 7 (contexto local para os agentes).
 - [Contexto arquitetural](../proposta.md).
 - Cinco fases, decisões, riscos e evidências em [plan/](../plan/README.md).
 - Código dos quatro subpacotes, facade, exemplo e cinco arquivos de testes.

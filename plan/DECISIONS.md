@@ -295,13 +295,294 @@ dependências primeiro, repete dry-runs no registro público e instala em consum
 novo depois dos envios. Ver [guia](../docs/publicacao.md) e
 [execução R-28](TRACEABILITY.md#execucao-r-28-2026-10-15).
 
+DEC-51 — R-29, 2026-10-15: autor escolheu 1.0.0 para a publicação dos sete pacotes.
+Substituir a numeração 2.0.0 adotada durante o desenvolvimento, inclusive nas
+restrições internas, READMEs e changelogs. DEC-17 mantém suas escolhas técnicas;
+somente a versão pública foi substituída. APIs, versões de JSON/snapshot/outbox,
+schema SQLite e migrações não mudam por essa renumeração. Evidências anteriores
+permanecem com os números realmente verificados. Gerar diretórios de release
+novamente após a troca; os exports antigos continuam com os manifests antigos.
+Publicação e verificação de disponibilidade das versões permanecem com o autor.
+
+DEC-52 — Substituída por DEC-55 após esclarecimento do autor em 2026-10-24.
+Registro da primeira interpretação: o pedido do autor abrange os pontos da
+análise geral, com foco exclusivo na biblioteca. 1.0.1 preserva a API pública
+1.0.0, interfaces implementáveis, variantes fechadas, aliases já depreciados,
+SDK e formatos persistidos. Correções internas, medições, CI e documentação
+cabem no patch. Consulta leve de pendências é funcionalidade pública para 1.1.0;
+outras ampliações exigem caso/compatibilidade comprovados. Remoções de
+PendingDeltaStore, aliases e export público de Operation ficam para 2.0.0.
+Novos membros obrigatórios em interfaces ou variantes que quebram switches
+externos também exigem major. Depreciações novas exigem minor. Referências:
+[SemVer](https://semver.org/) e [versionamento Dart](https://dart.dev/tools/pub/versioning).
+O plano futuro não autoriza implementar/publicar essas releases antecipadamente.
+
+DEC-53 — Substituída por DEC-56 após ampliação expressa em 2026-10-24.
+Registro do primeiro gate de manutenção: a [fase 6](06_PHASE6_MANUTENCAO_1_0_1.md)
+integra o plano canônico, sem reabrir artificialmente as conclusões acadêmicas
+das fases 1–5. Seus SHOULD são relativos à entrega do TCC; R-30 a R-36 e VAL-17
+compõem a release planejada e devem ser concluídos antes de prepará-la como
+validada. VAL-05 não substitui VAL-17. R-30 começa pela baseline 1.0.0;
+R-36 só renumera após o trabalho de produto; VAL-17 verifica SDK, API, dados,
+adaptadores externos e consumidor isolado. Publicação continua manual com o autor.
+
+DEC-54 — Ferramentas e limites de consumo, 2026-10-24: medir e corrigir outbox
+sem eliminar IDs ou contexto causal. Cópias/snapshots mantêm garantias até haver
+evidência que justifique outra tarefa. CI deve distinguir testes, advisories,
+lint e runtime; aviso de advisory não equivale a falha automática do pub get.
+R-34 executa piloto Saropa essential isolado e pode concluir por adiamento
+fundamentado. Não tornar a ferramenta dependência runtime, requisito acadêmico
+ou atestado de segurança. Modelo, identidade, UI, autenticação/TLS e agendamento
+pertencem ao consumidor. R-35 demonstra tratamento de falha de status após commit
+sem alterar Compass nem introduzir schema de domínio ou framework genérico.
+
+DEC-55 — Escopo integral na versão 1.0.1, 2026-10-24: autor esclareceu que deseja
+todos os pontos da análise nesta versão, inclusive mudanças que deveriam ser
+minor/major. Essa direção substitui DEC-52 e o adiamento de R-37/R-38/R-39.
+Manter número 1.0.1, com novas APIs e remoção de legado, documentando expressamente
+a incompatibilidade de fonte com 1.0.0 e a exceção à convenção SemVer. Não exigir
+outra aprovação apenas pela quebra já incluída no escopo. O pedido autoriza
+planejar toda a entrega; implementação continua dependendo de pedido de execução.
+Preservar dados, readers e formatos existentes; mudanças de API não autorizam
+descarte, GC, retirada de leitores ou renumeração automática de JSON/schema.
+
+DEC-56 — Gate integral 1.0.1, 2026-10-24: substitui DEC-53 quanto ao alcance.
+R-30 a R-42 e VAL-17 compõem a mesma entrega. R-38 entrega lote público;
+R-40 decoder opcional; R-41 eventos seletivos e consolidação de emissão;
+R-42 consulta explícita de ausente/null/tombstone. R-37 entrega consulta leve e
+R-39 retira a superfície legada preservando conversão de dados interna. Esses
+itens não podem ser concluídos apenas por avaliação ou adiamento por SemVer.
+R-35 documenta o resultado e upgrade; R-36 prepara a numeração depois do produto;
+VAL-17 valida consumidores migrados, dados anteriores e artefatos finais.
+SHOULD continua prioridade relativa ao TCC; todos os itens são obrigatórios
+para esta release. VAL-05 histórico e decisão fundamentada do piloto R-34
+permanecem; não incluir ORM, codegen, app externo ou publicação automática.
+
+DEC-57 — Recuperação do stash em 2026-10-24: conflitos em README, DECISIONS e
+TRACEABILITY ocorreram ao recuperar o planejamento sobre a branch 6b7016a, que
+mantém versões 2.0.0 e não contém a alteração histórica R-29 para 1.0.0.
+Preservar decisões/evidências R-29 e todo o escopo R-30 a R-42/VAL-17, mantendo
+intactos manifests e alterações da branch atual. R-29 permanece conclusão
+histórica vinculada à revisão original, não comprovação das versões desta branch.
+R-30 deve inventariar a divergência; o alvo 1.0.1 de DEC-55/56 não muda.
+
+DEC-58 — Baseline R-30, 2026-10-24: fontes de lib e superfícies públicas de
+400161283e741d62dddf01cfc314629968a93828 coincidem com a revisão histórica
+1e969182e8e172a8858a48ecf83a1feb2c21a455: 47 arquivos, hashes em
+[baseline.json](evidence/r30/baseline.json). Manifests atuais 2.0.0 e históricos
+1.0.0 divergem; nenhum foi alterado nesta tarefa. A comparação é de fonte/API,
+não prova publicação ou resolução hosted. Alvo 1.0.1 de DEC-55 permanece.
+Fixados inventário de exports/assinaturas e dados dos oito tipos com writer
+histórico, independente do futuro writer 1.0.1. Guardar consumidor e gerador
+como fontes de fixture `.dart.txt`, com @dart=3.12 e materialização explícita;
+assim remoções futuras não tornam código antigo parte da análise recursiva.
+Dados e inventário não podem ser sobrescritos pelo argumento de relatório.
+R-31 usa a carga fixada; R-39 conserva referência antiga e acrescenta consumidor
+migrado, sem regenerar expectativas. O SDK 3.12.x teve execução definida em
+R-30, sem alegação de execução; R-33 e VAL-17 devem efetivamente realizá-la.
+
+DEC-59 — Consolidação da outbox R-31, 2026-10-24: coletar mudanças uma vez no
+helper interno de sync e usar uma única Delta.merge para checar IDs. Manter
+validação profunda do core, posição do primeiro ID, payload da última duplicata
+equivalente e todos os IDs de componentes cumulativos; não compactar por campo,
+dot máximo ou dominância. Seleção por peer e metadata/ACK continuam em seus donos.
+Nenhuma classe/API/formato de produção foi adicionada ou alterada. Medidor R-30
+foi reutilizado sem modificar sua baseline. A regressão mede crescimento de
+leituras de ID, sem limiar temporal; resultado do host não garante latência em
+outras plataformas. Dados, exports e consumidores antigos seguem validados em
+[R-31](TRACEABILITY.md#execucao-r-31-2026-10-24).
+
+DEC-60 — Remoção de legado R-39, 2026-10-24: SyncEngine exige ReplicaStorage
+não nullable nos dois construtores e mantém withStorage. Removidos contrato e
+implementação PendingDeltaStore, seus ramos, aliases de mutação/lote e
+OutboxEntry.operationId. Operation e migrateLegacyOperation deixam os exports;
+o mesmo DTO/parser em src/operation.dart continua atendendo readers de delta e
+snapshot, sem outra implementação ou protocolo. ReplicaSnapshot.legacy e
+OutboxStatus.confirmed permanecem para dados/adaptadores históricos. Nenhum join,
+formato, schema, SDK ou manifesto foi alterado. Inventário dos sete entry points
+confere somente remoções/assinaturas previstas e mudanças documentais explícitas.
+Consumidor isolado usa contratos por composição; exemplo de importação pertence
+ao app e exige checkpoint completo, peer explícito e commit atômico. Rollback foi
+executado para a revisão 1.0.0 fixada sobre o mesmo SQLite, incluindo escritas
+novas e ACK parcial; não garante downgrade a readers anteriores ou migração
+automática de um app de volta ao pending store. Ver
+[R-39](TRACEABILITY.md#execucao-r-39-2026-10-24) e
+[guia](../docs/migracao-1.0.1.md).
+
+DEC-61 — Medição de custos R-32, 2026-10-24: estender o medidor existente por
+--paths, com parâmetros independentes de campos/valor/pendências, dois backends,
+dois aquecimentos e cinco amostras por carga. Usar records privados para cargas
+e o fluxo real de preparação, sem outra implementação de join ou alteração de
+produção. Verificar valores sem depender da ordem de mapas/sets; listas mantêm
+ordem. Na restauração, exigir HLC monotônico e os demais metadados iguais.
+RSS é do processo inteiro; não mede heap/alocações. Projeções JSON de valores e
+causalidade não somam um backup, e bytes do SQLite fechado não são recuperáveis.
+R-37 permanece necessária antes de 1.0.1: contagem/status ainda materializam
+payloads. Replay por entrada com fork/adopt e markSent por ID explicam custos
+restantes observados, mas esta tarefa não demonstra defeito de dados nem dispõe
+de SLA para impor outra refatoração. Avaliar otimizações novas de replay/cópias/
+SQL após a release, com esta baseline e provas de isolamento, causalidade e
+rollback; orçamento de consumidor mais estrito exige reavaliar a decisão.
+Nenhum item já planejado foi adiado ou retirado. R-35/VAL-17 continuam responsáveis
+por documentação/gate completo; não alegar latência universal ou suporte mínimo
+executado. Ver [R-32](TRACEABILITY.md#execucao-r-32-2026-10-24) e
+[resultados](evidence/r32/README.md).
+
+DEC-62 — Resumo de pendências R-37, 2026-10-24: adicionar pendingSummary
+obrigatório em ReplicaStorage e expor a leitura pela engine, na fila existente.
+OutboxSummary valida contagens não negativas e deriva total, sem cache paralelo.
+Filtro null inclui todos os peers; entradas peer/ID contam separadamente e
+sent permanece sem ACK. Confirmed legado é excluído, sem remoção durante resumo.
+Um membro obrigatório com referências/suíte/migração é menor que capacidade
+opcional mais dispatch/fallback na engine. MemoryStorage lê metadata; SQLite
+agrega JSON no SQL mantendo schema v1, com fallback de metadata em Dart apenas
+para ausência de json_extract. Outros erros propagam; consulta não certifica
+payload, envio ou sucesso remoto, nem desfaz commit anterior. Ganhos medidos
+nas cargas R-32 não prometem latência universal ou otimização de builds sem JSON1.
+Contrato externo novo é quebra de fonte autorizada para 1.0.1; formatos, joins,
+SDK e manifests permanecem. Ver [R-37](TRACEABILITY.md#execucao-r-37-2026-10-24).
+
+DEC-63 — Lote local R-38, 2026-10-24: SyncEngine.batch usa o pipeline existente
+de candidata/commit/adoção e retorna Delta após sucesso. Editor LocalBatch com
+construtor privado e final class, na mesma library via part, delega regras ao
+core, coleta mudanças e fecha antes do await do storage. Um contexto Zone impede
+operações reentrantes e acompanha continuações de callbacks async rejeitados.
+Future retornado, lote vazio, erro de callback/edição (mesmo capturado) ou commit
+falho abortam; não desfaz efeitos externos do app, proibidos pelo contrato.
+Preservar IDs, formatos, joins e uma entrada/ACK por mudança; lote não é transação
+distribuída. Sem contrato novo de storage/transport ou comandos de domínio.
+Extrator canônico de APIs passa a scripts/api_inventory.dart com suporte a parts;
+ferramenta/dados R-30 ficam intactos e inventários anteriores equivalem. Ver
+[R-38](TRACEABILITY.md#execucao-r-38-2026-10-24).
+
+DEC-64 — Consulta explícita R-42, 2026-10-24: Replica.query retorna FieldQuery
+sealed com AbsentField, PresentField(kind/value) e DeletedField para tombstone
+LWW. Construtores privados e variantes final em part da library de Replica
+preservam origem canônica e switches exaustivos, sem exigir modelo do app.
+Outros sete tipos vinculados continuam presentes com zero/coleção vazia.
+ReplicaState.kindAt/isDeletedAt consultam metadados; o segundo evita copiar o
+vencedor/payload só para verificar remoção. Um percurso privado de valor serve
+query e valueAt, sem reconstruir réplica ou manter cache paralelo. valueAt
+preserva sua ambiguidade null anterior e não aloca o resultado tipado.
+SyncEngine.query exige start e lê último commit adotado; LocalBatch.query lê
+candidata só no escopo do editor. ACK/outbox não determinam presença. R-40
+reutilizará esse contrato: decoder no ramo presente, inclusive null, sem ocultar
+erro como ausência. Nenhum formato, join ou contrato de adaptador mudou; colisão
+com método query em subclasses externas e futura expansão de variantes exigem
+atenção de migração. Ver [R-42](TRACEABILITY.md#execucao-r-42-2026-10-24).
+
+DEC-65 — Decoder opcional R-40, 2026-10-24: PresentField.decode<T> recebe
+T Function(Object?) e retorna T sem wrapping, valor padrão ou novo acesso ao
+estado. Converte o valor já isolado exatamente uma vez, inclusive null legítimo;
+retorno nullable permanece decisão do consumidor. Ausente/removido não oferecem
+decode, exigindo tratar os ramos existentes de FieldQuery. Valor bruto permanece
+disponível. Um membro na variante presente atende Replica/engine/editor e mantém
+um percurso de consulta, sem classes, generificação da hierarquia, schema ou
+adaptadores adicionais. Preferido membro sobre extension por ser conveniência
+pequena do tipo controlado pela biblioteca; não há despacho novo ou override.
+Resultado pode ser convertido após edições/dispose; nova consulta ainda respeita
+lifecycle. Modelo, validação, mutabilidade de saída e efeitos externos do decoder
+pertencem ao consumidor. Erro de leitura propaga ao chamador sem desfazer commit
+anterior ou emitir falha da engine; erro que escapar do callback de lote segue
+seu rollback existente. Novo membro pode sombrear extension decode do consumidor;
+guia orienta migração. Sem mudanças de query/valueAt, variantes, joins, commit,
+ACK ou formatos. Ver [R-40](TRACEABILITY.md#execucao-r-40-2026-10-24).
+
+DEC-66 — Eventos seletivos R-41, 2026-10-24: SyncCommitEvent.addresses informa
+endereços processados, não diferenças visíveis. Deltas usam DeltaChange.crdtId;
+lotes deduplicam; snapshot usa bindings do peer já decodificado, incluindo
+vazios/zero/tombstones e excluindo endereços apenas locais. Replica.mergeSnapshotJson
+retorna esse Set<String> isolado/read-only, evitando segundo parse ou cópia de
+valores para metadados. Evento copia seus endereços antes de I/O e só é emitido
+após commit/adoção; input repetido/perdedor ainda pode notificar, e input vazio
+pode ter conjunto vazio. Um controller broadcast assíncrono de SyncObservation e
+_emit centralizam produção; commits/errors são filtros tipados e commitsFor usa
+endereço exato, sem polling, estado em cache ou sync automático. Ordem é por
+subscription, sem replay ou garantia de ordem relativa entre listeners distintos.
+Pausa pode bufferizar eventos não selecionados e atrasar dispose; consumidor
+retoma/cancela subscriptions antes de encerrá-lo. Listeners não governam commit;
+ACK e suas falhas permanecem separados. SyncCommitEvent exige addresses e perde
+const; implementadores/subclasses e overrides de mergeSnapshotJson precisam
+migrar. Nenhuma variante de SyncObservation ou formato mudou; fixture cobre
+cinco casos exaustivos, implementação externa e quebras anteriores. Ver
+[R-41](TRACEABILITY.md#execucao-r-41-2026-10-24).
+
+DEC-67 — CI e faixa de SDK R-33, 2026-10-24: após o autor pedir evitar 3.12 e
+autorizar 3.13, alinhar os sete pacotes/exemplo para ^3.13.0 e executar Dart
+3.13.5 stable/Flutter 3.47.7. Não alegar runtime no patch 3.13.0 ou em 3.12;
+baseline R-30 permanece histórica. Novo formatter aplicado a 19 arquivos com
+árvores sintáticas canônicas idênticas. Workflow tem jobs Dart, Flutter e policy,
+SHAs/permissões mínimos, sem uploads/autofix/credenciais de publicação. Lista
+de pacotes vem de pub workspace list --json; raiz exclui só o app Flutter da
+análise Dart, pois ele tem análise integral/resolução próprias. Checkout limpo
+revelou essa necessidade; jobs foram provados em checkouts e caches separados.
+Resolução sempre roda, app exige lockfile; consulta online OSV/Pub usa versões
+resolvidas, segue paginação e reprova achado sem exceção ou resposta indisponível/
+inválida. Exceção exata exige motivo e expiração, sem instalar pacote vulnerável
+para fixture. Não usar outdated como scanner; lint/Saropa seguem em R-34.
+Policy verifica plano/diff, fixtures e actionlint com checksum fixado. Jobs
+semanais refazem consulta; revisar pins/exceções mensalmente. Builds não provam
+runtime Android; host local/JDK diferem do runner configurado. Preparar YAML não
+ativa serviço nem comprova execução remota, que não foi autorizada/realizada.
+Ver [R-33](TRACEABILITY.md#execucao-r-33-2026-10-24).
+
+DEC-68 — Avaliação Saropa R-34, 2026-10-25: adiar adoção permanente após piloto
+essential 16.7.0 exato em runner isolado com Dart 3.13.5. SDK aceitou o runner;
+o conflito comprovado é Saropa/analyzer ^12.1.0 com test 1.33.0 no mesmo grafo,
+não rejeição geral a Dart 3.13. Plugin nativo preserva o grafo do workspace,
+mas não reproduziu cobertura da CLI no app Flutter. Versões, lanes e caminhos
+de configuração geraram conjuntos diferentes e precisam de controle positivo
+antes de adoção. A CLI resolveu 116 arquivos e gerou 166 alertas estáveis;
+segunda passagem adicionou 71.229 s aos 7.423 s da análise atual, com ruído
+contextual em guardas, SQL parametrizado e lifecycle. São medidas locais, sem
+SLA ou equivalência entre ferramentas. Amostra dos 19 nomes de regra e fixture
+mostram utilidade pontual, sobreposição e falhas de detecção; nenhum defeito
+funcional bloqueador confirmado. Manter recommended, análise Flutter própria,
+advisories online e testes separados. Sem dependência/configuração permanente,
+downgrade, autofix ou baseline genérica. Reconsiderar somente com versão/custo,
+compatibilidade e controles Dart/Flutter novamente verificados; isso não cria
+dependência adicional de R-35 nem retira escopo da release. Lint não prova CRDT,
+atomicidade, recuperação, autenticação ou ausência de vulnerabilidade. Ver
+[relatório](evidence/r34/README.md) e [execução](TRACEABILITY.md#execucao-r-34-2026-10-25).
+
+DEC-69 — Preparação 1.0.1 R-36, 2026-10-25: alinhar sete manifests e 17 constraints
+internas em 1.0.1/^1.0.1 após as tarefas de produto, sem tocar SDK ^3.13.0,
+dependências externas ou fontes de biblioteca. Consolidar o rascunho de changelog
+2.0.0 em 1.0.1, identificando capacidades retidas e preservando histórico 1.0.0.
+Quebra de fonte deliberada é destacada em todos os pacotes e no mapa das sete
+superfícies; formatos/readers/schema não são renumerados. Diretórios novos têm
+85 arquivos inspecionados com inventário; isso não substitui VAL-17, dry-run,
+consumo hosted ou publicação. Referência SDK de VAL-17 segue R-33/DEC-67 e a
+orientação do autor de evitar 3.12; R-30 permanece registro histórico imutável.
+Worktree R-35 não commitada foi preservada, sem stash/reset. Sem publicação/tag/
+merge/push autorizado por esta preparação. Ver
+[R-36](TRACEABILITY.md#execucao-r-36-2026-10-25).
+
+DEC-70 — Gate 1.0.1 VAL-17, 2026-10-25: aprovar os sete candidatos preparados
+após workspace completo em 3.13.5, resolução isolada Dart/Flutter, migração de
+consumidores/dados, writer atual lido por 1.0.0, instalação hosted sem paths ou
+overrides, sete dry-runs e runtime Android pertinente. Mantidas DEC-55/56/67/68:
+quebras de fonte expressas em 1.0.1, SDK ^3.13.0 e Saropa permanente adiado.
+O diff de fila/lote/eventos/lifecycle exigiu prova Android atual: dois CRDTs,
+duas réplicas no mesmo processo, plugin sqflite, edição offline, force-stop,
+nova edição, ACK e restauração final confirmada pelo novo PID. Esse recorte
+valida o pipeline comum junto das suítes de oito tipos no host, sem alegar
+oito tipos físicos/rede real ou reutilizar runtime antigo como prova nova.
+Não criar camada de testes de app ou mudar lib apenas para executar o gate.
+Publicação continua manual pelo autor; registro GET-only e dry-runs não comprovam
+instalação pública nem autorizam upload/tag/commit/merge/push. Novos fontes
+exigem revalidação dos artefatos. Ver [matriz e roteiro](evidence/val17/README.md)
+e [execução](TRACEABILITY.md#execucao-val-17-2026-10-25).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13, R-28 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; quebras 2.0.0, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
+| OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
+| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42, R-36, VAL-17 | Resolvida em R-36/DEC-69: APIs/assinaturas fechadas e sete superfícies conferidas com R-30. Migração enumera substitutos e restrições das variantes; versão deliberada 1.0.1 mantida. VAL-17/DEC-70 aprovou consumidores/dados/artefatos em gate próprio; publicação e prova de instalação pública permanecem com o autor. |
+| OPEN-09 | R-34 | Resolvida por DEC-68: piloto essential 16.7.0 concluiu por adiamento fundamentado. Recommended/CI/advisories permanecem; sem instalação permanente ou downgrade. Novo piloto e controle positivo Dart/Flutter exigidos antes de reconsiderar adoção, sem bloquear R-35. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas
 rotineiras dentro da tarefa autorizada, registrar fundamento e validar.
