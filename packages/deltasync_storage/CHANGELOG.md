@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Align package version and the core dependency minimum with 1.0.2. Storage
+  contracts and MemoryStorage behavior remain unchanged.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

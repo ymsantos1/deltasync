@@ -1,3 +1,11 @@
+## 1.0.2
+
+- Restore pending outbox changes in one ordered Delta application, avoiding a
+  full replica fork/adopt for every retained entry in a large backlog.
+- Preserve validation, atomic adoption, change ordering, clocks, local sequence,
+  pending delivery and historical snapshot readers. No API or wire-format changes.
+- Raise internal dependency minimums to ^1.0.2 for the coordinated release.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

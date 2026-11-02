@@ -6189,3 +6189,1041 @@ A opção em job Dart é rejeitada antes de executar checks (exit 2). Checker lo
 aprovou 71 tarefas/590 links, actionlint 1.7.7 e git diff --check passaram.
 Revisão do delta final sem impeditivos; não houve alteração de código após essas
 provas, somente este registro de resultados.
+
+## Publicação autorizada da 1.0.1 no pub.dev — 2026-10-25
+
+Autor pediu explicitamente ao agente o envio dos sete pacotes. Essa autorização
+posterior permite a ação externa antes reservada ao autor; não é autorização
+genérica para futuras releases/CD. Main limpa em c5d5bb400267eb7ca1fe88e4e60e51d74ec44c11.
+Três jobs remotos do run 40233077899 passaram antes do upload; fonte preparada
+reproduziu os 85 hashes aprovados em R-43. No registro público havia somente
+1.0.0, sem 1.0.1, para os sete nomes.
+
+Aplicados verify-and-stop e plan-maintainer. Preparação nova fora do Git,
+resolução/dry-run públicos sem warnings em cada pacote, seguida de publicação
+autorizada com dart pub publish --force. Ordem: core, storage, transport, sync,
+storage_testing, storage_sqflite, facade. Credenciais foram usadas somente pela
+CLI, sem leitura/exposição de tokens no registro. Retirado PUB_HOSTED_URL local.
+Índices ainda desatualizados exigiram retry de resolução, sem reduzir constraints
+ou repetir uploads já confirmados. Os sete envios retornaram sucesso.
+
+Validação: metadata e SHA dos sete archives públicos conferidos; 78 arquivos
+distribuídos coincidem com o inventário aprovado, incluindo 48 fontes de lib.
+Consumidor fora do workspace com cache novo instalou os sete hosted 1.0.1 do
+pub.dev sem paths/overrides; hashes instalados, análise e 54 testes aprovados
+em Dart 3.13.5/Linux/SQLite FFI. Não se reapresentam suites/native runtime antigos
+como execuções novas. Nenhuma fonte/API/formato foi alterada para publicar.
+
+[Relatório público](evidence/publicacao-1.0.1/README.md) e
+[comandos, URLs e hashes](evidence/publicacao-1.0.1/validation.json) registram
+o envio e instalação reais, distintos dos antigos registros loopback. Índice,
+publicação, decisões abertas e riscos acompanham o resultado; históricos e
+critérios anteriores permanecem. Revisão própria dos registros, sem impeditivos,
+não independente. Nenhum CD, commit, tag, merge ou push criado pelo agente.
+Publicação não comprova segurança de rede, iOS ou todos os consumidores; demais
+limites continuam. Checker/diff conferidos após manutenção.
+
+Após manutenção, python3 -B scripts/check_plan.py aprovou 71 tarefas e 596 links
+locais; git diff --check passou. JSON/whitespace dos registros novos conferidos,
+HEAD preservado e todos os arquivos versionados de lib/packages idênticos à
+fonte publicada. As únicas alterações locais restantes são documentação e
+evidências deste envio, sem commit automático.
+
+## Roteiro de desempenho e consumo de dados no Compass — 2026-10-31
+
+Pedido: documentar o procedimento de avaliação em dispositivos e explicar a
+interferência da automação por ADB. Entrega documental concluída; instrumentação
+no consumidor, coleta física e análise dos resultados ainda não executadas.
+Aplicados plan-maintainer, code-reviewer e plan-validator, com leitura do plano,
+VAL-13/VAL-15, R-32, medições históricas e documentação oficial Android/Flutter.
+
+Implementação: novo [roteiro](../docs/roteiro-desempenho-compass.md), ligado pelo
+índice e por docs/medicoes.md. Define ambiente, ferramentas, limites dos tempos,
+bytes lógicos e por UID, cargas, cenários, correção, repetições, artefatos e
+condições de encerramento. Instrumentação permanece no consumidor. Distingue
+commit local, ACK durável e convergência; respeita o hub LWW com pull de estado.
+Não altera fonte, contratos, formatos, dependências nem tarefas/fases concluídas.
+Preservadas as alterações já existentes de publicação na worktree.
+
+Review: próprio executor, em etapa distinta, não independente. Conferidos escopo,
+semântica de ACK, limitações de TrafficStats/CPU/PSS, custo da automação, efeito
+de USB/reverse e separação entre procedimento e evidência executada. Corrigida
+a referência à categoria PowerCategory.NETWORK de PowerMetric; sem impeditivos
+restantes. Custo do ADB é hipótese a quantificar no piloto, sem percentual alegado.
+
+Validação documental: python3 scripts/check_plan.py aprovou 71 tarefas e 597
+links locais antes deste registro; conferência adicional dos dois documentos de
+docs aprovou oito links/anchors locais, EOF/whitespace e sintaxe do bloco shell
+com bash -n. git diff --check passou. Fontes externas consultadas com navegação,
+sem executar seus comandos. Checker/diff repetidos após manutenção deste registro.
+Testes Dart não se aplicam à mudança exclusivamente documental.
+
+Manutenção: índice oferece navegação e informa instrumentação/coleta pendentes;
+status das fases e dependências preservados. Não há nova decisão de arquitetura,
+mudança de risco do produto ou tarefa de implementação iniciada. Limitações:
+nenhum ADB, APK, aparelho ou benchmark executado nesta entrega; roteiro não prova
+desempenho, economia de internet, usabilidade ou cobertura física dos oito CRDTs.
+
+## Especificação manual baseada no Compass inspecionado — 2026-10-31
+
+Pedido: especificar os testes manuais com referências e implementação real do
+Compass. Consolidado o documento existente no [protocolo manual](../docs/roteiro-desempenho-compass.md),
+sem criar planejamento concorrente. Etapas distintas de leitura, edição, review,
+validação e manutenção; aplicados plan-maintainer, code-reviewer e plan-validator.
+
+Leitura: consumidor em /projetos/tcc/samples_test_lib/compass_app, revisão
+07fb9407252f5ac97b6a92d8f0cc9fdacd78a0b0, sem alterações locais. Inspecionados
+bootstrap, configuração, repositório, widget, transporte HTTP, servidor,
+manifests, dependências e lockfile do workspace. Biblioteca em c5d5bb4, com as
+alterações documentais já existentes preservadas; conferidos receiveEnvelope,
+push e pendingDelta. Consultadas referências oficiais Flutter/Dart/Android.
+
+Edição: protocolo relaciona fontes/símbolos ao fluxo, define M1–M6, C1–C3,
+limites de commit/edit/start/push/pull/ACK/sync, FrameTiming local, bytes HTTP/UID,
+diagnósticos separados de CPU/memória, repetições e exportação pós-janela.
+Interação manual sem ADB na coleta principal substitui a opção automatizada do
+roteiro anterior. Navegação do índice e docs/medicoes acompanham essa preferência.
+
+Review próprio, não independente: aprovado após conferir que salvar não envia,
+sync força push seguido de snapshot-pull e ACK, zero pendências não prova sucesso
+do ciclo completo e _refresh também tem custo local. Explicitadas consultas por
+observações, ausência de coletor/exportador/reset na UI e preservação de amostras
+antes de Forçar parada. Acrescentados controle de ambiente e checks futuros do
+consumidor. Sem mudança em CRDTs, APIs, formatos ou no repositório do Compass.
+
+Validação: python3 scripts/check_plan.py aprovou 71 tarefas e 598 links antes deste
+registro; checagem adicional aprovou oito links/anchors locais dos documentos,
+dois blocos shell com bash -n, fences, EOF e whitespace. git diff --check passou.
+Checker/diff repetidos após manutenção. Testes Dart não necessários nesta edição
+documental; nenhum comando de build/ADB/coleta física executado.
+
+Limitações/próximos passos documentados: preparar instrumentação e exportação no
+consumidor, resolver lockfile antigo 2.0.0 versus manifests locais 1.0.1, configurar
+HTTP/HTTPS em profile/release e validar artefatos antes da coleta. Nenhuma dessas
+preparações foi implementada ou marcada como concluída. Fases, tarefas e riscos
+do produto preservados; a especificação não comprova desempenho medido.
+
+## Planejamento das adequações no app Compass — 2026-10-31
+
+Autor pediu planejamento no consumidor, após a revisão de compatibilidade e
+preparação de desempenho. Criado somente o documento
+`/projetos/tcc/samples_test_lib/compass_app/app/PLANO_DELTASYNC_1_0_1.md`, com sete
+tarefas CP-01–CP-07: resolução/baseline, erros após commit, resumo/coalescência,
+rede de ensaio, coleta local, sessões/fixtures/exportação e validação física.
+CP-01 pronta; demais planejadas; nenhuma implementação ativa ou concluída.
+O plano canônico do consumidor fica no app; tarefas/fases da biblioteca intactas.
+
+Aplicados plan-maintainer, code-reviewer e plan-validator. Leitura das fontes,
+configuração e README histórico do Compass; review próprio distinto, não
+independente, sem impeditivos. Registrados limites app versus lockfile da raiz,
+servidor externo, ACK versus ciclo completo e instrumentação opt-in. Preservados
+identidades, dados e mudanças anteriores da worktree. Nenhum código alterado.
+
+Validação documental: sete IDs/dependências sem ciclos, tabela/status/critérios
+iniciais coerentes, 17 links/anchors locais e um bloco shell com bash -n;
+fences/EOF/whitespace conferidos. Documento preparado em /tmp e depois gravado
+no destino com execução escalada, pois a pasta solicitada fica fora das raízes
+graváveis. Conteúdo final comparado byte a byte com o revisado; consumidor tem
+somente o novo Markdown não rastreado. Checker da biblioteca aprovou 71 tarefas
+e 599 links antes deste registro; checker/diff repetidos após manutenção.
+Testes Dart, builds, alterações no app e coleta física não executados neste pedido.
+
+## Baseline real do consumidor Compass — CP-01, 2026-10-31
+
+Pedido explícito: executar próxima tarefa pronta de PLANO_DELTASYNC_1_0_1 com
+as cinco skills e ciclo completo. CP-01 selecionada por ausência de dependências;
+plan-reader, plan-implementer, code-reviewer, plan-validator e plan-maintainer
+lidas/aplicadas em etapas distintas, por um agente. Plano canônico do consumidor
+em `/projetos/tcc/samples_test_lib/compass_app/app/PLANO_DELTASYNC_1_0_1.md`.
+
+Leitura: preservadas worktrees anteriores e inventariados hashes/revisões,
+configuração, lockfile e 163 fontes Dart do app/testes. Implementação: resolução
+offline no workspace original samples_test_lib, mantendo path e overrides.
+Seis versões DeltaSync do lock compartilhado passaram de 2.0.0 para 1.0.1;
+nenhum manifest ou fonte Dart teve mudança final. Lockfile é ignorado pelo Git;
+diff/snapshot foram preservados em app/evidence/cp-01.
+
+Review próprio inicialmente aprovado; validação detectou 54 erros em modelos
+Freezed após elevação opcional da linguagem do app para 3.13. Retornada a tarefa
+à implementação e restaurada a constraint original ^3.9.0-0: linguagem do app
+3.9 e exigência efetiva de SDK ^3.13.0 pelas dependências. Sem regenerar modelos,
+suprimir checks ou reduzir requisito da biblioteca. Novo review após correção
+aprovado, não independente; falhas anteriores mantidas nos artefatos.
+
+Validação repetida no app original: Flutter 3.47.7/Dart 3.13.5, análise integral
+sem issues e dez testes existentes de configuração/card/integração aprovados,
+com SQLite FFI e servidor HTTP separado. Resolução --offline --enforce-lockfile
+passou sem alterar o lock resolvido. Conferência final de 29 links/anchors,
+23 hashes de artefatos, plano, JSON, fontes/manifests preservados e diffs passou.
+Saídas e comandos reais em compass_app/app/evidence/cp-01; 24 arquivos instalados.
+
+Manutenção: quatro critérios e CP-01 concluídos; CP-02/CP-04 prontas, próxima
+CP-02, nenhuma ativa ou seguinte iniciada. Fases/tarefas da biblioteca intactas.
+Checker/diff da biblioteca executados após registro. Limites: path, Linux/FFI;
+sem hosted, APK/runtime Android, patch Dart 3.13.0 ou benchmark. Falhas funcionais
+e custo de refresh permanecem nas tarefas seguintes. Sem commit/publicação.
+
+## Separação de falhas no consumidor Compass — CP-02, 2026-10-31
+
+Pedido: executar a próxima tarefa pronta do plano do app com as cinco skills.
+CP-02 selecionada após CP-01 concluída; plan-reader, plan-implementer,
+code-reviewer, plan-validator e plan-maintainer lidas/aplicadas por um agente,
+com etapas distintas. Fontes, worktrees e evidências anteriores inventariadas.
+
+Implementação no consumidor: TripNotesRepository isola statusError e contagem
+nullable, oferece refreshStatus para retry só de consulta e conserva resultado
+de commit/start/sync quando falha apenas a consulta posterior. Exceções reais
+de commit, restauração e rede propagam. ACK de push não é apagado por falha no
+restante do ciclo; a UI separa pendência indisponível, erro local e erro de sync.
+Alterados somente repositório/card em produção; dois testes e suporte SQLite/HTTP
+de teste adicionados. Nenhuma mudança em core, formatos, transporte ou servidor.
+
+Regressão: três testes falharam no código anterior. A validação inicial ampliada
+encontrou fixtures com HttpOverrides de widgets retornando 400 e espera de I/O
+em tempo simulado. Separados testes de rede/widgets; corrigidos import e espera
+do callback. Preservadas reprovação e execução interrompida 130. Review próprio,
+não independente, repetido após correções; sem impeditivos restantes.
+
+Validação final no app original: cinco arquivos formatados, análise integral sem
+issues, dez regressões novas e 87 testes da suíte do app aprovados. SQLite FFI
+local/remoto, HTTP real, reabertura e IDs preservados; Flutter 3.47.7/Dart 3.13.5.
+Conferidos 37 links/anchors, 24 hashes de artefatos, fontes revisadas, JSON e
+diffs após instalar 25 artefatos em compass_app/app/evidence/cp-02. Worktree,
+lock e evidências CP-01 preservados fora dos arquivos previstos desta tarefa.
+
+Manutenção no plano canônico do app: seis critérios/CP-02 concluídos; CP-03 e
+CP-04 prontas, próxima CP-03; nenhuma seguinte iniciada. Fases/tarefas da biblioteca
+não mudaram. Checker/diff executados após registro. Limites: review próprio,
+Linux/FFI; sem APK/runtime Android ou benchmark. pendingSummary/coalescência
+permanecem em CP-03. Nenhum commit ou publicação executado.
+
+## Resumo e coalescência no consumidor Compass — CP-03, 2026-10-31
+
+Pedido: executar a próxima tarefa pronta do plano do app com as cinco skills.
+CP-03 selecionada após CP-02 concluída; plan-reader, plan-implementer,
+code-reviewer, plan-validator e plan-maintainer lidas/aplicadas por um agente,
+em etapas distintas. Aplicada também investigate-first para diagnosticar a
+espera da fixture de widget antes de corrigir seu encerramento.
+
+Implementação: TripNotesRepository usa pendingSummary com recipientPeerId do
+transporte e totalCount, incluindo pending e sent. Um Future compartilhado e
+uma flag unem pedidos anteriores à leitura; eventos durante a consulta exigem
+uma leitura final sequencial. Observações globais, atualização antes do retorno
+da edição, falhas de consulta/rede, commit externo, outras viagens e ACK parcial
+permanecem cobertos. O fechamento cancela observações e aguarda consulta ativa
+antes de descartar engine/storage; listener reentrante pode pedir novo refresh.
+Mudança de produção restrita ao repositório do consumidor; adicionados dez
+testes e adaptadas fixtures SQLite/HTTP e encerramento de testes de widget.
+
+Regressão: três testes falharam no código anterior. Contadores registraram duas
+leituras completas de pendências por edição antes e uma consulta de resumo,
+sem materializar deltas, depois. Vinte pedidos simultâneos passaram de vinte
+leituras completas para um resumo; pedidos durante leitura geram dois resumos
+sequenciais, sem paralelismo. Push conserva sua leitura legítima do payload.
+São contagens estruturais dos cenários registrados, sem prova de latência,
+heap, custo constante do SQL ou desempenho em dispositivo.
+
+A validação inicial encontrou espera no encerramento de widgets. Tentativa de
+avançar apenas os frames não resolveu; marcadores localizaram a espera no close,
+após criação, edição e retry concluídos. Corrigida a fixture para avançar tempo
+simulado e aguardar encerramento, preservando exceções. Removidos marcadores;
+mantidas três execuções interrompidas com código 130 e demais falhas nos logs.
+Review próprio, não independente, repetido após correções e aprovado.
+
+Validação final no app original: 20 regressões CP-02/CP-03 e 97 testes da suíte
+do app aprovados, análise integral sem issues e quatro fontes formatadas.
+Ambiente Flutter 3.47.7/Dart 3.13.5, Linux, SQLite FFI, HTTP real e reabertura
+durável nos testes pertinentes. Cinco critérios satisfeitos. Conferidos após
+instalação 42 links/anchors, dois blocos shell, 28 hashes de artefatos, quatro
+hashes de fontes revisadas, JSON e hash do plano concluído. Evidências em
+`/projetos/tcc/samples_test_lib/compass_app/app/evidence/cp-03/`, com 29 arquivos.
+Lock, evidências CP-01/CP-02 e demais arquivos preexistentes preservados fora
+dos quatro arquivos autorizados; nenhuma alteração em fontes da biblioteca,
+servidor, transporte, formatos, SDK ou dependências.
+
+Manutenção: cinco critérios/CP-03 concluídos no plano canônico do consumidor;
+CP-04 pronta, nenhuma tarefa ativa ou seguinte iniciada. Fases/tarefas da
+biblioteca preservadas. Checker do plano e diffs executados após este registro.
+Limites: review próprio e validação Linux/FFI; sem APK/runtime Android ou
+benchmark de latência, memória e rede. Preparação e medições restantes seguem
+nas tarefas futuras do consumidor. Nenhum commit ou publicação executado.
+
+## Rede da variante de ensaio no consumidor Compass — CP-04, 2026-10-31
+
+Pedido: executar a próxima tarefa pronta do plano do app com as cinco skills.
+CP-04 selecionada com CP-01 concluída; CP-02/CP-03 e worktrees conferidas.
+plan-reader, plan-implementer, code-reviewer, plan-validator e plan-maintainer
+lidas/aplicadas por um agente, em etapas distintas. Aplicada investigate-first
+para diagnosticar boot Android antes de atribuir falha ao consumidor.
+
+Implementação restrita ao app: INTERNET no manifest principal; build type
+profile com applicationId .ensaio, rótulo próprio e política nativa que nega
+cleartext por padrão, permitindo apenas 192.168.3.10, sem subdomínios. Adicionados
+defines de exemplo, roteiro de rede e target técnico que reutiliza repositório,
+transporte HTTP e plugin sqflite reais. API NotesConfiguration, identidades de
+bancos existentes, SDK, servidor, formatos e fontes da biblioteca preservados.
+Documento distingue política nativa de controle dos sockets dart:io.
+
+Review próprio, não independente, repetido após correções e aprovado. Primeiro
+build falhou por conflito de label no merger; adicionado tools:replace somente
+para esse atributo. Corrigido falso sucesso possível após erro de close. Primeiro
+smoke passou na tela/hub, mas stdout não publicou o relatório no logcat; trocado
+por logging Flutter explícito. Nova análise, formato, build e execução afetados
+aprovados. Logs/falhas/revisões anteriores foram preservados nas evidências.
+
+Validação: nove testes pertinentes de configuração/integração com SQLite FFI e
+HTTP reais aprovados; análise integral sem issues e novo target formatado.
+APK principal profile compilado para ARM64/x64, manifest/política inspecionados.
+Manifests mesclados profile/release aprovados; release conserva package/rótulo
+e não recebe exceção HTTP de profile. Tentativa Gradle offline falhou por cache
+incompleto; resolução normal passou sem alterar dependências.
+
+AVD existente não montava /data, com abortos antes de instalar o app. Criado AVD
+temporário, sem limpar o original; logs de kernel e tentativas preservados.
+Smoke técnico na mesma variante/política profile passou em Android 17/API 37
+emulado: URI http://192.168.3.10:8091, sem adb reverse, push/ACK, pull/ACK,
+remoção da outbox remota e reabertura com sqflite nativo. Flutter 3.47.7 stable,
+Dart 3.13.5, JBR 25.0.3. APK de coleta e APK técnico possuem hashes/configurações
+separados; primeiro foi compilado/inspecionado, segundo executado. Transporte
+do emulador usa NAT até endereço LAN do host, sem comprovar Wi-Fi físico.
+
+Manutenção: quatro critérios/CP-04 concluídos no plano canônico do consumidor;
+CP-05 pronta, nenhuma tarefa ativa ou seguinte iniciada. Instalados 81 arquivos
+em `/projetos/tcc/samples_test_lib/compass_app/app/evidence/cp-04/`; conferidos
+80 hashes de artefatos, sete fontes revisadas, hash do plano, JSON, 87 links/
+anchors e cinco blocos shell. Escopo conferido contra 393 arquivos iniciais:
+somente quatro preexistentes alterados e quatro novos de implementação/docs.
+local.properties gerado pelo build restaurado aos bytes iniciais; lock,
+evidências CP-01–CP-03 e demais fontes preservados. Servidor/emulador próprios
+encerrados. Checker do plano e diffs executados após este registro; fases e
+tarefas da biblioteca não mudaram.
+
+Limitações: revisão própria; smoke técnico em emulador, sem aparelho físico,
+execução manual do target principal, piloto M1–M6, TLS ou benchmark de tempo,
+frames/bytes. Suíte integral de 97 testes segue evidência histórica de CP-03;
+CP-04 reexecutou nove pertinentes e smoke nativo. CP-05/CP-06 preparam coleta;
+smoke/piloto físico continuam em CP-07. Nenhum commit/publicação executado.
+
+## Coleta local no consumidor Compass — CP-05, 2026-10-31
+
+Pedido: executar próxima tarefa pronta com cinco skills e ciclo completo.
+CP-05 selecionada após CP-03/CP-04 concluídas; plan-reader, plan-implementer,
+code-reviewer, plan-validator e plan-maintainer lidas/aplicadas por um agente,
+em etapas distintas. Inventariados 478 arquivos, revisões, worktrees e lock;
+consultados protocolo, guia Dart e fontes oficiais Android/Flutter pertinentes.
+
+Implementação no consumidor: coletor opt-in em Android profile, com buffer em RAM
+limitado, IDs de rodada/janela/operação e Stopwatch em µs. Enum usa rótulos
+explícitos; record tipado de UID preserva nulabilidade. Token/contexto de operação
+e estado de janela atendem correlação e lifecycle concretos; nenhuma estrutura
+nova no core, framework de telemetria, outbox paralela ou formato da biblioteca.
+Repositório mede commit, edição, restauração/start, status, push, pull,
+aplicação/ACK e sync. Transporte reutiliza a serialização/bytes enviados e
+registra corpo observado parcial/completo, erro, gzip, rota/status/tentativa.
+Ponte Android consulta somente Process.myUid nas bordas; UNSUPPORTED é null.
+Frames usam timestamps da janela, taxa do display e orçamento, sem confundir
+entrega do lote com término ou latência exata de toque/commit. Desativado não
+consulta UID, cria callback do experimento ou escreve arquivos da coleta.
+
+Review próprio, não independente, repetido após correções e aprovado. Três
+regressões reproduziram callback acrescentando frame depois de removido,
+exportação pendente sobrepondo próxima janela e getter opcional de compressão
+alterando sucesso HTTP. Corrigidos guardas de inscrição/transição e isolamento
+do metadado; edição continua disponível durante erro/escrita. Timestamp único
+precede rótulo truncável da réplica. Ordenação de imports apontada pela análise
+inicial corrigida. Logs reprovados e revisão inicial preservados.
+
+Validação após correções: nove arquivos Dart formatados; análise integral sem
+issues; 118 testes do app aprovados, incluindo 21 novos. Cobertos relógio,
+consulta nativa sem resposta, exportação, overflow, callbacks/dispose, métrica
+indisponível, serialização única UTF-8/gzip, resposta de erro, corpo parcial,
+timeout original de 5 s, repetição e ACK sem mudanças, além de SQLite FFI/HTTP
+reais e regressões anteriores de commit/status/restauração/ACK. Onze arquivos
+de implementação/testes/documentação revisados e conferidos por hash.
+
+APKs profile principal ARM64/x64 e técnico x64 compilados, inspecionados e
+identificados separadamente. Smoke no AVD temporário saudável, Android 17/API 37,
+com sqflite/TrafficStats nativos e HTTP pela URI http://192.168.3.10:8091, sem
+adb reverse, aprovou push/pull/ACK e reabertura. Dois snapshots exportados depois
+das janelas e relidos validaram 31 operações e quatro frames, incluindo dez
+etapas na primeira abertura; sem falha/overflow do coletor. UID teve deltas
+disponíveis, inclusive zero real na reabertura. É prova funcional em NAT do
+emulador, sem resultado científico de desempenho ou economia de internet.
+Ambiente Flutter 3.47.7 stable/Dart 3.13.5, JBR 25.0.3, compile/targetSdk 36.
+
+Manutenção: sete critérios/CP-05 concluídos; CP-06 pronta, nenhuma tarefa ativa
+ou seguinte iniciada; CP-07 planejada. Instalados 54 arquivos em
+`/projetos/tcc/samples_test_lib/compass_app/app/evidence/cp-05/`; conferidos 53
+hashes de artefatos, onze fontes, dois APKs, hash do plano, JSON, 81 links/anchors
+e um bloco shell. Sete arquivos preexistentes alterados e cinco novos no app;
+lock, evidências CP-01–CP-04, demais fontes e dados anteriores preservados.
+local.properties gerado restaurado aos bytes iniciais; emulador/servidor próprios
+encerrados. Índice da biblioteca alinha situação do protocolo; tarefas/fases
+preservadas. Checker do plano e diffs executados após este registro.
+
+Limites: revisão própria; coleta em RAM, sem controles de sessão ou persistência
+de evidência para Forçar parada, ainda em CP-06. Sem aparelho físico, M1–M6, TLS,
+benchmark, comparação ligado/desligado ou inferência estatística. CP-07 mantém
+piloto físico e avaliação de interferência. Bytes de corpos HTTP, escopo agregado
+do UID e latência de apresentação física são medidas distintas; entrega tardia
+de frames tem limite documentado. Nenhum commit/publicação executado.
+
+## Sessões manuais e evidência durável no Compass — CP-06, 2026-11-01 UTC
+
+Pedido: próxima tarefa pronta com cinco skills e ciclo completo. CP-06 selecionada
+após CP-05; plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer aplicadas por um agente, em etapas distintas. Leitura incluiu
+AGENTS/RUNBOOK, protocolo, plano canônico, guia Dart e APIs pertinentes.
+Inventariados 537 arquivos, revisões, worktrees e lock antes da implementação.
+
+Consumidor ganhou painel opt-in Android profile, cenário/carga/papel/rede,
+corpus C1–C3 e artefatos JSON schema 1 fora da janela. Campos desconhecidos ficam
+null; estado inicial, revisões, falhas, tentativas, overflow e continuidade são
+explícitos. Exportação mede codificação/escrita com flush/rename do arquivo
+principal separadamente, sem incluir recibo ou compartilhamento. Notas continuam
+editáveis em falha de arquivo; salvamento pode ser repetido. M4 exige salvar e
+armar antes de Forçar parada; bootstrap mede restauração antes da UI e vincula
+arquivo novo ao anterior. Interrupção sem salvar informa perda do buffer RAM.
+
+Gerador cria IDs distintos e caminho novo de hub para cada fixture, recusa pasta
+existente e não inicia servidor nem apaga banco. Textos/tamanhos ficam em NotesLoad;
+nenhuma duplicação do estado de outbox ou alteração da biblioteca. Hub permanece
+dependência externa, com revisão/hash e referência de estado declarados. Registros
+mantêm longitudinal_growing_state sem presumir repetições independentes.
+
+Review próprio, não independente, repetido após correções e aprovado. Sonda
+reproduziu início falho permitindo rodada vazia, recibo desconhecido aceito e
+carga inválida ocultando notas. Corrigidos rollback, validação e isolamento do
+erro de configuração. Continuidade usa marcador persistido; corpus volta ao
+primeiro texto em cada rodada. Corrigidos também testes que acessavam engine
+antes de start ou aguardavam clipboard fora da fronteira assíncrona adequada.
+Quinze fontes/documentos revisados e conferidos por hash; falhas anteriores
+permanecem nas evidências.
+
+Validação: formato de 11 arquivos Dart, análise integral sem issues, 132 testes
+do app (14 novos) e três testes Python aprovados. Builds profile principal
+ARM64/x64 e diagnóstico x64 aprovados e inspecionados. Flutter 3.47.7 stable,
+Dart 3.13.5 e JBR 25.0.3; SDK/manifest/dependências/lock anteriores preservados.
+Testes cobrem arquivo/SQLite FFI reais, falha de disco com retry, RAM interrompida,
+overflow, ordem persistida, metadados e UI normal sem controles/arquivos.
+
+Android 17/API37 em AVD novo, sqflite/TrafficStats nativos e hub isolado pela LAN,
+sem adb reverse: processo 6512 salvou uma pendência e foi efetivamente encerrado;
+6610 restaurou nota/identidade/pendência, preservando arquivo e recibo byte a byte.
+M5 confirmou envio; três rodadas vinculadas somaram 20 amostras e três frames,
+sem overflow/falhas do coletor. Primeiro AVD/conexão travaram; preservados e
+substituídos por ambiente temporário novo. Primeiro diagnóstico restaurou M4,
+mas falhou em M5 por seleção de viagem no helper. Corrigido apenas esse target,
+revisado, reanalisado, recompilado e repetido com IDs/hub novos, sem apagar dados.
+
+Manutenção: cinco critérios de CP-06 concluídos no plano canônico; CP-07 pronta,
+nenhuma tarefa ativa ou piloto iniciado. Guia em
+[sessoes-ensaio.md](../../samples_test_lib/compass_app/app/docs/sessoes-ensaio.md);
+provas e comandos em [evidence/cp-06](../../samples_test_lib/compass_app/app/evidence/cp-06/README.md).
+Sete arquivos preexistentes alterados e nove novos no app, além das evidências;
+lock, fontes fora do escopo e evidências CP-01–CP-05 preservados. Configuração
+gerada restaurada aos bytes iniciais; emulador/hub próprios encerrados. Links,
+JSON, hashes, status/dependências, checker e diffs conferidos após manutenção.
+
+Limites: revisão própria; diagnóstico funcional em emulador/NAT, sem piloto
+M1–M6 físico, comparação ligado/desligado, TLS ou benchmark. Compartilhamento
+validado por callback em teste de UI, sem comprovar cópia por destinatário real.
+Flush/rename não certificam perda de energia, desinstalação ou Limpar dados.
+Estado inicial remoto depende de conferência externa. Piloto físico e análise
+da interferência continuam em CP-07. Nenhum commit/publicação executado.
+
+## Piloto físico no Compass — CP-07, 2026-11-01
+
+Concluída em 2026-11-01, após retomada com os dois aparelhos reconectados.
+Um agente aplicou plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer em etapas distintas; revisão própria, não independente.
+Inventariados 654 arquivos, revisões e lock. CP-01–CP-06/evidências preservadas.
+
+O protocolo recebeu correções para IDs dedicados, M1 ocioso/sync separado,
+salvar/armar M4 e comparação externa com coletor desligado. O piloto encontrou
+falha de Navigator no painel acima da rota raiz; corrigida com ChoiceChips
+tipados e Overlay.wrap. Regressão reproduz MaterialApp.builder. O target técnico
+exporta antes dos asserts, espera primeiro raster fora da janela e persiste
+relatório completo sem depender de logcat truncado. Guards mantidos. Nenhuma
+alteração de API/formato/dependência da biblioteca. Três arquivos Dart alterados.
+
+Review repetido após correções; fontes/hashes atuais conferidos. Formato: 155
+arquivos lib/test e um target técnico, zero alterações; análise app/servidor sem
+issues; 133 testes do app, 13 do servidor e três Python aprovados. Seis pacotes
+usados resolvem 1.0.1. Flutter 3.47.7 stable, Dart 3.13.5, JBR 25.0.3; language
+target 3.9 e lock preservados. Quatro APKs profile ARM64/x64 reconstruídos e
+inspecionados; por papel somente NOTES_PERFORMANCE varia entre on/off.
+
+A = Moto G52 Android 13/API33/90 Hz; B = Moto G53 5G Android 14/API34/120 Hz.
+Autor autorizou ADB para este piloto funcional; não foram rodadas manuais.
+Wi-Fi LAN real, sem adb reverse. Smoke nativo G52 passou push/pull/ACK e
+reabertura, com 33 amostras/dois frames. M1 ocioso ≥60 s e sync separados nos
+dois aparelhos; M2 dez commits de 64 bytes por papel. M3 confirmou falha de rede
+e novo commit depois dela. M4 encerrou o processo e restaurou o mesmo banco,
+replicaId/peer/chave, 21 IDs pendentes por aparelho e arquivo anterior imutável.
+
+M5 confirmou os IDs de A sem apagar os 21 pendentes de B; B confirmou seus IDs
+e ambos fizeram pull/ACK e convergiram no estado LWW do hub. M6 repetiu o
+isolamento com edições concorrentes offline e convergência. Checkpoints usam
+APIs públicas em cópias fechadas; clocks e vencedor foram registrados. Não foi
+inferida convergência só pela outbox zero. Falhas locais/consulta/HTTP distintas
+também estão na regressão atual de host. Dados existentes do ensaio sobreviveram
+reinícios e reinstalações sem trocar identidade; pacote normal não foi migrado.
+
+Comparação externa: uma dupla de dez edições/64 bytes por condição/aparelho,
+ordem A on/off e B off/on, CPU/PSS e PID/starttime nas bordas. Ambos controladores
+usaram o mesmo host. Cada laço gerou dez IDs novos. Flag também habilita painel/
+coordenador; não isola amostragem. Sem estimativa causal/estatística de overhead.
+O modo off não recebeu métricas internas fictícias. Histórico cresce; ADB/USB,
+acessibilidade, instalação, GC e estado térmico interferem. Comparação local
+não mede tráfego de sync no modo off.
+
+Auditoria física: 24 rodadas, 16359 amostras,
+16078 frames, 3802 descartes declarados por
+buffer de 2.048. Janelas interrompidas/truncadas excluídas dos tempos e brutos
+preservados. UID/corpo HTTP não equivalem a bytes tarifados; null não virou zero.
+Snapshot frio de smoke reprovado foi mantido. CP-06 continua histórico, sem
+confundi-lo com esta execução física. Exportação/recibos após janela e arquivo
+anterior preservado no reinício foram conferidos; destinatário externo do share,
+TLS, perda de energia e Limpar dados não foram certificados.
+
+Manutenção: seis critérios satisfeitos. Rádios/stay-on e local.properties
+restaurados; seis arquivos de banco normais mantêm hashes iniciais; hub próprio
+encerrado e duas regras temporárias UFW removidas pelo operador local. Pacote
+de ensaio terminou com coletor ligado, dados/evidências preservados e convergência
+final após a comparação. Bancos/APKs não entram na pasta textual de evidências.
+Provas por etapa, comandos, SDKs, hashes, falhas e limites estão em
+[evidence/cp-07](../../samples_test_lib/compass_app/app/evidence/cp-07/README.md). Links/anchors, status/dependências,
+checker e diffs conferidos após manutenção. Sem commit/publicação. Nenhuma
+tarefa ativa ou próxima pronta: CP-01–CP-07 concluídas. Coleta manual final de
+30 rodadas permanece pendente e separada deste aceite de preparação.
+
+## Coleta automatizada no Compass — CP-08, 2026-11-01
+
+Concluída em 2026-11-01. Autor pediu planejamento e início da execução dos testes
+automatizados. Ampliado este plano com CP-08–CP-13, sem reabrir CP-01–CP-07 nem
+criar plano concorrente. Um agente aplicou cinco skills em etapas distintas;
+revisão própria, não independente. A série principal ainda não começou.
+
+NotesPerformance.fromEnvironment lê NOTES_PERFORMANCE_MAX_SAMPLES no bootstrap
+Android profile opt-in. Padrão 2.048 e 16 janelas preservados; inválidos falham
+antes da janela e do banco. maxSamples já existente registra limite efetivo.
+Gerador aceita --max-samples, conserva comportamento antigo quando omitido,
+gera IDs novos e recusa sobrescrita. Metadado novo registra valor solicitado.
+Sem mudança no core/API/formatos de notas/outbox/ACK da biblioteca.
+
+Review encontrou diferença entre int Python ilimitado e Dart VM int; gerador
+passou a validar intervalo positivo de 64 bits antes de criar pasta. Revisão
+repetida após correção. Rascunho de teste tinha nulabilidade incorreta; corrigido
+e guardados logs anteriores. Regressões vermelhas por ausência da factory/flag
+foram mantidas. Caso de 3.520 amostras mistas reteve dez commits iniciais/finais;
+buffer menor continua declarando descarte. Isso é teste de retenção no host.
+
+Validação atual: 136 testes do app, cinco Python e um teste adicional com define
+8192 efetivamente compilado; análise sem issues; 155 arquivos formatados sem
+alterações. APK profile ARM64/x64 de prova compilado e inspecionado, com config/
+manifesto/hash registrados. Não instalado; nenhum hub/rede/regra foi iniciado.
+Flutter 3.47.7 stable, Dart 3.13.5 e JBR 25.0.3. Configuração gerada restaurada
+byte a byte; lock, fontes fora do escopo e evidências anteriores preservados.
+
+8.192 é candidato para calibração C1, sem garantia física de retenção ou memória.
+CP-09 prepara controlador mantido; CP-10 mede e congela capacidade/ritmo/APKs;
+CP-11 executa 30 ciclos e comparação on/off; CP-12 analisa; CP-13 consolida
+material Markdown para artigo. ADB/USB e painel/coordenador fazem parte da
+instrumentação; histórico cresce, sem independência/overhead causal presumidos.
+Manual permanece alternativa separada; dados CP-07 não viram série principal.
+
+Provas por etapa em [evidence/cp-08](../../samples_test_lib/compass_app/app/evidence/cp-08/README.md). Links/anchors,
+IDs/dependências/status, hashes, checker e diffs conferidos após manutenção.
+Nenhuma tarefa ativa; CP-09 pronta. Sem commit/publicação ou edição do artigo.
+
+## Execução CP-10 parcial e CP-14 — 2026-11-01
+
+Status final: CP-10 incompleta; CP-14 concluída; CP-15 pronta. Autor interrompeu
+as repetições de uma nota e priorizou volume de dados distintos. CP-10 aceitou
+um ciclo M1–M6 completo e parou durante o segundo; comparação on/off e
+congelamento não aconteceram. Recursos próprios foram restaurados, hub encerrado,
+regra UFW preexistente preservada e brutos/APKs/fontes mantidos. Evidência parcial
+em [CP-10](../../samples_test_lib/compass_app/app/evidence/cp-10/README.md).
+
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer. Leitura: CP-09 concluída; CP-14 passou a depender dela por
+prioridade expressa. Implementação: cinco arquivos novos no consumidor geram e
+verificam 1/10/100/1000 notas LWW distintas de 64 bytes por APIs públicas,
+com banco e identidade próprios por N/aparelho. Nenhuma biblioteca ou formato
+persistido mudou. Review próprio, não independente: aprovado após verificar
+recusa de sobrescrita/preparo parcial, identidade e cardinalidade real.
+
+Validação: três testes Flutter focados, suíte completa do app com 141 testes,
+`flutter analyze` sem issues e 42 testes Python aprovados. Quatro builds profile
+ARM64 e preparo físico no G52/API33 e G53/API34. Em cada aparelho, criação e
+reabertura em novo processo confirmaram 1/10/100/1000 chaves/valores, sequências
+e pendências correspondentes. Cópias SQLite foram inspecionadas via API pública;
+arquivos antigos dos apps mantiveram SHA-256. Ver
+[CP-14](../../samples_test_lib/compass_app/app/evidence/cp-14/README.md) e
+[manifesto](../../samples_test_lib/compass_app/app/evidence/cp-14/manifest.json).
+Limite: preparo não mede desempenho; CPU/PSS, latência e rede são CP-15.
+Manutenção: CP-14 marcada concluída, CP-15 pronta, matriz enxuta antes da série
+principal. CP-10 permanece incompleta; não repetir automaticamente uma nota.
+
+## Execução CP-15 parcial — 2026-11-01
+
+Status final: em andamento; nenhum critério concluído. Skills aplicadas:
+plan-reader, plan-implementer, code-reviewer, plan-validator e plan-maintainer.
+Leitura: CP-14 concluída; os dois Androids conectados e os bancos N=1/N=1000
+presentes. Implementação parcial: quatro APKs profile ARM64 do app com identidades
+de escala e coletor ligado foram compilados; configs, binários e hashes retidos
+fora do Git. Review próprio, não independente: o controlador CP-09 só audita a
+chave ativa e não comprova as demais 999 notas; não foi usado para aceitar escala.
+Validação parcial: SHA-256 das quatro configurações/APKs e ABI conferidos; hub
+`192.168.3.10:8091` recusou conexão no preflight. Nenhum APK novo foi instalado,
+nenhum sync ou janela medida executado. Faltam instrumento/auditoria integral,
+comparação on/off, CPU/PSS, bytes por rota/UID, ACK e convergência física.
+Registro em [CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/README.md).
+Manutenção: CP-15 permanece ativa; CP-16 não liberada. Sem resultado de
+desempenho ou conclusão simulada.
+
+## Piloto CP-15 — execução física concluída, 2026-11-01
+
+Status final: concluída como calibração; CP-16 pronta, condicionada à avaliação
+do custo de restauração. Um agente aplicou plan-reader, plan-implementer,
+code-reviewer, plan-validator e plan-maintainer em etapas distintas. Review
+próprio, não independente. CP-14 forneceu 1/1000 chaves por aparelho; CP-10
+continua parcial.
+
+Implementação: `tool/run_notes_scale_pilot.dart` abre cópia isolada por N e
+condição, mede restauração/edição/sync por APIs públicas e recusa cópia parcial
+ou retomada sem primeira fase aceita. `MainActivity.kt` expõe CPU de processo
+e PSS, junto ao UID existente. Proxy/roteiro externos retidos mediram corpo
+HTTP idêntico com coletor ligado/desligado. Oito APKs profile ARM64 usados;
+fontes reais, configs, lock e binários preservados com hashes. Sem alteração da
+biblioteca, protocolo, bancos anteriores ou app normal.
+
+Review após correções: retomada passou a falhar fechada; auditoria corrigiu a
+comparação do texto LWW com seu mapa. Revisor próprio conferiu isolamento,
+cardinalidade, relógios, ACKs, contadores e limites da comparação. Validação:
+quatro condições N=1/1000 × on/off, 12 fases físicas A/B/A em G52/API33 e
+G53/API34. Exatamente N chaves/valores após cada fase; N−1 valores preservados,
+sequências N+1 e pendências zero após sync. Hub e clientes convergiram em todos
+os valores; push/pull/ACK 200 por destinatário. Sem descartes/falhas do coletor.
+Bytes por rota do coletor coincidiram exatamente com proxy externo. `flutter
+analyze --no-pub` sem issues e `flutter test --no-pub` com 141 testes aprovados;
+oito builds Android profile executados. APKs anteriores reinstalados, apps/hub
+parados, bancos antigos com hashes iguais; UFW preexistente preservado. Provas
+em [CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/README.md).
+
+Achado: restauração inicial de 1000 notas pendentes levou 32–52 s e CPU
+semelhante. Um piloto por condição e ordem on antes de off não estimam p95 nem
+efeito causal do coletor. UID em janelas N=1 pode não refletir tráfego curto;
+HTTP foi conferido pelo proxy. Hub usa snapshot-pull; não chamar todo tráfego
+de delta. RISK-43 atualizado; investigar antes de congelar a série em CP-16.
+
+## Diagnóstico da restauração CP-15 — 2026-11-01
+
+Pedido de investigação, sem autorização para correção de produto. O estágio
+`restore` do coletor consumiu 52,16 s no G52 e 32,26 s no G53 com 1000 notas
+pendentes; status levou milissegundos. Após ACK, segunda abertura do G52 com
+1000 notas e zero pendências levou 0,51 s. Em cópias SQLite imutáveis, leitura
+de snapshot, pendências e decodificação somou menos de 0,35 s; replay de 1000
+entradas separadas consumiu 15,97 s no host. Aplicação em lote diagnóstica
+consumiu 57 ms, sem alteração da biblioteca. `ReplicaPersistence.restoreInto`
+reaplica a outbox ao snapshot; `Replica.apply` faz fork/adopt e copia todas as
+chaves em cada entrada. Os IDs pendentes já coincidiam com vencedores do
+snapshot V2 nessa fixture. Arquivos e limites em
+[diagnóstico CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/restore-investigation.md).
+RISK-43 atualizado; nenhuma proposta de pular replay foi implementada ou
+considerada correta para snapshots legados e todos os CRDTs sem regressões.
+
+## Controlador automatizado no Compass — CP-09, 2026-11-01
+
+Concluída em 2026-11-01. Um agente aplicou plan-reader, plan-implementer,
+code-reviewer, plan-validator e plan-maintainer em etapas distintas. Dependência
+CP-08 satisfeita. Revisão própria, não independente. Inventariados 1.027 arquivos
+e preservadas as alterações anteriores. A interrupção anterior não iniciou
+comandos; a execução atual começou pela conferência de estado/worktree.
+
+Implementados controlador CLI, adaptador de UI/cópia fechada e auditor puro em
+tool, com leitor Dart de cópia SQLite por SqfliteReplicaStorage/Replica públicos.
+Argumentos substituem seriais/pastas fixas; NotesLoad continua fonte da carga.
+Dry-run só lê inputs locais, sem subprocessos ou criação de saída. Locks por
+serial e sequência de aparelhos impedem controladores disputando a mesma série.
+Sem instalação de APK, início de hub, regras de firewall ou comandos no app normal.
+
+Intenções de Save são persistidas antes do despacho. Resposta ambígua nunca
+repete o botão: para, salva o que puder e confere IDs em cópia fechada. Cursor
+só avança após arquivo/recibo, auditoria, estado e hashes. Retomada exige
+inFlight=null, inputs/fingerprint, arquivos, SDK, Android/build/resolução, APK
+e fronteira durável iguais. Brutos reprovados e motivos permanecem guardados.
+M6 desliga ambos antes de editar; M4 mantém canal offline e preserva parent/recibo.
+M2 faz sync de preparação fora da janela, explicitamente registrado.
+
+Review encontrou aceitação indevida de bool como schema, status falho ocultável,
+retomada sem revalidar arquivos e preparação incompleta de canal/condição.
+Corrigidos e revisados; falhas do rascunho de fixtures de teste também foram
+corrigidas sem relaxar construtores. Auditor exige retenção completa, recibos,
+configuração, operações/IDs, bytes/intervalos e ciclo de push/pull/ACK, além de
+comparar LWW dos clientes/hub. Journal tem limite próprio, sem relaxar arquivo
+de sessão do app. Não houve mudança em produção, biblioteca ou formatos internos.
+
+Validação: 138 testes do app, 32 Python e 27 do controlador sob python -O
+aprovados; análise sem issues; 157 Dart formatados sem alterações. Quatro
+fixtures derivadas de formatos CP-07, com frames reduzidos e PIDs de teste quando
+declarado, são casos de regressão, não novas medições. SQLite real comprovou
+leitura endereçada, isolamento de peer e origem inalterada; CLI do leitor passou
+em cópia sintética sem rede. CLI dry-run real não criou saída. Preflight no G52
+rejeitou, como esperado, o APK CP-08 ainda não instalado antes de UI/radio/notas.
+Capturados model/API/battery/thermal dos dois aparelhos somente por leitura.
+
+SDK: Flutter 3.47.7 stable, Dart 3.13.5, JBR 25.0.3. Lock, fontes anteriores,
+694 arquivos de evidência e APKs prévios preservados. Nenhum servidor, rádio,
+firewall ou instalação foi alterado nesta validação. Regressão de app inclui
+SQLite FFI/HTTP; suítes da biblioteca/servidor e builds Android não foram repetidos
+porque suas fontes não mudaram. Não reapresentar baseline como validação nova.
+
+Guia em [coleta-automatizada.md](../../samples_test_lib/compass_app/app/docs/coleta-automatizada.md); provas por etapa em
+[evidence/cp-09](../../samples_test_lib/compass_app/app/evidence/cp-09/README.md). Links/anchors, IDs/dependências/status,
+hashes, checker e diffs conferidos após manutenção. CP-09 atende cinco critérios;
+CP-10 pronta, nenhuma tarefa ativa. Calibração física, congelamento e série
+principal continuam pendentes. A ferramenta mantida precisa passar no hardware
+em CP-10 antes de qualquer conclusão de desempenho. Sem commit/publicação.
+
+## Execução R-44 — 2026-11-01
+
+Status final: concluída
+Review: aprovado
+Validação: aprovada
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Etapas distintas sob plan-executor.
+
+Leitura: autorização explícita do autor para corrigir a lib após o diagnóstico
+CP-15. Um agente leu plan-executor e as cinco skills, AGENTS/RUNBOOK,
+fase 7, DEC-61, RISK-43, contrato de `Replica.apply`, storage, testes e trechos
+pertinentes do guia Dart. Worktree suja preservada; R-43 concluída. Sem
+delegação. Escopo: remover replay repetitivo sem mudar API, formato ou sync.
+
+Implementação: `ReplicaPersistence.restoreInto` agrega as mudanças da outbox
+em ordem e faz uma aplicação validada após carregar snapshot V2 ou legado.
+`Replica.apply` continua responsável por validar, fazer fork e adotar estado.
+Teste SQLite FFI novo cobre 1000 notas/pendências em processo reaberto, ACK e
+nova abertura; segundo caso cobre entrada mais nova, conflito posterior,
+falha sem escrita e retry. Compass ganhou somente entrypoint de medição em
+`app/tool/check_restore_r44.dart`, sem mudança no app normal.
+
+Review após correções: próprio implementador conferiu preservação da ordem
+de storage, IDs e conteúdo pendente, validação de tipos/duplicatas, HLC,
+sequência, isolamento do candidato e rollback em falha. Nenhum achado
+pendente; não é revisão independente. Formato persistido, API pública e
+protocolo de rede inalterados. DEC-71 registra a escolha.
+
+Achados: replay separado era quadrático pela cópia do estado em cada entrada;
+aplicação única elimina esse custo. O teste de conflito rejeita o lote inteiro
+e conserva o snapshot, e o retry reaplica a entrada válida. Sem achado impeditivo.
+
+Validação: format/analyze/test aprovados nos seis pacotes e na facade raiz;
+Flutter analyze e 141 testes aprovados no Compass. Suites existentes cobrem
+oito CRDTs e leitura legada. Host em cópias CP-14: `SyncEngine.start` 134,4 ms
+para N=1 e 438,2 ms para N=1000; 1/1000 chaves e pendências intactas. Quatro
+execuções profile nos G52/API33 e G53/API34: N=1000 `repository.start` caiu de
+52,22 para 0,83 s e de 32,26 para 0,52 s; N=1 também medido. Leitor público
+conferiu chaves, valores, IDs e sequência, e hashes dos bancos antigos ficaram
+iguais. APKs anteriores reinstalados; sem alteração de UFW ou rede. Brutos e
+limites em [evidence/r44](evidence/r44/README.md). A comparação usa um par por
+aparelho/carga, não estima p95 nem efeito do coletor.
+
+Comandos: `dart format --output=none --set-exit-if-changed lib test`,
+`dart analyze` e `dart test` em cada um dos seis pacotes e na raiz;
+`flutter analyze --no-pub` e `flutter test --no-pub` no Compass;
+quatro builds e execuções Android profile, inspeção SQLite em cópias fechadas,
+`python3 scripts/check_plan.py` e `git diff --check` em ambos os repositórios.
+Logs e hashes no manifesto externo indicado em evidence/r44.
+
+Critérios: C1 por ordem do storage, aplicação validada, caso de conflito/retentativa,
+snapshot/clock/sequência e leitor legado; C2 por uma única chamada a
+`Replica.apply` para toda a outbox; C3 por suites dos oito CRDTs e dois testes
+SQLite novos; C4 por CP-15 e quatro janelas físicas R-44 com N=1/1000, host,
+auditoria e hashes; C5 por review próprio, matrizes Dart/Flutter, risco,
+decisão, índice, fase e evidência.
+
+Limitações: um par antes/depois por aparelho/carga, sem intervalo de confiança,
+p95, estimativa de energia, iOS ou atribuição de efeito ao coletor. Android
+mediu LWW do Compass; os oito CRDTs e legado foram validados no host. O código
+local não foi publicado; 1.0.1 hosted mantém o custo antigo. Sem novo gate de
+release, commit ou upload.
+
+Manutenção: cinco critérios R-44 marcados; fase 7 e índice concluídos, tarefa
+ativa limpa, RISK-43 atualizado e DEC-71 registrada. Gate/publicação 1.0.1
+históricos intactos; código local corrigido ainda não publicado. Checker do
+plano e diff verificados após manutenção.
+
+## Complemento de escala intermediária — 2026-11-01
+
+Pedido de avançar diretamente nos testes com orçamento de tokens reduzido.
+Sem iniciar ou concluir CP-16: medimos a lacuna N=10/100 de restauração da
+fixture CP-14 com a lib corrigida R-44. Aplicados os cinco procedimentos do
+ciclo para leitura, instrumento temporário, revisão própria, validação física
+e manutenção; nenhum código da lib ou app normal foi alterado. O instrumento
+derivou do entrypoint R-44, em `/tmp`, com whitelist N=10/100 e namespace
+novo `r45`; quatro APKs profile foram construídos e executados nos dois Androids.
+
+G52: 144,8 ms em N=10 e 245,9 ms em N=100. G53: 70,0 e 116,2 ms.
+Host em cópias fechadas: A/B 148,7/146,3 ms em N=10 e 231,5/241,3 ms em
+N=100. Revisor próprio conferiu isolamento do namespace, comparação integral
+LWW/IDs/seq com CP-14, hashes anteriores e restauração dos APKs CP-10. O
+controlador terminou com quatro relatórios válidos; bancos anteriores não
+mudaram. Artefatos com hashes e limites em
+[escala intermediária](evidence/r44/intermediate-scale.md). Não há amostragem
+estatística ou sync novo; CP-16/CP-11 permanecem pendentes. `check_plan.py` e
+`git diff --check` foram executados após esta manutenção.
+
+## Complemento de sync intermediário — 2026-11-01
+
+Pedido de seguir com foco no custo de escala. O piloto CP-15 já cobria N=1/1000,
+então o instrumento foi copiado para `/tmp`, restrito a N=10/100 e namespace
+`r46`, sem nova mudança de produto. Quatro APKs profile foram compilados;
+um hub novo por carga e proxy HTTP local mediram A/B/A em dois Androids.
+Review próprio conferiu o isolamento da cópia, a ordem de fases, o fechamento
+do hub e a auditoria integral dos bancos. Seis fases passaram: N chaves LWW,
+outbox vazia após sync, rotas push/pull/ACK HTTP 200 e mapas finais idênticos
+em A, B e hub. G52/G53 primeiro sync: 181,8/180,3 ms em N=10 e
+749,5/471,0 ms em N=100. Corpos HTTP por rota e limites estão em
+[evidência](evidence/r44/intermediate-sync.md). Uma rodada por carga não
+autoriza p95, inferência sobre coletor ou série principal.
+
+Na limpeza, instalação padrão do APK anterior no G52 expirou após diálogo do
+Play Protect sobre envio voluntário ao Google. Selecionado Não enviar; hash
+do APK CP-10 instalado foi conferido nos dois aparelhos e ambos foram parados.
+Bancos anteriores preservaram hashes, hub/proxy encerrados, UFW inalterado.
+Artefatos brutos, fontes, APKs e logs ficaram no cofre local do Compass, com
+manifesto SHA-256. CP-16/CP-11 permanecem pendentes. Checker e diff executados
+após manutenção.
+
+## Preparação CP-16 — matriz e identidade de par, 2026-11-01
+
+Autorizado fechar a matriz com orçamento reduzido. Definidos extremos N=1/1000,
+seis pares on/off alternados por carga, dois aparelhos, aquecimento e critérios
+de auditoria em [matriz CP-16](evidence/cp16/matriz.md). N=10/100 ficam como
+curva exploratória; p95 com n=6 é o máximo descritivo, não estimativa de cauda.
+Instrumento novo no Compass preserva o piloto histórico e exige ID de par
+hexadecimal de 32 caracteres em arquivo privado, gerando nomes únicos de
+cópia/relatório para repetir a série sem apagar bancos. Revisão própria após
+patch: ausência/ID inválido falham antes da cópia; mesmo ID permite segunda
+abertura, condição e par separam arquivos. `dart format --output=none
+--set-exit-if-changed` e `flutter analyze --no-pub` passaram no novo alvo.
+CP-16 fica em andamento: faltam controlador do par, build/runtime, retenção
+N=1000 e manifesto final de APKs/fontes/configs. CP-11 não liberada. Checker
+e diff executados após manutenção; nenhuma medição nova foi alegada.
+
+## Conclusão Compass CP-16 — 2026-11-02
+
+O pedido de executar a próxima tarefa CP-15 encontrou CP-15 concluída; CP-16
+era a continuação pronta e ativa. As cinco skills foram aplicadas em etapas:
+leitura da matriz/artefatos, implementação de identidade de par e controlador,
+revisão própria após correções, validação em Flutter e dois Androids, manutenção
+do plano. O review não foi independente.
+
+Revisão corrigiu hash da fonte B (`verify`), unicidade do texto editado por par,
+timeout de reinstalação com APK já instalado, verificação de bateria/USB/térmico
+e execução com `python -O`. Tentativas rejeitadas de preflight e limpeza foram
+retidas, fora da amostra. O smoke final N=1/1000 on/off passou nos dois aparelhos:
+seis fases por carga, N chaves, N−1 valores preservados, seq=N+1, outbox vazia,
+push/pull/ACK HTTP 200, convergência A/B/hub e zero perda com coletor ligado.
+Hashes dos bancos anteriores permaneceram iguais; APKs CP-10 restaurados e
+aplicativos parados. `dart format` no alvo, `flutter analyze --no-pub` e
+`flutter test --no-pub` passaram (141 testes).
+
+O [registro CP-16](../../samples_test_lib/compass_app/app/evidence/cp-16/README.md)
+e a [matriz](evidence/cp16/matriz.md) apontam o bundle local, com oito APKs,
+238 fontes reais e 126 arquivos. `verify_bundle.py` validou conteúdo e hashes;
+SHA-256 do manifesto:
+`d21d29542d46d1761360b433fbf750aeb711f72b97236fcc368382de91debc1c`.
+CP-16 concluída; CP-11 pronta. Smokes não contam como repetição da série,
+nem produzem p95. A correção R-44 do bundle usa fonte local ainda não publicada
+em 1.0.1. Nenhuma rodada principal, commit ou publicação foi feita.
+
+## Conclusão Compass CP-11 — 2026-11-02
+
+Status final: concluída. Skills: plan-reader, plan-implementer, code-reviewer,
+plan-validator e plan-maintainer, aplicadas no mesmo agente.
+Leitura: CP-16 concluída; matriz N=1/1000, seis pares/carga on/off em G52/G53.
+Implementação: corrigido gate que confundia classificação AC com ausência de
+USB; verificação física via `dumpsys usb`, alimentação AC/USB e dados brutos
+registrados. Quatro casos e os aparelhos validaram a correção. Coorte nova
+congelou o controlador antes da coleta, preservando APKs e demais fontes CP-16.
+
+Review próprio após correção, sem independência: diff contra a base, isolamento,
+gate, scripts e escopos conferidos; nenhum impeditivo restante. Validação física
+aprovou 12 pares principais (72 fases) e dois aquecimentos separados. Uma
+tentativa N=1/par 5 perdeu os dispositivos no preflight e foi excluída antes
+de estatísticas; retida com traceback, retomada em namespace novo após reconexão.
+Auditor reabriu relatórios/SQLite inspecionados/hub e confirmou cardinalidade,
+valores preservados, seq, outbox/ACK, HTTP, convergência e zero perda do coletor.
+O auditor de reprodução foi ajustado para apenas ler, após o sandbox recusar
+reescrita do resumo no cofre; verificação repetida sem alterar os brutos.
+
+Brutos e comandos em [evidência CP-11](evidence/cp11/README.md): 448 arquivos,
+82.670.945 bytes, manifesto SHA-256
+`f31292331b17d2389313c52138c516724ea394bf11faea5fa4ef4a6205b295ac`.
+APKs anteriores restaurados, apps parados, bancos preservados e portas fechadas;
+UFW preexistente mantido. Play Protect: envio opcional recusado durante instalação,
+fora das medições. Sem nova mudança Dart/API, build ou testes Flutter nesta etapa;
+checks CP-16 permanecem históricos, a validação nova é a coleta física/auditoria.
+Manutenção: seis critérios CP-11 marcados; índice e plano Compass atualizados,
+CP-12 pronta. Checker e diffs após manutenção. Limites: seis pares, p95 descritivo,
+LWW, LAN, ADB/USB e fonte local R-44 ainda não publicada. Sem commit/publicação.
+
+## Conclusão Compass CP-12 — 2026-11-02
+
+Status final: concluída. Cinco skills aplicadas no mesmo agente: plan-reader,
+plan-implementer, code-reviewer, plan-validator e plan-maintainer.
+Leitura: CP-11 e matriz satisfeitas; conferidos brutos, exclusão, Kotlin e
+entrypoint Dart. Implementação: análise por carga/condição/aparelho/abertura/
+etapa, diferenças por par e por ordem, CPU/PSS/UID e corpo HTTP por rota.
+Scripts e 11 arquivos gerados em [CP-12](evidence/cp12/README.md); manifesto
+local registra hashes de código, resultados e entrada CP-11. Os 448 inputs
+foram verificados antes da análise; aquecimentos e preflight excluído separados.
+
+Review próprio aprovado após conferir relógios, pareamento, contagem e escopos;
+não independente. Não usar CPU como percentual, PSS como heap/pico, UID zero
+como ausência de HTTP ou p95 de seis como cauda estável. PSS não variou em
+nenhum dos 192 pares antes/depois; consultada documentação oficial Android,
+que prevê repetição de amostras sob limite de frequência. Duração ADB não tem
+fronteira final retida: fica indisponível, sem misturar relógios host/device.
+
+Validação: seis testes conhecidos passaram; `validate_results.py` conferiu
+32 grupos de duração e 16 de diferenças usando Decimal sobre microssegundos
+brutos. Duas execuções do analisador produziram 11 arquivos idênticos.
+Comandos reproduzíveis no README da evidência. Sem nova coleta ou mudança Dart;
+não reapresentados testes Flutter anteriores como validação desta etapa.
+
+Medianas off na primeira abertura, N=1000: restauração 775,309/505,3035 ms,
+edição 163,0345/99,762 ms, sync 3787,8375/3386,4295 ms (G52/G53).
+Diferença pareada on−off de sync: +493,562/−188,963 ms. Resultados não
+sustentam custo fixo uniforme do coletor. Cardinalidade e backlog crescem juntos;
+pull usa snapshot completo. Limites e resultados da chave única estão no relatório.
+Manutenção: cinco critérios CP-12 marcados; CP-13 pronta; checker, links e
+diffs após manutenção. Artigo externo não editado, sem commit/publicação.
+
+## Conclusão Compass CP-13 — 2026-11-02
+
+Status final: concluída. Leitura, implementação, code-reviewer, validação e
+manutenção executadas pelas cinco skills no mesmo agente. Pedido do autor:
+acrescentar apontamentos relevantes ao artigo nos registros existentes.
+CP-12 concluída satisfez a dependência. Relatório Markdown no consumidor
+reúne método, matriz, resultados, exclusões, interpretação e parágrafo sugerido;
+separa CP-07, calibração e série principal. [Evidência](evidence/cp13/README.md).
+
+Review próprio, não independente: ajustada redação de convergência, comprovada
+ao fim de A/B/A por condição. Mantidos limites de cardinalidade/backlog,
+snapshot/delta, p95, PSS/UID, fonte local R-44 e ausência de meta prévia de
+latência. O cenário incremental com 1000 notas já sincronizadas é futuro,
+sem resultado inventado. Nenhuma alteração no manuscrito externo.
+
+Validação: links locais e 12 medianas conferidos com CSV; hashes CP-12
+preservados. Manifesto CP-13 identifica relatório/entradas; checker e diffs
+nos dois repositórios após manutenção. Sem código, teste de runtime ou coleta
+nova nesta etapa. Manutenção: três critérios CP-13 marcados; plano, índice,
+roteiro e TRACEABILITY atualizados. CP-10 continua parcial; nenhuma tarefa
+nova iniciada. Sem commit/publicação.
+
+## Conclusão Compass CP-17 — 2026-11-02
+
+Status final: concluída. Cinco skills aplicadas no mesmo agente: plan-reader,
+plan-implementer, code-reviewer, plan-validator e plan-maintainer. Autorização
+para piloto curto após o autor conectar dois aparelhos; escopo é tempo, CPU
+e rede, sem nova medição de memória ou série estatística. Critérios adicionados
+ao plano Compass sem alterar os planos históricos concluídos.
+
+Leitura: estado CP-11 N=1000/off final, A/B/hub iguais e sem pendências.
+Implementação: instrumento/controlador novos, dois APKs profile, cópias isoladas,
+edição apenas em A, coleta off e captura dos corpos HTTP. Review próprio após
+correção, não independente: transferência por heredoc falhou antes de medir;
+substituída por stdin binário com quoting, hash e recusa de sobrescrita. Falha
+e limpeza retidas, novo namespace na tentativa aprovada. Nenhuma mudança na lib.
+
+Validação: formato, análise Flutter, 141 testes, dois builds ARM64 e runtime
+em G52/G53 aprovados. A: 0→1→0 pendências, push com uma mudança; B/A-second
+sem edição. Sete etapas em três fases; 1000 chaves, 999 valores preservados,
+outboxes vazias e convergência A/B/hub ao final. Releitura de JSON/inspeções
+e hashes finais comprovou estado e preservação dos bancos anteriores. APKs
+restaurados, apps parados, térmico 0 antes/depois e portas 8091/8092 fechadas.
+
+G52: edição 135,443 ms/CPU 136 ms, sync 587,468 ms/CPU 343 ms; G53 sync de
+recepção 331,123 ms/CPU 574 ms. Push 737 bytes/uma mudança, pull de A 502025
+bytes/1000 mudanças e ACK 77028 bytes/1000 IDs. São corpos HTTP, não bytes
+tarifados. UID não avançou nas janelas; não interpretar como ausência de rede.
+Esse volume é da configuração snapshot do hub, sem inferir defeito do core.
+
+[Evidência CP-17](evidence/cp17/README.md): 67 arquivos, 135.557.364 bytes,
+manifesto SHA-256 `5bef169dcff477d6cb8c3bfe49bd29e4e05accbf8669360dcd38d7703dec14c1`.
+Fontes e inputs iniciais retidos; controlador-v2 congelado antes das medições
+registra a correção de transferência sem rebuild dos APKs. Manutenção: quatro
+critérios marcados, plano/roteiro/índice e complemento do artigo atualizados.
+Checker e diffs após manutenção. CP-10 continua parcial. Limites: uma execução
+por fase, sem p95/mediana, memória, energia ou avaliação de UI. Sem publicação.
+
+## Complemento analítico Compass CP-17 — 2026-11-02
+
+Pedido do autor para explicar o problema nos relatórios e facilitar a discussão
+do artigo. Acrescentada análise no relatório incremental do consumidor e no
+registro CP-17, sem nova tarefa, medição ou mudança de código de produto.
+Conferidos hub e adaptador HTTP com os hashes das fontes congeladas.
+
+O relatório liga uma mudança/737 bytes no push ao snapshot de 1000 mudanças
+no pull e 1000 IDs no ACK. Corpos do primeiro sync de A: 580009 bytes no
+total, 579064 em pull/ACK (99,84%). A fórmula foi conferida nos eventos brutos;
+não representa porcentagem de latência, CPU ou economia futura.
+
+Inspeção identificou exportação completa no hub, consulta sem cursor e ACK
+que, no modo snapshot, valida cliente/estágio sem remover outbox compartilhada.
+Registrado o cuidado de não perder entrega a outro cliente. Melhorias por peer
+e eventual evolução da biblioteca ficam como hipóteses, com critérios de
+offline/duplicação/recuperação durável, sem atribuir defeito aos CRDTs.
+
+Review próprio: distinção entre evidência, mecanismo, hipótese e trabalho futuro;
+sem independência. Validação documental: números e links conferidos, brutos e
+manifestos históricos preservados; checker e diffs após manutenção. Incluído
+texto sugerido para discussão. Artigo externo não editado; nenhuma otimização
+ou novo teste de desempenho executado neste complemento.
+
+## Execução R-45 — 2026-11-02
+
+Status final: concluída
+Skills: plan-reader, plan-implementer, code-reviewer, plan-validator, plan-maintainer
+Leitura: autor autorizou preparação 1.0.2 antes de seu commit; R-44 concluída.
+Inventariados diff preexistente, manifests, changelogs, script de release e fluxo
+de sete pacotes. Consumidores Compass por path não precisam renumerar o app.
+
+Implementação: sete versões 1.0.2 e 17 constraints internas ^1.0.2; changelogs
+novos com replay R-44 em sync/facade e somente alinhamento nos demais, exceto
+regressões SQLite já existentes. README, notas e publicação distinguem 1.0.1
+histórica de preparação atual. Sem alteração adicional em código de produto,
+SDK, APIs, dados/JSON/schema ou snapshots congelados dos ensaios.
+
+Review: aprovado
+Revisão própria, não independente. Conferidos constraints, escopo
+de cada changelog, compatibilidade com 1.0.1 e limites de publicação. Gate e
+candidatos antigos não são apresentados como validação dos novos archives;
+pull/ACK do hub continua trabalho futuro, sem melhoria fictícia na lib.
+Achados: nenhum impeditivo restante; candidatos e gates históricos foram
+identificados como 1.0.1 no guia para evitar envio equivocado.
+
+Validação: aprovada
+Escopo: preparação de metadados. `dart pub get --offline`
+resolveu workspace; formato, análise e testes nos sete pacotes passaram:
+21 facade, 134 core, 14 storage, 10 transport, 83 sync, 10 storage_testing,
+42 storage_sqflite, total 314. `prepare_release.py` exportou sete candidatos,
+85 arquivos e 17 constraints conferidos por hash, sem workspace/overrides.
+Comandos, logs e inventário em [R-45](evidence/r45-preparacao-1.0.2/README.md).
+Comandos: `dart pub get --offline`; `dart format --output=none
+--set-exit-if-changed lib test`, `dart analyze`, `dart test --reporter expanded`
+em cada pacote; `python3 scripts/prepare_release.py --output
+/tmp/deltasync-release-1.0.2-7a05e2e176df4a7db9e3b6ca194384d1`.
+
+Critérios: versões/constraints, changelogs, documentação atual/histórico e
+review/validação/exportação satisfeitos.
+Manutenção: quatro critérios marcados,
+fase/índice/TRACEABILITY atualizados; checker e diff após manutenção.
+Limitações: gate hosted/dry-runs/advisories online/publicação 1.0.2 não realizados.
+Os 314 testes não substituem esse gate. Nenhum commit, tag, push ou upload;
+próxima tarefa depende de autorização de escopo própria. Worktrees do consumidor
+e evidências anteriores preservados.

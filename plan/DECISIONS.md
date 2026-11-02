@@ -574,14 +574,25 @@ instalação pública nem autorizam upload/tag/commit/merge/push. Novos fontes
 exigem revalidação dos artefatos. Ver [matriz e roteiro](evidence/val17/README.md)
 e [execução](TRACEABILITY.md#execucao-val-17-2026-10-25).
 
+DEC-71 — Replay ordenado da outbox na restauração R-44, 2026-11-01:
+`ReplicaPersistence.restoreInto` carrega o snapshot canônico ou legado e aplica
+as mudanças pendentes na ordem entregue pelo storage em um único `Delta`.
+`Replica.apply` valida o lote e adota uma única cópia; a outbox continua intacta
+até ACK. Não pular entrada já presente no snapshot: pendências podem ser mais
+novas e snapshots legados exigem replay. Formato persistido, contrato público,
+HLC e protocolo não mudam. Regressões SQLite incluem 1000 entradas, falha
+atômica e retry; suites gerais cobrem oito CRDTs e leitor legado. A medição
+profile nos dois Androids é local e posterior à 1.0.1 publicada. Ver
+[evidência](evidence/r44/README.md).
+
 ## Decisões abertas
 
 | ID | Tarefa | Questão e limite atual |
 |---|---|---|
 | OPEN-02 | R-03, R-08b | R-03 definiu ACK por mudança; R-08b resolve no enlace fixo: IDs parciais só limpam outbox do peer que reportou `appliedAndPersisted`. ACK de recebimento não limpa. Confirmação para topologias com mais peers fica fora do recorte. |
 | OPEN-04 | R-08b | Resolvida em R-08b para peer fixo: outbox endereçada permanece até ACK durável e retry ao reconectar. Bootstrap para peer novo/novos peers além do par ainda não tem protocolo no escopo. |
-| OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida sete artefatos hosted em registro local, sem overrides. Outros consumidores permanecem desconhecidos; mudanças incompatíveis da consolidação, aliases temporários e migrações seguem documentados. Registro local não comprova publicação no pub.dev; publicação permanece com o autor. |
-| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42, R-36, VAL-17 | Resolvida em R-36/DEC-69: APIs/assinaturas fechadas e sete superfícies conferidas com R-30. Migração enumera substitutos e restrições das variantes; versão deliberada 1.0.1 mantida. VAL-17/DEC-70 aprovou consumidores/dados/artefatos em gate próprio; publicação e prova de instalação pública permanecem com o autor. |
+| OPEN-07 | R-09a, R-09b, VAL-13, R-28, R-29 | Compass identificado/inventariado e integrado em VAL-13, com path/overrides externos. R-28 valida artefatos históricos em registro local. Em 25/10, autor autorizou envio real da 1.0.1: sete pacotes publicados e consumidor público de cache novo aprovado, sem paths/overrides, conforme evidence/publicacao-1.0.1. Outros consumidores permanecem desconhecidos; quebras/migrações seguem documentadas. Próximos envios dependem de autorização do autor. |
+| OPEN-08 | R-30, R-37, R-38, R-40, R-41, R-42, R-36, VAL-17 | Resolvida em R-36/DEC-69: APIs/assinaturas fechadas e sete superfícies conferidas com R-30. Migração enumera substitutos e restrições das variantes; versão deliberada 1.0.1 mantida. VAL-17/DEC-70 aprovou gate, R-43 limpou auxiliares e a publicação posterior foi autorizada/executada em 25/10, com sete pacotes e instalação pública conferidos. Não cria autorização para futuras releases. |
 | OPEN-09 | R-34 | Resolvida por DEC-68: piloto essential 16.7.0 concluiu por adiamento fundamentado. Recommended/CI/advisories permanecem; sem instalação permanente ou downgrade. Novo piloto e controle positivo Dart/Flutter exigidos antes de reconsiderar adoção, sem bloquear R-35. |
 
 Abertura de decisão não impõe pausa automática. Resolver escolhas técnicas

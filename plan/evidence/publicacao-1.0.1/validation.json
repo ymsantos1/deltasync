@@ -1,0 +1,1109 @@
+{
+  "dateUtc": "2026-10-25T21:13:47.543779+00:00",
+  "userAuthorization": "Explicit request to publish the seven library packages to pub.dev",
+  "version": "1.0.1",
+  "sourceHead": "c5d5bb400267eb7ca1fe88e4e60e51d74ec44c11",
+  "sourceBranch": "main",
+  "ci": {
+    "url": "https://github.com/ymsantos1/deltasync/actions/runs/40233077899",
+    "headSha": "c5d5bb400267eb7ca1fe88e4e60e51d74ec44c11",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      "Workflow, failure fixtures and plan consistency",
+      "Dart 3.13.5 / all workspace packages",
+      "Flutter 3.47.7 / host tests and Android debug builds"
+    ]
+  },
+  "registryBefore": {
+    "deltasync_core": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync_storage": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync_transport": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync_sync": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync_storage_testing": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync_storage_sqflite": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    },
+    "deltasync": {
+      "exists": true,
+      "latest": "1.0.0",
+      "targetExists": false
+    }
+  },
+  "preparedRelease": "/tmp/deltasync-release-parent-yglhq7f9/release",
+  "approvedInventory": "plan/evidence/r43/validation.json:artifacts.inventory",
+  "approvedPreparedFiles": 85,
+  "publishedFiles": 78,
+  "libraryFiles": 48,
+  "allPublishedContentsMatchApprovedInventory": true,
+  "packages": {
+    "deltasync_core": {
+      "version": "1.0.1",
+      "archiveSha256": "eb46539ec27d65e809b2b80c4c3c23dc428f69cdb5e248fb91f9c60afae9638a",
+      "files": 32,
+      "url": "https://pub.dev/packages/deltasync_core/versions/1.0.1",
+      "published": "2026-10-25T21:01:26.234222Z",
+      "exactApprovedContent": true
+    },
+    "deltasync_storage": {
+      "version": "1.0.1",
+      "archiveSha256": "2793edd196b10ef079ee1e91bfe3f7db20acd496dc094391599ad752f01f415e",
+      "files": 8,
+      "url": "https://pub.dev/packages/deltasync_storage/versions/1.0.1",
+      "published": "2026-10-25T21:03:20.460201Z",
+      "exactApprovedContent": true
+    },
+    "deltasync_transport": {
+      "version": "1.0.1",
+      "archiveSha256": "0fe01d6e5a66a0657ca2430704a7647ef5080ca828c4b29ebd325281341b260e",
+      "files": 8,
+      "url": "https://pub.dev/packages/deltasync_transport/versions/1.0.1",
+      "published": "2026-10-25T21:03:26.709930Z",
+      "exactApprovedContent": true
+    },
+    "deltasync_sync": {
+      "version": "1.0.1",
+      "archiveSha256": "88e0c0df657e90670f93f26e128a1cfa396a0bd700bf45b8046e95b17590606a",
+      "files": 11,
+      "url": "https://pub.dev/packages/deltasync_sync/versions/1.0.1",
+      "published": "2026-10-25T21:05:56.619765Z",
+      "exactApprovedContent": true
+    },
+    "deltasync_storage_testing": {
+      "version": "1.0.1",
+      "archiveSha256": "8fadd4272fc09f5c85ee6ea3389fb4884d9f4bc875b4cafef49176c7c957d16b",
+      "files": 6,
+      "url": "https://pub.dev/packages/deltasync_storage_testing/versions/1.0.1",
+      "published": "2026-10-25T21:06:03.352919Z",
+      "exactApprovedContent": true
+    },
+    "deltasync_storage_sqflite": {
+      "version": "1.0.1",
+      "archiveSha256": "78a0768e6d40d35621b930f623974fdef8fc124ddaae71e29d56584a543b494e",
+      "files": 6,
+      "url": "https://pub.dev/packages/deltasync_storage_sqflite/versions/1.0.1",
+      "published": "2026-10-25T21:08:33.652680Z",
+      "exactApprovedContent": true
+    },
+    "deltasync": {
+      "version": "1.0.1",
+      "archiveSha256": "0267710dab371673906713458c000762a962e7d944ddbe4f834ab15d35695420",
+      "files": 7,
+      "url": "https://pub.dev/packages/deltasync/versions/1.0.1",
+      "published": "2026-10-25T21:10:33.074347Z",
+      "exactApprovedContent": true
+    }
+  },
+  "initialCoreCommand": {
+    "command": [
+      "dart",
+      "pub",
+      "publish",
+      "--force"
+    ],
+    "exitCode": 0,
+    "serverMessage": "Successfully uploaded https://pub.dev/packages/deltasync_core version 1.0.1"
+  },
+  "commands": [
+    {
+      "package": "deltasync_storage",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_storage depends on deltasync_core ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_core: dart pub add deltasync_core:^1.0.0"
+      ],
+      "outputSha256": "ff1125b35fc90438526b5165e301e505e56d1bf21b8a601dcbdbd1ce7e61be3e"
+    },
+    {
+      "package": "deltasync_storage",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 50 dependencies!"
+      ],
+      "outputSha256": "f3c2f1e87d60de29a0bcb047c7fa1fe1376b141a91a3041a3662402ce7f78710"
+    },
+    {
+      "package": "deltasync_storage",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 6 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "8586cc12f4d2971dceb05aa379386202e348c68e5259340bcd1f900fd98760a4"
+    },
+    {
+      "package": "deltasync_storage",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 6 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync_storage version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "d9bbdf52e734f3e97f73f4e17510098b5738da08fecb91a6459f7814e32fde31"
+    },
+    {
+      "package": "deltasync_transport",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 50 dependencies!"
+      ],
+      "outputSha256": "f3c2f1e87d60de29a0bcb047c7fa1fe1376b141a91a3041a3662402ce7f78710"
+    },
+    {
+      "package": "deltasync_transport",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 4 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "9454670a07253f11464d96178ffc62931b03915bb26e08bf08944462ed267c2e"
+    },
+    {
+      "package": "deltasync_transport",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 4 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync_transport version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "4c2369993daeea48022b6fe7d5228b22c00e12f75e6496a5a8316363364888a1"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Try updating the following constraints: dart pub add deltasync_core:^1.0.1 deltasync_storage:^1.0.0 deltasync_transport:^1.0.0 dev:test:^1.33.0"
+      ],
+      "outputSha256": "cae5f8e6f7aacaa268323944b0981ae2825a705f80cfe1079e7c8b57fbca0897"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_sync depends on deltasync_transport ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_transport: dart pub add deltasync_transport:^1.0.0"
+      ],
+      "outputSha256": "892d4c651e204d1a3a74b28317bebea0c3b4d236e94b46010d8045ba03ceab12"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 52 dependencies!"
+      ],
+      "outputSha256": "acc519a738f0c766c369bb7ba99c745b600d7bff5abf78d731fd7ffd6948e277"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 13 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "86491421d3a86d68e2511560985c4cae905c240d5342bcbfba422c18fdd480bd"
+    },
+    {
+      "package": "deltasync_sync",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 13 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync_sync version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "41179b0f87543d539a245fd4978a3171341b2178616fc3ae87ca2695eb773365"
+    },
+    {
+      "package": "deltasync_storage_testing",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 52 dependencies!"
+      ],
+      "outputSha256": "79fd9934172f714c37b804a547f9e71c5bad291cfdf76d5c386bf6290dd97d53"
+    },
+    {
+      "package": "deltasync_storage_testing",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 5 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "691274eb666360bd89eaf2136ffe7063bd202bc97a66429db31911c9750b9491"
+    },
+    {
+      "package": "deltasync_storage_testing",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 5 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync_storage_testing version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "d327e949b0504888baa0efc8d6e1cfe99440e134ad48ca840098243f9d3a4aeb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Resolving dependencies...",
+        "Because deltasync_storage_sqflite depends on deltasync_sync ^1.0.1 which doesn't match any versions, version solving failed."
+      ],
+      "outputSha256": "5b994a29e5108e795335042dd0459cfd4e4973bae2d62191ebfc44b89d0f6deb"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync_storage_sqflite depends on deltasync_storage_testing ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_testing: dart pub add dev:deltasync_storage_testing:^1.0.0"
+      ],
+      "outputSha256": "0375e93e6ec2bbcbe1c1a2c24e35c171c76fb1a1b47621975ceccea680469335"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 64 dependencies!"
+      ],
+      "outputSha256": "7262c729dac74e926bc72a4b4044025622a46bbdb1bb3af82f7d6e0189512c80"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 6 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "d71f43d2db7de81dccd1e419f99f36a7fd39a908b96ae1e96affeb0aa737e817"
+    },
+    {
+      "package": "deltasync_storage_sqflite",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 6 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync_storage_sqflite version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "6d8209ab13f944e27be50861826b9472305d34b66c95f94d688efbbaa3e6c1bd"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 1,
+      "outputTail": [
+        "Because deltasync depends on deltasync_storage_sqflite ^1.0.1 which doesn't match any versions, version solving failed.",
+        "",
+        "",
+        "You can try the following suggestion to make the pubspec resolve:",
+        "* Consider downgrading your constraint on deltasync_storage_sqflite: dart pub add dev:deltasync_storage_sqflite:^1.0.0"
+      ],
+      "outputSha256": "a80038c7550ebe64a1780e8f7fd6b7196be59b54d87a6b0474aaea58278788e5"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "get"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "+ web_socket 1.0.1",
+        "+ web_socket_channel 3.0.3",
+        "+ webkit_inspection_protocol 1.2.1",
+        "+ yaml 3.1.4",
+        "Changed 65 dependencies!"
+      ],
+      "outputSha256": "faff03c56bad2337b48ee5779372a60b68cb46659526429f035be93c3df3f65a"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "Total compressed archive size: 7 KB.",
+        "Validating package...",
+        "The server may enforce additional checks.",
+        "",
+        "Package has 0 warnings."
+      ],
+      "outputSha256": "8fc42c54c568062d5b1d1a7a0cec7ab4e93e4b2122061f533d3b4a9f03ef60f6"
+    },
+    {
+      "package": "deltasync",
+      "command": [
+        "dart",
+        "pub",
+        "publish",
+        "--force"
+      ],
+      "exitCode": 0,
+      "outputTail": [
+        "",
+        "Total compressed archive size: 7 KB.",
+        "Validating package...",
+        "Uploading...",
+        "Message from server: Successfully uploaded https://pub.dev/packages/deltasync version 1.0.1, it may take up-to 10 minutes before the new version is available."
+      ],
+      "outputSha256": "db849d857f2755f4d98f2ba5bf46e08cb901bd4b3327004d1cf05af43c164377"
+    }
+  ],
+  "consumer": {
+    "registry": "https://pub.dev",
+    "directory": "/tmp/deltasync-public-1-0-1-8x5rylsp/consumer",
+    "pubCache": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache",
+    "freshCache": true,
+    "installed": {
+      "deltasync": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync-1.0.1",
+      "deltasync_core": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_core-1.0.1",
+      "deltasync_storage": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_storage-1.0.1",
+      "deltasync_storage_sqflite": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_storage_sqflite-1.0.1",
+      "deltasync_storage_testing": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_storage_testing-1.0.1",
+      "deltasync_sync": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_sync-1.0.1",
+      "deltasync_transport": "/tmp/deltasync-public-1-0-1-8x5rylsp/pub-cache/hosted/pub.dev/deltasync_transport-1.0.1"
+    },
+    "noPathsOrOverrides": true,
+    "exactApprovedContent": true,
+    "tests": 54,
+    "status": "passed",
+    "records": [
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync_storage_sqflite 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Try updating the following constraints: dart pub add deltasync:^1.0.0 deltasync_storage_sqflite:^1.0.0 dev:deltasync_storage_testing:^1.0.1 sqflite_common_ffi:^2.4.5 dev:test:^1.33.0",
+        "outputSha256": "7f2cfa332a1bf77667108e695608bd0469ae1f710ce3c82efe551e3099d354e0"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 1,
+        "output": "Because r28_release_consumer depends on deltasync 1.0.1 which doesn't match any versions, version solving failed.\n\n\nYou can try the following suggestion to make the pubspec resolve:\n* Consider downgrading your constraint on deltasync: dart pub add deltasync:^1.0.0",
+        "outputSha256": "e6981d1b77088193dd71a669d03a027ee651ed3f5e2b1e3bc2bc710b3c3eed21"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "get"
+        ],
+        "exitCode": 0,
+        "output": "+ web_socket 1.0.1\n+ web_socket_channel 3.0.3\n+ webkit_inspection_protocol 1.2.1\n+ yaml 3.1.4\nChanged 66 dependencies!",
+        "outputSha256": "ca8fb48055494789f7202d5726a35677b88f8246d04fd9aa20f3a6a87c2f0139"
+      },
+      {
+        "command": [
+          "dart",
+          "analyze",
+          "test"
+        ],
+        "exitCode": 0,
+        "output": "Analyzing test...\nNo issues found!\n",
+        "outputSha256": "102986eb10a6468eb16acb72e6833b549e7ac96079dd3157c1a87f92bce1d267"
+      },
+      {
+        "command": [
+          "dart",
+          "test",
+          "--reporter",
+          "expanded"
+        ],
+        "exitCode": 0,
+        "output": "Running build hooks...Running build hooks...00:00 +0: loading test/release_test.dart\n00:00 +0: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +1: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +2: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +3: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +4: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +5: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +6: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +7: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +8: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +9: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +10: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +11: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +12: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +13: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +14: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +15: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +16: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +17: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +18: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +19: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +20: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +21: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +22: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +23: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +24: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +25: test/release_test.dart: Release archive SQLite ReplicaStorage contract summary scopes pending and sent entries by replica and peer\n00:00 +26: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +27: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +28: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +29: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +30: test/migrated_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +31: test/release_test.dart: Release archive SQLite ReplicaStorage contract stores canonical snapshot and opaque outbox changes\n00:00 +32: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +33: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +34: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +35: test/r37_test.dart: frozen 1.0.0 snapshot retains eight kinds and causal metadata\n00:00 +36: test/release_test.dart: Release archive SQLite ReplicaStorage contract ACK metadata and peer scoping survive partial confirmation\n00:00 +37: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +38: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +39: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +40: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +41: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +42: test/r42_test.dart: external consumer handles all variants without internal imports\n00:00 +43: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +44: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +45: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +46: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +47: test/migrated_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +48: test/r37_test.dart: exported pending batch imports with checkpoint and explicit peer\n00:00 +49: test/release_test.dart: facade restores offline commits and persists remote ACK after reopen\n00:00 +50: test/migrated_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +51: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +52: test/r37_test.dart: SQLite restores frozen state/outbox, new edits and peer-isolated ACK\n00:00 +53: test/r37_test.dart: legacy snapshot wrapper restores through the public engine boundary\n00:00 +54: All tests passed!\n",
+        "outputSha256": "956dbfd3d8856ccaab97d22fcd77eeaf6fbbdc4008ead259be9412d3542b7d34"
+      },
+      {
+        "command": [
+          "dart",
+          "pub",
+          "deps",
+          "--json"
+        ],
+        "exitCode": 0,
+        "output": "{\n  \"deltasync_storage_testing\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync_storage\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync_core\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync_storage_sqflite\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync_transport\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  },\n  \"deltasync_sync\": {\n    \"version\": \"1.0.1\",\n    \"source\": \"hosted\"\n  }\n}",
+        "outputSha256": "abbfe4baff991f40fe2bb8e28e21dff987188129dc6f92d137ae244f2bf97994"
+      }
+    ]
+  },
+  "propagation": {
+    "retriedResolutionOnly": true,
+    "constraintsUnchanged": true,
+    "firstAttemptSha256": "872636fd3de0d0dd504b3bf0e4b1794375425370cefb378f360de6548ce431e1"
+  },
+  "rawPublicationReportSha256": "15201d80368c471d95c4c997044c0890a0ae50734a77c102be9014071550bd2d",
+  "rawConsumerReportSha256": "da5d90b4247ef660df0a9ed2f563e8348e4cb0d7d6ea14a96d4b23d4669c3ec4",
+  "noCommitTagOrPush": true,
+  "automatedCdAdded": false
+}

@@ -1,3 +1,12 @@
+## 1.0.2
+
+- Include the ordered outbox replay fix from deltasync_sync: restore all pending
+  changes in one validated apply operation instead of repeatedly copying state.
+- Align the seven package versions and internal minimums to 1.0.2. Public APIs,
+  serialized formats and historical readers remain compatible with 1.0.1.
+- Record Compass scale and incremental performance studies in the repository;
+  snapshot-pull and ACK improvements in its reference hub remain future work.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

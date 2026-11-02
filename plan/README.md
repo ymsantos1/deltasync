@@ -11,12 +11,26 @@ Revisão: 2026-10-25. Fonte principal de tarefas, escopo e andamento.
 - [Fase 4: sync](04_PHASE4_SYNC.md).
 - [Fase 5: validação](05_PHASE5_VALIDACAO.md).
 - [Fase 6: consolidação completa para 1.0.1](06_PHASE6_MANUTENCAO_1_0_1.md).
+- [Fase 7: correção da restauração com outbox extensa](07_PHASE7_RESTAURACAO.md).
 - [Rastreabilidade e evidências](TRACEABILITY.md).
 - [Decisões e invariantes](DECISIONS.md).
 - [Riscos](RISKS.md).
 - [Instruções de trabalho](../AGENTS.md).
 - [Como executar tarefas com ciclo completo](RUNBOOK.md).
 - [Análise da arquitetura e simplificações](../docs/analise-arquitetura.md).
+- [Protocolo de testes de desempenho no Compass](../docs/roteiro-desempenho-compass.md)
+  (CP-01–CP-07 concluídas: host e piloto físico M1–M6 em dois Androids, com
+  ADB autorizado e comparação ligada/desligada. Fase CP-08–CP-16 para coleta
+  automatizada; CP-08/CP-09 concluídas, CP-10 parcial e interrompida após um
+  ciclo completo de uma nota. CP-14 preparou escala com notas distintas;
+  CP-15 concluiu piloto profile N=1/1000 nos dois aparelhos. R-44 corrigiu
+  a restauração lenta; N=10/100 também foram medidos em ambos. CP-16 congelou
+  matriz, oito APKs e fontes e validou smokes N=1/1000; CP-11 concluiu 12 pares
+  principais N=1/1000 on/off (72 fases), com brutos auditados. CP-12 concluiu
+  [análise reproduzível](evidence/cp12/README.md); CP-13 consolidou
+  [material para o artigo](../../samples_test_lib/compass_app/app/docs/relatorio-desempenho-deltasync.md).
+  [CP-17](evidence/cp17/README.md) concluiu um piloto com 1000 notas já
+  sincronizadas e uma nova pendência; push de uma mudança, pull por snapshot).
 
 ## Situação e referência acadêmica
 
@@ -135,28 +149,36 @@ normalmente exigiriam minor/major. A fase 6 reúne correções, ergonomia, remo�
 de legado, medições, CI, piloto Saropa, documentação e migração de fonte.
 O número 1.0.1 será mantido por escolha expressa; não promete compatibilidade
 integral com 1.0.0. Formatos/readers de dados e invariantes continuam preservados.
-Tarefa ativa: **nenhuma**. R-43 concluiu a limpeza posterior do legado sem uso.
+Tarefa ativa: **nenhuma**. R-45 preparou metadados para 1.0.2, com 314 testes
+e exportação conferida dos sete pacotes; [evidência](evidence/r45-preparacao-1.0.2/README.md).
+R-44 corrigiu o replay quadrático após CP-15;
+o gate e a publicação históricos da 1.0.1 permanecem concluídos. Ver
+[resultado e limites](evidence/r44/README.md).
 R-36 preparou sete pacotes 1.0.1 e 17 constraints internas
 ^1.0.1, com changelogs/migração e 85 arquivos inspecionados. VAL-17 aprovou
-o gate completo e encerrou a fase 6 em 25/10; nenhum pacote foi publicado.
-O gate atual validou 312 testes dos sete pacotes, consumidor hosted, migração,
+o gate completo e encerrou a fase 6 em 25/10, sem publicação naquela tarefa.
+O gate histórico 1.0.1 validou 312 testes dos sete pacotes, consumidor hosted, migração,
 sete dry-runs, exemplos/builds e runtime Android. Ver [evidências e limites](evidence/val17/README.md).
 R-43 preservou readers e retirou apenas auxiliares internos sem uso; revalidou
-312 testes, 54 hosted e sete dry-runs. Os [candidatos atuais](evidence/r43/README.md#candidatos-atuais-e-publicação)
-substituem os anteriores para publicação; VAL-17 permanece evidência histórica.
+312 testes, 54 hosted e sete dry-runs. Os [candidatos 1.0.1](evidence/r43/README.md#candidatos-atuais-e-publicação)
+substituíram os anteriores; VAL-17 permanece evidência histórica. Depois do merge
+na main e dos três jobs remotos aprovados, o autor autorizou o envio: os sete
+pacotes 1.0.1 estão publicados, com archives conferidos e 54 testes em consumidor
+público de cache novo. Ver [registro da publicação](evidence/publicacao-1.0.1/README.md).
 R-34 adiou Saropa permanente. Recommended e CI/advisories R-33 permanecem,
 sem downgrade de SDK/test.
-R-33 alinhou o mínimo para ^3.13.0 por orientação do autor; nenhum workflow remoto
-foi executado. Escrita e revisão do TCC ficam com o autor, fora deste plano.
+R-33 alinhou o mínimo para ^3.13.0 por orientação do autor; a validação remota da
+main foi confirmada antes da publicação. Escrita e revisão do TCC ficam com o autor, fora deste plano.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima
 selecionável: nenhuma; todas as tarefas autorizadas estão concluídas.
-VAL-17 encerrou o gate sem publicação, tag, commit ou push; envio manual e
-instalação pública continuam com o autor, conforme [roteiro](evidence/val17/README.md#publicação-manual-pelo-autor).
+VAL-17 encerrou o gate sem publicação, tag, commit ou push. A publicação posterior
+foi autorizada separadamente e executada pelo agente; próximos envios continuam
+dependendo de autorização do autor, conforme [roteiro](../docs/publicacao.md).
 R-28 corrigiu distribuição dos sete pacotes e validou artefatos em registro local
 somente leitura; VAL-16 e demais tarefas das fases anteriores estão concluídas.
-Publicação real e instalação das versões do pub.dev permanecem com o autor.
+Publicação real e instalação das sete versões 1.0.1 do pub.dev foram verificadas.
 VAL-13 concluiu o recorte de notas no Compass indicado pelo autor. R-20 concluiu
 a refatoração estrutural e revalidou o gate técnico em 2026-10-13; R-17/R-19 COULD
 concluíram. Publicação no pub.dev fica com o autor; este plano não autoriza upload.
@@ -269,6 +291,8 @@ status, prioridade e dependências; atualizar ambos na manutenção.
 | [R-41](06_PHASE6_MANUTENCAO_1_0_1.md#r-41) | Oferecer eventos seletivos e consolidar canais internos | concluída | SHOULD | R-37, R-38 |
 | [R-42](06_PHASE6_MANUTENCAO_1_0_1.md#r-42) | Distinguir ausência, valor null e tombstone na consulta | concluída | SHOULD | R-39 |
 | [R-43](06_PHASE6_MANUTENCAO_1_0_1.md#r-43) | Limpar auxiliares legados sem uso operacional | concluída | SHOULD | VAL-17 |
+| [R-44](07_PHASE7_RESTAURACAO.md#r-44) | Evitar replay quadrático na restauração | concluída | SHOULD | R-43 |
+| [R-45](07_PHASE7_RESTAURACAO.md#r-45) | Preparar metadados da versão 1.0.2 | concluída | SHOULD | R-44 |
 
 ## Consolidação 1.0.1
 

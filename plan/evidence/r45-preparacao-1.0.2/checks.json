@@ -1,0 +1,282 @@
+[
+  {
+    "package": "deltasync",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "log": "logs/deltasync-format.log"
+  },
+  {
+    "package": "deltasync",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "log": "logs/deltasync-analyze.log"
+  },
+  {
+    "package": "deltasync",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync",
+    "exitCode": 0,
+    "log": "logs/deltasync-test.log",
+    "tests": 21
+  },
+  {
+    "package": "deltasync_core",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_core",
+    "exitCode": 0,
+    "log": "logs/deltasync_core-format.log"
+  },
+  {
+    "package": "deltasync_core",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_core",
+    "exitCode": 0,
+    "log": "logs/deltasync_core-analyze.log"
+  },
+  {
+    "package": "deltasync_core",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_core",
+    "exitCode": 0,
+    "log": "logs/deltasync_core-test.log",
+    "tests": 134
+  },
+  {
+    "package": "deltasync_storage",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage-format.log"
+  },
+  {
+    "package": "deltasync_storage",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage-analyze.log"
+  },
+  {
+    "package": "deltasync_storage",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage-test.log",
+    "tests": 14
+  },
+  {
+    "package": "deltasync_transport",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_transport",
+    "exitCode": 0,
+    "log": "logs/deltasync_transport-format.log"
+  },
+  {
+    "package": "deltasync_transport",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_transport",
+    "exitCode": 0,
+    "log": "logs/deltasync_transport-analyze.log"
+  },
+  {
+    "package": "deltasync_transport",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_transport",
+    "exitCode": 0,
+    "log": "logs/deltasync_transport-test.log",
+    "tests": 10
+  },
+  {
+    "package": "deltasync_sync",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_sync",
+    "exitCode": 0,
+    "log": "logs/deltasync_sync-format.log"
+  },
+  {
+    "package": "deltasync_sync",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_sync",
+    "exitCode": 0,
+    "log": "logs/deltasync_sync-analyze.log"
+  },
+  {
+    "package": "deltasync_sync",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_sync",
+    "exitCode": 0,
+    "log": "logs/deltasync_sync-test.log",
+    "tests": 83
+  },
+  {
+    "package": "deltasync_storage_testing",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_testing",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_testing-format.log"
+  },
+  {
+    "package": "deltasync_storage_testing",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_testing",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_testing-analyze.log"
+  },
+  {
+    "package": "deltasync_storage_testing",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_testing",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_testing-test.log",
+    "tests": 10
+  },
+  {
+    "package": "deltasync_storage_sqflite",
+    "check": "format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_sqflite",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_sqflite-format.log"
+  },
+  {
+    "package": "deltasync_storage_sqflite",
+    "check": "analyze",
+    "command": [
+      "dart",
+      "analyze"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_sqflite",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_sqflite-analyze.log"
+  },
+  {
+    "package": "deltasync_storage_sqflite",
+    "check": "test",
+    "command": [
+      "dart",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/projetos/tcc/deltasync/packages/deltasync_storage_sqflite",
+    "exitCode": 0,
+    "log": "logs/deltasync_storage_sqflite-test.log",
+    "tests": 42
+  }
+]

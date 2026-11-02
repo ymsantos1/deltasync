@@ -1,0 +1,22 @@
+{
+  "inputManifestSha256": "f31292331b17d2389313c52138c516724ea394bf11faea5fa4ef4a6205b295ac",
+  "plannedMainPairs": 12,
+  "attemptedMainPairs": 13,
+  "validMainPairs": 12,
+  "excludedBeforeMeasurement": [
+    "n1-pair5"
+  ],
+  "warmupPairs": [
+    "n1-warmup",
+    "n1000-warmup"
+  ],
+  "mainPhaseReports": 72,
+  "stageRows": 192,
+  "roundUnit": "pair_index within N/role/phase/condition; operations are not repetitions",
+  "percentile": "nearest rank ceil(0.95*n); n=6 implies maximum",
+  "adbDuration": "unavailable: host end timestamp and am start duration not retained",
+  "dartHeap": "not measured",
+  "pssUnchangedStageRows": 192,
+  "metricsScope": "elapsed_ms is Dart harness Stopwatch around one repository action; not ADB startup or pure core",
+  "failures": "only preflight exclusion; no measured failures"
+}

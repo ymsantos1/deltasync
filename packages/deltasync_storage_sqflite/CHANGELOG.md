@@ -1,3 +1,10 @@
+## 1.0.2
+
+- Add durable SQLite regression coverage for restoration of 1000 pending entries,
+  ACK/reopen and recovery after a conflicting replay entry is removed.
+- Align internal dependency minimums with 1.0.2. Runtime adapter APIs and SQLite
+  schema remain unchanged; the replay optimization is in deltasync_sync.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

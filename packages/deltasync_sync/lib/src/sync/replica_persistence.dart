@@ -22,8 +22,11 @@ class ReplicaPersistence {
         throw FormatException('Unsupported storage snapshot version');
       }
     }
-    for (final entry in await storage.pending(candidate.id)) {
-      candidate.apply(entry.delta);
+    final pending = await storage.pending(candidate.id);
+    if (pending.isNotEmpty) {
+      // Keep storage order and validate the full replay before adopting it.
+      // Applying entries separately copies the entire replica for each one.
+      candidate.apply(Delta(pending.expand((entry) => entry.delta.changes)));
     }
   }
 

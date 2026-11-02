@@ -1,0 +1,9 @@
+N,condition,role,planned_pairs,measured_pairs,valid_pairs,excluded_measured_pairs,phase_reports
+1,on,A,6,6,6,0,12
+1,on,B,6,6,6,0,6
+1,off,A,6,6,6,0,12
+1,off,B,6,6,6,0,6
+1000,on,A,6,6,6,0,12
+1000,on,B,6,6,6,0,6
+1000,off,A,6,6,6,0,12
+1000,off,B,6,6,6,0,6

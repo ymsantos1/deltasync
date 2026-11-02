@@ -1,0 +1,126 @@
+{
+  "artifactType": "deltasync_1.0.2_metadata_preparation",
+  "tests": 314,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3019,
+      "sha256": "c450a34c0b24036f1b1dc09dfcc6779cca3af0bc7369e509af928f8e6381082e"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 6206,
+      "sha256": "5d117614d01e200a06883dd04b0384d8861e3a44d68afb0138a3d7b276e7b233"
+    },
+    {
+      "path": "export-inventory.json",
+      "bytes": 8337,
+      "sha256": "c5996df8b75172de0715b5009dbc44670cf5ebdba94522cf2c3007983505d7dd"
+    },
+    {
+      "path": "logs/deltasync-analyze.log",
+      "bytes": 40,
+      "sha256": "4d69f01aeb1f23a35839a787f50c3e94a07f95be24a1a9df173afb204f577d01"
+    },
+    {
+      "path": "logs/deltasync-format.log",
+      "bytes": 47,
+      "sha256": "e8c7a2f0198cd5d58e3095d1d9ccef288d15d0099e8f27eed3d3e509ce78c155"
+    },
+    {
+      "path": "logs/deltasync-test.log",
+      "bytes": 2505,
+      "sha256": "936e2b379e86ecea655d00bc20b448c4835ae1168b64d3f07bde457445b5a09a"
+    },
+    {
+      "path": "logs/deltasync_core-analyze.log",
+      "bytes": 45,
+      "sha256": "b42bc3a38bb5cb0fd17b7539bf335ef9933b69b87c8822f817893c694104107f"
+    },
+    {
+      "path": "logs/deltasync_core-format.log",
+      "bytes": 48,
+      "sha256": "bb633de1906ad117749d80923ff5bc2143740d320d2b4e1992a3eb73f9dde0cf"
+    },
+    {
+      "path": "logs/deltasync_core-test.log",
+      "bytes": 11973,
+      "sha256": "f34cd4f01e0bbc791f22fa0c470266efa6f3f4afecaec748dc7de52485df03df"
+    },
+    {
+      "path": "logs/deltasync_storage-analyze.log",
+      "bytes": 48,
+      "sha256": "11604f785141317dcfdbb9d190f857d8c38ac7baf07cce84defd5d05ee95e4fc"
+    },
+    {
+      "path": "logs/deltasync_storage-format.log",
+      "bytes": 47,
+      "sha256": "725a25e3d849ec6009e6718f1be15896780cc316feea4771d60c8303f0c3e1d2"
+    },
+    {
+      "path": "logs/deltasync_storage-test.log",
+      "bytes": 1439,
+      "sha256": "6ee14ea78917a40f08c114d3bea510d18dc0028447bd50ef8e2b7a8ca81231b4"
+    },
+    {
+      "path": "logs/deltasync_storage_sqflite-analyze.log",
+      "bytes": 56,
+      "sha256": "d05e88c1882ab1abf464cb684abab84b9c6d35bef069c9b4ae51a3269fa5f042"
+    },
+    {
+      "path": "logs/deltasync_storage_sqflite-format.log",
+      "bytes": 47,
+      "sha256": "1305258fca352d9363dcdb4cc6f5723ea6b91d64b79ee7eac4ecfc388305faf0"
+    },
+    {
+      "path": "logs/deltasync_storage_sqflite-test.log",
+      "bytes": 5039,
+      "sha256": "4217d0d4000fbaef894af83be3cbb4686b8afe41121d9b216e81ddd91f582dd7"
+    },
+    {
+      "path": "logs/deltasync_storage_testing-analyze.log",
+      "bytes": 56,
+      "sha256": "6bf838f5cbf32e7c330eb975af17577743c5976fef33d74b4914e734b7bd1cf9"
+    },
+    {
+      "path": "logs/deltasync_storage_testing-format.log",
+      "bytes": 47,
+      "sha256": "a8665628d3d8dc8a51632550dfb214cf87c098912f4250420d0df700431790e6"
+    },
+    {
+      "path": "logs/deltasync_storage_testing-test.log",
+      "bytes": 2038,
+      "sha256": "0c7b80e65df2dbf2b589ff1600ee6e9f72ffcfe1de9a464363167dd311ed8b7a"
+    },
+    {
+      "path": "logs/deltasync_sync-analyze.log",
+      "bytes": 45,
+      "sha256": "2f2dbc1615a0113fbd17b218e8ecfa47e7ef22c5a872a201a5236d99b9fe7bf1"
+    },
+    {
+      "path": "logs/deltasync_sync-format.log",
+      "bytes": 48,
+      "sha256": "57af971bee8358bd7875598d8176c340e146f35926e0b65ab4be672072f33e6b"
+    },
+    {
+      "path": "logs/deltasync_sync-test.log",
+      "bytes": 8800,
+      "sha256": "2d5b5f958aaad7f3dbb009ef3b08c3ad4774b1116f3490fdda98435893efe885"
+    },
+    {
+      "path": "logs/deltasync_transport-analyze.log",
+      "bytes": 50,
+      "sha256": "ff094ff9fa680200dc2646f037e4652ca8f5d64c570434e33b259eaa0fffc8b9"
+    },
+    {
+      "path": "logs/deltasync_transport-format.log",
+      "bytes": 47,
+      "sha256": "ec27c9bb5a18e95eaf8a026729ee563d5f4f42124e659308761c49ba06babacd"
+    },
+    {
+      "path": "logs/deltasync_transport-test.log",
+      "bytes": 1001,
+      "sha256": "2bb13e6119e11f161b450f6c70494e61018bf8587f69656794036339c15a440d"
+    }
+  ]
+}

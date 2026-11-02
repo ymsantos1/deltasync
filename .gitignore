@@ -19,3 +19,5 @@ referencia/
 # Preserve reproducible evidence in version control.
 !plan/evidence/*.patch
 !plan/evidence/*-runtime.json
+
+*.log
