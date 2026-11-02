@@ -30,7 +30,9 @@ Revisão: 2026-10-25. Fonte principal de tarefas, escopo e andamento.
   [análise reproduzível](evidence/cp12/README.md); CP-13 consolidou
   [material para o artigo](../../samples_test_lib/compass_app/app/docs/relatorio-desempenho-deltasync.md).
   [CP-17](evidence/cp17/README.md) concluiu um piloto com 1000 notas já
-  sincronizadas e uma nova pendência; push de uma mudança, pull por snapshot).
+  sincronizadas e uma nova pendência; push de uma mudança, pull por snapshot.
+  [CP-18](evidence/cp18/README.md) implementou distribuição LWW por cliente no
+  hub e comparou seis pares snapshot/incremental, com recuperação e convergência).
 
 ## Situação e referência acadêmica
 

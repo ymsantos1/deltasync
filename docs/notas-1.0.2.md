@@ -45,10 +45,13 @@ reescreve essas evidências nem equivale a novo teste de um archive publicado.
 Ver [série/análise](../plan/evidence/cp12/README.md) e
 [piloto incremental](../plan/evidence/cp17/README.md).
 
-Pull incremental por destinatário e redução do ACK volumoso no hub do Compass
-continuam propostas futuras. Não foram implementados nesta release, e o piloto
-não demonstrou defeito nos CRDTs. A medição de pico/heap/energia também não
-passa a existir pela renumeração.
+Pull incremental por destinatário e redução do ACK não são funcionalidades
+novas da biblioteca 1.0.2. Após a preparação destes metadados, o
+[protótipo CP-18](../plan/evidence/cp18/README.md) implementou e comparou essa
+estratégia no hub LWW do Compass, sem modificar o núcleo ou APIs públicas.
+Os resultados são da integração e do protocolo da amostra, não demonstram
+defeito nos CRDTs nem generalizam desempenho aos oito tipos. A medição de
+pico/heap/energia também não passa a existir pela renumeração.
 
 ## Preparação para envio
 

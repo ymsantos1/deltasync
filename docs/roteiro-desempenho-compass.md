@@ -577,3 +577,21 @@ A ainda recebeu 502025 bytes e seu ACK enviou 1000 IDs (77028 bytes). O
 [complemento do artigo](../../samples_test_lib/compass_app/app/docs/piloto-incremental-deltasync.md)
 separa esse piloto da série principal. Um ensaio não estima mediana/p95 e não
 altera os limites da medição de memória.
+
+## 12. Comparação integral/incremental — CP-18
+
+Uma fase posterior implementou controle durável de ofertas/confirmações por
+cliente no hub LWW, preservando snapshot-pull e a mesma biblioteca. A
+[comparação CP-18](../plan/evidence/cp18/README.md) executou seis pares alternados,
+com bootstrap e aquecimento separados, N=1000 previamente sincronizado,
+uma edição em A, recepção em B e nova consulta sem novidades em B.
+
+B recebeu 502024 → 736 bytes; o ciclo A+B totalizou 1159071 → 2275 bytes
+de corpos HTTP. A mediana de sync de B foi 327,634 → 186,820 ms, com redução
+mediana pareada de 42,781%. Esses totais A+B não são o total isolado de A
+reportado em CP-17. Onze cenários automatizados verificaram os modos, incluindo
+ACK perdido, SIGKILL, B offline, concorrência e exclusões. As 12 execuções
+principais convergiram. A
+[discussão para o artigo](../../samples_test_lib/compass_app/app/docs/comparacao-integral-incremental-deltasync.md)
+registra dispersão, controles e limites: protótipo LWW, metadados sem GC,
+varredura do estado, LAN, dois aparelhos e nenhuma generalização estatística.

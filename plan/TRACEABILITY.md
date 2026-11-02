@@ -7227,3 +7227,76 @@ Limitações: gate hosted/dry-runs/advisories online/publicação 1.0.2 não rea
 Os 314 testes não substituem esse gate. Nenhum commit, tag, push ou upload;
 próxima tarefa depende de autorização de escopo própria. Worktrees do consumidor
 e evidências anteriores preservados.
+
+## Conclusão Compass CP-18 — 2026-11-02
+
+Status final: concluída. Pedido explícito do autor para implementar protótipo
+incremental LWW e comparar com snapshot, preservando CP-17 e a biblioteca.
+Aplicadas plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer no mesmo agente; lean-build limitou o escopo ao consumidor.
+Leitura: estado sincronizado e infraestrutura CP-17, contrato de ACK/commit
+durável, guia Dart e worktrees anteriores. Critérios no plano canônico Compass.
+
+Implementação: hub com opção incremental e SQLite de IDs oferecidos/confirmados
+por peer; seleciona vencedores LWW desconhecidos e tombstones. Fonte do remetente
+lembrada depois de persistir o push; ACK valida oferta e peer, com rollback
+atômico. Snapshot permanece disponível. Núcleo/APIs da DeltaSync inalterados.
+Instrumento comum e controlador novos, bootstrap real fora das janelas,
+mesmo texto/estado/APKs, seis pares alternados e dois aquecimentos separados.
+
+Review próprio, não independente: ordenação durável, duplicação, ACK antigo/
+inválido e perda de confirmação conferidos. Corrigidos imports e IDs de captura
+HTTP; reforçadas assertivas de rollback e conhecimento após reinício. Sem
+achados impeditivos restantes. Limites assumidos: estado LWW final, IDs sem GC,
+sem histórico completo de edições, perda do banco cliente não avaliada.
+
+Validação: servidor/app sem issues, 141 testes do consumidor, 11 cenários
+HTTP/SQLite únicos aprovados; três casos reexecutados após reforço. Cobertura
+A–D em ambos os modos: ACK perdido, reinício abrupto SIGKILL, B sem consultas,
+concorrência e exclusão. Dois builds profile ARM64, G52/G53. As 12 execuções
+principais e duas de aquecimento passaram, sem exclusões; 36 relatórios
+principais e 28 bootstraps separados. Estados/vencedor, 999 notas preservadas,
+outboxes, JSON e HTTP auditados. Térmico/bateria e hashes de 244 fontes estáveis.
+APKs restaurados, bancos anteriores preservados, portas fechadas, UFW inalterado.
+
+Análise: B recebeu 502024 → 736 bytes; ACK B 77027 → 209. Total A+B 1159071 →
+2275 bytes; distribuição remota 1158126 → 1330. Sync B: mediana 327,634 →
+186,820 ms e redução mediana pareada 42,781%; idle B: 318,961 → 183,219 ms,
+44,887% pareados. Push permaneceu 737 bytes. Sem novidade, incremental recebeu
+zero mudanças com 372 bytes de corpos/metadados. Sem inferência de significância.
+Três casos conhecidos passaram; quatro grupos/12 comparações temporais
+conferidos com Decimal. Duas análises geraram sete arquivos idênticos.
+
+[Cofre e relatório](evidence/cp18/README.md): 596 arquivos, 299.712.034 bytes,
+manifesto SHA-256 `e34b4ad38ec1e85fc6b2ccd86e6096a8cd14548f3a2781f561021a39d04c1ec7`.
+Manutenção: cinco critérios CP-18 marcados; plano/índice/roteiro, complemento
+de versão e relatório reconciliados. Checks de links, hashes e diffs após
+manutenção. Artigo externo não editado; seção de impacto pronta após a coleta.
+CP-17 e manifestos antigos preservados; CP-10 continua parcial. Sem publicação.
+
+## Manutenção — seleção de artefatos versionados — 2026-11-02
+
+Pedido do autor: retirar arquivos sem utilidade no repositório, preservando
+evidências do TCC e alterações anteriores. Inventário separou arquivos já
+commitados da biblioteca e intermediários ainda não rastreados no Compass.
+Não foi aberta nova fase nem alterado o status das tarefas experimentais.
+
+Implementação: dois caches Python CP-12 e `prompt.txt` retirados somente do
+índice, com cópias locais preservadas. `.gitignore` cobre bytecode, prompt e
+cofres locais. No consumidor, filtro de `app/evidence/` exclui 1.309 arquivos
+intermediários e permite 17 registros Markdown/manifestos. Relatórios, tabelas
+CSV pequenas, fixtures, exemplos, fontes e instrumentos mantidos permanecem.
+[Política e recibo de preservação](../docs/artefatos.md) documentam o destino.
+
+Review próprio, não independente: conferidos escopo das regras, preservação
+dos arquivos locais e exceções dos manifestos CP-14/CP-15. Filtro não alcança
+`lib/`, `test/`, `testing/` ou `tool/`. Arquivo adicional de preservação contém
+os 1.325 originais Compass anteriores ao novo README; conteúdo do arquivo e
+originais conferidos por tamanho e SHA-256. Cofres anteriores não alterados.
+
+Validação: três arquivos retirados do índice existem e estão ignorados;
+1.309 intermediários ignorados, 17 registros elegíveis e 202 fontes/fixtures
+Compass fora do filtro. `python3 scripts/check_plan.py` e `git diff --check`
+nos dois repositórios passaram. Sem mudança executável: suítes Dart não
+reexecutadas. Manutenção registra limites: não houve commit, exclusão local
+ou reescrita do histórico; os brutos ignorados não acompanham um clone Git.
