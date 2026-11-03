@@ -175,6 +175,8 @@ Manutenção de 02/11 corrigiu o job policy em checkout público: referências a
 Compass externo e CRLF dos CSVs CP-18; [evidência local](TRACEABILITY.md#policy-checkout-publico-2026-11-02).
 Também foi corrigido o [lockfile Flutter para 1.0.2](TRACEABILITY.md#flutter-lockfile-102-2026-11-02),
 que permanecia em 1.0.1 após a preparação dos pacotes.
+Complemento de CI: [CRLF dos CSVs CP-12 e diff completo do PR](TRACEABILITY.md#policy-cp12-crlf-2026-11-02)
+validados, preservando os bytes das evidências.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima

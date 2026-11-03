@@ -7380,3 +7380,40 @@ status históricos preservados, sem nova tarefa de produto. Checker e
 `git diff --check` após manutenção. Limitações: job Flutter completo, scanner
 OSV, builds Android e Actions remoto não executados nesta correção localizada.
 Nenhum commit, push, publicação ou alteração dos locks experimentais congelados.
+
+<a id="policy-cp12-crlf-2026-11-02"></a>
+
+## Manutenção — CRLF CP-12 no diff do PR — 2026-11-02
+
+Pedido do autor: corrigir falha posterior do job policy no merge develop/main.
+Aplicadas plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer, com investigate-first e surgical-patch, em um agente.
+Worktree inicial limpo. Não foi criada nova tarefa de produto.
+
+Leitura: a regra anterior cobria somente CP-18. O diff do último commit local
+passava, mas `git diff --check main develop` reproduziu 953 diagnósticos em
+nove CSVs CP-12 adicionados antes. Todos usam CRLF; o diff do merge inclui
+esses arquivos. A validação anterior não havia conferido o diff completo do PR.
+
+Implementação: `.gitattributes` passou a aceitar CRLF também em
+`plan/evidence/cp12/results/*.csv`, com as mesmas verificações estritas de
+whitespace da regra CP-18. `scripts/tests/test_git_attributes.py` usa Git real
+em repositório temporário para validar os dois caminhos. Documentado o comando
+de conferência do diff completo em `docs/ci.md`.
+
+Review próprio aprovado, não independente: sem ampliação da regra para todos
+os CSVs e sem remoção das verificações de espaços finais, linhas vazias finais
+ou espaços antes de tabs. Os 14 CSVs CP-12/CP-18 foram comparados byte a byte
+com `git show HEAD:<caminho>`; conteúdo e SHA-256 permanecem iguais.
+
+Validação: três novos testes passaram, com 12 subcasos: CRLF válido nos dois
+caminhos, três erros reais por caminho e quatro arquivos fora do recorte.
+`git diff --check main...develop` passou após a correção, assim como o diff
+local. O comando `python3 -B scripts/ci.py policy --allow-missing-tcc-reference`
+passou com 18 testes; checker e diffs também passaram após manutenção. Ambiente:
+Linux, Python 3.15 e Git locais. Nenhum código Dart ou workflow modificado.
+
+Manutenção: índice e nota da R-33 apontam este complemento; evidências e
+status anteriores preservados. Limitações: Actions remoto não acionado e
+suítes Dart/Flutter não repetidas neste ajuste de atributos/testes de CI.
+Nenhum commit, push ou publicação executado.

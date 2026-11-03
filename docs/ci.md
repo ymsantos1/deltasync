@@ -49,10 +49,15 @@ Não adicione links Markdown relativos para outro checkout: eles falham no CI
 público. Os testes copiam somente arquivos rastreados e verificam que a exceção
 do PDF não oculta outros arquivos ou anchors ausentes.
 
-Os CSVs exportados de CP-18 usam CRLF. `.gitattributes` permite esse terminador
-somente em `plan/evidence/cp18/results/*.csv` no check de whitespace, mantendo
-a detecção de espaços finais, linhas vazias finais e espaços antes de tabs.
+Os CSVs exportados de CP-12 e CP-18 usam CRLF. `.gitattributes` permite esse
+terminador somente em `plan/evidence/cp12/results/*.csv` e
+`plan/evidence/cp18/results/*.csv` no check de whitespace, mantendo a detecção
+de espaços finais, linhas vazias finais e espaços antes de tabs.
 Isso preserva os bytes e hashes das evidências, inclusive no diff entre commits.
+Os testes usam Git real para aceitar CRLF nesses caminhos e rejeitar espaços
+indevidos e arquivos fora desse recorte. Ao preparar um PR, confira também
+`git diff --check main...develop`: o diff do último commit na develop pode
+passar enquanto o merge do PR inclui CSVs adicionados em commits anteriores.
 
 Em Dart, `dart pub get` sempre roda, seguido de `dart pub workspace list --json`.
 Essa lista canônica define quais pacotes recebem formato, análise e testes;

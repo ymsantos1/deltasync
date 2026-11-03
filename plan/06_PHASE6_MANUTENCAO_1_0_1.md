@@ -231,6 +231,8 @@ Manutenção posterior de 2026-11-02: [policy em checkout público](TRACEABILITY
 corrigiu referências ao Compass externo e declarou CRLF nos CSVs CP-18,
 com validação local do comando completo. Status e evidência histórica da R-33
 permanecem preservados; esta manutenção não afirma nova execução remota.
+O [complemento para CP-12](TRACEABILITY.md#policy-cp12-crlf-2026-11-02)
+cobre também o diff completo develop/main e regressões reais de whitespace.
 
 <a id="r-34"></a>
 
