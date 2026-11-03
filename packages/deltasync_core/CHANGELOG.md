@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Align the package version with the coordinated 1.0.2 release. No changes to
+  CRDT implementations, public APIs or serialized formats in this package.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

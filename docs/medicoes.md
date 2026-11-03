@@ -4,6 +4,12 @@ Este documento preserva as cargas, resultados e limites antes publicados no READ
 São evidências históricas, não medições refeitas na reorganização R-35. Para uso
 atual, consulte o [guia](guia-integracao.md) e a [referência técnica](referencia-tecnica.md).
 
+Para uma futura avaliação em dispositivos durante uso do Compass, seguir o
+[protocolo de testes manuais de desempenho](roteiro-desempenho-compass.md).
+O protocolo usa a implementação inspecionada do Compass e coleta sem ADB;
+sua documentação não representa execução de novas medições nem substitui
+os resultados históricos abaixo.
+
 ### Medição de tamanho
 
 `dart run example/measure_delta_size.dart` mede as quatro mutações offline acima

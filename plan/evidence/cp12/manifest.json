@@ -1,0 +1,81 @@
+{
+  "artifactType": "compass_cp12_analysis",
+  "inputManifestSha256": "f31292331b17d2389313c52138c516724ea394bf11faea5fa4ef4a6205b295ac",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 6654,
+      "sha256": "40b207fdea1c245e46865f9c4b775b239366315c46151ab1d5e137e5f92c5ca3"
+    },
+    {
+      "path": "analyze.py",
+      "bytes": 11858,
+      "sha256": "44cbddcc84b23c79e494575cb7d787a4e1998712b0009b1363d7fe6dee10714b"
+    },
+    {
+      "path": "results/analysis.json",
+      "bytes": 820,
+      "sha256": "df001832052e5df108c82b46e6a42a88c39e533f1f50701073ef7765e9f254a8"
+    },
+    {
+      "path": "results/coverage.csv",
+      "bytes": 261,
+      "sha256": "a26815b8a2741dbed9c5c49f888864eac356e7ae97acca222748ed85a0753a22"
+    },
+    {
+      "path": "results/network-summary.csv",
+      "bytes": 7429,
+      "sha256": "9d8e7a8cde7afd0489051eb9e5a39b49769e64317c112b8ddefb6650590a02e2"
+    },
+    {
+      "path": "results/paired-by-order.csv",
+      "bytes": 8740,
+      "sha256": "85339a240a8dd9791f69b39af0df3a614203b6ff0fa8d29db87cc3f956538d4d"
+    },
+    {
+      "path": "results/paired-summary.csv",
+      "bytes": 4043,
+      "sha256": "8fc2ce0e64ff433a205a9ac87bfc191009d9bec46891651f3c1767e16beb10f5"
+    },
+    {
+      "path": "results/paired.csv",
+      "bytes": 7883,
+      "sha256": "2285652879306500e5d5c7a926fb871cce8d9fc102017d2e05b4730a62b9ccc3"
+    },
+    {
+      "path": "results/phases.csv",
+      "bytes": 38686,
+      "sha256": "c47f5911fddfa400bff85c130437c326b6312cf527f61b254022c680b5475b50"
+    },
+    {
+      "path": "results/routes.csv",
+      "bytes": 37380,
+      "sha256": "5a49cc99f1cd4b5f84e404ef7fa7a768d1e34e6c184077e4d25ec18a2e82e6df"
+    },
+    {
+      "path": "results/summary.csv",
+      "bytes": 13348,
+      "sha256": "ecf55f541b35e52fe374dc835ec648d4224a69043df1607c37d512cd848de361"
+    },
+    {
+      "path": "results/tables.md",
+      "bytes": 8975,
+      "sha256": "e83b38c0ab55bae0b17e810be75cd72d26d6e44092382028a0e6ec812fd0e417"
+    },
+    {
+      "path": "results/timeline.csv",
+      "bytes": 18344,
+      "sha256": "25173e2ee41bbd0d5cdc52e1f9c6b758059568fb143a7eee27aa1fd9e85ff3a3"
+    },
+    {
+      "path": "test_analysis.py",
+      "bytes": 1300,
+      "sha256": "7d8467f69a039bfc16db133b8831f5400afec5bb46592d4734eafd013790bb2f"
+    },
+    {
+      "path": "validate_results.py",
+      "bytes": 2369,
+      "sha256": "39f8b563fc9bbe64eeb58fd898cca16f6d0856600eb312dd4130c04d4727410b"
+    }
+  ]
+}

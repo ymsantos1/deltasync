@@ -7,10 +7,12 @@ fixo por engine. Comece por commit local durável; rede pode falhar sem impedir 
 
 Para Dart desktop, acrescente `deltasync`, `deltasync_storage_sqflite` e
 `sqflite_common_ffi` às dependências. Os sete pacotes estão preparados como
-1.0.1; a consolidação inclui **quebras deliberadas de API**, apesar do
-número patch. Leia o [guia de migração](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md)
-antes de atualizar. Metadados preparados não anunciam publicação. O envio manual
-pelo autor exige aprovação dos artefatos no gate VAL-17.
+1.0.2, com correção do replay de restauração para outboxes extensas, preservando
+APIs e formatos da 1.0.1. Veja as [notas da 1.0.2](https://github.com/ymsantos1/deltasync/blob/main/docs/notas-1.0.2.md).
+A 1.0.1 publicada incluiu **quebras deliberadas de API** em relação à 1.0.0;
+nessa migração, leia o [guia](https://github.com/ymsantos1/deltasync/blob/main/docs/migracao-1.0.1.md).
+Metadados preparados não anunciam publicação: o gate histórico VAL-17 cobre
+a 1.0.1, e um novo envio exige validar os artefatos atuais e autorização própria.
 
 O app fornece caminho persistente, identidade única/estável da instalação e
 transporte vinculado ao peer. Não copie a identidade entre dispositivos.

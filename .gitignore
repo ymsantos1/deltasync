@@ -19,3 +19,13 @@ referencia/
 # Preserve reproducible evidence in version control.
 !plan/evidence/*.patch
 !plan/evidence/*-runtime.json
+
+*.log
+
+# Python bytecode and local experiment archives are generated, not source.
+__pycache__/
+*.py[cod]
+.performance-artifacts/
+
+# Personal task prompt; keep the local copy outside version control.
+/prompt.txt

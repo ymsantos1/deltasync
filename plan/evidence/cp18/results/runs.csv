@@ -1,0 +1,15 @@
+slot,warmup,strategy,order,directory,a_push_request_bytes,b_pull_response_bytes,b_ack_request_bytes,cycle_ack_request_bytes,cycle_total_body_bytes,cycle_distribution_body_bytes,b_idle_body_bytes,all_measured_body_bytes,b_received_changes,b_idle_changes,a_sync_ms,b_sync_ms,b_idle_ms,sum_a_b_sync_ms
+0,True,incremental,incremental then snapshot,warmup-incremental,737,736,209,341,2275,1330,372,2647,1,0,453.624,161.56,172.541,615.184
+0,True,snapshot,incremental then snapshot,warmup-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,609.564,300.358,325.865,909.922
+1,False,snapshot,snapshot then incremental,pair1-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,589.735,305.155,311.878,894.89
+1,False,incremental,snapshot then incremental,pair1-incremental,737,736,209,341,2275,1330,372,2647,1,0,495.314,196.284,197.987,691.598
+2,False,incremental,incremental then snapshot,pair2-incremental,737,736,209,341,2275,1330,372,2647,1,0,310.738,163.893,165.274,474.631
+2,False,snapshot,incremental then snapshot,pair2-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,745.477,317.58,314.185,1063.057
+3,False,snapshot,snapshot then incremental,pair3-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,611.214,337.687,335.58,948.9010000000001
+3,False,incremental,snapshot then incremental,pair3-incremental,737,736,209,341,2275,1330,372,2647,1,0,445.986,192.283,181.417,638.269
+4,False,incremental,incremental then snapshot,pair4-incremental,737,736,209,341,2275,1330,372,2647,1,0,495.106,181.357,187.756,676.463
+4,False,snapshot,incremental then snapshot,pair4-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,550.16,315.422,334.289,865.582
+5,False,snapshot,snapshot then incremental,pair5-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,713.89,337.812,323.736,1051.702
+5,False,incremental,snapshot then incremental,pair5-incremental,737,736,209,341,2275,1330,372,2647,1,0,496.633,280.452,185.022,777.085
+6,False,incremental,incremental then snapshot,pair6-incremental,737,736,209,341,2275,1330,372,2647,1,0,464.484,175.309,151.652,639.793
+6,False,snapshot,incremental then snapshot,pair6-snapshot,737,502024,77027,154055,1159071,1158126,579062,1738133,1000,1000,591.265,430.293,312.786,1021.558

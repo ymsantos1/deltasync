@@ -1,0 +1,9 @@
+{
+  "validPairs": 6,
+  "validStrategies": 12,
+  "warmupStrategies": 2,
+  "measuredReports": 36,
+  "bootstrapReports": 28,
+  "physicalConvergence": "all paired strategies",
+  "sourceHash": "71b809b415a58ceb383623db940b09b2c5e71f44de6649ab0d0e37d33b20eadd"
+}

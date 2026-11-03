@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Align package version and the core dependency minimum with 1.0.2. Transport
+  contracts, delta envelopes and acknowledgement formats remain unchanged.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

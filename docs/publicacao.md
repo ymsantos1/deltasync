@@ -1,11 +1,18 @@
 # Preparação e publicação
 
-Os sete pacotes estão preparados como **1.0.1**, com dependências internas
-`^1.0.1`. Essa versão patch inclui quebras deliberadas de fonte; revise o
+Os sete pacotes foram publicados no pub.dev como **1.0.1** em 2026-10-25,
+após autorização explícita do autor. [Envios, hashes e instalação pública](../plan/evidence/publicacao-1.0.1/README.md)
+estão registrados. O checkout prepara agora **1.0.2**, ainda não publicada
+nesta tarefa; veja [notas e compatibilidade](notas-1.0.2.md).
+
+A release atual usa dependências internas `^1.0.2`, mantendo APIs e formatos
+da 1.0.1. A release histórica 1.0.1 incluiu quebras deliberadas de fonte; revise o
 [guia de migração](migracao-1.0.1.md) e os changelogs de todos os pacotes antes
 de atualizar. Dados/JSON/schema não são renumerados junto com os pacotes.
 
-R-36 prepara metadados/diretórios; a publicação exige **gate VAL-17 aprovado**.
+R-45 prepara metadados 1.0.2; R-36/VAL-17 são históricos da 1.0.1.
+A publicação da 1.0.2 exige validação dos novos artefatos e consumidor;
+o gate VAL-17 anterior não substitui esse trabalho.
 A publicação permanece manual, responsabilidade do autor. Preparação e dry-run
 não enviam pacotes nem reservam nomes. Nenhum upload, tag, merge ou push é
 autorizado por estes comandos de preparação.
@@ -16,7 +23,7 @@ Requisitos: Python 3 e Dart compatível com `sdk: ^3.13.0`, disponíveis no PATH
 Execute na raiz do repositório:
 
 ```sh
-python3 scripts/prepare_release.py --output /tmp/deltasync-release
+python3 scripts/prepare_release.py --output /tmp/deltasync-release-1.0.2
 ```
 
 O destino deve ser novo e ficar fora de qualquer repositório Git. O comando recusa
@@ -53,28 +60,29 @@ de desenvolvimento verificadas pelo dry-run:
 Para cada diretório preparado, nesta ordem:
 
 ```sh
-cd /tmp/deltasync-release/deltasync_core
+cd /tmp/deltasync-release-1.0.2/deltasync_core
 dart pub get
 dart pub publish --dry-run
 ```
 
 Confira a lista de arquivos, versão, licença e ausência de fontes do monorepo.
 Antes da primeira publicação, os dry-runs de dependentes podem falhar se as
-versões 1.0.1 exigidas ainda não estiverem disponíveis no pub.dev. Não reduza
-constraints para fazer o dry-run passar com uma versão 1.0.0 incompatível.
+versões 1.0.2 exigidas ainda não estiverem disponíveis no pub.dev. Não reduza
+constraints para fazer o dry-run passar sem a versão corrigida.
 VAL-17 consumiu os sete artefatos 1.0.1 em registro local somente leitura,
 sem paths/overrides, e aprovou os sete dry-runs. Veja os
 [candidatos, hashes e limites](../plan/evidence/val17/README.md).
 Após o gate, a limpeza autorizada R-43 preparou e revalidou
 [novos candidatos da fonte limpa](../plan/evidence/r43/README.md#candidatos-atuais-e-publicação).
-Use esses candidatos atuais para envio; os diretórios de VAL-17 são históricos.
+Esses candidatos R-43 foram usados no envio 1.0.1 e são históricos, assim como
+os diretórios de VAL-17. Para 1.0.2, gerar e revisar novos candidatos.
 R-28 permanece evidência histórica de uma preparação anterior. A prova
 local não representa instalação/publicação do pub.dev. Após publicar cada dependência,
 repita a resolução/dry-run do próximo pacote usando o registro público padrão.
 Não use `PUB_HOSTED_URL` do teste local para uma publicação real.
 
-Somente o autor executa `dart pub publish` após revisar o dry-run no diretório
-preparado. Verifique propriedade/disponibilidade dos sete nomes e autenticação
+Executar `dart pub publish` exige autorização explícita do autor após revisão
+do dry-run no diretório preparado. Verifique propriedade/disponibilidade dos sete nomes e autenticação
 no momento do envio. Publicação é permanente; confirme versão e compatibilidade.
 Após os sete envios, teste um consumidor novo com as versões do pub.dev.
 
@@ -82,7 +90,8 @@ Após os sete envios, teste um consumidor novo com as versões do pub.dev.
 
 Metadados apontam para `main`; faça os merges planejados antes de publicar para
 que README, arquivos e exemplos referidos estejam acessíveis nessa branch.
-Cada changelog possui uma entrada 1.0.1; o rascunho de fonte antes rotulado
+Cada changelog possui entrada 1.0.2 e preserva a entrada 1.0.1. O rascunho
+histórico de fonte antes rotulado
 2.0.0 foi consolidado, preservando o histórico 1.0.0 existente. Capacidades já
 presentes na baseline ficam identificadas como retidas, não como novo formato
 introduzido pela renumeração. Reader antigo, versão de dados, API e número do

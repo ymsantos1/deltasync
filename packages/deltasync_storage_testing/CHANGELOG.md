@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Align package version and internal dependency minimums with 1.0.2. The shared
+  storage contract suite remains unchanged.
+
 ## 1.0.1
 
 **Upgrade review required:** this intentionally breaking patch consolidates the

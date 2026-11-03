@@ -1,0 +1,21 @@
+{
+  "artifactType": "compass_cp13_article_notes",
+  "cp11ManifestSha256": "f31292331b17d2389313c52138c516724ea394bf11faea5fa4ef4a6205b295ac",
+  "files": [
+    {
+      "path": "/projetos/tcc/samples_test_lib/compass_app/app/docs/relatorio-desempenho-deltasync.md",
+      "bytes": 8765,
+      "sha256": "7ab60544f2c58183520f9c4deb12d980d4223c672137d12fa2259e8567802743"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp13/README.md",
+      "bytes": 1523,
+      "sha256": "5da49508153967fb537af9a360f93346ea74488079aa14561bb4914772aee270"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp12/manifest.json",
+      "bytes": 2469,
+      "sha256": "a8143ec9125c290d86b47dce9379df386f29dc1594965c1a96b38d934633b8ce"
+    }
+  ]
+}

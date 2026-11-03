@@ -1,0 +1,66 @@
+{
+  "artifactType": "compass_cp18_report_and_analysis",
+  "rawManifestSha256": "e34b4ad38ec1e85fc6b2ccd86e6096a8cd14548f3a2781f561021a39d04c1ec7",
+  "files": [
+    {
+      "path": "/projetos/tcc/samples_test_lib/compass_app/app/docs/comparacao-integral-incremental-deltasync.md",
+      "bytes": 13884,
+      "sha256": "3a55e0e0db0aa39a1828777a3e04c2e624e12d4f7b9dd1e90e1aebe8b0e0c053"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/README.md",
+      "bytes": 6433,
+      "sha256": "c2e66b2b901941937c2e1ebcedb91201b5e67a5ae263777d17cf28c6aedc38b3"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/analyze_comparison.py",
+      "bytes": 11363,
+      "sha256": "a3ac29feaefbf49cea2a22f30c4c6b00b29454aa715143e6c5b77eb55f59a3f8"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/audit.json",
+      "bytes": 257,
+      "sha256": "17f9c095cb967a3e69751910d1518f4d40aeddf0f205b8e3c67841ec27dcecd7"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/paired.csv",
+      "bytes": 7183,
+      "sha256": "853b254da6f3e131fe12e0eac916641585b7c1de6e296e6d84ec779a3a1a0996"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/routes.csv",
+      "bytes": 28207,
+      "sha256": "c9b23e69869ea9a6e77ff503170a9bdc1f7b8d8cb2328957c096652999e66046"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/runs.csv",
+      "bytes": 2351,
+      "sha256": "5edad496f18e61d82ae61cac5bdd58d9e63a6f4bcde3a3153c15caf0eb9533df"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/summary.csv",
+      "bytes": 1522,
+      "sha256": "e9fb9a5d5e550a46e51c24b75b6d8cd5584a8018c03d52c9aad88f702ec1fb01"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/table.md",
+      "bytes": 1573,
+      "sha256": "a939ef5afebe0df4a1b507e1c848f3328f051babf1d8d83da9cfc4de50fd4a24"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/results/timings.csv",
+      "bytes": 14712,
+      "sha256": "a987ea30caba29850f294b6a49d5095f681cdd4eb818136af5a81a945f1b1928"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/test_analysis.py",
+      "bytes": 873,
+      "sha256": "44ec685d23e88a5a5752aae27a4eba21713a97e55a051a2932d933ec4b5f9768"
+    },
+    {
+      "path": "/projetos/tcc/deltasync/plan/evidence/cp18/validate_results.py",
+      "bytes": 1976,
+      "sha256": "8e32e67af28eb954890003f574b33f822d07f0d53f94716fe8f68f947fe8f05f"
+    }
+  ]
+}

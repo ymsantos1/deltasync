@@ -227,6 +227,13 @@ própria após correções; workflow remoto não acionado. SDK ^3.13.0 por orien
 posterior do autor, executado 3.13.5; sem runtime 3.12 ou 3.13.0. R-34 pronta;
 fase 6/VAL-17 permanecem abertos.
 
+Manutenção posterior de 2026-11-02: [policy em checkout público](TRACEABILITY.md#policy-checkout-publico-2026-11-02)
+corrigiu referências ao Compass externo e declarou CRLF nos CSVs CP-18,
+com validação local do comando completo. Status e evidência histórica da R-33
+permanecem preservados; esta manutenção não afirma nova execução remota.
+O [complemento para CP-12](TRACEABILITY.md#policy-cp12-crlf-2026-11-02)
+cobre também o diff completo develop/main e regressões reais de whitespace.
+
 <a id="r-34"></a>
 
 ## R-34 — Avaliar Saropa e lint proporcional
