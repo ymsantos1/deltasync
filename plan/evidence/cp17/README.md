@@ -1,6 +1,7 @@
 # CP-17 — piloto incremental N=1000
 
-Concluído em 2026-11-02. [Resultados e interpretação no consumidor](../../../../samples_test_lib/compass_app/app/docs/piloto-incremental-deltasync.md).
+Concluído em 2026-11-02. Resultados e interpretação no consumidor externo:
+`../../../../samples_test_lib/compass_app/app/docs/piloto-incremental-deltasync.md`.
 Um piloto, coletor off, três fases A/B/A; memória não faz parte deste recorte.
 
 ## Brutos e reprodução
@@ -63,7 +64,8 @@ O relatório CP-13 e os manifestos CP-11/CP-12/CP-13 permanecem históricos e
 
 ## Complemento de análise para o artigo
 
-A [análise do problema](../../../../samples_test_lib/compass_app/app/docs/piloto-incremental-deltasync.md#analise-do-problema)
+A análise do problema no relatório externo
+`../../../../samples_test_lib/compass_app/app/docs/piloto-incremental-deltasync.md#analise-do-problema`
 liga payload, comportamento e camada responsável. O primeiro sync de A somou
 580009 bytes de corpos JSON; pull e ACK responderam por 579064 bytes (99,84%).
 Essa proporção não é previsão de economia nem divisão do tempo gasto.

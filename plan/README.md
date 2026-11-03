@@ -28,7 +28,7 @@ Revisão: 2026-10-25. Fonte principal de tarefas, escopo e andamento.
   matriz, oito APKs e fontes e validou smokes N=1/1000; CP-11 concluiu 12 pares
   principais N=1/1000 on/off (72 fases), com brutos auditados. CP-12 concluiu
   [análise reproduzível](evidence/cp12/README.md); CP-13 consolidou
-  [material para o artigo](../../samples_test_lib/compass_app/app/docs/relatorio-desempenho-deltasync.md).
+  [material para o artigo](evidence/cp13/README.md).
   [CP-17](evidence/cp17/README.md) concluiu um piloto com 1000 notas já
   sincronizadas e uma nova pendência; push de uma mudança, pull por snapshot.
   [CP-18](evidence/cp18/README.md) implementou distribuição LWW por cliente no
@@ -171,6 +171,10 @@ R-34 adiou Saropa permanente. Recommended e CI/advisories R-33 permanecem,
 sem downgrade de SDK/test.
 R-33 alinhou o mínimo para ^3.13.0 por orientação do autor; a validação remota da
 main foi confirmada antes da publicação. Escrita e revisão do TCC ficam com o autor, fora deste plano.
+Manutenção de 02/11 corrigiu o job policy em checkout público: referências ao
+Compass externo e CRLF dos CSVs CP-18; [evidência local](TRACEABILITY.md#policy-checkout-publico-2026-11-02).
+Também foi corrigido o [lockfile Flutter para 1.0.2](TRACEABILITY.md#flutter-lockfile-102-2026-11-02),
+que permanecia em 1.0.1 após a preparação dos pacotes.
 
 Após concluir tarefa, selecionar próxima autorizada e sem dependências pendentes.
 Fases organizam entregas; dependências específicas orientam execução. Próxima

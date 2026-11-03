@@ -13,7 +13,8 @@ Dependências: R-43
 
 Origem: piloto CP-15 com 1.000 notas LWW e 1.000 pendências em dois Androids.
 Primeira restauração levou 32–52 s. Diagnóstico em cópias SQLite isolou o
-replay individual após snapshot; [evidência](../../samples_test_lib/compass_app/app/evidence/cp-15/restore-investigation.md).
+replay individual após snapshot; evidência externa no Compass:
+`../../samples_test_lib/compass_app/app/evidence/cp-15/restore-investigation.md`.
 
 Critérios:
 
@@ -61,6 +62,10 @@ de exportação, checker e diff. Sem novo ensaio físico por renumeração de pa
 
 Evidência de conclusão: [execução R-45](TRACEABILITY.md#execução-r-45--2026-11-02)
 e [checks/inventário](evidence/r45-preparacao-1.0.2/README.md).
+
+Correção posterior: [lockfile do exemplo Flutter](TRACEABILITY.md#flutter-lockfile-102-2026-11-02)
+alinhado a 1.0.2 após falha no job CI; a validação original dos sete pacotes
+Dart não havia conferido esse workspace Flutter separado.
 
 ## Gate da fase
 

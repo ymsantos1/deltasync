@@ -6618,8 +6618,8 @@ revisado, reanalisado, recompilado e repetido com IDs/hub novos, sem apagar dado
 
 Manutenção: cinco critérios de CP-06 concluídos no plano canônico; CP-07 pronta,
 nenhuma tarefa ativa ou piloto iniciado. Guia em
-[sessoes-ensaio.md](../../samples_test_lib/compass_app/app/docs/sessoes-ensaio.md);
-provas e comandos em [evidence/cp-06](../../samples_test_lib/compass_app/app/evidence/cp-06/README.md).
+`../../samples_test_lib/compass_app/app/docs/sessoes-ensaio.md`;
+provas e comandos externos em `../../samples_test_lib/compass_app/app/evidence/cp-06/README.md`.
 Sete arquivos preexistentes alterados e nove novos no app, além das evidências;
 lock, fontes fora do escopo e evidências CP-01–CP-05 preservados. Configuração
 gerada restaurada aos bytes iniciais; emulador/hub próprios encerrados. Links,
@@ -6693,7 +6693,7 @@ encerrado e duas regras temporárias UFW removidas pelo operador local. Pacote
 de ensaio terminou com coletor ligado, dados/evidências preservados e convergência
 final após a comparação. Bancos/APKs não entram na pasta textual de evidências.
 Provas por etapa, comandos, SDKs, hashes, falhas e limites estão em
-[evidence/cp-07](../../samples_test_lib/compass_app/app/evidence/cp-07/README.md). Links/anchors, status/dependências,
+`../../samples_test_lib/compass_app/app/evidence/cp-07/README.md` (externo). Links/anchors, status/dependências,
 checker e diffs conferidos após manutenção. Sem commit/publicação. Nenhuma
 tarefa ativa ou próxima pronta: CP-01–CP-07 concluídas. Coleta manual final de
 30 rodadas permanece pendente e separada deste aceite de preparação.
@@ -6733,7 +6733,7 @@ material Markdown para artigo. ADB/USB e painel/coordenador fazem parte da
 instrumentação; histórico cresce, sem independência/overhead causal presumidos.
 Manual permanece alternativa separada; dados CP-07 não viram série principal.
 
-Provas por etapa em [evidence/cp-08](../../samples_test_lib/compass_app/app/evidence/cp-08/README.md). Links/anchors,
+Provas por etapa externas em `../../samples_test_lib/compass_app/app/evidence/cp-08/README.md`. Links/anchors,
 IDs/dependências/status, hashes, checker e diffs conferidos após manutenção.
 Nenhuma tarefa ativa; CP-09 pronta. Sem commit/publicação ou edição do artigo.
 
@@ -6744,7 +6744,7 @@ as repetições de uma nota e priorizou volume de dados distintos. CP-10 aceitou
 um ciclo M1–M6 completo e parou durante o segundo; comparação on/off e
 congelamento não aconteceram. Recursos próprios foram restaurados, hub encerrado,
 regra UFW preexistente preservada e brutos/APKs/fontes mantidos. Evidência parcial
-em [CP-10](../../samples_test_lib/compass_app/app/evidence/cp-10/README.md).
+em `../../samples_test_lib/compass_app/app/evidence/cp-10/README.md` (externo).
 
 Skills: plan-reader, plan-implementer, code-reviewer, plan-validator e
 plan-maintainer. Leitura: CP-09 concluída; CP-14 passou a depender dela por
@@ -6760,8 +6760,8 @@ ARM64 e preparo físico no G52/API33 e G53/API34. Em cada aparelho, criação e
 reabertura em novo processo confirmaram 1/10/100/1000 chaves/valores, sequências
 e pendências correspondentes. Cópias SQLite foram inspecionadas via API pública;
 arquivos antigos dos apps mantiveram SHA-256. Ver
-[CP-14](../../samples_test_lib/compass_app/app/evidence/cp-14/README.md) e
-[manifesto](../../samples_test_lib/compass_app/app/evidence/cp-14/manifest.json).
+registro externo CP-14 `../../samples_test_lib/compass_app/app/evidence/cp-14/README.md` e
+manifesto `../../samples_test_lib/compass_app/app/evidence/cp-14/manifest.json`.
 Limite: preparo não mede desempenho; CPU/PSS, latência e rede são CP-15.
 Manutenção: CP-14 marcada concluída, CP-15 pronta, matriz enxuta antes da série
 principal. CP-10 permanece incompleta; não repetir automaticamente uma nota.
@@ -6779,7 +6779,7 @@ Validação parcial: SHA-256 das quatro configurações/APKs e ABI conferidos; h
 `192.168.3.10:8091` recusou conexão no preflight. Nenhum APK novo foi instalado,
 nenhum sync ou janela medida executado. Faltam instrumento/auditoria integral,
 comparação on/off, CPU/PSS, bytes por rota/UID, ACK e convergência física.
-Registro em [CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/README.md).
+Registro externo em `../../samples_test_lib/compass_app/app/evidence/cp-15/README.md`.
 Manutenção: CP-15 permanece ativa; CP-16 não liberada. Sem resultado de
 desempenho ou conclusão simulada.
 
@@ -6810,7 +6810,7 @@ Bytes por rota do coletor coincidiram exatamente com proxy externo. `flutter
 analyze --no-pub` sem issues e `flutter test --no-pub` com 141 testes aprovados;
 oito builds Android profile executados. APKs anteriores reinstalados, apps/hub
 parados, bancos antigos com hashes iguais; UFW preexistente preservado. Provas
-em [CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/README.md).
+em `../../samples_test_lib/compass_app/app/evidence/cp-15/README.md` (externo).
 
 Achado: restauração inicial de 1000 notas pendentes levou 32–52 s e CPU
 semelhante. Um piloto por condição e ordem on antes de off não estimam p95 nem
@@ -6830,7 +6830,7 @@ consumiu 57 ms, sem alteração da biblioteca. `ReplicaPersistence.restoreInto`
 reaplica a outbox ao snapshot; `Replica.apply` faz fork/adopt e copia todas as
 chaves em cada entrada. Os IDs pendentes já coincidiam com vencedores do
 snapshot V2 nessa fixture. Arquivos e limites em
-[diagnóstico CP-15](../../samples_test_lib/compass_app/app/evidence/cp-15/restore-investigation.md).
+diagnóstico externo CP-15 `../../samples_test_lib/compass_app/app/evidence/cp-15/restore-investigation.md`.
 RISK-43 atualizado; nenhuma proposta de pular replay foi implementada ou
 considerada correta para snapshots legados e todos os CRDTs sem regressões.
 
@@ -6880,8 +6880,8 @@ firewall ou instalação foi alterado nesta validação. Regressão de app inclu
 SQLite FFI/HTTP; suítes da biblioteca/servidor e builds Android não foram repetidos
 porque suas fontes não mudaram. Não reapresentar baseline como validação nova.
 
-Guia em [coleta-automatizada.md](../../samples_test_lib/compass_app/app/docs/coleta-automatizada.md); provas por etapa em
-[evidence/cp-09](../../samples_test_lib/compass_app/app/evidence/cp-09/README.md). Links/anchors, IDs/dependências/status,
+Guia externo em `../../samples_test_lib/compass_app/app/docs/coleta-automatizada.md`; provas por etapa em
+`../../samples_test_lib/compass_app/app/evidence/cp-09/README.md`. Links/anchors, IDs/dependências/status,
 hashes, checker e diffs conferidos após manutenção. CP-09 atende cinco critérios;
 CP-10 pronta, nenhuma tarefa ativa. Calibração física, congelamento e série
 principal continuam pendentes. A ferramenta mantida precisa passar no hardware
@@ -7031,7 +7031,7 @@ Hashes dos bancos anteriores permaneceram iguais; APKs CP-10 restaurados e
 aplicativos parados. `dart format` no alvo, `flutter analyze --no-pub` e
 `flutter test --no-pub` passaram (141 testes).
 
-O [registro CP-16](../../samples_test_lib/compass_app/app/evidence/cp-16/README.md)
+O registro externo CP-16 `../../samples_test_lib/compass_app/app/evidence/cp-16/README.md`
 e a [matriz](evidence/cp16/matriz.md) apontam o bundle local, com oito APKs,
 238 fontes reais e 126 arquivos. `verify_bundle.py` validou conteúdo e hashes;
 SHA-256 do manifesto:
@@ -7300,3 +7300,83 @@ Compass fora do filtro. `python3 scripts/check_plan.py` e `git diff --check`
 nos dois repositórios passaram. Sem mudança executável: suítes Dart não
 reexecutadas. Manutenção registra limites: não houve commit, exclusão local
 ou reescrita do histórico; os brutos ignorados não acompanham um clone Git.
+
+<a id="policy-checkout-publico-2026-11-02"></a>
+
+## Manutenção — policy em checkout público — 2026-11-02
+
+Pedido do autor: corrigir três falhas de `LocalReferenceTests` no GitHub Actions.
+Aplicadas plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer no mesmo agente; investigate-first orientou a reprodução.
+Worktree inicial limpo. Escopo de manutenção da CI, sem nova tarefa de produto.
+
+Leitura: os 15 testes reproduziram as três falhas. A fixture copia somente
+arquivos rastreados para diretório temporário; 21 links exigiam um checkout
+irmão do Compass. O checker local passava porque esse checkout existe no host.
+Depois da correção desses links, o comando policy revelou 439 diagnósticos de
+whitespace em cinco CSVs CP-18 com CRLF no diff `HEAD^ HEAD`.
+
+Implementação: índice aponta para o registro CP-13 versionado; as demais
+referências preservam caminhos e fragmento como texto de arquivo externo.
+`docs/ci.md` documenta a fronteira entre repositórios. `.gitattributes` aceita
+CRLF somente em `plan/evidence/cp18/results/*.csv`, mantendo as verificações
+de espaços finais, linhas vazias finais e espaços antes de tabs. Checker,
+testes existentes, workflow, bytes e hashes dos CSVs não foram alterados.
+
+Review próprio, não independente: conferidos destinos, preservação dos caminhos
+e do fragmento, escopo do atributo e ausência de relaxamento da exceção do PDF.
+Nenhum achado impeditivo restante. Nenhuma API, formato persistido ou código
+Dart afetado; recursos do guia Dart não exigiram mudança neste escopo.
+
+Validação local aprovada: `python3 -B scripts/ci.py policy
+--allow-missing-tcc-reference` passou os 15 testes, checker com 73 tarefas/649
+links e ambos os diffs de whitespace. Os testes verificam ausência do PDF com
+modo estrito/opcional, outros arquivos ausentes e anchor inválido no PDF presente.
+`python3 -B scripts/check_plan.py` também passou no host com o PDF local.
+Em repositório Git temporário, `git diff --check -- <arquivo>` aceitou CSV
+CP-18 com CRLF (exit 0), mas rejeitou espaço final, linha vazia final, espaço
+antes de tab, Markdown com espaço final e CSV fora do caminho permitido (exit 2).
+Os cinco CSVs foram comparados byte a byte com `git show HEAD:<caminho>` e
+tiveram SHA-256 conferido. Ambiente: Linux, Python 3.15 e Git locais.
+
+Manutenção: índice e nota da R-33 apontam este registro; status históricos,
+critérios e próxima tarefa permanecem inalterados. Checker e diffs repetidos
+após manutenção. Limitações: GitHub Actions remoto não acionado; jobs Dart,
+Flutter e actionlint não reexecutados, pois suas entradas não mudaram. Nenhum
+commit, push ou publicação executado.
+
+<a id="flutter-lockfile-102-2026-11-02"></a>
+
+## Manutenção — lockfile Flutter 1.0.2 — 2026-11-02
+
+Pedido do autor: corrigir a falha de `flutter pub get --enforce-lockfile` no CI.
+Aplicadas plan-reader, plan-implementer, code-reviewer, plan-validator e
+plan-maintainer, com investigate-first e surgical-patch, no mesmo agente.
+Alterações da correção anterior de policy preservadas.
+
+Leitura: seis entradas path no lockfile do exemplo ainda declaravam 1.0.1,
+enquanto os manifests locais já estavam em 1.0.2. O workspace Flutter separado
+não havia sido validado na preparação R-45. Reproduzido exit 65 com
+`flutter pub get --offline --enforce-lockfile` antes da correção.
+
+Implementação: atualizadas somente as seis versões locais em
+`example/flutter_mobile/pubspec.lock`. Documentada a conferência do lockfile
+após renumeração em `docs/ci.md`; exigência do lockfile no CI preservada.
+Review próprio aprovado, não independente: diff limitado às seis versões,
+sem mudança de paths, overrides, SDK, dependências hospedadas ou seus hashes.
+Comparação programática com `git show HEAD:example/flutter_mobile/pubspec.lock`
+confirmou que nenhum outro conteúdo do lockfile mudou. Nenhum achado restante.
+
+Validação aprovada em Linux, Flutter 3.47.7/Dart 3.13.5: no diretório
+`example/flutter_mobile`, `flutter pub get --offline --enforce-lockfile` e
+`flutter pub get --enforce-lockfile` passaram com exit 0; `flutter analyze
+--no-pub` sem issues; `flutter test --no-pub --reporter expanded` aprovou sete
+testes. Testes incluem edição offline, retry, restauração SQLite e oito CRDTs
+por HTTP. SDK exigiu acesso de escrita ao cache fora do workspace, autorizado
+pelas chamadas de ferramenta.
+
+Manutenção: índice, fase 7 e evidência R-45 apontam esta correção posterior;
+status históricos preservados, sem nova tarefa de produto. Checker e
+`git diff --check` após manutenção. Limitações: job Flutter completo, scanner
+OSV, builds Android e Actions remoto não executados nesta correção localizada.
+Nenhum commit, push, publicação ou alteração dos locks experimentais congelados.

@@ -54,7 +54,8 @@ em build/coorte anterior, e não compõe a distribuição principal.
 
 ## Gate de congelamento cumprido
 
-Bundle e revisão em [registro CP-16 do Compass](../../../../samples_test_lib/compass_app/app/evidence/cp-16/README.md).
+Bundle e revisão no registro CP-16 externo do Compass:
+`../../../../samples_test_lib/compass_app/app/evidence/cp-16/README.md`.
 Manifesto: `app/.performance-artifacts/cp-16/61c07bd14c2a401d9a1bd7c41218e2b9/manifest.json`,
 SHA-256 `d21d29542d46d1761360b433fbf750aeb711f72b97236fcc368382de91debc1c`.
 O verificador `verify_bundle.py` conferiu 126 arquivos, oito builds e 238 fontes.
@@ -63,7 +64,7 @@ zero perda do coletor; N=1 também passou. Protocolos, configs, fixtures,
 ambiente e tentativas falhas estão retidos. Mudança posterior inicia série nova.
 CP-11 foi liberada, sem usar os smokes como amostra.
 
-O instrumento [run_notes_scale_series.dart](../../../../samples_test_lib/compass_app/app/tool/run_notes_scale_series.dart)
+O instrumento externo `../../../../samples_test_lib/compass_app/app/tool/run_notes_scale_series.dart`
 foi criado a partir do piloto sem alterá-lo. O controlador grava
 `cp16-pair.txt` de forma atômica no diretório privado `databases` de cada
 aparelho, com o mesmo ID hexadecimal de 32 caracteres para A/B no par. O app

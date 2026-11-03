@@ -1,6 +1,7 @@
 # CP-18 — comparação controlada integral/incremental
 
-Concluída em 2026-11-02. [Relatório técnico para o TCC](../../../../samples_test_lib/compass_app/app/docs/comparacao-integral-incremental-deltasync.md).
+Concluída em 2026-11-02. Relatório técnico para o TCC no consumidor externo:
+`../../../../samples_test_lib/compass_app/app/docs/comparacao-integral-incremental-deltasync.md`.
 [Tabela](results/table.md), [execuções](results/runs.csv), [rotas](results/routes.csv),
 [tempos](results/timings.csv), [resumos](results/summary.csv) e [pares](results/paired.csv).
 

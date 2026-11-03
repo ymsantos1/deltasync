@@ -1,0 +1,2 @@
+# Preserve exported CP-18 CSV bytes/hashes; CRLF is a valid line ending.
+plan/evidence/cp18/results/*.csv whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

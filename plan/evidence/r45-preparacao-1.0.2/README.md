@@ -51,3 +51,9 @@ Compass usa paths e mantém seus próprios registros no repositório dele.
 
 Manutenção: quatro critérios R-45 marcados; fase, índice, TRACEABILITY e guia
 reconciliados. Preparação autorizada concluída, publicação continua separada.
+
+Complemento posterior: o job Flutter encontrou seis versões 1.0.1 no lockfile
+do exemplo, não coberto pela resolução original do workspace Dart. A
+[correção do lockfile](../../TRACEABILITY.md#flutter-lockfile-102-2026-11-02)
+alinha esses pacotes a 1.0.2 e registra a validação específica, preservando esta
+evidência histórica e os locks congelados dos experimentos.

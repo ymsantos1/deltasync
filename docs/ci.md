@@ -41,6 +41,19 @@ arquivos ausentes continuam reprovando; se o PDF existir, seus links são
 verificados normalmente. O checker também aceita essa opção diretamente para
 reproduzir o job público, sem mudar o comando local dos agentes.
 
+Referências ao checkout separado do Compass são caminhos em código, identificados
+como externos. Esses arquivos não acompanham um clone da biblioteca e não são
+dependências do job policy. O índice aponta para os registros versionados neste
+repositório; esses registros preservam os caminhos dos relatórios externos.
+Não adicione links Markdown relativos para outro checkout: eles falham no CI
+público. Os testes copiam somente arquivos rastreados e verificam que a exceção
+do PDF não oculta outros arquivos ou anchors ausentes.
+
+Os CSVs exportados de CP-18 usam CRLF. `.gitattributes` permite esse terminador
+somente em `plan/evidence/cp18/results/*.csv` no check de whitespace, mantendo
+a detecção de espaços finais, linhas vazias finais e espaços antes de tabs.
+Isso preserva os bytes e hashes das evidências, inclusive no diff entre commits.
+
 Em Dart, `dart pub get` sempre roda, seguido de `dart pub workspace list --json`.
 Essa lista canônica define quais pacotes recebem formato, análise e testes;
 adicionar um pacote Dart ao workspace não exige copiar outra lista no workflow.
@@ -61,6 +74,13 @@ O exemplo Flutter tem resolução separada, lockfile obrigatório
 lockfile; seu job resolve o grafo compatível a cada checkout limpo.
 Os dois builds usam `lib/main.dart` e `lib/main_eight.dart`; não instalam APK,
 publicam artefatos ou comprovam runtime no plugin Android.
+
+Ao renumerar pacotes locais, atualize também `example/flutter_mobile/pubspec.lock`
+e confira `flutter pub get --enforce-lockfile` nesse diretório. Dependências por
+path também registram versões no lockfile; os overrides não dispensam seu
+alinhamento. Preserve versões e hashes das dependências hospedadas quando a
+mudança afetar somente a versão dos pacotes locais. O CI mantém a exigência
+do lockfile, sem regenerá-lo silenciosamente.
 
 ## Política de advisories
 
